@@ -1,0 +1,8 @@
+<h5 class="card-title">{% if customer.company_name %}{{ customer.company_name }}</h5>
+            <p class="card-text">
+                Address: {{ customer.address1 }} <br/>
+                {% if customer.address2 %}{{customer.address2}}{% endif %}<br/>
+                {{ customer.city }}, {{customer.state}} {{customer.zipcode }}<br/>
+                Phone: {{ customer.phone1 }}<br/>
+                Email: {{ customer.email }}<br/>
+                {% endif %}

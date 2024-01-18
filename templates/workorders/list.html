@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+List of workorders
+
+<a href="{% url 'workorders:createbase' %}">Add Workorder</a>
+
+<p><ul>
+    {% for x in  workorders %}
+    <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.company_name }}</a></li>
+    {% endfor %}
+    </ul></p>
+
+{% endblock content %}

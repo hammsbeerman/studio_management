@@ -1,8 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-{% block scripts %}
-{% endblock %}
+
     <head>
 
       <link href="{% static 'css/stylesheet.css' %}" rel="stylesheet">
@@ -21,6 +20,11 @@
       <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
       <script src="{% static 'js/datepicker.js' %}"></script>
       <!-- End of Datepicker -->
+
+      <!-- Select2 Dropdown -->
+      <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+      <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+      <!-- End of Select2 -->
 
       <script src="https://unpkg.com/htmx.org@1.7.0"></script>
 
@@ -92,6 +96,10 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
  
+        
+        {% block scripts %}
+        {% endblock %}
+        
     </body>
 
 </html>

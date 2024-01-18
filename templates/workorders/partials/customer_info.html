@@ -1,0 +1,62 @@
+
+
+<div class="row">
+    <div class="col-md-4 mb-sm-0">
+        <div class="card">
+            <div class="card-header">
+            Customer Info
+            </div>
+            <div class="card-body" hx-trigger="CustomerEdit from:body" hx-target="this" >
+                {% include 'workorders/partials/cust_info.html' %}
+            </div>
+            <div class="card-footer"><button hx-get="{% url 'workorders:edit_customer' %}?customer={{ customer.id }}" hx-target="#dialog">
+                Edit Customer
+              </button></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+            Contact Info
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{% if contact %}{{ contact.fname}} {% if contact.lname %}{{contact.lname }}{% endif %}</h5>
+                <p class="card-text">
+                    Address: {{ contact.address1 }} <br/>
+                    {% if contact.address2 %}{{contact.address2}}{% endif %}<br/>
+                    {{ contact.city }}, {{contact.state}} {{contact.zipcode }}<br/>
+                    Phone: {{ contact.phone1 }}<br/>
+                    Email: {{ contact.email }}<br/>
+                    {% endif %}
+            </div>
+            <div class="card-footer">Edit Contact Info</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+            Workorder Info
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Invoice #: {{ workorder.workorder }}</h5>
+                <p class="card-text">
+                        Internal Company: {{ workorder.internal_company }}<br/>
+                        Description: {{ workorder.description }}<br/>
+                        Deadline: {{ workorder.deadline }}<br/>
+                        P.O. Number: {{ workorder.po_number }}<br/>
+                        Budget: {{ workorder.budget }} Quoted Price: {{ workorder.quoted_price }}<br/>
+                        Original Order #: {{ workorder.original_order }}<br/>
+                        LK Workorder #: {{ workorder.lk_workorder }}<br/>
+                        Printleader Order #: {{ workorder.printleader_workorder }}
+            </div>
+            <div class="card-footer">Edit Workorder Info</div>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+
+<div id="modal" class="modal fade">
+    <div id="dialog" class="modal-dialog" hx-target="this"></div>
+  </div>

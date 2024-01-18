@@ -4,3 +4,5 @@ django-htmx
 localflavor
 django-forms-dynamic
 django-widget-tweaks
+django-crispy-forms
+crispy-bootstrap5

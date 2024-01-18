@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+
+<select class="custom-select mb-4" hx-trigger="change" id="id_customer" name="customer" hx-get="{% url 'workorders:contacts' %}" hx-target="#contacts">
+
+    <option selected>Select Customer</option>
+    {% for object in customers %}
+      <option value="{{ object.id }}">{{ object.company_name }}</option>
+    {% endfor %}
+</select>
+
+<div id="contacts">
+  {% include 'workorders/partials/contacts.html' %}
+</div>
+    
+
+
+<select class="custom-select mb-4" name='customer'  hx-trigger="change" hx-get="{% url 'workorders:contacts' %}" hx-target="#contacts">
+  <option value="0" selected>Customer</option>
+  {% for customer in customers %}
+      <option value="{{customer.pk}}">{{ customer.company_name }}</option>
+  {% endfor %}
+</select>
+
+
+
+<div id="contacts">
+  {% include 'workorders/partials/contacts.html' %}
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+<form method="POST">
+    {% csrf_token %}
+        {{ form.as_div }}
+
+    <button type="submit">Submit</button>
+</form>
+
+
+<form method="POST">
+    {% csrf_token %}
+        {{ form.customer }}
+
+    <button type="submit">Submit</button>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="col-md-2">
+    <form>
+        {% csrf_token %}
+        <label for="exampleDataList" class="form-label">Datalist example </label>
+        <input class="form-control" name="customers" list="datalistOptions" id="exampleDataList" placeholder="Type to search...">
+        <datalist id="datalistOptions"
+                    value=""
+                    hx-trigger="change"
+                    
+                    hx-post="{% url 'workorders:customer_info' %}"
+                    hx-target="#customer_info">
+            {% for object in customers %}
+                <option data-value="{{ object.id }}" value="{{ object.id }}">{{ object.company_name }}</option>
+            {% endfor %}
+            <option value="New York">
+            <option value="Seattle">
+            <option value="Los Angeles">
+            <option value="Chicago">
+            <option value="Add New Customer">
+        </datalist>
+        <button hx-post="{% url 'workorders:customer_info' %}"
+            hx-target="#customer_info"
+            type="submit">
+            submit
+    </button>
+    </form>
+</div>
+
+<a href="#" data-bs-toggle="modal" data-bs-target="#testModal">Link to open modal</a>
+
+<br/>
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#testModal">
+    Add New Customer
+  </button>
+<hr>
+
+<button hx-post="/clicked"
+    hx-trigger="click"
+    hx-target="#parent-div"
+    hx-swap="outerHTML"
+>
+    Click Me!
+</button>
+{{ form.contact }}
+<div class="row">
+    <div class="col-md-5 mb-sm-0">
+        <div class="card">
+            <div class="card-header">
+            Customer Info
+            </div>
+            <div class="card-body">
+            <h5 class="card-title">Invoice #:</h5>
+            <p class="card-text">
+                Date Created:<br/>
+                Date Due:<br/>
+                <div id="customer_info">
+                {{ customer.company_name }}
+                </div>
+            </div>
+            <div class="card-footer"></div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">
+            Workorder Info
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Invoice #:</h5>
+                <p class="card-text">
+                    Date Created:<br/>
+                    Date Due:<br/>
+                    <p class="card-text">
+                        LK Workorder #:
+        Printleader #:
+            </div>
+            <div class="card-footer"></div>
+        </div>
+    </div>
+</div>
+
+
+<div class="container text-center">
+    <div class="row">
+        <div class="col">
+        Customer
+        <br/>
+        <br/>
+        </div>
+        <div class="col">
+        
+        </div>
+        <div class="col">
+        
+        LK Workorder #:
+        Printleader #:
+
+        </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        Shipping Address: <a href="#" data-bs-toggle="modal" data-bs-target="#shippingModal">Change Shipping</a><br/>
+        123 Any Street<br/>
+        City, State, Zipcode<br/>
+      </div>
+      <div class="col">
+        Billing Address:<a href="#" data-bs-toggle="modal" data-bs-target="#billingModal">Change Billing</a><br/>
+        123 Any Street<br/>
+        City, State, Zipcode<br/>
+      </div>
+      <div class="col">
+        Contact:<a href="#" data-bs-toggle="modal" data-bs-target="#contactModal">Change Contact</a><br/>
+        Phone:<br/>
+        Email:<br/>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="shippingModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Shipping Modal</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+<div class="modal fade" id="billingModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Billing Modal</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Contact Modal</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <!-- Modal -->
+  <div class="modal fade" id="testModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#exampleModal">Other</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">New Modal</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+
+
+{% endblock content %}
+
+
+
+{% block scripts %}
+
+<script>
+    //$("#id_customer").select2();
+
+    /*$(document).ready(function () {
+      // Init Select2 on #first-select element
+      $('#id_customer').select2();
+    
+      // Attach to 'select2:select' jQuery event from Select2
+      $('#id_customer').on('select2:select', (e) => {
+        // Dispatch 'select2:select' vanilla JS event to trigger HTMX
+        htmx.trigger("#id_customer", "change")
+        //let event = new Event('select2:select');
+        //document.querySelector('#second-select').dispatchEvent(event);
+      });
+    });
+
+    /*window.addEventListener("DOMContentLoaded", (e) => {
+      $('select').on('select2:select', function (e) {
+        htmx.trigger($(this).closest('select').get(0), 'change')
+      })
+    })*/
+
+    $(document).ready(function () {
+      $("#id_customer").select2();
+      $('#id_customer').on('select2:select', (e) => {
+        htmx.trigger("#id_customer", "change")
+      });
+    })
+
+</script>
+
+{% endblock %}
