@@ -250,6 +250,13 @@ def new_contact(request):
     return render(request, 'workorders/modals/newcontact_form.html', context)
 
 def cust_info(request):
+    if request.htmx:
+        customer = request.GET.get('customer')
+        print(customer)
+        customer = Customer.objects.get(id=customer)
+        print(customer.id)
+        context = { 'customer': customer,}
+        return render(request, 'workorders/partials/cust_info.html', context)
     workorder = Workorder.objects.get(workorder=id)
     customer = Customer.objects.get(id=workorder.customer_id)
     if workorder.contact_id:
