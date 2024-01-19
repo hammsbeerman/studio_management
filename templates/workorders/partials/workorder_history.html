@@ -1,0 +1,10 @@
+<h5 class="card-title">Invoices History</h5>
+<p class="card-text">
+<ul>
+    {% for x in  history %}
+    <li><a hx-get='{{ x.get_history_url }}' hx-target='#dialog2'>{{ x.workorder }} -- {{ x.description }}</a></li>
+    {% endfor %}
+    </ul>
+
+
+    

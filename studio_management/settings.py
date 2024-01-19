@@ -51,6 +51,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     'accounts',
     'customers',
+    'krueger',
     'workorders',
 ]
 

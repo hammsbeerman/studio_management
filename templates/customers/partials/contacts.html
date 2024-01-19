@@ -1,5 +1,3 @@
-<!--<select class="custom-select mb-4" id="id_contacts" hx-trigger="change, load" name="contacts" hx-get="{% url 'workorders:customer_info' %}?customer={{ customer }}" hx-target="#base">-->
-
 <select class="custom-select mb-4" id="id_contacts" name="contacts">
 
     <option value='' selected>Select Contact</option>
@@ -9,6 +7,6 @@
 </select>
 <br/>
 
-<button hx-get="{% url 'workorders:new_contact' %}?customer={{ customer }}" hx-target="#dialog">
+<button hx-get="{% url 'customers:new_contact' %}?customer={{ customer }}" hx-target="#dialog">
   Add New Contact
 </button>

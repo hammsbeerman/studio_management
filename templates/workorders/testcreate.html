@@ -5,7 +5,7 @@
 
 
 
-<select class="custom-select mb-4" hx-trigger="change" id="id_customer" name="customer" hx-get="{% url 'workorders:contacts' %}" hx-target="#contacts">
+<select class="custom-select mb-4" hx-trigger="change" id="id_customer" name="customer" hx-get="{% url 'customers:contacts' %}" hx-target="#contacts">
 
     <option selected>Select Customer</option>
     {% for object in customers %}
@@ -14,12 +14,12 @@
 </select>
 
 <div id="contacts">
-  {% include 'workorders/partials/contacts.html' %}
+  {% include 'customers/partials/contacts.html' %}
 </div>
     
 
 
-<select class="custom-select mb-4" name='customer'  hx-trigger="change" hx-get="{% url 'workorders:contacts' %}" hx-target="#contacts">
+<select class="custom-select mb-4" name='customer'  hx-trigger="change" hx-get="{% url 'customers:contacts' %}" hx-target="#contacts">
   <option value="0" selected>Customer</option>
   {% for customer in customers %}
       <option value="{{customer.pk}}">{{ customer.company_name }}</option>
@@ -29,7 +29,7 @@
 
 
 <div id="contacts">
-  {% include 'workorders/partials/contacts.html' %}
+  {% include 'customers/partials/contacts.html' %}
 </div>
 
 
@@ -84,7 +84,7 @@
                     value=""
                     hx-trigger="change"
                     
-                    hx-post="{% url 'workorders:customer_info' %}"
+                    hx-post="{% url 'customers:customer_info' %}"
                     hx-target="#customer_info">
             {% for object in customers %}
                 <option data-value="{{ object.id }}" value="{{ object.id }}">{{ object.company_name }}</option>
@@ -95,7 +95,7 @@
             <option value="Chicago">
             <option value="Add New Customer">
         </datalist>
-        <button hx-post="{% url 'workorders:customer_info' %}"
+        <button hx-post="{% url 'customers:customer_info' %}"
             hx-target="#customer_info"
             type="submit">
             submit

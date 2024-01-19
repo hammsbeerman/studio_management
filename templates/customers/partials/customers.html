@@ -1,4 +1,4 @@
-<select class="custom-select mb-4" id="id_customer" hx-trigger="change" name="customer" hx-get="{% url 'workorders:contacts' %}" hx-target="#contacts">
+<select class="custom-select mb-4" id="id_customer" hx-trigger="change" name="customer" hx-get="{% url 'customers:contacts' %}" hx-target="#contacts">
 
     <option selected>Select Customer</option>
     {% for object in customers %}

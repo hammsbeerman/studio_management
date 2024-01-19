@@ -23,8 +23,10 @@ urlpatterns = [
     path('', home_view, name='home'),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
-    #path('customers/', include('customers.urls')),
+    path('customers/', include('customers.urls')),
+    path('krueger/', include('krueger.urls')),
     path('workorders/', include('workorders.urls')),
+
     
 ]
 

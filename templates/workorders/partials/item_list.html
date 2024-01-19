@@ -1,0 +1,16 @@
+{% for object in items %}
+    <tr>
+        <td>{{ object.workorder }}</td>
+        <td>{{ object.item_category }}</td>
+        <td>{{ object.description }}</td>
+        <td>{{ object.quantity }}</td>
+        <td>{{ object.unit_price }}</td>
+        <td>{{ object.total_price }}</td>
+        <td>
+            {% if object.item_category_id == 1 %}<button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_design_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>{% endif %}
+            {% if object.item_category_id != 1 %}<a href="{{ x.edit_print_item_url }}" class="btn btn-primary btn-sm" role="button">Edit</a>{% endif %}
+        </td>
+        
+        
+    </tr>
+{% endfor %}

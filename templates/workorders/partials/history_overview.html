@@ -1,0 +1,58 @@
+<div class="row">
+    <div class="col-md-3 mb-sm-0">
+        <div class="card">
+            <div class="card-header">
+            Customer Info
+            </div>
+            <div class="card-body" id="custinfo" hx-trigger="CustomerEdit from:body" hx-target="this" >
+                {% include 'customers/partials/customer_info.html' %}
+            </div>
+            <div class="card-footer">            
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+            Contact Info
+            </div>
+                <div class="card-body" id="contactinfo">
+                  {% include 'customers/partials/contact_info.html' %}
+                    
+                </div>
+                <div class="card-footer">
+                  <button hx-get="{% url 'customers:edit_contact' %}?contact={{ contact.id }}&customer={{ customer.id }}&workorder={{ workorder.id }}" hx-target="#dialog">Edit</button>
+                  <button hx-get="{% url 'customers:new_contact' %}?customer={{ customer.id }}&workorder={{ workorder.id }}" hx-target="#dialog">Add</button>
+                  <button> Change </button>
+                  <button hx-get="{% url 'customers:contact_info' %}?contact={{ contact.id }}&workorder={{ workorder.id }}" hx-target="#contactinfo">Refresh</button>
+                </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+            Workorder Info
+            </div>
+            <div class="card-body" id="workorderinfo">
+              {% include 'workorders/partials/workorder_info.html' %}
+            </div>
+            <div class="card-footer">
+              <button hx-get="{% url 'workorders:edit_workorder' %}?workorder={{ workorder.id }}" hx-target="#dialog">Edit</button>
+              <button hx-get="{% url 'workorders:workorder_info' %}?workorder={{ workorder.id }}" hx-target="#workorderinfo">Refresh</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+            Customer Order History
+            </div>
+            <div class="card-body">
+              {% include 'workorders/partials/workorder_history.html' %}
+            </div>
+            <div class="card-footer"></div>
+        </div>
+    </div>
+  </div>
+  
+  <hr>

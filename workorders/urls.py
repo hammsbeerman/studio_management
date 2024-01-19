@@ -5,32 +5,36 @@ from django.urls import path
 from .views import (
     create_base,
     test_base,
-    customer_info,
-    contacts,
-    new_customer,
-    customers,
-    new_contact,
-    items,
+    overview,
     workorder_list,
-    edit_customer,
-    cust_info,
+    edit_workorder,
+    workorder_info,
+    history_overview,
+    workorder_item_list,
+    add_item,
+    edit_design_item,
+    edit_print_item,
+    remove_workorder_item,
 )
 
 app_name='workorders'
 
 urlpatterns = [
     path('', create_base, name='createbase'),
+    path('add/<int:parent_id>/', add_item, name='add_item'),
+    path('items/<int:pk>/edit/<int:cat>', edit_design_item, name='edit_design_item'),
+    path('items/<int:pk>/edit/<int:cat>', edit_print_item, name='edit_print_item'),
+    path('items/<int:pk>/remove/', remove_workorder_item, name='remove_item'),
+    path("item/<int:id>/", workorder_item_list, name='workorder_item_list'),
     path("createbase/", create_base, name='createbase'), #Create base details of new workorder
     path("testbase/", test_base, name='testbase'), #Create base details of new workorder
-    path("customer_info/", customer_info, name='customer_info'), #Create base details of new workorder
-    path("contacts/", contacts, name='contacts'),
-    path("new_customer/", new_customer, name='new_customer'),
-    path("customers/", customers, name='customer_list'),
-    path("new_contact/", new_contact, name='new_contact'),
-    path("edit_customer/", edit_customer, name='edit_customer'),
-    path("items/", workorder_list, name='workorder_list'),
-    path("items/<int:id>", items, name='items'),
-    path("cust_info/", cust_info, name='cust_info')
+    path("workorders/", workorder_list, name='workorder_list'),
+    path("workorders/<int:id>", overview, name='overview'),
+    path("workorders/<int:id>", history_overview, name='history_overview'),
+    path("edit_workorder", edit_workorder, name='edit_workorder'),
+    path("workorder_info/", workorder_info, name='workorder_info'),
+    
+
     
 
 ]

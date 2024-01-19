@@ -24,12 +24,14 @@ class CustomerForm(forms.ModelForm):
                 #"hx-swap": "innerHTML"
             }
             self.fields[str(field)].widget.attrs.update(new_data)
-        #self.fields['name'].label = ''
+        #self.fields[''].label = ''
         #self.fields['name'].widget.attrs.update({'class': 'form-control-2'})
         #self.fields['description'].widget.attrs.update({'rows': '2'})
         #self.fields['directions'].widget.attrs.update({'rows': '3'})
             
 class ContactForm(forms.ModelForm):
+    required_css_class = 'required-field'
+    state = forms.CharField(widget=USStateSelect(), initial='WI')
     class Meta:
         model = Contact
         fields = ['fname', 'lname', 'address1', 'address2', 'city', 'state', 'zipcode', 'phone1', 'email']

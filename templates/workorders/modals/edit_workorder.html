@@ -1,16 +1,19 @@
+{% load crispy_forms_tags %}
+
 <div class="modal-content">
     
     <div class="modal-header">
-        <h5 class="modal-title">Edit Customer</h5>
+        <h5 class="modal-title">Edit Workorder</h5>
       </div>
       <div class="modal-body">
-        <form hx-post="{% url 'workorders:edit_customer' %}"> 
+        <form hx-post="{% url 'workorders:edit_workorder' %}"> 
           {% csrf_token %}
-        {{ form.as_p }}
+          {{message}}
+        {{ form|crispy }}
       </div>
       <div class="modal-footer">
         <button type="button" data-bs-dismiss="modal">Cancel</button>
         <button type="submit">Save</button>
       </div>
-      <input type="hidden" id="customer" name="customer" value="{{ customer }}">
+      <input type="hidden" id="workorder" name="workorder" value="{{ workorder }}">
     </form>

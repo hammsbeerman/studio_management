@@ -9,7 +9,7 @@ List of workorders
 
 <p><ul>
     {% for x in  workorders %}
-    <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.company_name }}</a></li>
+    <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
     {% endfor %}
     </ul></p>
 

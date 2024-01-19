@@ -34,7 +34,7 @@ class Customer(models.Model):
 class Contact(models.Model):
     customer = models.ForeignKey(Customer, blank=False, null=False, on_delete=models.CASCADE, related_name='contacts')
     #company = models.OneToOneField(Customer, on_delete=models.CASCADE, blank=True, null=True)
-    fname = models.CharField('First Name', max_length=100, blank=True, null=False)
+    fname = models.CharField('First Name', max_length=100, blank=False, null=False)
     lname = models.CharField('Last Name', max_length=100, blank=True, null=False)
     address1 = models.CharField('Address 1', max_length=100, blank=True, null=False)
     address2 = models.CharField('Adddress 2', max_length=100, blank=True, null=False)

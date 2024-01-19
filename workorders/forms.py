@@ -1,6 +1,6 @@
 from django.utils.safestring import mark_safe
 from django import forms
-from .models import Workorder, Numbering
+from .models import Workorder, Numbering, WorkorderItem
 from customers.models import Customer, Contact
 from dynamic_forms import DynamicField, DynamicFormMixin
 from django.urls import reverse_lazy
@@ -38,3 +38,14 @@ class WorkorderForm(DynamicFormMixin, forms.ModelForm):
             self.fields[str(field)].widget.attrs.update(new_data)
         self.fields['internal_company'].widget.attrs.update({'initial': 'Select Company'})
         self.fields['description'].widget.attrs.update({'rows': '2', 'placeholder': 'Description'})
+
+
+class WorkorderNewItemForm(forms.ModelForm):
+   class Meta:
+       model = WorkorderItem
+       fields = ['item_category', 'description']
+
+class WorkorderItemForm(forms.ModelForm):
+   class Meta:
+       model = WorkorderItem
+       fields = ['item_category', 'design_type', 'description', 'quantity', 'unit_price', 'total_price', 'last_item_order', 'last_item_price', 'internal_company']
