@@ -4,7 +4,7 @@
         <h5 class="modal-title">Add Customer</h5>
       </div>
       <div class="modal-body">
-        <mark class="red">{{ message }}</mark>
+        {% if message %}<mark class="red">{{ message }}</mark>{% endif %}
         {{ form.as_p }}
       </div>
       <div class="modal-footer">

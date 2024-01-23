@@ -1,0 +1,15 @@
+Database: Numbering
+PK: 1
+Value: (Starting workorder numbers)
+
+Database: Category
+PK: 1
+Name: Graphic Design
+Description: Graphic Design Services
+Design Type: 1
+
+Database: Category
+PK: 2
+Name: Printed Item
+Description: Printed Item
+Design Type: 0

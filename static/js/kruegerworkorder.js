@@ -121,6 +121,7 @@ $(document).ready(function(){
         
     
         $('#id_qty_of_sheets').val(sheet_qty);
+        document.getElementById("id_sheets").innerHTML = sheet_qty;
     
         $('#id_output_per_sheet').val(output);
         

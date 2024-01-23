@@ -31,8 +31,8 @@
               <div class="card-footer">
                 <button hx-get="{% url 'customers:edit_contact' %}?contact={{ contact.id }}&customer={{ customer.id }}&workorder={{ workorder.id }}" hx-target="#dialog">Edit</button>
                 <button hx-get="{% url 'customers:new_contact' %}?customer={{ customer.id }}&workorder={{ workorder.id }}" hx-target="#dialog">Add</button>
-                <button> Change </button>
-                <button hx-get="{% url 'customers:contact_info' %}?contact={{ contact.id }}&workorder={{ workorder.id }}" hx-target="#contactinfo">Refresh</button>
+                <button hx-get="{% url 'customers:change_contact' %}?customer={{ customer.id }}&workorder={{ workorder.id }}" hx-target="#dialog">Change</button>
+                <button hx-get="{% url 'customers:contact_info' %}?workorder={{ workorder.id }}" hx-target="#contactinfo">Refresh</button>
               </div>
       </div>
   </div>
@@ -60,6 +60,7 @@
           </div>
           <div class="card-footer"></div>
       </div>
+      <a href="{% url 'workorders:copy_workorder' id=workid %}" class="btn btn-primary btn-sm" role="button">Duplicate Workorder</a>
   </div>
 </div>
 
@@ -82,7 +83,7 @@
         <th>Total Price</th>
       </tr>
     </thead>
-    <tbody hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_item_list' id=workorder.id %}" hx-target="this">
+    <tbody hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_item_list' id=workid %}" hx-target="this">
       <tr>
         <td class="spinner-border" role="status">
           <span class="visually-hidden">Loading...</span>
@@ -91,7 +92,7 @@
     </tbody>
   </table>
 
-  <button hx-get="{% url 'workorders:add_item' parent_id=workorder.id %}" hx-target="#dialog" class="btn btn-primary">
+  <button hx-get="{% url 'workorders:add_item' parent_id=workid %}" hx-target="#dialog" class="btn btn-primary">
   Add an item
   </button>
 

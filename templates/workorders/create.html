@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% load static %}
 
 {% block content %}
 
@@ -12,18 +13,15 @@
     <div class="row row-cols-3">
         <div class="col">
           {{ message }}
-            <div id="custlist">
+          <div id="custlist">
+            <div class="input-group">
             {% include 'customers/partials/customers.html' %}
+            <button  class="btn btn-primary-outline" hx-get="{% url 'customers:new_customer' %}" hx-target="#dialog"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
             </div>
+        
+          </div>
 
-            <!-- <a href="#" data-bs-toggle="modal" data-bs-target="#NewCustomerModal">Add New Customer</a> -->
-            <br/>
-
-            <button hx-get="{% url 'customers:new_customer' %}" hx-target="#dialog">
-            Add New Customer
-            </button>
-
-            <p>
+          <p>
 
             <div id="contacts">
             {% include 'customers/partials/contacts.html' %}

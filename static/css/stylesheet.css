@@ -34,6 +34,16 @@ body{
 	text-align: center;
 }
 
+.btn-primary-outline {
+  background-color: transparent;
+  border-color: transparent;
+  padding: 0;
+}
+
+.addbutton {
+  margin-right: 5px;
+}
+
 
 /*******************************
 * MODAL AS LEFT/RIGHT SIDEBAR

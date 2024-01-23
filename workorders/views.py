@@ -79,13 +79,17 @@ def test_base(request):
 
 def overview(request, id):
     workorder = Workorder.objects.get(workorder=id)
+    #if not workorder:
+    #    workorder = request.GET.get('workorder')
     customer = Customer.objects.get(id=workorder.customer_id)
     if workorder.contact_id:
         contact = Contact.objects.get(id=workorder.contact_id)
     else: 
         contact = ''
     history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:10]
+    workid = workorder.id
     context = {
+            'workid': workid,
             'workorder': workorder,
             'customer': customer,
             'contact': contact,
@@ -151,8 +155,11 @@ def add_item(request, parent_id):
         form = WorkorderNewItemForm(request.POST)
         if form.is_valid():
             obj = form.save(commit=False)
+            parent = Workorder.objects.get(pk=parent_id)
             #Add workorder to form since it wasn't displayed
             obj.workorder_id = parent_id
+            print(parent.workorder)
+            obj.workorder_hr = parent.workorder
             form.save()
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     else:
@@ -224,6 +231,134 @@ def remove_workorder_item(request, pk):
     item = get_object_or_404(WorkorderItem, pk=pk)
     item.delete()
     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+
+
+def copy_workorder_item(request, pk, workorder=None):
+    #Copy line item to current workorder
+    if workorder:
+        obj = WorkorderItem.objects.get(pk=pk)
+        obj.pk = None
+        obj.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    #Copy line item to different workorder
+    if request.method == "POST":
+        #Workorder to copy to
+        workorder = request.POST.get('workorder')
+        #Get info from workorder being copied to
+        new = Workorder.objects.get(workorder=workorder)
+        print(new.pk)
+        #copy data from existing line item
+        obj = WorkorderItem.objects.get(pk=pk)
+        obj.pk = None
+        last_workorder = obj.workorder_hr
+        obj.workorder_hr = workorder
+        obj.workorder_id = new.pk
+        #Fill in missing data in new line item
+        obj.last_item_order = last_workorder
+        obj.last_item_price = obj.total_price
+        print(obj.last_item_order)
+        obj.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    obj = WorkorderItem.objects.get(pk=pk)
+    context = {
+        'obj': obj,
+        #'workorder': workorder
+    }
+    return render(request, 'workorders/modals/copy_item.html', context)
+
+def copy_workorder(request, id=None):
+    print (id)
+    obj = Workorder.objects.get(id=id)
+    # workorder_hr = obj.workorder_hr
+    # item_price = obj.item_price
+    n = Numbering.objects.get(pk=1)
+    obj.workorder = n.value
+    newworkorder = obj.workorder
+    inc = int('1')
+    n.value = n.value + inc
+    n.save()
+    obj.pk=None
+    obj.save()
+    new_workorder_id=obj.pk
+    print(id)
+    print(newworkorder)
+    #print(new_id)
+    workorder_item = WorkorderItem.objects.filter(workorder_id=id)
+    for item in workorder_item:
+        workorder = item.workorder_hr
+        price = item.total_price
+        print(workorder)
+        print(price)
+        item.workorder_id=new_workorder_id
+        item.pk=None
+        item.workorder_hr=newworkorder
+        item.last_item_order=workorder
+        item.last_item_price=price
+        item.save()
+    return redirect('workorders:overview', id=newworkorder)
+
+
+
+
+
+
+
+
+
+
+
+
+
+            # form.instance.workorder = n.value
+            # workorder = n.value
+            # inc = int('1')
+            # n.value = n.value + inc
+            # print(n.value)
+            # n.save()
+            # ## End of numbering
+            # print('hello')
+            # form.save()
+            # context = {
+            #     'id': n.value,
+            # }
+            # return redirect("workorders:overview", id=workorder)
+
+
+
+
+
+
+
+
+
+
+
+
+    # if request.method == "GET":
+    #     obj = WorkorderItem.objects.get(pk=pk)
+    #     obj.pk = None
+    #     obj.save()
+    #     # message = 'Item duplicated'
+    #     # context ={
+    #     #     'message': message
+    #     # }
+    #     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    # if request.method == "POST":
+    #     workorder = request.POST.get('workorder')
+    #     parent = Workorder.objects.get(workorder=workorder)
+    #     print(parent.pk)
+    #     obj = WorkorderItem.objects.get(pk=pk)
+    #     obj.pk = None
+    #     obj.workorder_hr = workorder
+    #     obj.workorder_id = parent.pk
+    #     obj.save()
+    #     return HttpResponse(status=204, headers={'HX-Trigger': 'Item Added'})
+    # obj = WorkorderItem.objects.get(pk=pk)
+    # context = {
+    #     'obj': obj,
+    #     #'workorder': workorder
+    # }
+    # return render(request, 'workorders/modals/copy_item.html', context)
 
 
 

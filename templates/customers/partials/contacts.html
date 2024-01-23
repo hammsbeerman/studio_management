@@ -1,3 +1,5 @@
+{% load static %}
+<div class="input-group" class="flex-row">
 <select class="custom-select mb-4" id="id_contacts" name="contacts">
 
     <option value='' selected>Select Contact</option>
@@ -7,6 +9,12 @@
 </select>
 <br/>
 
-<button hx-get="{% url 'customers:new_contact' %}?customer={{ customer }}" hx-target="#dialog">
-  Add New Contact
-</button>
+{% if customer %}
+    <button class="btn btn-primary-outline" hx-get="{% url 'customers:new_contact' %}?customer={{ customer }}" hx-target="#dialog">
+      <div class="addbutton">
+      <img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">
+      </div>
+    </button>
+  {% endif %}
+
+  </div>

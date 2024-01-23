@@ -94,18 +94,18 @@ def new_contact(request):
         if form.is_valid():
             company_num = request.POST.get("customer")
             workorder = request.POST.get("workorder")
+            print(workorder)
             form.instance.customer_id = company_num
             print(company_num)
             print(form.instance.id)
             form.save()
-            print('Workorder')
-            print(workorder)
             if workorder:
                 contact = form.instance.id
                 Workorder.objects.filter(pk=workorder).update(contact_id=contact)
                 #obj = get_object_or_404(Workorder, pk=workorder)
                 #form2 = 
                 print(form.instance.id)
+                print('else')
             return HttpResponse(status=204, headers={'HX-Trigger': 'ContactAdded'})
     else:
         form = ContactForm()
@@ -234,3 +234,26 @@ def edit_contact(request):
             'contact': contact
         }
     return render(request, 'customers/modals/edit_contact.html', context)
+
+def change_contact(request):
+    customer = request.GET.get('customer')
+    workorder = request.GET.get('workorder')
+    if request.method == "POST":
+        contact = request.POST.get('contacts')
+        workorder = request.POST.get('workorder')
+        #obj = get_object_or_404(Workorder, pk=workorder)
+        #form = WorkorderForm
+        print(contact)
+        print(workorder)
+        obj = Workorder.objects.get(id=workorder)
+        obj.contact_id = contact
+        obj.save(update_fields=['contact_id'])
+        return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
+    print(customer)
+    print(workorder)
+    obj = Contact.objects.filter(customer=customer)
+    context = {
+        'obj': obj,
+        'workorder': workorder
+    }
+    return render(request, 'customers/modals/change_contact.html', context)

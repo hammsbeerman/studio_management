@@ -12,6 +12,7 @@ from .views import (
     cust_info,
     edit_contact,
     contact_info,
+    change_contact,
 )
 
 app_name='customers'
@@ -24,6 +25,7 @@ urlpatterns = [
     path("new_customer/", new_customer, name='new_customer'),
     path("new_contact/", new_contact, name='new_contact'),
     path("edit_customer/", edit_customer, name='edit_customer'),
+    path("change_contact/", change_contact, name='change_contact'),
     path("cust_info/", cust_info, name='cust_info'),
     path("edit_contact/", edit_contact, name='edit_contact'),
     path("contact_info/", contact_info, name='contact_info'),

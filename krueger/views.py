@@ -4,9 +4,11 @@ from django.contrib import messages
 from .forms import KruegerJobDetailForm
 from .models import KruegerJobDetail, PaperStock
 
-def newjob(request):
+def newjob(request, id):
+    workorder = id
+    print(workorder)
     form = KruegerJobDetailForm(request.POST or None)
-    total_invoices = KruegerJobDetail.objects.count()
+    #total_invoices = KruegerJobDetail.objects.count()
     #Following for HTMX Paper price
     papers = PaperStock.objects.all()
     #paper = request.GET.get('paper_stock')
@@ -22,7 +24,7 @@ def newjob(request):
     context = {
         "form": form,
         "title": "New Job",
-        "total_invoices": total_invoices,
+        #"total_invoices": total_invoices,
 		#"queryset": queryset,
         'papers': papers,
         #'papersizes': papersizes,

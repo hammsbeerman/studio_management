@@ -26,7 +26,7 @@ class Workorder(models.Model):
         return reverse("workorders:history_overview", kwargs={"id": self.workorder})
     
     def get_item_url(self):
-        return reverse("workorders:overview", kwargs={"id": self.workorder})
+        return reverse("workorders:workorder_item_list", kwargs={"id": self.workorder})
     
     def __str__(self):
         return self.workorder
@@ -61,6 +61,7 @@ class DesignType(models.Model):
 
 class WorkorderItem(models.Model):
     workorder = models.ForeignKey(Workorder, blank=False, null=True, on_delete=models.CASCADE)
+    workorder_hr = models.CharField('Workorder', max_length=100, blank=False, null=False)
     item_category = models.ForeignKey(Category, blank=False, null=False, on_delete=models.CASCADE)
     design_type = models.ForeignKey(DesignType, blank=True, null=True, on_delete=models.CASCADE)
     description = models.CharField('Description', max_length=100, blank=False, null=False)
@@ -77,6 +78,7 @@ class WorkorderItem(models.Model):
         return self.workorder.get_absolute_url()
     
     def edit_print_item_url(self):
+        #return reverse("krueger:bigform", kwargs={"id": self.workorder})
         return reverse("krueger:bigform", kwargs={"id": self.workorder})
     
     #def get_workorder_add(self):
