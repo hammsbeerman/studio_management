@@ -116,6 +116,39 @@ def new_contact(request):
         }
     return render(request, 'customers/modals/newcontact_form.html', context)
 
+def new_cust_contact(request):
+    customer = request.GET.get('customer')
+    #workorder = request.GET.get('workorder')
+    print('hello')
+    print(customer)
+    #print(workorder)
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            company_num = request.POST.get("customer")
+            #workorder = request.POST.get("workorder")
+            #print(workorder)
+            form.instance.customer_id = company_num
+            print(company_num)
+            print(form.instance.id)
+            form.save()
+            # if workorder:
+            #     contact = form.instance.id
+            #     Workorder.objects.filter(pk=workorder).update(contact_id=contact)
+            #     #obj = get_object_or_404(Workorder, pk=workorder)
+            #     #form2 = 
+            #     print(form.instance.id)
+            #     print('else')
+            return HttpResponse(status=204, headers={'HX-Trigger': 'ContactAdded'})
+    else:
+        form = ContactForm()
+        context = {
+            'form': form,
+            'customer': customer,
+            #'workorder': workorder
+        }
+    return render(request, 'customers/modals/newcontact_form.html', context)
+
 def edit_customer(request):
     customer = request.GET.get('customer')
     if request.method == "POST":

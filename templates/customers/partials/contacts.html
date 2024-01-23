@@ -10,7 +10,7 @@
 <br/>
 
 {% if customer %}
-    <button class="btn btn-primary-outline" hx-get="{% url 'customers:new_contact' %}?customer={{ customer }}" hx-target="#dialog">
+    <button class="btn btn-primary-outline" hx-get="{% url 'customers:new_cust_contact' %}?customer={{ customer }}" hx-target="#dialog">
       <div class="addbutton">
       <img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">
       </div>
