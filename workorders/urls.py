@@ -4,7 +4,6 @@ from django.urls import path
 
 from .views import (
     create_base,
-    test_base,
     overview,
     workorder_list,
     edit_workorder,
@@ -32,7 +31,6 @@ urlpatterns = [
     path('items/<int:pk>/copy/<str:workorder>', copy_workorder_item, name='copy_workorder_item'),
     path("item/<int:id>/", workorder_item_list, name='workorder_item_list'),
     path("createbase/", create_base, name='createbase'), #Create base details of new workorder
-    path("testbase/", test_base, name='testbase'), #Create base details of new workorder
     path("workorders/", workorder_list, name='workorder_list'),
     path("workorders/<int:id>", overview, name='overview'),
     path("workorders/<int:id>", history_overview, name='history_overview'),

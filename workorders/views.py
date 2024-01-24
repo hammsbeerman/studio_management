@@ -70,13 +70,6 @@ def create_base(request):
             #return render(request, "workorders/overview.html", context)
     return render(request, "workorders/create.html", context)
 
-
-def test_base(request):
-    return render(request, "workorders/testcreate.html", {
-        'customers': Customer.objects.all(),
-        'form': WorkorderForm(),
-    })
-
 def overview(request, id):
     workorder = Workorder.objects.get(workorder=id)
     #if not workorder:

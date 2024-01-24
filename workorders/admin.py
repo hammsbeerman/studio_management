@@ -31,15 +31,13 @@ class WorkorderItemAdmin(admin.ModelAdmin):
 admin.site.register(WorkorderItem, WorkorderItemAdmin)
     
 
-
-
-
-
-
 #class ItemCategoryAdmin(admin.ModelAdmin):
 #    fields = ['workorder', 'description', 'category', 'internal_company']
 
-admin.site.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'description', 'design_type', 'modal')
+
+admin.site.register(Category, CategoryAdmin)
 
 admin.site.register(DesignType)
 

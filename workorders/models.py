@@ -47,6 +47,7 @@ class Category(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     design_type = models.BooleanField('Design Type', blank=True, null=True)
+    modal = models.BooleanField('Modal', blank=True, null=True)
 
     def __str__(self):
         return self.name
