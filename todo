@@ -14,8 +14,11 @@ Job Notes
 
 Different Numbering for LK / Krueger?
 
+Copy to: should be a select dropdown with valid workorders
 
-
+If subcategory
+    load pricesheet for subcategory item
+else load pricesheet for category
 
 
 

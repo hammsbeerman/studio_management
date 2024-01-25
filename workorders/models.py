@@ -52,6 +52,15 @@ class Category(models.Model):
     def __str__(self):
         return self.name
     
+class SubCategory(models.Model):
+    name = models.CharField('Name', max_length=100, blank=True, null=True)
+    description = models.CharField('Description', max_length=100, blank=True, null=True)
+    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+    
 class DesignType(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
@@ -62,8 +71,10 @@ class DesignType(models.Model):
 
 class WorkorderItem(models.Model):
     workorder = models.ForeignKey(Workorder, blank=False, null=True, on_delete=models.CASCADE)
-    workorder_hr = models.CharField('Workorder', max_length=100, blank=False, null=False)
+    workorder_hr = models.CharField('Workorder Human Readable', max_length=100, blank=False, null=False)
     item_category = models.ForeignKey(Category, blank=False, null=False, on_delete=models.CASCADE)
+    item_subcategory = models.CharField('Subcategory', max_length=100, blank=True, null=True)
+    pricesheet_modified = models.BooleanField('Pricesheet Modified', blank=True, null=True, default=False)
     design_type = models.ForeignKey(DesignType, blank=True, null=True, on_delete=models.CASCADE)
     description = models.CharField('Description', max_length=100, blank=False, null=False)
     item_order = models.PositiveSmallIntegerField('Display Order', blank=True, null=True)

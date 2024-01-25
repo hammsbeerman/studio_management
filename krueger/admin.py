@@ -7,6 +7,14 @@ class PaperStockAdmin(admin.ModelAdmin):
 admin.site.register(PaperStock, PaperStockAdmin)
 
 class KruegerJobDetailAdmin(admin.ModelAdmin):
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(KruegerJobDetailAdmin, self).get_form(request, obj, **kwargs)
+        field = form.base_fields["jobnumber"]
+        field.widget.can_add_related = False
+        field.widget.can_change_related = False
+        field.widget.can_delete_related = False
+        field.widget.can_view_related = True
+        return form
     list_display = ('jobnumber', 'jobquote', 'company', 'customer', 'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_size_per_parent',
             'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 'paper_stock', 'price_per_m', 
             #'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 

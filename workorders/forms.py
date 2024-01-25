@@ -41,9 +41,9 @@ class WorkorderForm(DynamicFormMixin, forms.ModelForm):
 
 
 class WorkorderNewItemForm(forms.ModelForm):
-   class Meta:
+    class Meta:
        model = WorkorderItem
-       fields = ['item_category', 'description']
+       fields = ['item_category', 'item_subcategory', 'description']
 
 class WorkorderItemForm(forms.ModelForm):
    class Meta:

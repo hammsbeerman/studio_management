@@ -7,7 +7,6 @@ from crispy_forms.layout import Submit
 
 class KruegerJobDetailForm(forms.ModelForm):
 
-
     class Meta:
         model = KruegerJobDetail
         fields = [
@@ -77,3 +76,4 @@ class KruegerJobDetailForm(forms.ModelForm):
         if not qty:
             raise forms.ValidationError('This field is required')
         return qty"""
+    

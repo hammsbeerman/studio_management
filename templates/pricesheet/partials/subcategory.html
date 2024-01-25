@@ -1,0 +1,11 @@
+{% if obj %}
+<select class="custom-select mb-4" id="id_item_subcategory" name="item_subcategory">
+
+
+    <option selected>SubCategory</option>
+      {% for object in obj %}
+        <option value="{{ object.id }}">{{ object.name }}</option>
+      {% endfor %}
+    
+</select>
+{% endif %}

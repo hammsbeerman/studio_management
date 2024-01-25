@@ -1,5 +1,6 @@
 from django.db import models
 from customers.models import Customer
+from workorders.models import Workorder
 
 class PaperStock(models.Model):
     description = models.CharField('description', max_length=100, blank=False, null=False)
@@ -16,16 +17,17 @@ class KruegerJobDetail(models.Model):
     class JobQuote(models.TextChoices):
         WORKORDER = "Workorder"
         QUOTE = "Quote"
+        TEMPLATE = "Template"
 
     class Company(models.TextChoices):
         LK = "LK"
         KRUEGER = "KRUEGER"
 
-    jobnumber = models.CharField('Job Number', max_length=100, blank=True, null=True)
-    jobquote = models.CharField('Workorder or Quote', max_length=100, choices=JobQuote.choices, blank=False, null=False)
-    company = models.CharField('Company', max_length=100, choices=Company.choices, blank=False, null=False)
-    customer = models.ForeignKey(Customer, blank=False, null=False, on_delete=models.SET_DEFAULT, default=2)
-    description = models.CharField('Job Description', max_length=100, blank=False, null=False)
+    jobnumber = models.ForeignKey(Workorder, blank=True, null=True, on_delete=models.SET_NULL, related_name='jobnumber')
+    jobquote = models.CharField('Job Type', max_length=100, choices=JobQuote.choices, blank=False, null=False)
+    company = models.CharField('Company', max_length=100, choices=Company.choices, blank=True, null=True)
+    customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_DEFAULT, default=2)
+    description = models.CharField('Job Description', max_length=100, blank=True, null=True)
     set_per_book = models.PositiveIntegerField('# of sets / books/ pieces', blank=True, null=True)
     pages_per_book = models.PositiveBigIntegerField('Pages per Book', blank=True, null=True)
     qty_of_sheets = models.CharField('Qty of Sheets', max_length=10, blank=True, null=True)

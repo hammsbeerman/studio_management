@@ -52,6 +52,7 @@ LOCAL_APPS = [
     'accounts',
     'customers',
     'krueger',
+    'pricesheet',
     'workorders',
 ]
 

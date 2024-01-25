@@ -1,8 +1,9 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib import messages
 from .forms import KruegerJobDetailForm
 from .models import KruegerJobDetail, PaperStock
+from workorders.models import WorkorderItem, Category
 
 def newjob(request, id):
     workorder = id
@@ -37,3 +38,4 @@ def paperprice(request):
     paperprices = PaperStock.objects.filter(pk=paper)
     context = {'paperprices': paperprices}
     return render(request, 'krueger/partials/paperstockprice.html', context)
+

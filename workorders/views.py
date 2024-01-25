@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
 from customers.models import Customer, Contact
-from .models import Workorder, Numbering, Category, DesignType, WorkorderItem
+from .models import Workorder, Numbering, Category, DesignType, WorkorderItem, SubCategory
 from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm
 
 def create_base(request):
@@ -16,11 +16,13 @@ def create_base(request):
     #print(workorder)
             # workorder = workorder += 1
             # print(workorder)
+    categories = Category.objects.all().distinct()
     context = {
         'customers': customer,
         #'newcustomerform': newcustomerform,
         'form': WorkorderForm(),
         #'workordernum': workordernum,
+        'categories':categories,
     }
     if request.method == "POST":
         print('hi')
@@ -81,12 +83,14 @@ def overview(request, id):
         contact = ''
     history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:10]
     workid = workorder.id
+    categories = Category.objects.all().distinct()
     context = {
             'workid': workid,
             'workorder': workorder,
             'customer': customer,
             'contact': contact,
             'history': history,
+            'categories':categories,
         }
     return render(request, "workorders/overview.html", context)
 
@@ -107,7 +111,7 @@ def history_overview(request, id):
     return render(request, "workorders/partials/history_overview.html", context)
 
 def workorder_list(request):
-    workorder = Workorder.objects.all()
+    workorder = Workorder.objects.all().exclude(workorder=1111)
     context = {
         'workorders': workorder,
     }
@@ -144,22 +148,41 @@ def workorder_info(request):
 ##########Add Items
 def add_item(request, parent_id):
     print(parent_id)
+    categories = Category.objects.all()
     if request.method == "POST":
         form = WorkorderNewItemForm(request.POST)
+        desc = request.POST.get('description')
+        print(desc)
+        if not desc:
+            message = "Please enter a description"
+            print(message)
+            context = {
+                'form':form,
+                'categories': categories,
+                'message':message
+            }
+            return render(request, 'workorders/modals/new_item_form.html', context)
         if form.is_valid():
+            #subcategory = request.POST.get('item_subcategory')
+            #print('subcategory')
+            #print(subcategory)
             obj = form.save(commit=False)
             parent = Workorder.objects.get(pk=parent_id)
             #Add workorder to form since it wasn't displayed
             obj.workorder_id = parent_id
             print(parent.workorder)
             obj.workorder_hr = parent.workorder
-            form.save()
+            #obj.item_subcategory = subcategory
+            obj.save()
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     else:
         form = WorkorderNewItemForm()
-    return render(request, 'workorders/modals/new_item_form.html', {
+        categories = Category.objects.all().distinct()
+    context = {
         'form': form,
-    })
+        'categories': categories,
+    }
+    return render(request, 'workorders/modals/new_item_form.html', context)
 
 def workorder_item_list(request, id=None):
     #print(id)
@@ -290,6 +313,14 @@ def copy_workorder(request, id=None):
         item.save()
     return redirect('workorders:overview', id=newworkorder)
 
+def subcategory(request):
+    cat = request.GET.get('item_category')
+    print(cat)
+    obj = SubCategory.objects.filter(category_id=cat)
+    context = {
+        'obj':obj
+    }
+    return render(request, 'pricesheet/partials/subcategory.html', context) 
 
 
 

@@ -1,4 +1,5 @@
 {% load widget_tweaks %}
+{% load crispy_forms_tags %}
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
 <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
   <div class="modal-header">
@@ -6,8 +7,28 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
   <div class="modal-body">
-    {{ form.as_p }}
-  </div>
+    <select class="custom-select mb-4" id="id_item_category" hx-trigger="change" name="item_category" hx-get="{% url 'workorders:subcategory' %}" hx-target="#subcategory">
+
+      <option selected>Select Category</option>
+      {% for object in categories %}
+        <option value="{{ object.id }}">{{ object.name }}</option>
+      {% endfor %}
+  </select>
+  
+  
+  
+  
+    <div id="subcategory">
+      
+    </div>
+  
+    {{ message }}
+  <input type="text" id="description" label="description" name="description">
+</div>
+
+
+
+  
   <div class="modal-footer">
     {% comment %} {% if item %}
     <button type="button" class="btn btn-danger" hx-post="{% url 'remove_movie' pk=movie.pk %}">Remove</button>
