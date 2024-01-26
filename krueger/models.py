@@ -138,6 +138,7 @@ class KruegerJobDetail(models.Model):
     price_total = models.CharField('Total Price', max_length=10, blank=True, null=True)
     price_total_per_m =models.CharField('Price / M', max_length=10, blank=True, null=True)
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    billed = models.BooleanField('Billed', blank=False, null=False, default=False)
 
     def __str__(self):
         return self.internal_company

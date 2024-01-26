@@ -28,7 +28,18 @@
                                 <input id="id_description" class="textinput form-control" type="text" name="description" maxlength="100" value="{{description}}">
                             </div>
                             <div class='col'>
-                                {{ form.internal_company|as_crispy_field }}
+                                <label for="id_internal_company" class="form-label requiredField">
+                                    Internal Company<span class="asteriskField">*</span></label>
+                                <select name="internal_company" class="select form-select" required="" id="id_internal_company">
+                                    {% if form.instance.internal_company %}
+                                        <option value="{{ internal_company }}" selected="">{{ internal_company }}</option>
+                                    {% else %}
+                                        <option value="LK Design" selected="">LK Design</option>
+                                    {% endif %}
+                                        <option value="LK Design"">LK Design</option>
+                                        
+                                        <option value="Krueger Printing">Krueger Printing</option>
+                                </select>
                             </div>
                         </div>
                         <div class="row">
@@ -90,7 +101,13 @@
                                     hx-trigger="change"
                                     hx-target="#paperprices">
 
-                                    <option selected>Select Paper stock</option>
+                                    {% if form.instance.paper_stock_id %}
+                                        <option value="{{ selected_paper.id }}" selected="">{{ selected_paper.description }}</option>
+                                    {% else %}
+                                        <option selected>Select Paper stock</option>
+                                    {% endif %}
+                                    
+                                    
                                     {% for paper in papers %}
                                         <option value="{{paper.pk}}">{{ paper.description }}</option>
                                         {% endfor %}
@@ -98,6 +115,7 @@
                             </div>
                             <div class='col'>
                                 <div id="paperprices">
+                                    {{ formdata.price_per_m }}
                                     {% include 'krueger/partials/paperstockprice.html' %}
                                 </div>
                             </div>

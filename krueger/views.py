@@ -18,11 +18,23 @@ def newjob(request, id, pk):
     jobid = jobobj
     obj = get_object_or_404(KruegerJobDetail, id=jobobj)
     form = KruegerJobDetailForm(instance=obj)
+    internal_company = form.instance.internal_company
+    selected_paper = form.instance.paper_stock_id
+    selected_paper = PaperStock.objects.get(id=selected_paper)
+    print(selected_paper.description)
+    print(selected_paper)
     formdata = KruegerJobDetail.objects.get(id=jobid)
+    print(formdata)
+    #selected_paper = formdata.paper_stock.description
     papers = PaperStock.objects.all()
+    #print(form.instance.internal_company)
     obj = Workorder.objects.get(workorder=workorder)
+    #print(form.instance.paper_stock_id)
+    print(form.instance.paper_stock_id)
+    print(formdata.paper_stock_id)
+    print(selected_paper)
     if request.method == "POST":
-        print('poster')
+        # print('poster')
         jobid = request.POST.get('jobid')
         obj = get_object_or_404(KruegerJobDetail, pk=jobid)
         form = KruegerJobDetailForm(request.POST, instance=obj)
@@ -30,8 +42,8 @@ def newjob(request, id, pk):
         papers = PaperStock.objects.all()
         obj = Workorder.objects.get(workorder=workorder)
         workorder = obj.workorder
-        print(workorder)
-        print(obj.workorder)
+        # print(workorder)
+        # print(obj.workorder)
         form.instance.workorder_item = item
         form.instance.workorder_id = obj.id
         form.instance.hr_workorder = obj.workorder
@@ -39,12 +51,13 @@ def newjob(request, id, pk):
         form.instance.customer_id = obj.customer_id
         form.instance.hr_customer = obj.hr_customer
         if form.is_valid():
-            print('hello')
+            lineitem = WorkorderItem.objects.get(id=item)
+            lineitem.description = form.instance.description
+            print(lineitem.description)
+            lineitem.save()
             form.save()
             print(form.errors)
             messages.success(request, 'Successfully Saved')
-            print('redirect')
-            print(obj.workorder)
             return redirect('workorders:overview', id=obj.workorder)
         else:
             print(form.errors)
@@ -55,6 +68,8 @@ def newjob(request, id, pk):
         'jobid':jobid,
         'papers': papers,
         'formdata':formdata,
+        'internal_company':internal_company,
+        'selected_paper':selected_paper,
         #'papersizes': papersizes,
     }
     return render(request, "krueger/pricingforms/bigform.html", context)
