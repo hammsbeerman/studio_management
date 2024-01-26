@@ -44,6 +44,11 @@ body{
   margin-right: 5px;
 }
 
+.no-outline {
+  border: none;
+  outline: none;
+}
+
 
 /*******************************
 * MODAL AS LEFT/RIGHT SIDEBAR

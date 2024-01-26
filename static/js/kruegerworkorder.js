@@ -173,17 +173,27 @@ $(document).ready(function(){
       });
     
     //Add material cost after htmx call.... Need to find a better handler for this
-      $('#id_set_per_book, #id_step_workorder_price, #id_step_reclaim_artwork_price, #id_step_send_to_press_price, #id_step_send_mailmerge_to_press_price, #id_material_cost, #id_material_markup, #id_step_print_cost_side_1_price, #id_step_print_cost_side_2_price, #id_step_trim_to_size_price, #id_step_wear_and_tear_price, #id_step_print_mailmerge_price, #id_step_NCR_compound_price, #id_step_white_compound_price, #id_step_perf_price, #id_step_number_price, #id_step_insert_frontback_cover_price, #id_step_insert_wrap_around_price, #id_step_insert_chip_divider_price, #id_step_set_to_drill_price, #id_step_drill_price, #id_step_staple_price, #id_step_fold_price, #id_step_tab_price, #id_step_bulk_mail_tray_sort_paperwork_price, #id_misc1_price, #id_misc2_price, #id_misc3_price, #id_misc4_price, #id_step_id_count_price, #id_step_count_package_price, #id_step_delivery_price, #id_step_packing_slip_price, #paperstock, #id_price_per_m, #id_step_workorder_price, #id_parent_sheets_required').keyup(function(){
+      $('#id_set_per_book, #id_pages_per_book, #id_material_markup_percentage, #id_set_per_book, #id_step_workorder_price, #id_step_reclaim_artwork_price, #id_step_send_to_press_price, #id_step_send_mailmerge_to_press_price, #id_material_cost, #id_material_markup, #id_step_print_cost_side_1_price, #id_step_print_cost_side_2_price, #id_step_trim_to_size_price, #id_step_wear_and_tear_price, #id_step_print_mailmerge_price, #id_step_NCR_compound_price, #id_step_white_compound_price, #id_step_perf_price, #id_step_number_price, #id_step_insert_frontback_cover_price, #id_step_insert_wrap_around_price, #id_step_insert_chip_divider_price, #id_step_set_to_drill_price, #id_step_drill_price, #id_step_staple_price, #id_step_fold_price, #id_step_tab_price, #id_step_bulk_mail_tray_sort_paperwork_price, #id_misc1_price, #id_misc2_price, #id_misc3_price, #id_misc4_price, #id_step_id_count_price, #id_step_count_package_price, #id_step_delivery_price, #id_step_packing_slip_price, #paperstock, #id_price_per_m, #id_step_workorder_price, #id_parent_sheets_required').change(function(){
           
           var price_per_m = $('#id_price_per_m').val();
           var sheets = $('#id_parent_sheets_required').val();
 
           //This needs to be replaced with a dynamic number from database
           var misc = 5
+          var misc = Number(misc);
 
-          var paper_cost = price_per_m / 1000
-          var cost = paper_cost * sheets
+          //var testprice = price_per_m
+          //var testprice = Number(testprice)
+          //testprice = testprice.toFixed(2);
+          
+          var pc = price_per_m / 1000
+          var pc = Number(pc);
+          var cost = pc * sheets
+          var cost = Number(cost);
           var paper_cost = cost + misc
+          var paper_cost = Number(paper_cost);
+
+          paper_cost = paper_cost.toFixed(2);
 
           $('#id_material_cost').val(paper_cost);
 
@@ -273,15 +283,23 @@ $(document).ready(function(){
   
     });
 
-    $('#id_fold_price_per_fold, #id_fold_number_of_pieces').keyup(function(){
+    $('#id_step_set_folder_price, #id_fold_price_per_fold, #id_fold_number_to_fold').keyup(function(){
       //alert( "Handler for `keyup` called." );
-      var price = $('#id_fold_price_to_number').val();
-      var qty = $('#id_fold_number_of_pieces').val();
+      var setup = $('#id_step_set_folder_price').val();
+      var price = $('#id_fold_price_per_fold').val();
+      var qty = $('#id_fold_number_to_fold').val();
 
-      var total = qty * price
+      var pcs = qty * price
+      pcs = pcs.toFixed(2);
+      pcs = Number(pcs)
+
+      setup = Number(setup)
+
+      total = pcs + setup
       total = total.toFixed(2);
 
-      $('#id_step_number_price').val(total);
+      $('#id_step_fold_price').val(total);
+  
   
   
     });
@@ -301,12 +319,14 @@ $(document).ready(function(){
 
       price = total + set_to_staple
 
+      price = price.toFixed(2);
+
       $('#id_step_staple_price').val(price);
   
   
     });
 
-    $('#id_fold_price_per_fold, #id_fold_number_to_fold').keyup(function(){
+    /*$('#id_fold_price_per_fold, #id_fold_number_to_fold').keyup(function(){
       //alert( "Handler for `keyup` called." );
       var price = $('#id_fold_price_per_fold').val();
       var qty = $('#id_fold_number_to_fold').val();
@@ -317,7 +337,7 @@ $(document).ready(function(){
       $('#id_step_fold_price').val(total);
   
   
-    });
+    });*/
 
     $('#id_tabs_price_per_tab, #id_tabs_per_piece, #id_tabs_number_of_pieces').keyup(function(){
       //alert( "Handler for `keyup` called." );
@@ -333,7 +353,7 @@ $(document).ready(function(){
   
     });
 
-    $('#id_set_per_book, #id_step_workorder_price, #id_step_reclaim_artwork_price, #id_step_send_to_press_price, #id_step_send_mailmerge_to_press_price, #id_material_cost, #id_material_markup, #id_step_print_cost_side_1_price, #id_step_print_cost_side_2_price, #id_step_trim_to_size_price, #id_step_wear_and_tear_price, #id_step_print_mailmerge_price, #id_step_NCR_compound_price, #id_step_white_compound_price, #id_step_perf_price, #id_step_number_price, #id_step_insert_frontback_cover_price, #id_step_insert_wrap_around_price, #id_step_insert_chip_divider_price, #id_step_set_to_drill_price, #id_step_drill_price, #id_step_staple_price, #id_step_fold_price, #id_step_tab_price, #id_step_bulk_mail_tray_sort_paperwork_price, #id_misc1_price, #id_misc2_price, #id_misc3_price, #id_misc4_price, #id_step_id_count_price, #id_step_count_package_price, #id_step_delivery_price, #id_step_packing_slip_price').keyup(function(){
+    $('#id_set_per_book, #id_step_workorder_price, #id_step_reclaim_artwork_price, #id_step_send_to_press_price, #id_step_send_mailmerge_to_press_price, #id_material_cost, #id_material_markup, #id_step_print_cost_side_1_price, #id_step_print_cost_side_2_price, #id_step_trim_to_size_price, #id_step_wear_and_tear_price, #id_step_print_mailmerge_price, #id_step_NCR_compound_price, #id_step_white_compound_price, #id_step_perf_price, #id_step_number_price, #id_step_insert_frontback_cover_price, #id_step_insert_wrap_around_price, #id_step_insert_chip_divider_price, #id_step_set_to_drill_price, #id_step_drill_price, #id_step_set_to_staple_price, #id_staple_price_per_staple, #id_staple_staples_per_piece, #id_staple_number_of_pieces, #id_step_staple_price, #id_step_fold_price, #id_step_tab_price, #id_step_bulk_mail_tray_sort_paperwork_price, #id_misc1_price, #id_misc2_price, #id_misc3_price, #id_misc4_price, #id_step_id_count_price, #id_step_count_package_price, #id_step_delivery_price, #id_step_packing_slip_price').keyup(function(){
       //alert( "Handler for `keyup` called." );
       var qty = $('#id_set_per_book').val();
 
@@ -412,6 +432,8 @@ $(document).ready(function(){
       total = total.toFixed(2);
 
       m = total / qty * 1000
+
+      m = m.toFixed(2);
 
       $('#id_price_total').val(total);
 

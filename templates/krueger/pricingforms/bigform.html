@@ -32,7 +32,7 @@
                                     Internal Company<span class="asteriskField">*</span></label>
                                 <select name="internal_company" class="select form-select" required="" id="id_internal_company">
                                     {% if form.instance.internal_company %}
-                                        <option value="{{ internal_company }}" selected="">{{ internal_company }}</option>
+                                        <option value="{{ internal_company }}" selected="{{ internal_company }}">{{ internal_company }}</option>
                                     {% else %}
                                         <option value="LK Design" selected="">LK Design</option>
                                     {% endif %}
@@ -115,16 +115,17 @@
                             </div>
                             <div class='col'>
                                 <div id="paperprices">
-                                    {{ formdata.price_per_m }}
+                                    <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
+                                    <input label="Price / M" type="text" class="no-outline" id="id_price_per_m" name="price_per_m" value="{{ formdata.price_per_m }}"><br>
                                     {% include 'krueger/partials/paperstockprice.html' %}
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
+                        <!-- <div class="row">
                             <div id="paperprice">
                                 {% include 'krueger/partials/paperstockprice.html' %}
                             </div>
-                        </div>
+                        </div> -->
                         <hr>
                         <div class="row">
                             <div class='col'>
