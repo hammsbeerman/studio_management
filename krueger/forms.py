@@ -10,7 +10,7 @@ class KruegerJobDetailForm(forms.ModelForm):
     class Meta:
         model = KruegerJobDetail
         fields = [
-            'jobnumber', 'jobquote', 'company', 'customer', 'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_size_per_parent',
+            'workorder', 'internal_company', 'customer', 'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_size_per_parent',
             'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 'paper_stock', 'price_per_m', 
             #'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'step_send_mailmerge_to_press_price', 'mailmerge_qty', 'mailmerge_price_per_piece', 
@@ -59,19 +59,21 @@ class KruegerJobDetailForm(forms.ModelForm):
             raise forms.ValidationError('This field is required')
         return customer"""
     
+    """ Uncomment these to force form validation
     def clean_company(self):
         company = self.cleaned_data.get('company')
         if not company:
             raise forms.ValidationError('This field is required')
         return company
+        """
     
-    """def clean_description(self):
-        description = self.cleaned_data.get('description')
-        if not description:
+    def clean_description(self):
+        paper_stock = self.cleaned_data.get('paper_stock')
+        if not paper_stock:
             raise forms.ValidationError('This field is required')
-        return description
+        return paper_stock
     
-    def clean_qty(self):
+    """def clean_qty(self):
         qty = self.cleaned_data.get('qty')
         if not qty:
             raise forms.ValidationError('This field is required')

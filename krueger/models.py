@@ -11,22 +11,25 @@ class PaperStock(models.Model):
     price_per_m = models.CharField('Paper Stock Price per M', max_length=100, blank=True, null=True)
 
     def __str__(self):
-        return self.manufacturer
+        return self.description
 
 class KruegerJobDetail(models.Model):
-    class JobQuote(models.TextChoices):
-        WORKORDER = "Workorder"
-        QUOTE = "Quote"
-        TEMPLATE = "Template"
+    # class JobQuote(models.TextChoices):
+    #     WORKORDER = "Workorder"
+    #     QUOTE = "Quote"
+    #     TEMPLATE = "Template"
 
-    class Company(models.TextChoices):
-        LK = "LK"
-        KRUEGER = "KRUEGER"
+    # class Company(models.TextChoices):
+    #     LK = "LK"
+    #     KRUEGER = "KRUEGER"
 
-    jobnumber = models.ForeignKey(Workorder, blank=True, null=True, on_delete=models.SET_NULL, related_name='jobnumber')
-    jobquote = models.CharField('Job Type', max_length=100, choices=JobQuote.choices, blank=False, null=False)
-    company = models.CharField('Company', max_length=100, choices=Company.choices, blank=True, null=True)
+    workorder = models.ForeignKey(Workorder, blank=True, null=True, on_delete=models.SET_NULL, related_name='jobnumber')
+    hr_workorder = models.CharField('Workorder', max_length=100, blank=False, null=False)
+    workorder_item = models.CharField('Workorder Item', max_length=100, blank=False, null=False)
+    #jobquote = models.CharField('Job Type', max_length=100, choices=JobQuote.choices, blank=False, null=False)
+    internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
     customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_DEFAULT, default=2)
+    hr_customer = models.CharField('Customer Name', max_length=100, blank=False, null=False)
     description = models.CharField('Job Description', max_length=100, blank=True, null=True)
     set_per_book = models.PositiveIntegerField('# of sets / books/ pieces', blank=True, null=True)
     pages_per_book = models.PositiveBigIntegerField('Pages per Book', blank=True, null=True)
@@ -137,6 +140,6 @@ class KruegerJobDetail(models.Model):
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
 
     def __str__(self):
-        return self.company + ' ' + self.description
+        return self.workorder
 
 

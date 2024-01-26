@@ -18,25 +18,17 @@
             <form method='POST' action=''>
                 {% csrf_token %}
             <div class="container">
+                <input type="hidden" id="jobid" name="jobid" value="{{ jobid }}">
                 <div class="row">
                     <div class="col-sm-12">
+                        
                         <div class="row">
                             <div class='col'>
-                                {{ form.jobnumber|as_crispy_field }}
+                                <label class="form-label" for="id_description">Job Description</label>
+                                <input id="id_description" class="textinput form-control" type="text" name="description" maxlength="100" value="{{description}}">
                             </div>
                             <div class='col'>
-                                {{ form.jobquote|as_crispy_field }}
-                            </div>
-                            <div class='col'>
-                                {{ form.company|as_crispy_field }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class='col'>
-                                {{ form.customer|as_crispy_field }}
-                            </div>
-                            <div class='col'>
-                                {{ form.description|as_crispy_field }}
+                                {{ form.internal_company|as_crispy_field }}
                             </div>
                         </div>
                         <div class="row">
@@ -376,6 +368,7 @@
                                 {{ form.price_total_per_m|as_crispy_field }}
                             </div> 
                         </div>
+                        
 
 
                         

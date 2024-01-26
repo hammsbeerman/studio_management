@@ -91,7 +91,7 @@ class WorkorderItem(models.Model):
     
     def edit_print_item_url(self):
         #return reverse("krueger:bigform", kwargs={"id": self.workorder})
-        return reverse("krueger:bigform", kwargs={"id": self.workorder})
+        return reverse("krueger:bigform", kwargs={"id": self.workorder, "pk":self.pk})
     
     #def get_workorder_add(self):
     #    return reverse("workorders:detail", kwargs={"id": self.workorder})

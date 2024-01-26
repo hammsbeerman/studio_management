@@ -14,5 +14,5 @@ urlpatterns = [
     #path('papers/', views.paper, name='paper'),
     path('paperprice/', views.paperprice, name='paperprice'),
     #path('delete_customer/<int:pk>', views.papersizes, name='delete_customer'),
-    path("print/<int:id>", views.newjob, name='bigform'),
+    path("print/<int:id>/<int:pk>", views.newjob, name='bigform'),
 ]
