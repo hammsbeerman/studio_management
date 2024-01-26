@@ -20,6 +20,10 @@ If subcategory
     load pricesheet for subcategory item
 else load pricesheet for category
 
+bigform dropdowns need to be coded manually to allow for updates
+
+
+
 
 
 Prices:

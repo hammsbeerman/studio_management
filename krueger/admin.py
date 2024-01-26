@@ -9,7 +9,7 @@ admin.site.register(PaperStock, PaperStockAdmin)
 class KruegerJobDetailAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         form = super(KruegerJobDetailAdmin, self).get_form(request, obj, **kwargs)
-        field = form.base_fields["jobnumber"]
+        field = form.base_fields["workorder"]
         field.widget.can_add_related = False
         field.widget.can_change_related = False
         field.widget.can_delete_related = False

@@ -240,12 +240,19 @@ $(document).ready(function(){
   
     });
 
-    $('#id_perf_price_per_piece, #id_perf_number_of_pieces').keyup(function(){
+    $('#id_step_set_to_perf_price, #id_perf_price_per_piece, #id_perf_number_of_pieces').keyup(function(){
       //alert( "Handler for `keyup` called." );
+      var setup = $('#id_step_set_to_perf_price').val();
       var price = $('#id_perf_price_per_piece').val();
       var qty = $('#id_perf_number_of_pieces').val();
 
-      var total = qty * price
+      var pcs = qty * price
+      pcs = pcs.toFixed(2);
+      pcs = Number(pcs)
+
+      setup = Number(setup)
+
+      total = pcs + setup
       total = total.toFixed(2);
 
       $('#id_step_perf_price').val(total);
@@ -279,7 +286,7 @@ $(document).ready(function(){
   
     });
 
-    $('#id_staple_price_per_staple, #id_staple_staples_per_piece, #id_staple_number_of_pieces').keyup(function(){
+    $('#id_step_set_to_staple_price, #id_staple_price_per_staple, #id_staple_staples_per_piece, #id_staple_number_of_pieces').keyup(function(){
       //alert( "Handler for `keyup` called." );
       var set_to_staple = $('#id_step_set_to_staple_price').val();
       var price = $('#id_staple_price_per_staple').val();

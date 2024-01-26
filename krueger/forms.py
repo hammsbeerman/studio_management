@@ -67,11 +67,11 @@ class KruegerJobDetailForm(forms.ModelForm):
         return company
         """
     
-    def clean_description(self):
+    """def clean_description(self):
         paper_stock = self.cleaned_data.get('paper_stock')
         if not paper_stock:
             raise forms.ValidationError('This field is required')
-        return paper_stock
+        return paper_stock"""
     
     """def clean_qty(self):
         qty = self.cleaned_data.get('qty')

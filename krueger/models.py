@@ -140,6 +140,6 @@ class KruegerJobDetail(models.Model):
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
 
     def __str__(self):
-        return self.workorder
+        return self.internal_company
 
 
