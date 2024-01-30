@@ -154,6 +154,8 @@ def add_item(request, parent_id):
     if request.method == "POST":
         form = WorkorderNewItemForm(request.POST)
         desc = request.POST.get('description')
+        cat = request.POST.get('category')
+        subcat = request.POST.get('subcategory')
         print(desc)
         if not desc:
             message = "Please enter a description"
@@ -181,7 +183,9 @@ def add_item(request, parent_id):
             print(obj.pk)
             print(parent.customer)
             print(parent.customer_id)
-            detailbase = KruegerJobDetail(workorder = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company, customer_id=parent.customer_id, hr_customer=parent.hr_customer)
+            #print(parent.category)
+            detailbase = KruegerJobDetail(workorder = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company,
+                                          customer_id=parent.customer_id, hr_customer=parent.hr_customer, category = cat, subcategory = subcat, description = desc)
             detailbase.save()
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     else:
@@ -264,14 +268,27 @@ def copy_workorder_item(request, pk, workorder=None):
         obj = WorkorderItem.objects.get(pk=pk)
         obj.pk = None
         obj.save()
+        #print(obj.pk)
+        #print(pk)
+        #Copy coresponding kruegerjobdetail item
+        objdetail = KruegerJobDetail.objects.get(workorder_item=pk)
+        objdetail.pk = None
+        objdetail.workorder_item = obj.pk
+        objdetail.last_item_order = obj.workorder_hr
+        objdetail.last_item_price = objdetail.price_total
+        objdetail.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     #Copy line item to different workorder
+    #This section is called from copy item modal
     if request.method == "POST":
         #Workorder to copy to
         workorder = request.POST.get('workorder')
         #Get info from workorder being copied to
         new = Workorder.objects.get(workorder=workorder)
-        print(new.pk)
+        # print('Workorder copying to')
+        # print(new.pk)
+        # print('Current workorder item pk')
+        # print(pk)
         #copy data from existing line item
         obj = WorkorderItem.objects.get(pk=pk)
         obj.pk = None
@@ -281,8 +298,17 @@ def copy_workorder_item(request, pk, workorder=None):
         #Fill in missing data in new line item
         obj.last_item_order = last_workorder
         obj.last_item_price = obj.total_price
-        print(obj.last_item_order)
+        # print(obj.last_item_order)
         obj.save()
+        #Copy corresponding kruegerjobdetail to new object
+        objdetail = KruegerJobDetail.objects.get(workorder_item=pk)
+        objdetail.pk = None
+        objdetail.workorder_item = obj.pk
+        objdetail.workorder = new.pk
+        objdetail.hr_workorder = new.workorder
+        #objdetail.last_item_order = last_workorder
+        # objdetail.last_item_price = objdetail.price_total
+        objdetail.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     obj = WorkorderItem.objects.get(pk=pk)
     workorders = Workorder.objects.all().exclude(workorder=1111).exclude(billed=1).order_by("-workorder")
@@ -293,6 +319,7 @@ def copy_workorder_item(request, pk, workorder=None):
     }
     return render(request, 'workorders/modals/copy_item.html', context)
 
+#This is for the duplicate workorder button
 def copy_workorder(request, id=None):
     print (id)
     obj = Workorder.objects.get(id=id)
@@ -314,6 +341,7 @@ def copy_workorder(request, id=None):
     for item in workorder_item:
         workorder = item.workorder_hr
         price = item.total_price
+        #jobitem = item.pk
         print(workorder)
         print(price)
         item.workorder_id=new_workorder_id
@@ -322,6 +350,7 @@ def copy_workorder(request, id=None):
         item.last_item_order=workorder
         item.last_item_price=price
         item.save()
+        #jobdetail = KruegerJobDetail.objects.get(workorder_item=jobitem)
     return redirect('workorders:overview', id=newworkorder)
 
 def subcategory(request):
@@ -331,7 +360,7 @@ def subcategory(request):
     context = {
         'obj':obj
     }
-    return render(request, 'pricesheet/partials/subcategory.html', context) 
+    return render(request, 'workorders/modals/subcategory.html', context) 
 
 
 

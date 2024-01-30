@@ -41,7 +41,7 @@ class CategorySubcategoryInline(admin.StackedInline):
 
 class CategoryAdmin(admin.ModelAdmin):
     inlines = [CategorySubcategoryInline]
-    list_display = ('name', 'description', 'design_type', 'modal')
+    list_display = ('name', 'description', 'design_type', 'formname', 'modal')
 
 admin.site.register(Category, CategoryAdmin)
 

@@ -2,8 +2,12 @@ from django.db import models
 #from customers.models import Customer
 #from workorders.models import Workorder
 from krueger.models import PaperStock
+from workorders.models import Category, SubCategory
 
 class PriceSheet(models.Model):
+    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE)
+    subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)
+    name = models.CharField('Name', max_length=100, blank=False, null=False)
     description = models.CharField('Job Description', max_length=100, blank=True, null=True)
     set_per_book = models.PositiveIntegerField('# of sets / books/ pieces', blank=True, null=True)
     pages_per_book = models.PositiveBigIntegerField('Pages per Book', blank=True, null=True)
@@ -114,6 +118,6 @@ class PriceSheet(models.Model):
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
 
     def __str__(self):
-        return self.description
+        return self.name
 
 

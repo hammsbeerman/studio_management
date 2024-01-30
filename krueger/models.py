@@ -26,6 +26,8 @@ class KruegerJobDetail(models.Model):
     workorder = models.CharField('Workorder ID', max_length=100, blank=False, null=False)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=False, null=False)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=False, null=False)
+    category = models.CharField('Category', max_length=10, blank=True, null=True)
+    subcategory = models.CharField('Subcategory', max_length=10, blank=True, null=True)
     #jobquote = models.CharField('Job Type', max_length=100, choices=JobQuote.choices, blank=False, null=False)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
     customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_DEFAULT, default=2)
@@ -139,6 +141,9 @@ class KruegerJobDetail(models.Model):
     price_total_per_m =models.CharField('Price / M', max_length=10, blank=True, null=True)
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     billed = models.BooleanField('Billed', blank=False, null=False, default=False)
+    edited = models.BooleanField('Edited', blank=False, null=False, default=False)
+    last_item_order = models.CharField('Original Item Order', max_length=100, blank=True, null=True)
+    last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.internal_company

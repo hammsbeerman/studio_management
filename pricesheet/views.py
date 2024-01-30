@@ -2,11 +2,24 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from .forms import EnvelopeForm
 from workorders.models import WorkorderItem, Category
+from krueger.models import KruegerJobDetail
 
 def envelope(request, pk, cat):
-    item = get_object_or_404(WorkorderItem, pk=pk)
+    print(pk)
+    item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
+    #print(item.)
+    #jobitem = get_object_or_404(KruegerJobDetail, workorder_item=item)
+    print(item.id)
+    print(item.edited)
+    edited = item.edited
+    if edited is True:
+        form = EnvelopeForm(request.POST, instance=item)
+        print("true")
+    else:
+        form = EnvelopeForm()
+        print('false')
     category = cat
-    print(item)
+    print(item.description)
     if request.method == "POST":
         print('hello')
         category = request.POST.get('cat')
@@ -28,4 +41,3 @@ def envelope(request, pk, cat):
         'cat': category,
     }
     return render(request, 'pricesheet/modals/envelopes.html', context)
-

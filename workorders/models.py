@@ -48,15 +48,17 @@ class Category(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     design_type = models.BooleanField('Design Type', blank=True, null=True)
+    formname = models.CharField('Form', max_length=100, blank=True, null=True)
     modal = models.BooleanField('Modal', blank=True, null=True)
 
     def __str__(self):
         return self.name
     
 class SubCategory(models.Model):
+    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
-    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE)
+    
 
     def __str__(self):
         return self.name
