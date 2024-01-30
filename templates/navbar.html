@@ -46,6 +46,16 @@
               <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
             </ul> 
           </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Administration
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <li><a class="dropdown-item" href="{% url 'pricesheet:template_list' %}">Price Templates</a></li>
+              <li><a class="dropdown-item" href="{% url 'pricesheet:add_subcategory' %}">Add Subcategory</a></li>
+              <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
+            </ul> 
+          </li>
         </ul>
         <form class="d-flex" role="search">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">

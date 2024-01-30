@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 #from customers.models import Customer
 #from workorders.models import Workorder
 from krueger.models import PaperStock
@@ -116,6 +117,9 @@ class PriceSheet(models.Model):
     price_total = models.CharField('Total Price', max_length=10, blank=True, null=True)
     price_total_per_m =models.CharField('Price / M', max_length=10, blank=True, null=True)
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+
+    def get_absolute_url(self):
+        return reverse("pricesheet:template", kwargs={"id": self.id})
 
     def __str__(self):
         return self.name
