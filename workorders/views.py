@@ -306,8 +306,8 @@ def copy_workorder_item(request, pk, workorder=None):
         objdetail.workorder_item = obj.pk
         objdetail.workorder = new.pk
         objdetail.hr_workorder = new.workorder
-        #objdetail.last_item_order = last_workorder
-        # objdetail.last_item_price = objdetail.price_total
+        objdetail.last_item_order = last_workorder
+        objdetail.last_item_price = objdetail.price_total
         objdetail.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     obj = WorkorderItem.objects.get(pk=pk)
@@ -322,15 +322,18 @@ def copy_workorder_item(request, pk, workorder=None):
 #This is for the duplicate workorder button
 def copy_workorder(request, id=None):
     print (id)
+    #Get data from current workorder
     obj = Workorder.objects.get(id=id)
-    # workorder_hr = obj.workorder_hr
-    # item_price = obj.item_price
+    lastworkorder = obj.workorder
     n = Numbering.objects.get(pk=1)
     obj.workorder = n.value
+    #Increment workorder number
     newworkorder = obj.workorder
+    #Update numbering table
     inc = int('1')
     n.value = n.value + inc
     n.save()
+    #save workorder with new workorder number
     obj.pk=None
     obj.save()
     new_workorder_id=obj.pk
@@ -339,6 +342,7 @@ def copy_workorder(request, id=None):
     #print(new_id)
     workorder_item = WorkorderItem.objects.filter(workorder_id=id)
     for item in workorder_item:
+        oldid = item.id
         workorder = item.workorder_hr
         price = item.total_price
         #jobitem = item.pk
@@ -350,7 +354,16 @@ def copy_workorder(request, id=None):
         item.last_item_order=workorder
         item.last_item_price=price
         item.save()
-        #jobdetail = KruegerJobDetail.objects.get(workorder_item=jobitem)
+        #Copy kruegerjobdetail for each item
+        print(item.pk)
+        objdetail = KruegerJobDetail.objects.get(workorder_item=oldid)
+        objdetail.pk = None
+        objdetail.workorder_item = item.pk
+        objdetail.workorder = new_workorder_id
+        objdetail.hr_workorder = newworkorder
+        objdetail.last_item_order = lastworkorder
+        objdetail.last_item_price = objdetail.price_total
+        objdetail.save()
     return redirect('workorders:overview', id=newworkorder)
 
 def subcategory(request):
