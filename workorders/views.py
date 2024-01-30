@@ -4,6 +4,8 @@ from django.views.decorators.http import require_POST
 from customers.models import Customer, Contact
 from .models import Workorder, Numbering, Category, DesignType, WorkorderItem, SubCategory
 from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm
+from krueger.forms import KruegerJobDetailForm
+from krueger.models import KruegerJobDetail
 
 def create_base(request):
     #newcustomerform = CustomerForm(request.POST or None)
@@ -72,7 +74,7 @@ def create_base(request):
             #return render(request, "workorders/overview.html", context)
     return render(request, "workorders/create.html", context)
 
-def overview(request, id):
+def overview(request, id=None):
     workorder = Workorder.objects.get(workorder=id)
     #if not workorder:
     #    workorder = request.GET.get('workorder')
@@ -101,7 +103,7 @@ def history_overview(request, id):
         contact = Contact.objects.get(id=workorder.contact_id)
     else: 
         contact = ''
-    history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:10]
+    history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:10].exclude(workorder=1111)
     context = {
             'workorder': workorder,
             'customer': customer,
@@ -167,13 +169,20 @@ def add_item(request, parent_id):
             #print('subcategory')
             #print(subcategory)
             obj = form.save(commit=False)
+            #obj = request.POST.get
             parent = Workorder.objects.get(pk=parent_id)
             #Add workorder to form since it wasn't displayed
             obj.workorder_id = parent_id
+            print('parent')
             print(parent.workorder)
             obj.workorder_hr = parent.workorder
             #obj.item_subcategory = subcategory
             obj.save()
+            print(obj.pk)
+            print(parent.customer)
+            print(parent.customer_id)
+            detailbase = KruegerJobDetail(workorder = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company, customer_id=parent.customer_id, hr_customer=parent.hr_customer)
+            detailbase.save()
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     else:
         form = WorkorderNewItemForm()
@@ -276,8 +285,10 @@ def copy_workorder_item(request, pk, workorder=None):
         obj.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     obj = WorkorderItem.objects.get(pk=pk)
+    workorders = Workorder.objects.all().exclude(workorder=1111).exclude(billed=1).order_by("-workorder")
     context = {
         'obj': obj,
+        'workorders': workorders,
         #'workorder': workorder
     }
     return render(request, 'workorders/modals/copy_item.html', context)

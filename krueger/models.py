@@ -23,8 +23,8 @@ class KruegerJobDetail(models.Model):
     #     LK = "LK"
     #     KRUEGER = "KRUEGER"
 
-    workorder = models.ForeignKey(Workorder, blank=True, null=True, on_delete=models.SET_NULL, related_name='jobnumber')
-    hr_workorder = models.CharField('Workorder', max_length=100, blank=False, null=False)
+    workorder = models.CharField('Workorder ID', max_length=100, blank=False, null=False)
+    hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=False, null=False)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=False, null=False)
     #jobquote = models.CharField('Job Type', max_length=100, choices=JobQuote.choices, blank=False, null=False)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)

@@ -17,6 +17,7 @@ from .views import (
     copy_workorder_item,
     copy_workorder,
     subcategory,
+    # removed,
 )
 
 app_name='workorders'
@@ -38,6 +39,7 @@ urlpatterns = [
     path("edit_workorder", edit_workorder, name='edit_workorder'),
     path("workorder_info/", workorder_info, name='workorder_info'),
     path('categories/', subcategory, name='subcategory'),
+    # path('removed/', removed, name='removed')
     
 
 ]

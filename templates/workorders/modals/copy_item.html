@@ -8,7 +8,12 @@
       <div class="modal-body">
         <form hx-post="{% url 'workorders:copy_workorder_item' pk=obj.id %}"> 
           {% csrf_token %}
-          Workorder to copy Line to:<input type="text" id="workorder" name="workorder">
+            Workorder to copy Line to:
+              <select id="workorder" name="workorder" >      
+                  {% for workorder in workorders %}
+                      <option value="{{workorder.workorder}}">{{ workorder.workorder }}</option>
+                  {% endfor %}
+              </select>
       </div>
       <div class="modal-footer">
         <button type="button" data-bs-dismiss="modal">Cancel</button>

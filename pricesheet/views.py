@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, Http404
 from .forms import EnvelopeForm
 from workorders.models import WorkorderItem, Category
 
 def envelope(request, pk, cat):
     item = get_object_or_404(WorkorderItem, pk=pk)
     category = cat
+    print(item)
     if request.method == "POST":
         print('hello')
         category = request.POST.get('cat')

@@ -18,6 +18,7 @@ class Workorder(models.Model):
     original_order = models.CharField('Original Order', max_length=100, blank=True, null=True)
     lk_workorder = models.CharField('LK Workorder', max_length=100, blank=True, null=True)
     printleader_workorder = models.CharField('Printleader', max_length=100, blank=True, null=True)
+    billed = models.BooleanField('Billed', blank=False, null=False, default=False)
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})
@@ -84,6 +85,7 @@ class WorkorderItem(models.Model):
     last_item_order = models.CharField('Original Item Order', max_length=100, blank=True, null=True)
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
+
 
 
     def get_absolute_url(self):

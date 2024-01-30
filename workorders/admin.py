@@ -4,8 +4,8 @@ from .models import Workorder, Numbering, Category, WorkorderItem, DesignType, S
 
 
 class WorkorderAdmin(admin.ModelAdmin):
-    fields = ['customer', 'workorder', 'internal_company', 'description', 'deadline', 'budget', 'quoted_price', 'original_order']
-    list_display = ('customer', 'workorder', 'internal_company', 'description', 'deadline', 'budget', 'quoted_price', 'original_order')
+    fields = ['customer', 'workorder', 'internal_company', 'description', 'deadline', 'budget', 'quoted_price', 'original_order', 'billed']
+    list_display = ('customer', 'workorder', 'internal_company', 'description', 'deadline', 'budget', 'quoted_price', 'original_order', 'billed')
 
 admin.site.register(Workorder, WorkorderAdmin)
 
