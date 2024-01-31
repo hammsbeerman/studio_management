@@ -154,8 +154,10 @@ def add_item(request, parent_id):
     if request.method == "POST":
         form = WorkorderNewItemForm(request.POST)
         desc = request.POST.get('description')
-        cat = request.POST.get('category')
+        cat = request.POST.get('item_category')
         subcat = request.POST.get('subcategory')
+        print('Category')
+        print(cat)
         print(desc)
         if not desc:
             message = "Please enter a description"
@@ -367,7 +369,7 @@ def copy_workorder(request, id=None):
     return redirect('workorders:overview', id=newworkorder)
 
 def subcategory(request):
-    cat = request.GET.get('item_category')
+    cat = request.GET.get('category')
     print(cat)
     obj = SubCategory.objects.filter(category_id=cat)
     context = {

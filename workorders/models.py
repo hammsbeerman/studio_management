@@ -58,6 +58,7 @@ class SubCategory(models.Model):
     category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
+    template = models.BooleanField('Template', blank=True, null=True, default=False)
     
 
     def __str__(self):

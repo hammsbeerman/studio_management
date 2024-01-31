@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
-from .forms import EnvelopeForm, SubCategoryForm, CategoryForm
-from .models import PriceSheet
+from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateForm
+from .models import PriceSheet, SubCategory
 from workorders.models import WorkorderItem, Category
 from krueger.models import KruegerJobDetail, PaperStock
 
@@ -102,6 +102,32 @@ def add_subcategory(request):
     }
     return render (request, "pricesheet/modals/add_subcategory.html", context)
 
+def add_template(request):
+    form = CreateTemplateForm()
+    categories = Category.objects.all()
+    if request.method =="POST":
+        testing = request.POST.get('category')
+        subcategory = request.POST.get('subcategory')
+        print(testing)
+        form = CreateTemplateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            print(subcategory)
+            #update template field
+            template = SubCategory.objects.get(id=subcategory)
+            template.template = 1
+            template.save()
+            return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+        else:
+            print(form.errors)
+    context = {
+        'form': form,
+        'categories': categories
+    }
+    return render (request, "pricesheet/modals/add_template.html", context)
+
+
+
 # def testtemplate(request, id, pk):
 #     workorder = id
 #     item = pk
@@ -184,8 +210,17 @@ def add_subcategory(request):
 #     return render(request, "krueger/pricingforms/bigform.html", context)
 
 def template_list(request):
-    template = PriceSheet.objects.all()
+    template = PriceSheet.objects.all().order_by('category', '-name')
     context = {
         'template': template,
     }
-    return render(request, 'pricesheet/templates/list.html', context)
+    return render(request, 'pricesheet/list.html', context)
+
+def subcategory(request):
+    cat = request.GET.get('category')
+    print(cat)
+    obj = SubCategory.objects.filter(category_id=cat).exclude(template=1)
+    context = {
+        'obj':obj
+    }
+    return render(request, 'pricesheet/modals/subcategory.html', context) 

@@ -29,3 +29,9 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ['name', 'description', 'design_type', 'formname', 'modal']
+
+class CreateTemplateForm(forms.ModelForm):
+
+    class Meta:
+        model = PriceSheet
+        fields = ['category', 'subcategory', 'name']
