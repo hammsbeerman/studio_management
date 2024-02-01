@@ -108,17 +108,17 @@ WSGI_APPLICATION = 'studio_management.wsgi.application'
 
 TESTING = str(os.environ.get('TESTING')) == "1"
 if not TESTING:
+    #Production database
     DATABASES = {
         'default': {
-            'ENGINE': os.environ.get('ENGINE'),
-            'NAME': os.environ.get('NAME'),
-            'USER': os.environ.get('USER'),
-            'PASSWORD': os.environ.get('HOST'),
-            'HOST': os.environ.get('HOST'),
-            'PORT': os.environ.get('PORT'),
+            'ENGINE': 'django.db.backends.mysql',
+            'OPTIONS': {
+        	        'read_default_file': '/etc/mysql/my.cnf',
+    	},
         }
     }
 else:
+    #Development database
     DATABASES = {
         'default': {
             'ENGINE': os.environ.get('ENGINE'),
