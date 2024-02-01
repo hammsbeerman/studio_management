@@ -11,14 +11,16 @@
             {% if object.item_category_id != 1 %}<a href="{{ object.edit_print_item_url }}" class="btn btn-primary btn-sm" role="button">Edit</a>{% endif %}
             <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk workorder=object.workorder %}" hx-target="#dialog">Copy</button>
             <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk%}" hx-target="#dialog">Copy To:</button>
-            <button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:envelope' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Envelope</button>
-            
+            |
+            {% if object.item_category.modal != 1 %}<a href="{{ object.edit_template_item_url }}" class="btn btn-primary btn-sm" role="button">Edit Template</a>{% endif %}
+            {% if object.item_category.modal == 1 %}<button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>{% endif %}
             
 
         </td>
         
         
     </tr>
+
 {% endfor %}
 
 

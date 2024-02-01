@@ -7,7 +7,7 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
   <div class="modal-body">
-    <select class="custom-select mb-4" id="id_category" hx-trigger="change" name="category" hx-get="{% url 'workorders:subcategory' %}" hx-target="#subcategory">
+    <select class="custom-select mb-4" id="id_category" hx-trigger="change" name="item_category" hx-get="{% url 'workorders:subcategory' %}" hx-target="#subcategory">
 
       <option selected>Select Category</option>
       {% for object in categories %}

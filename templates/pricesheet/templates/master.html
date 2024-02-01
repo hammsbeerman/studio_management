@@ -1,0 +1,457 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+
+
+{% block content %}
+<script src="{% static 'js/kruegerworkorder.js' %}"></script>
+
+{{ submitted }}
+{{ message }}
+
+
+<div class="row">
+    <div class="col-sm-8">
+        <div class="MyForm">
+            <form method='POST' action=''>
+                {% csrf_token %}
+            <div class="container">
+                <input type="hidden" id="jobid" name="jobid" value="{{ jobid }}">
+                <input type="hidden" id="workorder" name="workorder" value="{{ workorder_id }}">
+                <div class="row">
+                    <div class="col-sm-12">
+                        
+                        <div class="row">
+                            <div class='col'>
+                                <label class="form-label" for="id_description">Job Description</label>
+                                <input id="id_description" class="textinput form-control" type="text" name="description" maxlength="100" value="{{description}}">
+                            </div>
+                            <div class='col'>
+                                <label for="id_internal_company" class="form-label requiredField">
+                                    Internal Company<span class="asteriskField">*</span></label>
+                                <select name="internal_company" class="select form-select" required="" id="id_internal_company">
+                                    {% if form.instance.internal_company %}
+                                        <option value="{{ internal_company }}" selected="{{ internal_company }}">{{ internal_company }}</option>
+                                    {% else %}
+                                        <option value="LK Design" selected="">LK Design</option>
+                                    {% endif %}
+                                        <option value="LK Design"">LK Design</option>
+                                        
+                                        <option value="Krueger Printing">Krueger Printing</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.set_per_book|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.pages_per_book|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.qty_of_sheets|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.original_size|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.press_size|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.press_size_per_parent|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.flat_size|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.finished_size|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.gangup|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.overage|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.output_per_sheet|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.parent_sheets_required|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.side_1_clicks|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.side_2_clicks|as_crispy_field }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class='col'>
+                                <select id="paper_stock"
+                                    name="paper_stock" 
+                                    hx-get="{% url 'krueger:paperprice' %}"
+                                    hx-trigger="change"
+                                    hx-target="#paperprices">
+
+                                    {% if form.instance.paper_stock_id %}
+                                        <option value="{{ selected_paper.id }}" selected="">{{ selected_paper.description }}</option>
+                                    {% else %}
+                                        <option selected>Select Paper stock</option>
+                                    {% endif %}
+                                    
+                                    
+                                    {% for paper in papers %}
+                                        <option value="{{paper.pk}}">{{ paper.description }}</option>
+                                        {% endfor %}
+                                </select>
+                            </div>
+                            <div class='col'>
+                                <div id="paperprices">
+                                    <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
+                                    <input label="Price / M" type="text" class="no-outline" id="id_price_per_m" name="price_per_m" value="{{ formdata.price_per_m }}"><br>
+                                    {% include 'krueger/partials/paperstockprice.html' %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- <div class="row">
+                            <div id="paperprice">
+                                {% include 'krueger/partials/paperstockprice.html' %}
+                            </div>
+                        </div> -->
+                        <hr>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.step_workorder_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_reclaim_artwork_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_send_to_press_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_send_mailmerge_to_press_price %}{{ form.step_send_mailmerge_to_press_price|as_crispy_field }}{% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.material_cost|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.material_markup_percentage|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.material_markup|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.step_print_cost_side_1|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_print_cost_side_1_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.step_print_cost_side_2|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_print_cost_side_2_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {% if form.step_trim_to_size_price %}{{ form.step_trim_to_size_price|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_wear_and_tear_price %}{{ form.step_wear_and_tear_price|as_crispy_field }}{% endif %}
+                            </div>
+                        </div>
+                        Options:
+                        <br>
+                        <hr>
+                        <table class="table table-bordered">
+                            <tr>
+                                <td>Mailmerge: <input type="checkbox" id="show-mailmerge"></td>
+                                <td>Pad: <input type="checkbox" id="show-padding"></td>
+                                <td>Add Perf: <input type="checkbox" id="show-perf"></td>
+                                <td>Add Numbering: <input type="checkbox" id="show-numbering"></td>
+                                <td>Wraparound: <input type="checkbox" id="show-wraparound"></td>
+                            </tr>
+                            <tr>    
+                                <td>Set to Drill: <input type="checkbox" id="show-drill"></td>
+                                <td>Staple: <input type="checkbox" id="show-staple"></td>
+                                <td>Fold: <input type="checkbox" id="show-fold"></td>
+                                <td>Tab: <input type="checkbox" id="show-tab"></td>
+                                <td>Bulk Mail: <input type="checkbox" id="show-bulkmail"></td>
+                            </tr>
+                            <tr>    
+                                <td>Misc 1: <input type="checkbox" id="show-misc1"></td>
+                                <td>Misc 2: <input type="checkbox" id="show-misc2"></td>
+                                <td>Misc 3: <input type="checkbox" id="show-misc3"></td>
+                                <td>Misc 4: <input type="checkbox" id="show-misc4"></td>
+                            </tr>
+                        </table>
+                        <!--<div id="show-numbering"><u>Add Numbering</u></div> -->
+                        <!--Mailmerge: <input type="checkbox" id="show-mailmerge">
+                        Pad: <input type="checkbox" id="show-padding">
+                        Add Perf: <input type="checkbox" id="show-perf">
+                        Add Numbering: <input type="checkbox" id="show-numbering">
+                        Wraparound: <input type="checkbox" id="show-wraparound">
+                        Set to Drill: <input type="checkbox" id="show-drill">
+                        Staple: <input type="checkbox" id="show-staple">
+                        Fold: <input type="checkbox" id="show-fold">
+                        Tab: <input type="checkbox" id="show-tab">
+                        Bulk Mail: <input type="checkbox" id="show-bulkmail"> -->
+                        <div class="row" id="mailmerge-row">
+                            <div class='col'>
+                                {% if form.mailmerge_qty %}{{ form.mailmerge_qty|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.mailmerge_price_per_piece %}{{ form.mailmerge_price_per_piece|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_print_mailmerge_price %}{{ form.step_print_mailmerge_price|as_crispy_field }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="row" id="padding-row">
+                            <div class='col'>
+                                {% if form.step_NCR_compound_price %}{{ form.step_NCR_compound_price|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_white_compound_price %}{{ form.step_white_compound_price|as_crispy_field }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="row" id="perf-row">
+                            <div class='col'>
+                                {% if form.step_set_to_perf_price %}{{ form.step_set_to_perf_price|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.perf_price_per_piece %}{{ form.perf_price_per_piece|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.perf_number_of_pieces %}{{ form.perf_number_of_pieces|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_perf_price %}{{ form.step_perf_price|as_crispy_field }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="row" id="numbering-row">
+                            <div class='col'>
+                                {% if form.step_set_to_number_price %}{{ form.step_set_to_number_price|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.number_price_to_number %}{{ form.number_price_to_number|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.number_number_of_pieces %}{{ form.number_number_of_pieces|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_number_price %}{{ form.step_number_price|as_crispy_field }}{% endif %}
+                            </div>  
+                        </div>
+                        <div class="row" id="wrap-row">
+                            <div class='col'>
+                                {% if form.step_insert_frontback_cover_price %}{{ form.step_insert_frontback_cover_price|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_insert_wrap_around_price %}{{ form.step_insert_wrap_around_price|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_insert_chip_divider_price %}{{ form.step_insert_chip_divider_price|as_crispy_field }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="row" id="drill-row">
+                            <div class='col'>
+                                {% if form.step_set_to_drill_price %}{{ form.step_set_to_drill_price|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_drill_price %}{{ form.step_drill_price|as_crispy_field }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="row" id="staple-row">
+                            <div class='col'>
+                                {% if form.step_set_to_staple_price %}{{ form.step_set_to_staple_price|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.staple_price_per_staple %}{{ form.staple_price_per_staple|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.staple_staples_per_piece %}{{ form.staple_staples_per_piece|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.staple_number_of_pieces %}{{ form.staple_number_of_pieces|as_crispy_field }}{% endif %}
+                            </div>  
+                            <div class='col'>
+                                {% if form.step_staple_price %}{{ form.step_staple_price|as_crispy_field }}{% endif %}
+                            </div> 
+                        </div>
+                        <div class="row" id="fold-row">
+                            <div class='col'>
+                                {% if form.step_set_folder_price %}{{ form.step_set_folder_price|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.fold_price_per_fold %}{{ form.fold_price_per_fold|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.fold_number_to_fold %}{{ form.fold_number_to_fold|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_fold_price %}{{ form.step_fold_price|as_crispy_field }}{% endif %}
+                            </div>   
+                        </div>
+                        <div class="row" id="tab-row">
+                            <div class='col'>
+                                {% if form.tabs_price_per_tab %}{{ form.tabs_price_per_tab|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.tabs_per_piece %}{{ form.tabs_per_piece|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.tabs_number_of_pieces %}{{ form.tabs_number_of_pieces|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_tab_price %}{{ form.step_tab_price|as_crispy_field }}{% endif %}
+                            </div>  
+                        </div>
+                        <div class="row" id="bulkmail-row">
+                            <div class='col'>
+                                {% if form.step_bulk_mail_tray_sort_paperwork_price %}{{ form.step_bulk_mail_tray_sort_paperwork_price|as_crispy_field }}{% endif %}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row" id="misc1-row">
+                            <div class='col'>
+                                {{ form.misc1_description|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.misc1_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row" id="misc2-row">
+                            <div class='col'>
+                                {{ form.misc2_description|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.misc2_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row" id="misc3-row">
+                            <div class='col'>
+                                {{ form.misc3_description|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.misc3_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row" id="misc4-row">
+                            <div class='col'>
+                                {{ form.misc4_description|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.misc4_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.step_id_count_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_count_package_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_delivery_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_packing_slip_price|as_crispy_field }}
+                            </div>  
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.price_total|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.price_total_per_m|as_crispy_field }}
+                            </div> 
+                        </div>
+                        
+                        <div class="row">
+                            <div class='col-auto me-auto'>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                </form>
+                            </div>
+                            <div class='col-auto'>
+                                {% if jobid %}
+                                <form action="{% url 'krueger:remove_item' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="jobid" name="jobid" value="{{ jobid }}">
+                                    <input type="submit" class="btn btn-danger" value="DELETE" name="submit" />
+                                </form> 
+                                {% endif %}
+                            </div>
+
+                            
+                           
+                        
+                            
+                            
+                            <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> 
+                            Cancel
+                            </button> -->
+                            
+                        
+
+
+                        
+                        </div>
+
+                        
+                        <!-- <p>
+                            <button id='more-line' type="button" class="btn btn-primary">Show / Hide Paper Stock</button>
+                        <p> -->
+                            <!-- <button type="submit" class="btn btn-primary">Save</button> -->
+                        <!-- <input type="submit" value='Save'/> -->
+                    </div>
+                </div>
+            </div>    
+        
+        </div>
+    </div>
+
+    <div class="col-sm-2">
+        <div class="recent">
+            <span class="">Pricing</span>
+            <br><br>
+            {% include 'krueger/partials/pricing.html' %}
+        </div>
+    </div>
+    <div class="col-sm-2">
+        <div class="recent">
+            <span class="">Column 3</span>
+            <br>
+            Something:
+            <p>
+                &nbsp;
+            <p>
+            Something Else
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

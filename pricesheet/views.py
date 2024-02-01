@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
-from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateForm
+from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateForm, NCRForm
 from .models import PriceSheet, SubCategory
 from workorders.models import WorkorderItem, Category
 from krueger.models import KruegerJobDetail, PaperStock
@@ -210,7 +210,7 @@ def add_template(request):
 #     return render(request, "krueger/pricingforms/bigform.html", context)
 
 def template_list(request):
-    template = PriceSheet.objects.all().order_by('category', '-name')
+    template = PriceSheet.objects.all().order_by('-category', '-name')
     context = {
         'template': template,
     }
@@ -224,3 +224,29 @@ def subcategory(request):
         'obj':obj
     }
     return render(request, 'pricesheet/modals/subcategory.html', context) 
+
+def edititem(request, id, pk, cat):
+    if request.htmx:
+        print('HTMX')
+        print(pk)
+        item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
+        if cat == 6:
+            form = EnvelopeForm(instance=item)
+        if cat == 10:
+            form = NCRForm(instance=item)
+        context = {
+            'form':form
+    }
+        return render (request, "pricesheet/modals/edit_item.html", context)
+    else:
+        print('Not HTMX')
+        print(pk)
+        item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
+        if cat == 6:
+            form = EnvelopeForm(instance=item)
+        if cat == 10:
+            form = NCRForm(instance=item)
+        context = {
+            'form':form
+    }
+    return render(request, 'pricesheet/templates/master.html', context)

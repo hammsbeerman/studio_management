@@ -158,6 +158,8 @@ def add_item(request, parent_id):
         subcat = request.POST.get('subcategory')
         print('Category')
         print(cat)
+        print('sub')
+        print(subcat)
         print(desc)
         if not desc:
             message = "Please enter a description"
@@ -173,6 +175,7 @@ def add_item(request, parent_id):
             #print('subcategory')
             #print(subcategory)
             obj = form.save(commit=False)
+            obj.item_subcategory = subcat
             #obj = request.POST.get
             parent = Workorder.objects.get(pk=parent_id)
             #Add workorder to form since it wasn't displayed
@@ -210,8 +213,6 @@ def workorder_item_list(request, id=None):
         #qs = Workorder.objects.all()
         print(id)
         obj = WorkorderItem.objects.filter(workorder_id=id)
-        #print(obj.id)
-        #print(obj)
     except:
         obj = None
     if obj is  None:
@@ -369,7 +370,7 @@ def copy_workorder(request, id=None):
     return redirect('workorders:overview', id=newworkorder)
 
 def subcategory(request):
-    cat = request.GET.get('category')
+    cat = request.GET.get('item_category')
     print(cat)
     obj = SubCategory.objects.filter(category_id=cat)
     context = {

@@ -8,6 +8,7 @@ from .views import (
     add_subcategory,
     add_template,
     subcategory,
+    edititem,
 )
 
 app_name='pricesheet'
@@ -23,4 +24,5 @@ urlpatterns = [
     path('add_subcategory/', views.add_subcategory, name='add_subcategory'),
     path('add_template/', views.add_template, name='add_template'),
     path('categories/', subcategory, name='subcategory'),
+    path('edititem/<int:id>/<int:pk>/<int:cat>', edititem, name='edititem'),
 ]
