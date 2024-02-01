@@ -1,0 +1,127 @@
+body{
+	/*background-color: blue;*/
+}
+
+.myClass{
+	text-align: center;
+	border-width: 1px;
+	border-style: solid;
+}
+
+/*Align the title to the center of the page*/
+.table{
+	font-size: 13px;
+	text-align: center;
+	width: 95%;
+	margin: auto;
+	text-align: center;
+}
+
+/*Make alternating colors for the table rows*/
+.table tr:nth-child(odd){
+	background: #B8CAE4
+}
+
+.table tr:nth-child(even){
+	background: #dae5f4
+}
+
+.success{
+	list-style: none;
+	background-color: #2e6da4;
+	color: white;
+	box-shadow: 12px 12px 12px #e61c66;
+	text-align: center;
+}
+
+.btn-primary-outline {
+  background-color: transparent;
+  border-color: transparent;
+  padding: 0;
+}
+
+.addbutton {
+  margin-right: 5px;
+}
+
+.no-outline {
+  border: none;
+  outline: none;
+}
+
+
+/*******************************
+* MODAL AS LEFT/RIGHT SIDEBAR
+* Add "left" or "right" in modal parent div, after class="modal".
+* Get free snippets on bootpen.com
+*******************************/
+.fadeInRight {
+    -webkit-animation-name: fadeInRight;
+    animation-name: fadeInRight;
+  }
+  
+  @keyframes fadeInRight {
+    from {
+      opacity: 0;
+      -webkit-transform: translate3d(100%, 0, 0);
+      transform: translate3d(100%, 0, 0);
+    }
+  
+    to {
+      opacity: 1;
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  
+  @-webkit-keyframes fadeInRight {
+    from {
+      opacity: 0;
+      -webkit-transform: translate3d(100%, 0, 0);
+      transform: translate3d(100%, 0, 0);
+    }
+  
+    to {
+      opacity: 1;
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  
+  .modal-dialog {
+    margin: 0;
+  }
+  
+  .animated {
+    -webkit-animation-duration: 0.5s;
+    animation-duration: 0.5s;
+    -webkit-animation-fill-mode: both;
+    animation-fill-mode: both;
+  }
+  
+  .modal-header {
+    border-radius: 0;
+    background-color: #f7f7f7;
+    border-color: #d4d2d2;
+    align-items: center;
+    padding: 1.2rem;
+  }
+  
+  .modal-content {
+    border-radius: 0;
+    border: 0;
+    -webkit-box-shadow: -12px 0 38px -14px rgba(0, 0, 0, 0.25);
+    -moz-box-shadow: -12px 0 38px -14px rgba(0, 0, 0, 0.25);
+    box-shadow: -12px 0 38px -14px rgba(0, 0, 0, 0.25);
+    background-clip: padding-box;
+  }
+  
+  .modal-backdrop {
+    background-color: transparent;
+  }
+  
+  .modal-button-container {
+    margin: 0 auto;
+    width: 90%;
+    max-width: 500px;
+  }
