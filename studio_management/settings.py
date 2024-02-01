@@ -106,6 +106,27 @@ WSGI_APPLICATION = 'studio_management.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+TESTING = str(os.environ.get('TESTING')) == "1"
+if not TESTING:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.environ.get('ENGINE'),
+            'NAME': os.environ.get('NAME'),
+            'USER': os.environ.get('USER'),
+            'PASSWORD': os.environ.get('HOST'),
+            'HOST': os.environ.get('HOST'),
+            'PORT': os.environ.get('PORT'),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.environ.get('ENGINE'),
+            'NAME': BASE_DIR / os.environ.get('NAME'),
+        }
+    }
+
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
@@ -113,16 +134,21 @@ WSGI_APPLICATION = 'studio_management.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': os.environ.get('ENGINE'),
-        'NAME': BASE_DIR / os.environ.get('NAME'),
-        'USER': os.environ.get('USER'),
-        'PASSWORD': os.environ.get('HOST'),
-        'HOST': os.environ.get('HOST'),
-        'PORT': os.environ.get('PORT'),
-    }
-}
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': os.environ.get('ENGINE'),
+#         'NAME': BASE_DIR / os.environ.get('NAME'),
+#         'USER': os.environ.get('USER'),
+#         'PASSWORD': os.environ.get('HOST'),
+#         'HOST': os.environ.get('HOST'),
+#         'PORT': os.environ.get('PORT'),
+#     }
+# }
+
+# DATABASES = {
+#     'default' : os.environ.get('DB')
+# }
 
 
 # Password validation
