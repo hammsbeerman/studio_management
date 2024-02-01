@@ -21,12 +21,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x8b(_)4hn$na81seyn%ffeu=ngkw1+tb3d7-hlrhl1^adk4#ex'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-x8b(_)4hn$na81seyn%ffeu=ngkw1+tb3d7-hlrhl1^adk4#ex')
+print(SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = str(os.environ.get('DEBUG')) == "1"
 
-ALLOWED_HOSTS = ['10.6.83.220']
+
+ALLOWED_HOSTS = []
+if not DEBUG:
+    ALLOWED_HOSTS += os.environ.get('ALLOWED_HOST').split(',')
+else:
+    ALLOWED_HOSTS += ['10.6.83.220']
+
+
+print(ALLOWED_HOSTS)
 
 
 # Application definition
@@ -97,10 +106,17 @@ WSGI_APPLICATION = 'studio_management.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.environ.get('ENGINE'),
+        'NAME': BASE_DIR / os.environ.get('NAME'),
     }
 }
 
