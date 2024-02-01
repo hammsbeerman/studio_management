@@ -117,6 +117,10 @@ DATABASES = {
     'default': {
         'ENGINE': os.environ.get('ENGINE'),
         'NAME': BASE_DIR / os.environ.get('NAME'),
+        'USER': os.environ.get('USER'),
+        'PASSWORD': os.environ.get('HOST'),
+        'HOST': os.environ.get('HOST'),
+        'PORT': os.environ.get('PORT'),
     }
 }
 
