@@ -1,52 +1,10 @@
 [
 {
-    "model": "workorders.workorder",
-    "pk": 103,
-    "fields": {
-        "customer": 2,
-        "contact": 14,
-        "hr_customer": "Jay's Power Center",
-        "hr_contact": "Jim",
-        "workorder": "5093",
-        "internal_company": "LK Design",
-        "description": "Some Random description",
-        "deadline": "2024-01-30",
-        "po_number": null,
-        "budget": null,
-        "quoted_price": null,
-        "original_order": null,
-        "lk_workorder": null,
-        "printleader_workorder": null,
-        "billed": false
-    }
-},
-{
-    "model": "workorders.workorder",
-    "pk": 104,
-    "fields": {
-        "customer": 4,
-        "contact": 7,
-        "hr_customer": "Cellox",
-        "hr_contact": "Rita",
-        "workorder": "5094",
-        "internal_company": "LK Design",
-        "description": "Some Random description",
-        "deadline": "2024-01-30",
-        "po_number": null,
-        "budget": null,
-        "quoted_price": null,
-        "original_order": null,
-        "lk_workorder": null,
-        "printleader_workorder": null,
-        "billed": false
-    }
-},
-{
     "model": "workorders.numbering",
     "pk": 1,
     "fields": {
         "name": "Workorder Number",
-        "value": 5108
+        "value": 5000
     }
 },
 {
@@ -232,106 +190,6 @@
     "fields": {
         "name": "Graphic Design - Wedplan",
         "description": "Graphic Design - Wedplan"
-    }
-},
-{
-    "model": "workorders.workorderitem",
-    "pk": 312,
-    "fields": {
-        "workorder": 104,
-        "workorder_hr": "5094",
-        "item_category": 6,
-        "item_subcategory": null,
-        "pricesheet_modified": false,
-        "design_type": null,
-        "description": "sfsfsfs",
-        "item_order": null,
-        "quantity": null,
-        "unit_price": null,
-        "total_price": null,
-        "last_item_order": null,
-        "last_item_price": null,
-        "internal_company": ""
-    }
-},
-{
-    "model": "workorders.workorderitem",
-    "pk": 313,
-    "fields": {
-        "workorder": 104,
-        "workorder_hr": "5094",
-        "item_category": 6,
-        "item_subcategory": null,
-        "pricesheet_modified": false,
-        "design_type": null,
-        "description": "dfsf",
-        "item_order": null,
-        "quantity": null,
-        "unit_price": null,
-        "total_price": null,
-        "last_item_order": null,
-        "last_item_price": null,
-        "internal_company": ""
-    }
-},
-{
-    "model": "workorders.workorderitem",
-    "pk": 314,
-    "fields": {
-        "workorder": 104,
-        "workorder_hr": "5094",
-        "item_category": 6,
-        "item_subcategory": null,
-        "pricesheet_modified": false,
-        "design_type": null,
-        "description": "adasd",
-        "item_order": null,
-        "quantity": null,
-        "unit_price": null,
-        "total_price": null,
-        "last_item_order": null,
-        "last_item_price": null,
-        "internal_company": ""
-    }
-},
-{
-    "model": "workorders.workorderitem",
-    "pk": 315,
-    "fields": {
-        "workorder": 104,
-        "workorder_hr": "5094",
-        "item_category": 6,
-        "item_subcategory": "1",
-        "pricesheet_modified": false,
-        "design_type": null,
-        "description": "asdasda",
-        "item_order": null,
-        "quantity": null,
-        "unit_price": null,
-        "total_price": null,
-        "last_item_order": null,
-        "last_item_price": null,
-        "internal_company": ""
-    }
-},
-{
-    "model": "workorders.workorderitem",
-    "pk": 316,
-    "fields": {
-        "workorder": 104,
-        "workorder_hr": "5094",
-        "item_category": 10,
-        "item_subcategory": "3",
-        "pricesheet_modified": false,
-        "design_type": null,
-        "description": "asdasd",
-        "item_order": null,
-        "quantity": null,
-        "unit_price": null,
-        "total_price": null,
-        "last_item_order": null,
-        "last_item_price": null,
-        "internal_company": ""
     }
 }
 ]
