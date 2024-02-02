@@ -204,6 +204,7 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
+FIXTURE_DIRS = '/fixtures/'
 
 # Media Files
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
