@@ -28,11 +28,12 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-x8b(_)4hn$na81seyn%ff
 DEBUG = str(os.environ.get('DEBUG')) == "1"
 
 
-ALLOWED_HOSTS = []
-if not DEBUG:
-    ALLOWED_HOSTS += os.environ.get('ALLOWED_HOST').split(',')
-else:
-    ALLOWED_HOSTS += ['localhost', '10.6.83.220']
+ALLOWED_HOSTS = ['localhost', '10.6.83.220', '10.6.83.61']
+#ALLOWED_HOSTS += os.environ.get('ALLOWED_HOST').split(',')
+# if not DEBUG:
+#     ALLOWED_HOSTS += os.environ.get('ALLOWED_HOST').split(',')
+# else:
+#     ALLOWED_HOSTS += ['localhost', '10.6.83.220']
 
 
 #print(ALLOWED_HOSTS)
