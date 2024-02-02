@@ -1,0 +1,337 @@
+[
+{
+    "model": "workorders.workorder",
+    "pk": 103,
+    "fields": {
+        "customer": 2,
+        "contact": 14,
+        "hr_customer": "Jay's Power Center",
+        "hr_contact": "Jim",
+        "workorder": "5093",
+        "internal_company": "LK Design",
+        "description": "Some Random description",
+        "deadline": "2024-01-30",
+        "po_number": null,
+        "budget": null,
+        "quoted_price": null,
+        "original_order": null,
+        "lk_workorder": null,
+        "printleader_workorder": null,
+        "billed": false
+    }
+},
+{
+    "model": "workorders.workorder",
+    "pk": 104,
+    "fields": {
+        "customer": 4,
+        "contact": 7,
+        "hr_customer": "Cellox",
+        "hr_contact": "Rita",
+        "workorder": "5094",
+        "internal_company": "LK Design",
+        "description": "Some Random description",
+        "deadline": "2024-01-30",
+        "po_number": null,
+        "budget": null,
+        "quoted_price": null,
+        "original_order": null,
+        "lk_workorder": null,
+        "printleader_workorder": null,
+        "billed": false
+    }
+},
+{
+    "model": "workorders.numbering",
+    "pk": 1,
+    "fields": {
+        "name": "Workorder Number",
+        "value": 5108
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 1,
+    "fields": {
+        "name": "Graphic Design",
+        "description": "Graphic Design Services",
+        "design_type": true,
+        "formname": null,
+        "modal": null
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 2,
+    "fields": {
+        "name": "Printed Item",
+        "description": "Printed Item",
+        "design_type": false,
+        "formname": null,
+        "modal": null
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 3,
+    "fields": {
+        "name": "Set Price",
+        "description": "Bus Cards, Yard signs, etc",
+        "design_type": false,
+        "formname": null,
+        "modal": null
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 4,
+    "fields": {
+        "name": "Order Out",
+        "description": "Items ordered in",
+        "design_type": false,
+        "formname": null,
+        "modal": null
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 5,
+    "fields": {
+        "name": "Postage",
+        "description": "Postage",
+        "design_type": false,
+        "formname": null,
+        "modal": null
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 6,
+    "fields": {
+        "name": "Envelopes",
+        "description": "Envelopes",
+        "design_type": false,
+        "formname": null,
+        "modal": false
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 7,
+    "fields": {
+        "name": "Business Cards",
+        "description": "Business Cards",
+        "design_type": false,
+        "formname": null,
+        "modal": null
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 8,
+    "fields": {
+        "name": "Avery Labels",
+        "description": "Avery Labels",
+        "design_type": false,
+        "formname": null,
+        "modal": null
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 9,
+    "fields": {
+        "name": "Wide format printing",
+        "description": "Wide format printing",
+        "design_type": false,
+        "formname": null,
+        "modal": null
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 10,
+    "fields": {
+        "name": "NCR",
+        "description": "NCR Forms and books",
+        "design_type": false,
+        "formname": null,
+        "modal": true
+    }
+},
+{
+    "model": "workorders.category",
+    "pk": 11,
+    "fields": {
+        "name": "Walk in copy",
+        "description": null,
+        "design_type": false,
+        "formname": null,
+        "modal": null
+    }
+},
+{
+    "model": "workorders.subcategory",
+    "pk": 1,
+    "fields": {
+        "category": 6,
+        "name": "#10 Regular",
+        "description": null,
+        "template": true
+    }
+},
+{
+    "model": "workorders.subcategory",
+    "pk": 2,
+    "fields": {
+        "category": 6,
+        "name": "#9 Window",
+        "description": "#9 Window",
+        "template": true
+    }
+},
+{
+    "model": "workorders.subcategory",
+    "pk": 3,
+    "fields": {
+        "category": 10,
+        "name": "2 Part NCR Form",
+        "description": "2 Part NCR Form",
+        "template": true
+    }
+},
+{
+    "model": "workorders.subcategory",
+    "pk": 4,
+    "fields": {
+        "category": 6,
+        "name": "#10 Window envelope",
+        "description": "#10 Window",
+        "template": false
+    }
+},
+{
+    "model": "workorders.designtype",
+    "pk": 1,
+    "fields": {
+        "name": "General Design",
+        "description": "General Design"
+    }
+},
+{
+    "model": "workorders.designtype",
+    "pk": 2,
+    "fields": {
+        "name": "Graphic Design - Signshop",
+        "description": "Graphic Design - Signshop"
+    }
+},
+{
+    "model": "workorders.designtype",
+    "pk": 3,
+    "fields": {
+        "name": "Graphic Design - Wedplan",
+        "description": "Graphic Design - Wedplan"
+    }
+},
+{
+    "model": "workorders.workorderitem",
+    "pk": 312,
+    "fields": {
+        "workorder": 104,
+        "workorder_hr": "5094",
+        "item_category": 6,
+        "item_subcategory": null,
+        "pricesheet_modified": false,
+        "design_type": null,
+        "description": "sfsfsfs",
+        "item_order": null,
+        "quantity": null,
+        "unit_price": null,
+        "total_price": null,
+        "last_item_order": null,
+        "last_item_price": null,
+        "internal_company": ""
+    }
+},
+{
+    "model": "workorders.workorderitem",
+    "pk": 313,
+    "fields": {
+        "workorder": 104,
+        "workorder_hr": "5094",
+        "item_category": 6,
+        "item_subcategory": null,
+        "pricesheet_modified": false,
+        "design_type": null,
+        "description": "dfsf",
+        "item_order": null,
+        "quantity": null,
+        "unit_price": null,
+        "total_price": null,
+        "last_item_order": null,
+        "last_item_price": null,
+        "internal_company": ""
+    }
+},
+{
+    "model": "workorders.workorderitem",
+    "pk": 314,
+    "fields": {
+        "workorder": 104,
+        "workorder_hr": "5094",
+        "item_category": 6,
+        "item_subcategory": null,
+        "pricesheet_modified": false,
+        "design_type": null,
+        "description": "adasd",
+        "item_order": null,
+        "quantity": null,
+        "unit_price": null,
+        "total_price": null,
+        "last_item_order": null,
+        "last_item_price": null,
+        "internal_company": ""
+    }
+},
+{
+    "model": "workorders.workorderitem",
+    "pk": 315,
+    "fields": {
+        "workorder": 104,
+        "workorder_hr": "5094",
+        "item_category": 6,
+        "item_subcategory": "1",
+        "pricesheet_modified": false,
+        "design_type": null,
+        "description": "asdasda",
+        "item_order": null,
+        "quantity": null,
+        "unit_price": null,
+        "total_price": null,
+        "last_item_order": null,
+        "last_item_price": null,
+        "internal_company": ""
+    }
+},
+{
+    "model": "workorders.workorderitem",
+    "pk": 316,
+    "fields": {
+        "workorder": 104,
+        "workorder_hr": "5094",
+        "item_category": 10,
+        "item_subcategory": "3",
+        "pricesheet_modified": false,
+        "design_type": null,
+        "description": "asdasd",
+        "item_order": null,
+        "quantity": null,
+        "unit_price": null,
+        "total_price": null,
+        "last_item_order": null,
+        "last_item_price": null,
+        "internal_company": ""
+    }
+}
+]

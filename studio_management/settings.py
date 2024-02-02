@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 if not DEBUG:
     ALLOWED_HOSTS += os.environ.get('ALLOWED_HOST').split(',')
 else:
-    ALLOWED_HOSTS += ['10.6.83.220']
+    ALLOWED_HOSTS += ['localhost', '10.6.83.220']
 
 
 #print(ALLOWED_HOSTS)
@@ -189,6 +189,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+#STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/') 
+
+
 # STATICFILES_DIRS = [
 #     #BASE_DIR / "static",
 #     BASE_DIR / "templates/static",
@@ -197,8 +201,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
-
-STATIC_ROOT = BASE_DIR / 'staticfiles' 
 
 
 # Media Files
