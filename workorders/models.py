@@ -51,6 +51,7 @@ class Category(models.Model):
     design_type = models.BooleanField('Design Type', blank=True, null=True)
     formname = models.CharField('Form', max_length=100, blank=True, null=True)
     modal = models.BooleanField('Modal', blank=True, null=True)
+    template = models.BooleanField('Template', blank=True, null=True, default=False)
 
     def __str__(self):
         return self.name
@@ -101,7 +102,7 @@ class WorkorderItem(models.Model):
     
     def edit_template_item_url(self):
         #return reverse("krueger:bigform", kwargs={"id": self.workorder})
-        return reverse("pricesheet:edititem", kwargs={"id": self.workorder_id, "pk":self.pk, "cat":self.item_category_id})
+        return reverse("pricesheet:edititem", kwargs={"id": self.workorder_id, "pk":self.pk, "cat":self.item_category_id,})
     
     #def get_workorder_add(self):
     #    return reverse("workorders:detail", kwargs={"id": self.workorder})
