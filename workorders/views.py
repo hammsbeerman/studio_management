@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
+from django.db.models import Avg, Count, Min, Sum
+from decimal import Decimal
 from customers.models import Customer, Contact
 from .models import Workorder, Numbering, Category, DesignType, WorkorderItem, SubCategory
-from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm
+from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm
 from krueger.forms import KruegerJobDetailForm
 from krueger.models import KruegerJobDetail
 
@@ -86,6 +88,7 @@ def overview(request, id=None):
     history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:10]
     workid = workorder.id
     categories = Category.objects.all().distinct()
+    #total = decimal.Decimal(total.total_price__sum)
     context = {
             'workid': workid,
             'workorder': workorder,
@@ -213,6 +216,27 @@ def workorder_item_list(request, id=None):
         #qs = Workorder.objects.all()
         print(id)
         obj = WorkorderItem.objects.filter(workorder_id=id)
+        total = WorkorderItem.objects.filter(workorder_id=id).aggregate(Sum('total_price'))
+        print(total)
+    except:
+        obj = None
+    if obj is  None:
+        print('broken')
+        return HttpResponse("Not found.")
+    context = {
+        "items": obj,
+        "total": total,
+    }
+    return render(request, "workorders/partials/item_list.html", context) 
+
+def workorder_total(request, id=None):
+    #print(id)
+    if not request.htmx:
+        raise Http404
+    try:
+        print(id)
+        obj = WorkorderItem.objects.filter(workorder_id=id)
+
     except:
         obj = None
     if obj is  None:
@@ -234,22 +258,42 @@ def edit_print_item(request):
 
 def edit_design_item(request, pk, cat):
     item = get_object_or_404(WorkorderItem, pk=pk)
+    line = request.POST.get('item')
     category = cat
     if request.method == "POST":
         print('hello')
         category = request.POST.get('cat')
-        form = WorkorderItemForm(request.POST, instance=item)
+        form = DesignItemForm(request.POST, instance=item)
+        obj = form.save(commit=False)
         #form.instance.item_category = category
         if form.is_valid():
             form.save()
+            qty = obj.quantity
+            unit_price=obj.unit_price
+            total=0
+            if qty and unit_price:
+                total = qty * unit_price
+            print(qty)
+            print(unit_price)
+            print(total)
+            lineitem = WorkorderItem.objects.get(id=line)
+            lineitem.quantity = qty
+            lineitem.unit_price = unit_price
+            lineitem.total_price = total
+            lineitem.save()
+            # print(line)
+            # lineitem = WorkorderItem.objects.get(id=line)
+            # lineitem = WorkorderItem(quantity=obj.quantity, unit_price=obj.unit_price, total_price=total, item_category_id=category)
+            # lineitem.update()
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
         else:
             print(form.errors)
     print(category)
     obj = Category.objects.get(id=category)        
     print(obj.name)
-    form = WorkorderItemForm(instance=item)
+    form = DesignItemForm(instance=item)
     context = {
+        'pk':pk,
         'form': form,
         'item': item,
         'obj': obj,

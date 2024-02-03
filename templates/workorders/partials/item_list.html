@@ -3,9 +3,9 @@
         <td>{{ object.workorder }}</td>
         <td>{{ object.item_category }}</td>
         <td>{{ object.description }}</td>
-        <td>{{ object.quantity }}</td>
-        <td>{{ object.unit_price }}</td>
-        <td>{{ object.total_price }}</td>
+        <td>{% if object.quantity %}{{ object.quantity }}{% endif %}</td>
+        <td>{% if object.unit_price %}{{ object.unit_price }}{% endif %}</td>
+        <td>{% if object.total_price %}{{ object.total_price }}{% endif %}</td>
         <td>
             {% if object.item_category_id == 1 %}<button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_design_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>{% endif %}
             {% if object.item_category_id != 1 %}<a href="{{ object.edit_print_item_url }}" class="btn btn-primary btn-sm" role="button">Edit</a>{% endif %}
@@ -15,13 +15,23 @@
             {% if object.item_category.modal != 1 %}<a href="{{ object.edit_template_item_url }}" class="btn btn-primary btn-sm" role="button">Edit Template</a>{% endif %}
             {% if object.item_category.modal == 1 %}<button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>{% endif %}
             
-
         </td>
+        <td>{% if object.last_item_order %}{{object.last_item_order}}{% endif %}</td>
+        <td>{% if object.last_item_order %}{{object.last_item_price}}{% endif %}</td>
         
         
     </tr>
 
 {% endfor %}
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><b>Total Price:</b></td>
+        <td><b>{{ total.total_price__sum|floatformat:2 }}</b></td>
+        <td></td>
+
 
 
 

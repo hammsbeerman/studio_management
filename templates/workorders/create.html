@@ -13,20 +13,18 @@
     <div class="row row-cols-3">
         <div class="col">
           {{ message }}
-          <div id="custlist">
+          <div id="custlist" hx-trigger="CustomerAdded from:body" hx-get="{% url 'customers:customer_list' %}" hx-target="this">
             <div class="input-group">
             {% include 'customers/partials/customers.html' %}
-            <button  class="btn btn-primary-outline" hx-get="{% url 'customers:new_customer' %}" hx-target="#dialog"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
-            </div>
-        
           </div>
+        </div>
 
           <p>
 
             <div id="contacts">
             {% include 'customers/partials/contacts.html' %}
             </div>
-        </div>
+          </div>
         <div class="col">
             <div id="workorder">
                 {{form.internal_company|as_crispy_field}}<br/>

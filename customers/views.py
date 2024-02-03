@@ -28,7 +28,8 @@ def customer_info(request):
 
 def contacts(request):
     customer = request.GET.get('customer')
-    #print(customer)
+    print('customer')
+    print(customer)
     contact = Contact.objects.filter(customer=customer)
     context = {
         'customer': customer,
@@ -120,15 +121,18 @@ def new_cust_contact(request):
     customer = request.GET.get('customer')
     #workorder = request.GET.get('workorder')
     print('hello')
+    print('test')
     print(customer)
     #print(workorder)
     if request.method == "POST":
+        print('test')
         form = ContactForm(request.POST)
         if form.is_valid():
             company_num = request.POST.get("customer")
             #workorder = request.POST.get("workorder")
             #print(workorder)
             form.instance.customer_id = company_num
+            print('companynum')
             print(company_num)
             print(form.instance.id)
             form.save()
@@ -139,6 +143,7 @@ def new_cust_contact(request):
             #     #form2 = 
             #     print(form.instance.id)
             #     print('else')
+            #return render(request, 'customers/partials/customer_info.html')
             return HttpResponse(status=204, headers={'HX-Trigger': 'ContactAdded'})
     else:
         form = ContactForm()

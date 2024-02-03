@@ -1,3 +1,5 @@
+{% load static %}
+
 <select class="custom-select mb-4" id="id_customer" hx-trigger="change" name="customer" hx-get="{% url 'customers:contacts' %}" hx-target="#contacts">
 
     <option selected>Select Customer</option>
@@ -5,3 +7,19 @@
       <option value="{{ object.id }}">{{ object.company_name }}</option>
     {% endfor %}
 </select>
+<button  class="btn btn-primary-outline" hx-get="{% url 'customers:new_customer' %}" hx-target="#dialog"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
+
+{% block scripts %}
+
+<script>
+
+    $(document).ready(function () {
+      $("#id_customer").select2();
+      $('#id_customer').on('select2:select', (e) => {
+        htmx.trigger("#id_customer", "change")
+      });
+    })
+
+</script>
+
+{% endblock %}

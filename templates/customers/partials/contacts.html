@@ -10,9 +10,14 @@
 <br/>
 
 {% if customer %}
-    <button class="btn btn-primary-outline" hx-get="{% url 'customers:new_cust_contact' %}?customer={{ customer }}" hx-target="#dialog">
+    <button class="btn-small-icon" hx-get="{% url 'customers:new_cust_contact' %}?customer={{ customer }}" hx-target="#dialog">
       <div class="addbutton">
       <img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">
+      </div>
+    </button>
+    <button class="btn-small-icon" hx-get="{% url 'customers:contacts' %}?customer={{ customer }}" hx-target="#contacts">
+      <div class="updatebutton">
+      <img src="{% static 'img/site/icons8-update-30.png' %}" style="width:20px;height:20px;">
       </div>
     </button>
   {% endif %}

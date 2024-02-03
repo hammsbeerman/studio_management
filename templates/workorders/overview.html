@@ -75,12 +75,15 @@
   <table class="table">
     <thead>
       <tr>
-        <th>Workorder</th>
-        <th>Category</th>
-        <th>Description</th>
-        <th>Qty</th>
-        <th>Price / Unit</th>
-        <th>Total Price</th>
+        <th scope="col" class="col-1">Workorder</th>
+        <th scope="col" class="col-1">Category</th>
+        <th scope="col" class="col-2">Description</th>
+        <th scope="col" class="col-1">Qty</th>
+        <th scope="col" class="col-1">Price / Unit</th>
+        <th scope="col" class="col-1">Total Price</th>
+        <th></th>
+        <th scope="col" class="col-1">Last Order</th>
+        <th scope="col" class="col-1">Last Price</th>
       </tr>
     </thead>
     <tbody hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_item_list' id=workid %}" hx-target="this">
@@ -95,9 +98,6 @@
   <button hx-get="{% url 'workorders:add_item' parent_id=workid %}" hx-target="#dialog" class="btn btn-primary">
   Add an item
   </button>
-  
-
-
 
 
 

@@ -40,8 +40,17 @@ body{
   padding: 0;
 }
 
+.btn-small-icon {
+  background-color: transparent;
+  border-color: transparent;
+  padding: 0;
+  --bs-btn-padding-x: 0;
+  --bs-btn-padding-y: 0;
+}
+
 .addbutton {
   margin-right: 5px;
+  padding: 0;
 }
 
 .no-outline {

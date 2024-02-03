@@ -18,6 +18,7 @@ class Workorder(models.Model):
     original_order = models.CharField('Original Order', max_length=100, blank=True, null=True)
     lk_workorder = models.CharField('LK Workorder', max_length=100, blank=True, null=True)
     printleader_workorder = models.CharField('Printleader', max_length=100, blank=True, null=True)
+    #total_price = models.IntegerField('Total Price', blank=True, default=True)
     billed = models.BooleanField('Billed', blank=False, null=False, default=False)
 
     def get_absolute_url(self):
@@ -122,8 +123,12 @@ class WorkorderItem(models.Model):
     #def __str__(self):
     #    return self.description
 
+    # @property
+    # def get_total_price(self):
+    #     return sum([food.carbs for food in self.foods.all()])
 
-    def __str__(self):
-        return self.workorder.workorder #+ ' -- ' + self.description
+
+    # def __str__(self):
+    #     return self.workorder.workorder #+ ' -- ' + self.description
     
     
