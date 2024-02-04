@@ -421,6 +421,33 @@ def subcategory(request):
     }
     return render(request, 'workorders/modals/subcategory.html', context) 
 
+def tax(request, tax, id):
+    if tax == 'False':
+        print('False')
+        lineitem = WorkorderItem.objects.get(id=id)
+        lineitem.tax_exempt = 1
+        lineitem.save() 
+        context = {
+            'tax':True,
+            'id':id,
+        }
+    else:
+        print('True')
+        lineitem = WorkorderItem.objects.get(id=id)
+        lineitem.tax_exempt = 0
+        lineitem.save()
+        context = {
+            'tax':False,
+            'id':id,
+        }
+    return render(request, 'workorders/partials/tax.html', context)
+
+
+
+
+
+            
+
 
 
 

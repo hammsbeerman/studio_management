@@ -8,6 +8,22 @@
     }
 },
 {
+    "model": "workorders.numbering",
+    "pk": 2,
+    "fields": {
+        "name": "Customer Number",
+        "value": 1000
+    }
+},
+{
+    "model": "workorders.numbering",
+    "pk": 3,
+    "fields": {
+        "name": "Vendor Number",
+        "value": 50000
+    }
+},
+{
     "model": "workorders.category",
     "pk": 1,
     "fields": {

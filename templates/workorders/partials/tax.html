@@ -1,0 +1,5 @@
+{% if tax == 0%}
+    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=tax id=id %}" hx-target="#taxexempt_{{id}}">Tax</button>
+{% else %}
+    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=tax id=id%}" hx-target="#taxexempt_{{id}}">NonTax</button>
+{% endif %}
