@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponse
 from customers.models import Customer, Contact
 from customers.forms import CustomerForm, ContactForm
-from workorders.models import Workorder
+from workorders.models import Workorder, Numbering
 from workorders.forms import WorkorderForm
 
 
@@ -51,6 +51,15 @@ def new_customer(request):
     if request.method == "POST":
         form = CustomerForm(request.POST)
         if form.is_valid():
+            ##Increase workorder numbering
+            n = Numbering.objects.get(pk=2)
+            form.instance.customer_number = n.value
+            #workorder = n.value
+            inc = int('1')
+            n.value = n.value + inc
+            print(n.value)
+            #n.save() -- Save in the if statement below
+            ## End of numbering
             #obj = form.save(commit=False)
             #customer = request.POST.get("company_name")
             #print(customer)
@@ -71,10 +80,12 @@ def new_customer(request):
                 form.instance.company_name = fn + ' ' + ln
                 #print(obj.company_name)
                 form.save()
+                n.save()
                 return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
             if cn:
                 print(cn)
                 form.save()
+                n.save()
                 return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
             #obj.save
             #form.save()

@@ -107,17 +107,22 @@ def add_template(request):
     form = CreateTemplateForm()
     categories = Category.objects.all()
     if request.method =="POST":
-        testing = request.POST.get('category')
+        category = request.POST.get('category')
         subcategory = request.POST.get('subcategory')
-        print(testing)
+        print(category)
         form = CreateTemplateForm(request.POST)
         if form.is_valid():
             form.save()
             print(subcategory)
             #update template field
-            template = SubCategory.objects.get(id=subcategory)
-            template.template = 1
-            template.save()
+            try:
+                template = SubCategory.objects.get(id=subcategory)
+                template.template = 1
+                template.save()
+            except:
+                template = Category.objects.get(id=category)
+                template.template = 1
+                template.save()
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
         else:
             print(form.errors)
@@ -170,10 +175,13 @@ def edititem(request, id, pk, cat,):
         print('HTMX')
         print(pk)
         item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
+        testform = EnvelopeForm
         if cat == 6:
-            form = EnvelopeForm(instance=item)
+            form = testform(instance=item)
         if cat == 10:
             form = NCRForm(instance=item)
+        if cat == 4:
+            form = testform(instance=item)
         context = {
             'form':form
     }
@@ -201,8 +209,10 @@ def edititem(request, id, pk, cat,):
             print('pk')
             print(pk)
             description = item.description
+        testform = NCRForm
+        print(testform)
         if cat == 6:
-            form = EnvelopeForm(instance=item)
+            form = testform(instance=item)
         if cat == 10:
             form = NCRForm(instance=item)
         #If paper is selected, load that

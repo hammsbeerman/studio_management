@@ -54,3 +54,13 @@ class DesignItemForm(forms.ModelForm):
    class Meta:
        model = WorkorderItem
        fields = ['internal_company', 'design_type', 'description', 'quantity', 'unit_price', 'last_item_order', 'last_item_price']
+
+class NoteForm(forms.ModelForm):
+    class Meta:
+        model = WorkorderItem
+        fields = ['notes']
+
+class WorkorderNoteForm(forms.ModelForm):
+    class Meta:
+        model = Workorder
+        fields = ['notes']

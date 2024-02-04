@@ -47,6 +47,7 @@
           <div class="card-footer">
             <button hx-get="{% url 'workorders:edit_workorder' %}?workorder={{ workorder.id }}" hx-target="#dialog">Edit</button>
             <button hx-get="{% url 'workorders:workorder_info' %}?workorder={{ workorder.id }}" hx-target="#workorderinfo">Refresh</button>
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:workorder_notes' pk=workorder.id %}" hx-target="#dialog">Notes</button>
           </div>
       </div>
   </div>

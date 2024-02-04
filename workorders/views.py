@@ -5,7 +5,7 @@ from django.db.models import Avg, Count, Min, Sum
 from decimal import Decimal
 from customers.models import Customer, Contact
 from .models import Workorder, Numbering, Category, DesignType, WorkorderItem, SubCategory
-from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm
+from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm
 from krueger.forms import KruegerJobDetailForm
 from krueger.models import KruegerJobDetail
 
@@ -47,6 +47,11 @@ def create_base(request):
                 print(select)
                 return render(request, "workorders/create.html", context)
             hrcust = Customer.objects.get(id=cust)
+            print(hrcust.tax_exempt)
+            if hrcust.tax_exempt:
+                print('tax exempt')
+                form.instance.tax_exempt = 1
+            form.instance.po_number = hrcust.po_number
             hrcust = hrcust.company_name
             form.instance.hr_customer = hrcust
             print(cust)
@@ -85,7 +90,8 @@ def overview(request, id=None):
         contact = Contact.objects.get(id=workorder.contact_id)
     else: 
         contact = ''
-    history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:10]
+    print(id)
+    history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).order_by("-workorder")[:5]
     workid = workorder.id
     categories = Category.objects.all().distinct()
     #total = decimal.Decimal(total.total_price__sum)
@@ -185,6 +191,7 @@ def add_item(request, parent_id):
             obj.workorder_id = parent_id
             print('parent')
             print(parent.workorder)
+            obj.tax_exempt = parent.tax_exempt
             obj.workorder_hr = parent.workorder
             #obj.item_subcategory = subcategory
             obj.save()
@@ -193,7 +200,8 @@ def add_item(request, parent_id):
             print(parent.customer_id)
             #print(parent.category)
             detailbase = KruegerJobDetail(workorder = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company,
-                                          customer_id=parent.customer_id, hr_customer=parent.hr_customer, category = cat, subcategory = subcat, description = desc)
+                                          customer_id=parent.customer_id, hr_customer=parent.hr_customer, category = cat, subcategory = subcat, description = desc,
+                                          )
             detailbase.save()
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     else:
@@ -373,6 +381,7 @@ def copy_workorder(request, id=None):
     lastworkorder = obj.workorder
     n = Numbering.objects.get(pk=1)
     obj.workorder = n.value
+    obj.original_order = lastworkorder
     #Increment workorder number
     newworkorder = obj.workorder
     #Update numbering table
@@ -442,10 +451,42 @@ def tax(request, tax, id):
         }
     return render(request, 'workorders/partials/tax.html', context)
 
+def notes(request, pk=None):
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    if request.method == "POST":
+        id = request.POST.get('id')
+        print(id)
+        item = get_object_or_404(WorkorderItem, pk=id)
+        form = NoteForm(request.POST, instance=item)
+        if form.is_valid():
+                form.save()
+                return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderUpdated'})
+    form = NoteForm(instance=item)
+    context = {
+        #'notes':notes,
+        'form':form,
+        'pk': pk,
+    }
+    return render(request, 'workorders/modals/notes.html', context) 
 
 
-
-
+def workorder_notes(request, pk=None):
+    item = get_object_or_404(Workorder, pk=pk)
+    if request.method == "POST":
+        id = request.POST.get('id')
+        print(id)
+        item = get_object_or_404(Workorder, pk=id)
+        form = WorkorderNoteForm(request.POST, instance=item)
+        if form.is_valid():
+                form.save()
+                return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderUpdated'})
+    form = WorkorderNoteForm(instance=item)
+    context = {
+        #'notes':notes,
+        'form':form,
+        'pk': pk,
+    }
+    return render(request, 'workorders/modals/notes.html', context) 
             
 
 

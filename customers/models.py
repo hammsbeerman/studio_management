@@ -3,6 +3,13 @@ from django.db import models
 from django.urls import reverse
 
 class Customer(models.Model):
+
+    Tax_Exempt = (
+    (True, 'Yes'),
+    (False, 'No')
+)
+    
+
     company_name = models.CharField('Company Name', max_length=100, blank=True, null=False)
     first_name = models.CharField('First Name', max_length=100, blank=True, null=False)
     last_name = models.CharField('Last Name', max_length=100, blank=True, null=False)
@@ -19,7 +26,8 @@ class Customer(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     active = models.BooleanField(default=True)
-    tax_exempt = models.BooleanField(default=False)
+    customer_number = models.CharField('Customer Number', max_length=100, blank=True, null=False)
+    tax_exempt = models.BooleanField('Tax Exempt', default=False, choices=Tax_Exempt)
     tax_exempt_number = models.CharField('Tax ID Number', max_length=100, blank=True, null=True)
     #Need to modify paperwork settings
     tax_exempt_paperwork = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=True)

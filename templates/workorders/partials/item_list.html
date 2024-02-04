@@ -34,7 +34,8 @@
 
 
         </td>
-        <td> Notes</td>
+        <td>{% if object.notes %}<button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:notes' pk=object.pk%}" hx-target="#dialog">Notes</button>{% endif %}</td>
+
         <td id='taxexempt_{{object.pk}}'>{% if object.tax_exempt == 0%}
             <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=object.tax_exempt id=object.pk %}" hx-target="#taxexempt_{{object.pk}}">Tax</button>
             {% else %}

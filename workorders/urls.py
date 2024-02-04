@@ -17,7 +17,9 @@ from .views import (
     copy_workorder_item,
     copy_workorder,
     subcategory,
-    tax
+    tax,
+    notes,
+    workorder_notes
     # removed,
 )
 
@@ -40,7 +42,10 @@ urlpatterns = [
     path("edit_workorder", edit_workorder, name='edit_workorder'),
     path("workorder_info/", workorder_info, name='workorder_info'),
     path('categories/', subcategory, name='subcategory'),
-    path('tax/<str:tax>/<int:id>)', tax, name='tax'),
+    path('tax/<str:tax>/<int:id>/', tax, name='tax'),
+    path('notes/<int:pk>/', notes, name='notes'),
+    path('notes/', notes, name='notes'),
+    path('workordernotes/<int:pk>/', workorder_notes, name='workorder_notes'),
     # path('removed/', removed, name='removed')
     
 

@@ -3,8 +3,9 @@
                       Internal Company: {{ workorder.internal_company }}<br/>
                       Description: {{ workorder.description }}<br/>
                       Deadline: {{ workorder.deadline }}<br/>
-                      P.O. Number: {{ workorder.po_number }}<br/>
-                      Budget: {{ workorder.budget }} Quoted Price: {{ workorder.quoted_price }}<br/>
-                      Original Order #: {{ workorder.original_order }}<br/>
-                      LK Workorder #: {{ workorder.lk_workorder }}<br/>
-                      Printleader Order #: {{ workorder.printleader_workorder }}
+                      {% if workorder.po_number %} P.O. Number: {{ workorder.po_number }}<br/> {% endif %}
+                      {% if workorder.budget %}Budget: {{ workorder.budget }} <br /> {% endif %}
+                      {% if workorder.quoted_price %}Quoted Price: {{ workorder.quoted_price }}<br/> {% endif %}
+                      {% if workorder.original_order %}Original Order #: <a href="{% url 'workorders:overview' id=workorder.original_order %}">{{ workorder.original_order }}</a><br/> {% endif %}
+                      {% if workorder.lk_workorder %}LK Workorder #: {{ workorder.lk_workorder }}<br/> {% endif %}
+                      {% if workorder.printleader_workorder %}Printleader Order #: {{ workorder.printleader_workorder }} {% endif %}

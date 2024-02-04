@@ -21,6 +21,7 @@ class Workorder(models.Model):
     printleader_workorder = models.CharField('Printleader', max_length=100, blank=True, null=True)
     #total_price = models.IntegerField('Total Price', blank=True, default=True)
     billed = models.BooleanField('Billed', blank=False, null=False, default=False)
+    tax_exempt = models.BooleanField(default=False)
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})

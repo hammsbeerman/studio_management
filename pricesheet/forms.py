@@ -17,6 +17,9 @@ class EnvelopeForm(forms.ModelForm):
             'step_print_cost_side_1_price', 'step_print_cost_side_2', 'step_id_count_price', 'step_print_cost_side_2_price', 'step_count_package_price', 'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_m', 'misc1_description', 'misc1_price', 'misc2_description', 'misc2_price', 'misc3_description',
             'misc3_price', 'misc4_description', 'misc4_price'
         ]
+        labels = {
+            'set_per_book':'Qty',
+        }
 
 class SubCategoryForm(forms.ModelForm):
 
