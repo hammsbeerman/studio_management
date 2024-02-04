@@ -16,6 +16,7 @@ class Workorder(models.Model):
     budget = models.CharField('Budget', max_length=100, blank=True, null=True)
     quoted_price = models.CharField('Quoted Price', max_length=100, blank=True, null=True)
     original_order = models.CharField('Original Order', max_length=100, blank=True, null=True)
+    notes = models.TextField('Notes:', blank=True, null=False)
     lk_workorder = models.CharField('LK Workorder', max_length=100, blank=True, null=True)
     printleader_workorder = models.CharField('Printleader', max_length=100, blank=True, null=True)
     #total_price = models.IntegerField('Total Price', blank=True, default=True)
@@ -79,7 +80,8 @@ class WorkorderItem(models.Model):
     workorder = models.ForeignKey(Workorder, blank=False, null=True, on_delete=models.CASCADE)
     workorder_hr = models.CharField('Workorder Human Readable', max_length=100, blank=False, null=False)
     item_category = models.ForeignKey(Category, blank=False, null=False, on_delete=models.CASCADE)
-    item_subcategory = models.CharField('Subcategory', max_length=100, blank=True, null=True)
+    item_subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)
+    #item_subcategory = models.CharField('Subcategory', max_length=100, blank=True, null=True)
     pricesheet_modified = models.BooleanField('Pricesheet Modified', blank=True, null=True, default=False)
     design_type = models.ForeignKey(DesignType, blank=True, null=True, on_delete=models.CASCADE)
     description = models.CharField('Description', max_length=100, blank=False, null=False)
@@ -89,6 +91,7 @@ class WorkorderItem(models.Model):
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)
     last_item_order = models.CharField('Original Item Order', max_length=100, blank=True, null=True)
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
+    notes = models.TextField('Notes:', blank=True, null=False)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
 
 
@@ -129,7 +132,7 @@ class WorkorderItem(models.Model):
     #     return sum([food.carbs for food in self.foods.all()])
 
 
-    # def __str__(self):
-    #     return self.workorder.workorder #+ ' -- ' + self.description
+    def __str__(self):
+        return self.workorder.workorder #+ ' -- ' + self.description
     
     

@@ -178,7 +178,7 @@ def add_item(request, parent_id):
             #print('subcategory')
             #print(subcategory)
             obj = form.save(commit=False)
-            obj.item_subcategory = subcat
+            obj.item_subcategory_id = subcat
             #obj = request.POST.get
             parent = Workorder.objects.get(pk=parent_id)
             #Add workorder to form since it wasn't displayed
@@ -217,7 +217,6 @@ def workorder_item_list(request, id=None):
         print(id)
         obj = WorkorderItem.objects.filter(workorder_id=id)
         total = WorkorderItem.objects.filter(workorder_id=id).aggregate(Sum('total_price'))
-        print(total)
     except:
         obj = None
     if obj is  None:

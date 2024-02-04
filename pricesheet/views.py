@@ -4,6 +4,7 @@ from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateFo
 from .models import PriceSheet, SubCategory
 from workorders.models import WorkorderItem, Category
 from krueger.models import KruegerJobDetail, PaperStock
+from krueger.forms import KruegerJobDetailForm
 
 def envelope(request, pk, cat):
     print(pk)
@@ -142,7 +143,29 @@ def subcategory(request):
     }
     return render(request, 'pricesheet/modals/subcategory.html', context) 
 
-def edititem(request, id, pk, cat, subcat):
+def edititem(request, id, pk, cat,):
+    if request.method == "POST":
+        workorderitem = KruegerJobDetail.objects.get(workorder_item=pk)
+        obj = get_object_or_404(KruegerJobDetail, pk=workorderitem.id)
+        form = KruegerJobDetailForm(request.POST, instance=obj)
+        workorder = request.POST.get('workorder')
+        edited = 1
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.workorder = workorder
+            obj.edited = edited
+            obj.save()
+            #update workorderitem table
+            lineitem = WorkorderItem.objects.get(id=pk)
+            lineitem.pricesheet_modified = edited
+            lineitem.description = obj.description
+            lineitem.quantity = obj.set_per_book
+            #lineitem.unit_price = 
+            #lineitem.total_price = obj.price_total
+            lineitem.save() 
+        else:
+            print(form.errors)
+        return redirect('workorders:overview', id=obj.hr_workorder)
     if request.htmx:
         print('HTMX')
         print(pk)
@@ -157,13 +180,51 @@ def edititem(request, id, pk, cat, subcat):
         return render (request, "pricesheet/modals/edit_item.html", context)
     else:
         print('Not HTMX')
-        print(pk)
-        item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
+        modified = WorkorderItem.objects.get(pk=pk)
+        internal_company = modified.internal_company
+        #If new lineitem, load default pricing template
+        if not modified.pricesheet_modified:
+            #If there is a subcategory, load the pricing template for subcategory
+            if modified.item_subcategory:
+                description = WorkorderItem.objects.get(pk=pk)
+                description = description.description
+                item = get_object_or_404(PriceSheet, subcategory=modified.item_subcategory)
+                formdata = ''
+            #Otherwise load category template
+            else:
+                item = get_object_or_404(PriceSheet, category=cat) 
+        #If item contains custom pricing load that               
+        else:
+            item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
+            #formdata loads static data to template
+            formdata = KruegerJobDetail.objects.get(workorder_item=pk)
+            print('pk')
+            print(pk)
+            description = item.description
         if cat == 6:
             form = EnvelopeForm(instance=item)
         if cat == 10:
             form = NCRForm(instance=item)
+        #If paper is selected, load that
+        selected_paper = form.instance.paper_stock_id
+        print(selected_paper)
+        try:
+            selected_paper = PaperStock.objects.get(id=selected_paper)
+            print(selected_paper.description)
+            print(selected_paper)
+        except: 
+            selected_paper = ''
+        #populate paper list
+        papers = PaperStock.objects.all()
         context = {
-            'form':form
+            'form':form,
+            'formdata':formdata,
+            'description':description,
+            'papers':papers,
+            'selected_paper':selected_paper,
+            'workorder_id':id,
+            'internal_company':internal_company,
+
     }
-    return render(request, 'pricesheet/templates/master.html', context)
+        return render(request, 'pricesheet/templates/master.html', context)
+
