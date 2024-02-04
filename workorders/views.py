@@ -198,8 +198,10 @@ def add_item(request, parent_id):
             print(obj.pk)
             print(parent.customer)
             print(parent.customer_id)
+            print('parent id')
+            print(parent.id)
             #print(parent.category)
-            detailbase = KruegerJobDetail(workorder = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company,
+            detailbase = KruegerJobDetail(workorder_id = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company,
                                           customer_id=parent.customer_id, hr_customer=parent.hr_customer, category = cat, subcategory = subcat, description = desc,
                                           )
             detailbase.save()

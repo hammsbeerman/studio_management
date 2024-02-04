@@ -23,7 +23,7 @@ class KruegerJobDetail(models.Model):
     #     LK = "LK"
     #     KRUEGER = "KRUEGER"
 
-    workorder = models.CharField('Workorder ID', max_length=100, blank=False, null=False)
+    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=False, on_delete=models.CASCADE)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=False, null=False)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=False, null=False)
     category = models.CharField('Category', max_length=10, blank=True, null=True)
