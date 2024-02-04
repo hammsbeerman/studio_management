@@ -17,3 +17,4 @@ django-dotenv==1.4.2
 gunicorn
 mysqlclient
 whitenoise
+pillow

@@ -19,6 +19,10 @@ class Customer(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     active = models.BooleanField(default=True)
+    tax_exempt = models.BooleanField(default=False)
+    tax_exempt_number = models.CharField('Tax ID Number', max_length=100, blank=True, null=True)
+    #Need to modify paperwork settings
+    tax_exempt_paperwork = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=True)
 
     def get_absolute_url(self):
         return reverse("customers:detail", kwargs={"id": self.id})

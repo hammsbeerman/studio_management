@@ -93,7 +93,7 @@ class WorkorderItem(models.Model):
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
     notes = models.TextField('Notes:', blank=True, null=False)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
-
+    tax_exempt = models.BooleanField(default=False)
 
 
     def get_absolute_url(self):
