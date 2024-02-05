@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ['localhost', '10.6.83.220', '10.6.83.61', '10.6.83.56']
 #     ALLOWED_HOSTS += ['localhost', '10.6.83.220']
 
 
+
 #print(ALLOWED_HOSTS)
 
 
