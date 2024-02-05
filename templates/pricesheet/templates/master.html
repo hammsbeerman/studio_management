@@ -59,7 +59,7 @@
                                 {{ form.original_size|as_crispy_field }}
                             </div>
                             <div class='col'>
-                                {{ form.press_size|as_crispy_field }}
+                                {% if form.press_size %}{{ form.press_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
                                 {{ form.press_size_per_parent|as_crispy_field }}
@@ -67,10 +67,10 @@
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {{ form.flat_size|as_crispy_field }}
+                                {% if form.flat_size %}{{ form.flat_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.finished_size|as_crispy_field }}
+                                {% if form.finished_size %}{{ form.finished_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
                                 {{ form.gangup|as_crispy_field }}

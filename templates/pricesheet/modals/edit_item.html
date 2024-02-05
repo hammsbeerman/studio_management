@@ -1,5 +1,7 @@
 {% load widget_tweaks %}
 {% load crispy_forms_tags %}
+{% load static %}
+<script src="{% static 'js/kruegerworkorder.js' %}"></script>
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
 <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
   <div class="modal-header">
