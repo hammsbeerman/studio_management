@@ -239,6 +239,8 @@ $(document).ready(function(){
       
       var total = markup + material_cost
 
+      markup = markup.toFixed(2);
+
       $('#id_material_markup').val(markup);
     });
 

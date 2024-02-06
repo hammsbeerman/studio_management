@@ -415,8 +415,10 @@ def copy_workorder(request, id=None):
         print(item.pk)
         objdetail = KruegerJobDetail.objects.get(workorder_item=oldid)
         objdetail.pk = None
+        print('New workorder')
+        print(new_workorder_id)
         objdetail.workorder_item = item.pk
-        objdetail.workorder = new_workorder_id
+        objdetail.workorder_id = new_workorder_id
         objdetail.hr_workorder = newworkorder
         objdetail.last_item_order = lastworkorder
         objdetail.last_item_price = objdetail.price_total

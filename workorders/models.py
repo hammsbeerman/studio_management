@@ -55,15 +55,17 @@ class Numbering(models.Model):
 class FixedCost(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False, unique=True)
     create_workorder = models.DecimalField('Create Workordeer', max_digits=10, decimal_places=2, blank=True, null=True)
-    reclaim_artwork =  models.DecimalField('Reclaim Workorder', max_digits=10, decimal_places=2, blank=True, null=True)
-    send_to_press =  models.DecimalField('Value', max_digits=10, decimal_places=2, blank=True, null=True)
-    send_mailmerge_to_press =  models.DecimalField('Value', max_digits=10, decimal_places=2, blank=True, null=True)
-    wear_and_tear =  models.DecimalField('Value', max_digits=10, decimal_places=2, blank=True, null=True)
-    trim_to_size =  models.DecimalField('Value', max_digits=10, decimal_places=2, blank=True, null=True)
-    duplo_1 =  models.DecimalField('Value', max_digits=10, decimal_places=2, blank=True, null=True)
-    duplo_2 =  models.DecimalField('Value', max_digits=10, decimal_places=2, blank=True, null=True)
-    duplo_3 =  models.DecimalField('Value', max_digits=10, decimal_places=2, blank=True, null=True)
-    ncr_compound =  models.DecimalField('Value', max_digits=10, decimal_places=2, blank=True, null=True)
+    reclaim_artwork =  models.DecimalField('Reclaim Artwork', max_digits=10, decimal_places=2, blank=True, null=True)
+    send_to_press =  models.DecimalField('Send to press', max_digits=10, decimal_places=2, blank=True, null=True)
+    send_mailmerge_to_press =  models.DecimalField('Send Mailmerge to press', max_digits=10, decimal_places=2, blank=True, null=True)
+    material_markup = models.DecimalField('Material Markup Percentage', max_digits=10, decimal_places=2, blank=True, null=True)
+    ##
+    wear_and_tear =  models.DecimalField('Wear and Tear', max_digits=10, decimal_places=2, blank=True, null=True)
+    trim_to_size =  models.DecimalField('Trim to Size', max_digits=10, decimal_places=2, blank=True, null=True)
+    duplo_1 =  models.DecimalField('Duplo1', max_digits=10, decimal_places=2, blank=True, null=True)
+    duplo_2 =  models.DecimalField('Duplo2', max_digits=10, decimal_places=2, blank=True, null=True)
+    duplo_3 =  models.DecimalField('Duplo3', max_digits=10, decimal_places=2, blank=True, null=True)
+    ncr_compound =  models.DecimalField('NCR Compound', max_digits=10, decimal_places=2, blank=True, null=True)
     pad_compound =  models.DecimalField('Padding Compound', max_digits=10, decimal_places=2, blank=True, null=True)
 
     def __str__(self):

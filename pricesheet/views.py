@@ -51,7 +51,13 @@ def template(request, id=None):
     print(obj.category.pricesheet_type.id)
     item = get_object_or_404(PriceSheet, id=id)
     print(item.name)
-    form = NewTemplateForm(instance=obj)
+    print(obj.category_id)
+    #Get form to load from category
+    loadform = Category.objects.get(id=obj.category_id)
+    #formname = loadform.formname
+    formname = globals()[loadform.formname]
+    form = formname(instance=item)
+    #form = NewTemplateForm(instance=obj)
     if not obj.edited:
         fixed = FixedCost.objects.get(id=obj.category.pricesheet_type.id)
     else:

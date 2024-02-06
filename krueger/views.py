@@ -88,7 +88,8 @@ def newjob(request, id, pk):
         'workorder_id': workorder_id
         #'papersizes': papersizes,
     }
-    return render(request, "krueger/pricingforms/bigform.html", context)
+    #return render(request, "krueger/pricingforms/bigform.html", context)
+    return render(request, "pricesheet/templates/master.html", context)
 
 
 def paperprice(request):

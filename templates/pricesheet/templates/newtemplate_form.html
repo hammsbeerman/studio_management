@@ -83,13 +83,13 @@ This form should only be used for setting up new templates for lineitems
                         <hr>
                         <div class="row">
                             <div class='col'>
-                                {{ form.set_per_book|as_crispy_field }}
+                                <span class="text-primary">{{ form.set_per_book|as_crispy_field }}</span>
                             </div>
                             <div class='col'>
-                                {{ form.pages_per_book|as_crispy_field }}
+                                <span class="text-primary">{{ form.pages_per_book|as_crispy_field }}</span>
                             </div>
                             <div class='col'>
-                                {{ form.qty_of_sheets|as_crispy_field }}
+                                <span class="text-primary">{{ form.qty_of_sheets|as_crispy_field }}</span>
                             </div>
                         </div>
                         <div class="row">
@@ -100,7 +100,7 @@ This form should only be used for setting up new templates for lineitems
                                 {% if form.press_size %}{{ form.press_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.press_sheet_per_parent|as_crispy_field }}
+                                <span class="text-primary">{{ form.press_sheet_per_parent|as_crispy_field }}</span>
                             </div>
                         </div>
                         <div class="row">
@@ -111,10 +111,10 @@ This form should only be used for setting up new templates for lineitems
                                 {% if form.finished_size %}{{ form.finished_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.gangup|as_crispy_field }}
+                                <span class="text-primary">{{ form.gangup|as_crispy_field }}</span>
                             </div>
                             <div class='col'>
-                                {{ form.overage|as_crispy_field }}
+                                <span class="text-primary">{{ form.overage|as_crispy_field }}</span>
                             </div>
                         </div>
                         <div class="row">
@@ -141,25 +141,37 @@ This form should only be used for setting up new templates for lineitems
                                     Create Workorder
                                 </label>
                                 <input type="text" name="step_workorder_price" maxlength="12" class="textinput form-control" id="id_step_workorder_price" value="{{ fixed.create_workorder}}">
-                                {{ form.step_workorder_price|as_crispy_field }}
                             </div>
                             <div class='col'>
-                                {{ form.step_reclaim_artwork_price|as_crispy_field }}
+                                <label for="id_step_reclaim_artwork_price" class="form-label">
+                                    Reclaim Artwork
+                                </label>
+                                <input type="text" name="step_reclaim_artwork_price" maxlength="12" class="textinput form-control" id="id_step_reclaim_artwork_price" value="{{ fixed.reclaim_artwork}}">
                             </div>
                             <div class='col'>
-                                {{ form.step_send_to_press_price|as_crispy_field }}
+                                <label for="id_step_send_to_press_price" class="form-label">
+                                    Reclaim Artwork
+                                </label>
+                                <input type="text" name="step_send_to_press_price" maxlength="12" class="textinput form-control" id="id_step_send_to_press_price" value="{{ fixed.send_to_press}}">
                             </div>
                             <div class='col'>
-                                {% if form.step_send_mailmerge_to_press_price %}{{ form.step_send_mailmerge_to_press_price|as_crispy_field }}{% endif %}
+                                {% if form.step_send_mailmerge_to_press_price %}
+                                <label for="id_step_send_mailmerge_to_press_price" class="form-label">
+                                    Reclaim Artwork
+                                </label>
+                                <input type="text" name="step_send_mailmerge_to_press_price" maxlength="12" class="textinput form-control" id="id_step_send_mailmerge_to_press_price" value="{{ fixed.send_mailmerge_to_press}}">
+                                {% endif %}
                             </div>
                         </div>
-                        
                         <div class="row">
                             <div class='col'>
                                 {{ form.material_cost|as_crispy_field }}
                             </div>
                             <div class='col'>
-                                {{ form.material_markup_percentage|as_crispy_field }}
+                                <label for="id_material_markup_percentage" class="form-label">
+                                    Material Markup Percentage
+                                </label>
+                                <input type="text" name="material_markup_percentage" maxlength="12" class="textinput form-control" id="id_material_markup_percentage" value="{{ fixed.material_markup}}">
                             </div>
                             <div class='col'>
                                 {{ form.material_markup|as_crispy_field }}

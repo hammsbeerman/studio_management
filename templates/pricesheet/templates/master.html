@@ -81,10 +81,10 @@ This should be the form for entering line item details
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {{ form.set_per_book|as_crispy_field }}
+                                <span class="text-primary">{{ form.set_per_book|as_crispy_field }}</span>
                             </div>
                             <div class='col'>
-                                {{ form.pages_per_book|as_crispy_field }}
+                                <span class="text-primary">{{ form.pages_per_book|as_crispy_field }}</span>
                             </div>
                             <div class='col'>
                                 {{ form.qty_of_sheets|as_crispy_field }}
@@ -98,7 +98,7 @@ This should be the form for entering line item details
                                 {% if form.press_size %}{{ form.press_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.press_sheet_per_parent|as_crispy_field }}
+                                <span class="text-primary">{{ form.press_sheet_per_parent|as_crispy_field }}</span>
                             </div>
                         </div>
                         <div class="row">
@@ -109,10 +109,10 @@ This should be the form for entering line item details
                                 {% if form.finished_size %}{{ form.finished_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.gangup|as_crispy_field }}
+                                <span class="text-primary">{{ form.gangup|as_crispy_field }}</span>
                             </div>
                             <div class='col'>
-                                {{ form.overage|as_crispy_field }}
+                                <span class="text-primary">{{ form.overage|as_crispy_field }}</span>
                             </div>
                         </div>
                         <div class="row">
