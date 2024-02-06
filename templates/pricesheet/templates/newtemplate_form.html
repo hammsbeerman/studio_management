@@ -13,7 +13,7 @@
 
 <h3>New Template Form</h3>
 <p>
-This form should only be used for setting up new templates for lineitems
+This form should only be used for setting up and editing templates for lineitems
 <p>
 <div class="row">
     <div class="col-sm-8">
@@ -150,14 +150,14 @@ This form should only be used for setting up new templates for lineitems
                             </div>
                             <div class='col'>
                                 <label for="id_step_send_to_press_price" class="form-label">
-                                    Reclaim Artwork
+                                    Send to press
                                 </label>
                                 <input type="text" name="step_send_to_press_price" maxlength="12" class="textinput form-control" id="id_step_send_to_press_price" value="{{ fixed.send_to_press}}">
                             </div>
                             <div class='col'>
                                 {% if form.step_send_mailmerge_to_press_price %}
                                 <label for="id_step_send_mailmerge_to_press_price" class="form-label">
-                                    Reclaim Artwork
+                                    Send Mailmerge to press
                                 </label>
                                 <input type="text" name="step_send_mailmerge_to_press_price" maxlength="12" class="textinput form-control" id="id_step_send_mailmerge_to_press_price" value="{{ fixed.send_mailmerge_to_press}}">
                                 {% endif %}
@@ -197,10 +197,19 @@ This form should only be used for setting up new templates for lineitems
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {% if form.step_trim_to_size_price %}{{ form.step_trim_to_size_price|as_crispy_field }}{% endif %}
+                                {% if form.step_trim_to_size_price %}
+                                <label for="id_step_trim_to_size_price" class="form-label">
+                                    Trim to size
+                                </label>
+                                <input type="text" name="step_trim_to_size_price" maxlength="12" class="textinput form-control" id="id_step_trim_to_size_price" value="{{ fixed.trim_to_size}}">{{ form.step_trim_to_size_price|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {% if form.step_wear_and_tear_price %}{{ form.step_wear_and_tear_price|as_crispy_field }}{% endif %}
+                                {% if form.step_wear_and_tear_price %}
+                                <label for="id_step_wear_and_tear_price" class="form-label">
+                                    Wear and Tear
+                                </label>
+                                <input type="text" name="step_wear_and_tear_price" maxlength="12" class="textinput form-control" id="id_step_wear_and_tear_price" value="{{ fixed.wear_and_tear}}">
+                                {% endif %}
                             </div>
                         </div>
                         Options:
@@ -254,10 +263,20 @@ This form should only be used for setting up new templates for lineitems
                         </div>
                         <div class="row" id="padding-row">
                             <div class='col'>
-                                {% if form.step_NCR_compound_price %}{{ form.step_NCR_compound_price|as_crispy_field }}{% endif %}
+                                {% if form.step_NCR_compound_price %}
+                                <label for="id_step_NCR_compound_price" class="form-label">
+                                    Wear and Tear
+                                </label>
+                                <input type="text" name="step_NCR_compound_price" maxlength="12" class="textinput form-control" id="id_step_NCR_compound_price" value="{{ fixed.ncr_compound}}">
+                                {% endif %}
                             </div>
                             <div class='col'>
-                                {% if form.step_white_compound_price %}{{ form.step_white_compound_price|as_crispy_field }}{% endif %}
+                                {% if form.step_white_compound_price %}
+                                <label for="id_step_white_compound_price" class="form-label">
+                                    Wear and Tear
+                                </label>
+                                <input type="text" name="step_white_compound_price" maxlength="12" class="textinput form-control" id="id_step_white_compound_price" value="{{ fixed.white_compound}}">
+                                {% endif %}
                             </div>
                         </div>
                         <div class="row" id="perf-row">
