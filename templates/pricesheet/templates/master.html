@@ -11,13 +11,14 @@
 {{ submitted }}
 {{ message }}
 
-
+<h3>Master Template Form</h3>
+This should be the form for entering line item details
 <div class="row">
     <div class="col-sm-8">
         <div class="MyForm">
             <form method='POST' action=''>
                 {% csrf_token %}
-            <div class="container">
+            <div class="container" id="id_container">
                 <input type="hidden" id="jobid" name="jobid" value="{{ jobid }}">
                 <input type="hidden" id="workorder" name="workorder" value="{{ workorder_id }}">
                 <div class="row">
@@ -26,14 +27,14 @@
                         <div class="row">
                             <div class='col'>
                                 <label class="form-label" for="id_description">Job Description</label>
-                                <input id="id_description" class="textinput form-control" type="text" name="description" maxlength="100" value="{{description}}">
+                                <input id="id_description" class="textinput form-control" type="text" name="description" maxlength="100" value="{{formdata.description}}">
                             </div>
                             <div class='col'>
                                 <label for="id_internal_company" class="form-label requiredField">
                                     Internal Company<span class="asteriskField">*</span></label>
                                 <select name="internal_company" class="select form-select" required="" id="id_internal_company">
                                     {% if form.instance.internal_company %}
-                                        <option value="{{ internal_company }}" selected="{{ internal_company }}">{{ internal_company }}</option>
+                                        <option value="{{ formdata.internal_company }}" selected="{{ formdata.internal_company }}">{{ formdata.internal_company }}</option>
                                     {% else %}
                                         <option value="LK Design" selected="">LK Design</option>
                                     {% endif %}
@@ -42,6 +43,41 @@
                                         <option value="Krueger Printing">Krueger Printing</option>
                                 </select>
                             </div>
+                            <hr>
+                        <div class="row">
+                            <div class='col'>
+                                <select id="paper_stock"
+                                    name="paper_stock" 
+                                    hx-get="{% url 'krueger:paperprice' %}"
+                                    hx-trigger="change"
+                                    hx-target="#paperprices">
+
+                                    {% if form.instance.paper_stock_id %}
+                                        <option value="{{ selected_paper.id }}" selected="">{{ selected_paper.description }}</option>
+                                    {% else %}
+                                        <option selected>Select Paper stock</option>
+                                    {% endif %}
+                                    
+                                    
+                                    {% for paper in papers %}
+                                        <option value="{{paper.pk}}">{{ paper.description }}</option>
+                                        {% endfor %}
+                                </select>
+                            </div>
+                            <div class='col'>
+                                <div id="paperprices">
+                                    <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
+                                    <input label="Price / M" type="text" class="no-outline" id="id_price_per_m" name="price_per_m" value="{{ formdata.price_per_m }}"><br>
+                                    {% include 'krueger/partials/paperstockprice.html' %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- <div class="row">
+                            <div id="paperprice">
+                                {% include 'krueger/partials/paperstockprice.html' %}
+                            </div>
+                        </div> -->
+                        <hr>
                         </div>
                         <div class="row">
                             <div class='col'>
@@ -93,40 +129,6 @@
                                 {{ form.side_2_clicks|as_crispy_field }}
                             </div>
                         </div>
-
-                        <div class="row">
-                            <div class='col'>
-                                <select id="paper_stock"
-                                    name="paper_stock" 
-                                    hx-get="{% url 'krueger:paperprice' %}"
-                                    hx-trigger="change"
-                                    hx-target="#paperprices">
-
-                                    {% if form.instance.paper_stock_id %}
-                                        <option value="{{ selected_paper.id }}" selected="">{{ selected_paper.description }}</option>
-                                    {% else %}
-                                        <option selected>Select Paper stock</option>
-                                    {% endif %}
-                                    
-                                    
-                                    {% for paper in papers %}
-                                        <option value="{{paper.pk}}">{{ paper.description }}</option>
-                                        {% endfor %}
-                                </select>
-                            </div>
-                            <div class='col'>
-                                <div id="paperprices">
-                                    <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
-                                    <input label="Price / M" type="text" class="no-outline" id="id_price_per_m" name="price_per_m" value="{{ formdata.price_per_m }}"><br>
-                                    {% include 'krueger/partials/paperstockprice.html' %}
-                                </div>
-                            </div>
-                        </div>
-                        <!-- <div class="row">
-                            <div id="paperprice">
-                                {% include 'krueger/partials/paperstockprice.html' %}
-                            </div>
-                        </div> -->
                         <hr>
                         <div class="row">
                             <div class='col'>

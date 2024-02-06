@@ -38,7 +38,7 @@ class CreateTemplateForm(forms.ModelForm):
 
     class Meta:
         model = PriceSheet
-        fields = ['category', 'subcategory', 'name']
+        fields = ['category', 'subcategory', 'name', 'description']
 
 class NCRForm(forms.ModelForm):
 

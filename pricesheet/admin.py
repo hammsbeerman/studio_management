@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import PriceSheet, FixedCost
+from .models import PriceSheet
 
 class PriceSheetAdmin(admin.ModelAdmin):
         list_display = ('category', 'subcategory', 'name', 'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent',
@@ -18,8 +18,5 @@ class PriceSheetAdmin(admin.ModelAdmin):
         
 admin.site.register(PriceSheet,PriceSheetAdmin)
 
-class FixedCostAdmin(admin.ModelAdmin):
-        list_display = ('name', 'value')
 
-admin.site.register(FixedCost,FixedCostAdmin)
 

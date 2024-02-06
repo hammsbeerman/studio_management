@@ -125,12 +125,5 @@ class PriceSheet(models.Model):
 
     def __str__(self):
         return self.name
-    
-class FixedCost(models.Model):
-    name = models.CharField('Name', max_length=100, blank=False, null=False, unique=True)
-    value = models.DecimalField('Value', max_digits=10, decimal_places=2, blank=False, null=False)
-
-    def __str__(self):
-        return self.name
 
 

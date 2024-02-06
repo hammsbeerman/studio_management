@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateForm, NewTemplateForm, NCRForm
-from .models import PriceSheet, SubCategory, FixedCost
-from workorders.models import WorkorderItem, Category
+from .models import PriceSheet, SubCategory
+from workorders.models import WorkorderItem, Category, FixedCost
 from krueger.models import KruegerJobDetail, PaperStock
 from krueger.forms import KruegerJobDetailForm
 
@@ -48,13 +48,14 @@ def template(request, id=None):
     obj = PriceSheet.objects.get(id=id)
     print('modified')
     print(obj.edited)
+    print(obj.category.pricesheet_type.id)
     item = get_object_or_404(PriceSheet, id=id)
     print(item.name)
     form = NewTemplateForm(instance=obj)
     if not obj.edited:
-        fixedcosts = FixedCost.objects.all()
+        fixed = FixedCost.objects.get(id=obj.category.pricesheet_type.id)
     else:
-        fixedcosts = ''
+        fixed = ''
     selected_paper = form.instance.paper_stock_id
     try:
         selected_paper = PaperStock.objects.get(id=selected_paper)
@@ -65,21 +66,23 @@ def template(request, id=None):
     papers = PaperStock.objects.all()
     formdata = PriceSheet.objects.get(id=id)
     if request.method =="POST":
+        print('posted')
         form = NewTemplateForm(request.POST, instance=item)
         if form.is_valid():
             form.save()
         else:
             print(form.errors)
-            print(id)
-            edited = PriceSheet.objects.get(id=id)
-            edited.edited = 1
-            edited.save()
-            context = {
-                'message': 'Form saved successfully'
-            }
-            return redirect('pricesheet:template_list')
+        print(id)
+        edited = PriceSheet.objects.get(id=id)
+        print(id)
+        edited.edited = 1
+        edited.save()
+        context = {
+            'message': 'Form saved successfully'
+        }
+        return redirect('pricesheet:template_list')
     context = {
-        'fixedcosts':fixedcosts,
+        'fixed':fixed,
         'form': form,
         'papers': papers,
         'selected_paper': selected_paper,
@@ -122,9 +125,11 @@ def add_template(request):
     if request.method =="POST":
         category = request.POST.get('category')
         subcategory = request.POST.get('subcategory')
+        name = request.POST.get('name')
         print(category)
         form = CreateTemplateForm(request.POST)
         if form.is_valid():
+            form.description = name
             form.save()
             print(subcategory)
             #update template field
@@ -170,7 +175,7 @@ def edititem(request, id, pk, cat,):
         edited = 1
         if form.is_valid():
             obj = form.save(commit=False)
-            obj.workorder = workorder
+            obj.workorder.id = workorder
             obj.edited = edited
             obj.save()
             #update workorderitem table
@@ -249,10 +254,11 @@ def edititem(request, id, pk, cat,):
                 description = WorkorderItem.objects.get(pk=pk)
                 description = description.description
                 item = get_object_or_404(PriceSheet, subcategory=modified.item_subcategory)
-                formdata = ''
+                formdata = PriceSheet.objects.get(subcategory_id = modified.item_subcategory)
             #Otherwise load category template
             else:
-                item = get_object_or_404(PriceSheet, category=cat) 
+                item = get_object_or_404(PriceSheet, category=cat)
+                formdata = PriceSheet.objects.get(category_id = cat)
         #If item contains custom pricing load that               
         else:
             item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
@@ -260,6 +266,7 @@ def edititem(request, id, pk, cat,):
             formdata = KruegerJobDetail.objects.get(workorder_item=pk)
             print('pk')
             print(pk)
+            print(formdata.internal_company)
             description = item.description
         #Get form to load from category
         loadform = Category.objects.get(id=cat)
