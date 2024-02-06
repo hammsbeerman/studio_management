@@ -355,11 +355,27 @@ $(document).ready(function(){
 
     $('#id_container').on("click change",function(){
       //alert( "Handler for `keyup` called." );
+      var workorder = $('#id_step_workorder_price').val();
+      var reclaim = $('#id_step_reclaim_artwork_price').val();
+
+      workorder=Number(workorder)
+      reclaim = Number(reclaim)
+
+      var total = workorder + reclaim
+      total = total.toFixed(2);
+
+      $('#id_price_total').val(total);
+  
+  
+    });
+
+    /*$('#id_container').on("click change",function(){
+      //alert( "Handler for `keyup` called." );
       var qty = $('#id_set_per_book').val();
 
       var workorder = $('#id_step_workorder_price').val();
       var reclaim = $('#id_step_reclaim_artwork_price').val();
-      var send_to_press = $('#id_step_send_to_press_price').val();
+      /*var send_to_press = $('#id_step_send_to_press_price').val();
       var mailmerge = $('#id_step_send_mailmerge_to_press_price').val();
       var material_cost = $('#id_material_cost').val();
       var markup = $('#id_material_markup').val();
@@ -394,7 +410,7 @@ $(document).ready(function(){
 
       workorder = Number(workorder)
       reclaim = Number(reclaim)
-      send_to_press = Number(send_to_press)
+      /*send_to_press = Number(send_to_press)
       mailmerge = Number(mailmerge)
       material_cost = Number(material_cost)
       markup = Number(markup)
@@ -425,11 +441,18 @@ $(document).ready(function(){
       deliver = Number(deliver)
       packing_slip = Number(packing_slip)
 
-      var total = workorder + reclaim + send_to_press + mailmerge+ material_cost + markup + side1 + side2 + trim + wear + print_mailmerge + ncr + white + perf + number + insert_cover + insert + insert_chip + set_drill + 
-      drill + staple + fold + tab + tray + misc1 + misc2 + misc3 + misc4 + count + package + deliver + packing_slip
+      var total = workorder + reclaim
+      alert(total)
+      total = Number(total)
+      console.log(total)
+
+      //var total = workorder + reclaim + send_to_press + mailmerge+ material_cost + markup + side1 + side2 + trim + wear + print_mailmerge + ncr + white + perf + number + insert_cover + insert + insert_chip + set_drill + 
+      //drill + staple + fold + tab + tray + misc1 + misc2 + misc3 + misc4 + count + package + deliver + packing_slip
 
       //var total = workorder + reclaim + send_to_press + mailmerge + material_cost + markup + side1 + side2 + trim
       total = total.toFixed(2);
+
+      total = Number(total)
 
       m = total / qty * 1000
 
@@ -442,7 +465,7 @@ $(document).ready(function(){
 
   
   
-    });
+    });*/
   
 
   

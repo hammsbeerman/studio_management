@@ -18,7 +18,7 @@ This should be the form for entering line item details
         <div class="MyForm">
             <form method='POST' action=''>
                 {% csrf_token %}
-            <div class="container" id="id_container">
+                <div class="container" id="id_container">
                 <input type="hidden" id="jobid" name="jobid" value="{{ jobid }}">
                 <input type="hidden" id="workorder" name="workorder" value="{{ workorder_id }}">
                 <div class="row">
@@ -144,7 +144,6 @@ This should be the form for entering line item details
                                 {% if form.step_send_mailmerge_to_press_price %}{{ form.step_send_mailmerge_to_press_price|as_crispy_field }}{% endif %}
                             </div>
                         </div>
-                        
                         <div class="row">
                             <div class='col'>
                                 {{ form.material_cost|as_crispy_field }}
@@ -156,6 +155,17 @@ This should be the form for entering line item details
                                 {{ form.material_markup|as_crispy_field }}
                             </div>
                         </div>
+                        <hr>
+                        <div class='row'>
+                            <div class='col'>Standard Pricing:<br/> B/W = .1<br/> Color = .15<br/> Vivid = .25 </div>
+                            <div class='col'>
+                                {{ form.side_1_inktype|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.side_2_inktype|as_crispy_field }}
+                            </div>
+                        </div>
+                        <hr>
                         <div class="col-sm-4">
                         </div>
                         <div class="row">

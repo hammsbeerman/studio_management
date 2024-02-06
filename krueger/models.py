@@ -47,6 +47,8 @@ class KruegerJobDetail(models.Model):
     parent_sheets_required = models.CharField('Parent Sheets Required', max_length=10, blank=True, null=True)
     side_1_clicks = models.CharField('Side 1 Clicks', max_length=100, blank=True, null=True)
     side_2_clicks = models.CharField('Side 2 Clicks', max_length=100, blank=True, null=True)
+    side_1_inktype = models.CharField('Side 1 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=False, null=False)
+    side_2_inktype = models.CharField('Side 1 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=False, null=False)
     #stock_paperstock = models.ForeignKey(Inventory, blank=False, null=True, on_delete=models.DO_NOTHING)
     #paper_stock = models.CharField('Paper Stock', max_length=100, blank=True, null=True)
     paper_stock = models.ForeignKey(PaperStock, blank=True, null=True, on_delete=models.DO_NOTHING)

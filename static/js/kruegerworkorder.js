@@ -90,8 +90,15 @@ $(document).ready(function(){
     //Autofill qtys on newjob form
       $('#id_container').on("click change",function(){
         //alert( "Handler for `keyup` called." );
+
+        if ($("#id_pages_per_book").length){
+          var pages_per_book = $('#id_pages_per_book').val();
+        } else {
+          var pages_per_book = 1;
+        }
+
         var set_per_book = $('#id_set_per_book').val();
-        var pages_per_book = $('#id_pages_per_book').val();
+        //var pages_per_book = $('#id_pages_per_book').val();
         var overage = $('#id_overage').val();
     
         var press_sheet_per_parent = $('#id_press_sheet_per_parent').val();
@@ -171,7 +178,9 @@ $(document).ready(function(){
     
     
       });
+
     
+  
     //Add material cost after htmx call.... Need to find a better handler for this
     $('#id_container').on("click change",function(){
           
@@ -352,14 +361,205 @@ $(document).ready(function(){
   
   
     });
-
+//############################################################### Begining of total form
     $('#id_container').on("click change",function(){
-      //alert( "Handler for `keyup` called." );
       var qty = $('#id_set_per_book').val();
-      //var paper_cost = $('#id_price_per_m').val();
-      //var parent_sheets = $('#id_parent_sheets_required').val();
+
+      if ($("#id_step_workorder_price").length){
+        var workorder = $('#id_step_workorder_price').val();
+      } else {
+        var workorder = 0;
+      }
       
-      var workorder = $('#id_step_workorder_price').val();
+      if ($("#id_step_reclaim_artwork_price").length){
+        var reclaim = $('#id_step_reclaim_artwork_price').val();
+      } else {
+        var reclaim = 0;
+      }
+      
+      if ($("#id_step_send_to_press_price").length){
+        var send_to_press = $('#id_step_send_to_press_price').val();
+      } else {
+        var send_to_press = 0;
+      }
+      
+      if ($("#id_material_cost").length){
+        var material_cost = $('#id_material_cost').val();
+      } else {
+        var material_cost = 0;
+      }
+      
+      if ($("#id_material_markup").length){
+        var markup = $('#id_material_markup').val();
+      } else {
+        var markup = 0;
+      }
+      
+      if ($("#id_step_print_cost_side_1_price").length){
+        var side1 = $('#id_step_print_cost_side_1_price').val();
+      } else {
+        var side1 = 0;
+      }
+      
+      if ($("#id_step_print_cost_side_2_price").length){
+        var side2 = $('#id_step_print_cost_side_2_price').val();
+      } else {
+        var side2 = 0;
+      }
+      
+      if ($("#id_step_trim_to_size_price").length){
+        var trim = $('#id_step_trim_to_size_price').val();
+      } else {
+        var trim = 0;
+      }
+      
+      if ($("#id_step_wear_and_tear_price").length){
+        var wear = $('#id_step_wear_and_tear_price').val();
+      } else {
+        var wear = 0;
+      }
+
+      if ($("#id_step_send_mailmerge_to_press_price").length){
+        var mailmerge = $('#id_step_send_mailmerge_to_press_price').val();
+      } else {
+        var mailmerge = 0;
+      }
+      
+      if ($("#id_step_print_mailmerge_price").length){
+        var print_mailmerge = $('#id_step_print_mailmerge_price').val();
+      } else {
+        var print_mailmerge = 0;
+      }
+      
+      if ($("#id_step_NCR_compound_price").length){
+        var ncr = $('#id_step_NCR_compound_price').val();
+      } else {
+        var ncr = 0;
+      }
+      
+      if ($("#id_step_white_compound_price").length){
+        var white = $('#id_step_white_compound_price').val();
+      } else {
+        var white = 0;
+      }
+      
+      if ($("#id_step_perf_price").length){
+        var perf = $('#id_step_perf_price').val();
+      } else {
+        var perf = 0;
+      }
+      
+      if ($("#id_step_number_price").length){
+        var number = $('#id_step_number_price').val();
+      } else {
+        var number = 0;
+      }
+
+      if ($("#id_step_insert_frontback_cover_price").length){
+        var insert_cover = $('#id_step_insert_frontback_cover_price').val();
+      } else {
+        var insert_cover = 0;
+      }
+
+      if ($("#id_step_insert_wrap_around_price").length){
+        var insert = $('#id_step_insert_wrap_around_price').val();
+      } else {
+        var insert = 0;
+      }
+
+      if ($("#id_step_insert_chip_divider_price").length){
+        var insert_chip = $('#id_step_insert_chip_divider_price').val();
+      } else {
+        var insert_chip = 0;
+      }
+
+      if ($("#id_step_set_to_drill_price").length){
+        var set_drill = $('#id_step_set_to_drill_price').val();
+      } else {
+        var set_drill = 0;
+      }
+
+      if ($("#id_step_drill_price").length){
+        var drill = $('#id_step_drill_price').val();
+      } else {
+        var drill = 0;
+      }
+
+      if ($("#id_step_staple_price").length){
+        var staple = $('#id_step_staple_price').val();
+      } else {
+        var staple = 0;
+      }
+
+      if ($("#id_step_fold_price").length){
+        var fold = $('#id_step_fold_price').val();
+      } else {
+        var fold = 0;
+      }
+
+      if ($("#id_step_tab_price").length){
+        var tab = $('#id_step_tab_price').val();
+      } else {
+        var tab = 0;
+      }
+
+      if ($("#id_step_bulk_mail_tray_sort_paperwork_price").length){
+        var tray = $('#id_step_bulk_mail_tray_sort_paperwork_price').val();
+      } else {
+        var tray = 0;
+      }
+
+      if ($("#id_misc1_price").length){
+        var misc1 = $('#id_misc1_price').val();
+      } else {
+        var misc1 = 0;
+      }
+
+      if ($("#id_misc2_price").length){
+        var misc2 = $('#id_misc2_price').val();
+      } else {
+        var misc2 = 0;
+      }
+
+      if ($("#id_misc3_price").length){
+        var misc3 = $('#id_misc3_price').val();
+      } else {
+        var misc3 = 0;
+      }
+
+      if ($("#id_misc4_price").length){
+        var misc4 = $('#id_misc4_price').val();
+      } else {
+        var misc4 = 0;
+      }
+
+      if ($("#id_step_id_count_price").length){
+        var count = $('#id_step_id_count_price').val();
+      } else {
+        var count = 0;
+      }
+
+      if ($("#id_step_count_package_price").length){
+        var package = $('#id_step_count_package_price').val();
+      } else {
+        var package = 0;
+      }
+
+      if ($("#id_step_delivery_price").length){
+        var deliver = $('#id_step_delivery_price').val();
+      } else {
+        var deliver = 0;
+      }
+
+      if ($("#id_step_packing_slip_price").length){
+        var packing_slip = $('#id_step_packing_slip_price').val();
+      } else {
+        var packing_slip = 0;
+      }
+ 
+       
+      
+      /*var workorder = $('#id_step_workorder_price').val();
       var reclaim = $('#id_step_reclaim_artwork_price').val();
       var send_to_press = $('#id_step_send_to_press_price').val();
       var mailmerge = $('#id_step_send_mailmerge_to_press_price').val();
@@ -390,7 +590,7 @@ $(document).ready(function(){
       var count = $('#id_step_id_count_price').val();
       var package = $('#id_step_count_package_price').val();
       var deliver = $('#id_step_delivery_price').val();
-      var packing_slip = $('#id_step_packing_slip_price').val();
+      var packing_slip = $('#id_step_packing_slip_price').val();*/
 
       /*qty = Number(qty)
       paper_cost = Number(paper_cost)
@@ -432,6 +632,7 @@ $(document).ready(function(){
       deliver = Number(deliver)
       packing_slip = Number(packing_slip)
 
+
       var total = workorder + reclaim + send_to_press + mailmerge+ material_cost + markup + side1 + side2 + trim + wear + print_mailmerge + ncr + white + perf + number + insert_cover + insert + insert_chip + set_drill + 
       drill + staple + fold + tab + tray + misc1 + misc2 + misc3 + misc4 + count + package + deliver + packing_slip
 
@@ -450,6 +651,22 @@ $(document).ready(function(){
   
   
     });
+
+    /*$('#id_container').on("click change",function(){
+      //alert( "Handler for `keyup` called." );
+      var workorder = $('#id_step_workorder_price').val();
+      var reclaim = $('#id_step_reclaim_artwork_price').val();
+
+      workorder=Number(workorder)
+      reclaim = Number(reclaim)
+
+      var total = workorder + reclaim
+      total = total.toFixed(2);
+
+      $('#id_price_total').val(total);
+  
+  
+    });*/
   
 
   

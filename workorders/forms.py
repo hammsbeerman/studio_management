@@ -54,6 +54,10 @@ class DesignItemForm(forms.ModelForm):
    class Meta:
        model = WorkorderItem
        fields = ['internal_company', 'design_type', 'description', 'quantity', 'unit_price', 'last_item_order', 'last_item_price']
+       labels = {
+            'unit_price':'Price per Hour',
+
+        }
 
 class NoteForm(forms.ModelForm):
     class Meta:
