@@ -6,16 +6,17 @@ from krueger.models import PaperStock
 from workorders.models import Category, SubCategory
 
 class PriceSheet(models.Model):
+    ##Note: Any changes here need to be reflected in Krueger.models.KruegerJobDetail
     category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE)
     subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)
     name = models.CharField('Name', max_length=100, blank=False, null=False)
-    description = models.CharField('Job Description', max_length=100, blank=True, null=True)
+    description = models.CharField('Description', max_length=100, blank=True, null=True)
     set_per_book = models.PositiveIntegerField('# of sets / books/ pieces', blank=True, null=True)
     pages_per_book = models.PositiveBigIntegerField('Pages per Book', blank=True, null=True)
     qty_of_sheets = models.CharField('Qty of Sheets', max_length=10, blank=True, null=True)
     original_size = models.CharField('Original Size', max_length=100, blank=True, null=True)
     press_size = models.CharField('Press Size', max_length=100, blank=True, null=True)
-    press_size_per_parent = models.CharField('Press sheets / Parent', max_length=100, blank=True, null=True)
+    press_sheet_per_parent = models.PositiveBigIntegerField('Press sheets / Parent', blank=True, null=True)
     flat_size = models.CharField('Flat Size', max_length=100, blank=True, null=True)
     finished_size = models.CharField('Finished Size', max_length=100, blank=True, null=True)
     gangup = models.PositiveBigIntegerField('Gangup', blank=True, null=True)
@@ -117,9 +118,17 @@ class PriceSheet(models.Model):
     price_total = models.CharField('Total Price', max_length=10, blank=True, null=True)
     price_total_per_m =models.CharField('Price / M', max_length=10, blank=True, null=True)
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    edited = models.BooleanField('Edited', blank=False, null=False, default=False)
 
     def get_absolute_url(self):
         return reverse("pricesheet:template", kwargs={"id": self.id})
+
+    def __str__(self):
+        return self.name
+    
+class FixedCost(models.Model):
+    name = models.CharField('Name', max_length=100, blank=False, null=False, unique=True)
+    value = models.DecimalField('Value', max_digits=10, decimal_places=2, blank=False, null=False)
 
     def __str__(self):
         return self.name

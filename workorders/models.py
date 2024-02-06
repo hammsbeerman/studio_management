@@ -22,6 +22,11 @@ class Workorder(models.Model):
     #total_price = models.IntegerField('Total Price', blank=True, default=True)
     billed = models.BooleanField('Billed', blank=False, null=False, default=False)
     tax_exempt = models.BooleanField(default=False)
+    percent_discount = models.CharField('Discount %', max_length=100, blank=True, null=True)
+    dollar_discount = models.CharField('Discount $', max_length=100, blank=True, null=True)
+    tax = models.CharField('Tax', max_length=100, blank=True, null=True)
+    subtotal = models.CharField('Subtotal', max_length=100, blank=True, null=True)
+    workorder_total = models.CharField('Workorder Total', max_length=100, blank=True, null=True)
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})

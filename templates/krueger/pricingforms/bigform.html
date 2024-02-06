@@ -17,7 +17,7 @@
         <div class="MyForm">
             <form method='POST' action=''>
                 {% csrf_token %}
-            <div class="container">
+            <div class="container" id="id_container">
                 <input type="hidden" id="jobid" name="jobid" value="{{ jobid }}">
                 <input type="hidden" id="workorder" name="workorder" value="{{ workorder_id }}">
                 <div class="row">
@@ -45,10 +45,10 @@
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {{ form.set_per_book|as_crispy_field }}
+                                <span class="text-primary">{{ form.set_per_book|as_crispy_field }}</span>
                             </div>
                             <div class='col'>
-                                {{ form.pages_per_book|as_crispy_field }}
+                                <span class="text-primary">{{ form.pages_per_book|as_crispy_field }}</span>
                             </div>
                             <div class='col'>
                                 {{ form.qty_of_sheets|as_crispy_field }}
@@ -62,7 +62,7 @@
                                 {{ form.press_size|as_crispy_field }}
                             </div>
                             <div class='col'>
-                                {{ form.press_size_per_parent|as_crispy_field }}
+                                <span class="text-primary">{{ form.press_sheet_per_parent|as_crispy_field }}</span>
                             </div>
                         </div>
                         <div class="row">
@@ -73,10 +73,10 @@
                                 {{ form.finished_size|as_crispy_field }}
                             </div>
                             <div class='col'>
-                                {{ form.gangup|as_crispy_field }}
+                                <span class="text-primary">{{ form.gangup|as_crispy_field }}</span>
                             </div>
                             <div class='col'>
-                                {{ form.overage|as_crispy_field }}
+                                <span class="text-primary">{{ form.overage|as_crispy_field }}</span>
                             </div>
                         </div>
                         <div class="row">

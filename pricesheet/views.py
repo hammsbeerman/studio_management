@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
-from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateForm, NCRForm
-from .models import PriceSheet, SubCategory
+from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateForm, NewTemplateForm, NCRForm
+from .models import PriceSheet, SubCategory, FixedCost
 from workorders.models import WorkorderItem, Category
 from krueger.models import KruegerJobDetail, PaperStock
 from krueger.forms import KruegerJobDetailForm
@@ -46,9 +46,15 @@ def envelope(request, pk, cat):
 
 def template(request, id=None):
     obj = PriceSheet.objects.get(id=id)
+    print('modified')
+    print(obj.edited)
     item = get_object_or_404(PriceSheet, id=id)
     print(item.name)
-    form = EnvelopeForm(instance=obj)
+    form = NewTemplateForm(instance=obj)
+    if not obj.edited:
+        fixedcosts = FixedCost.objects.all()
+    else:
+        fixedcosts = ''
     selected_paper = form.instance.paper_stock_id
     try:
         selected_paper = PaperStock.objects.get(id=selected_paper)
@@ -59,20 +65,27 @@ def template(request, id=None):
     papers = PaperStock.objects.all()
     formdata = PriceSheet.objects.get(id=id)
     if request.method =="POST":
-        form = EnvelopeForm(request.POST, instance=item)
+        form = NewTemplateForm(request.POST, instance=item)
         if form.is_valid():
             form.save()
+        else:
+            print(form.errors)
+            print(id)
+            edited = PriceSheet.objects.get(id=id)
+            edited.edited = 1
+            edited.save()
             context = {
                 'message': 'Form saved successfully'
             }
             return redirect('pricesheet:template_list')
     context = {
+        'fixedcosts':fixedcosts,
         'form': form,
         'papers': papers,
         'selected_paper': selected_paper,
         'formdata': formdata,
     }
-    return render(request, "pricesheet/templates/master.html", context)
+    return render(request, "pricesheet/templates/newtemplate_form.html", context)
 
 
 def add_category(request):

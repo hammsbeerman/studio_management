@@ -22,7 +22,7 @@ class KruegerJobDetail(models.Model):
     # class Company(models.TextChoices):
     #     LK = "LK"
     #     KRUEGER = "KRUEGER"
-
+    ##Note: Any changes here need to be reflected in Pricesheet.models.Pricesheet
     workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=False, on_delete=models.CASCADE)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=False, null=False)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=False, null=False)
@@ -38,7 +38,7 @@ class KruegerJobDetail(models.Model):
     qty_of_sheets = models.CharField('Qty of Sheets', max_length=10, blank=True, null=True)
     original_size = models.CharField('Original Size', max_length=100, blank=True, null=True)
     press_size = models.CharField('Press Size', max_length=100, blank=True, null=True)
-    press_size_per_parent = models.CharField('Press sheets / Parent', max_length=100, blank=True, null=True)
+    press_sheet_per_parent = models.PositiveBigIntegerField('Press sheets / Parent', blank=True, null=True)
     flat_size = models.CharField('Flat Size', max_length=100, blank=True, null=True)
     finished_size = models.CharField('Finished Size', max_length=100, blank=True, null=True)
     gangup = models.PositiveBigIntegerField('Gangup', blank=True, null=True)

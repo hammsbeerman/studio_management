@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ('qty_of_sheets', models.CharField(blank=True, max_length=10, null=True, verbose_name='Qty of Sheets')),
                 ('original_size', models.CharField(blank=True, max_length=100, null=True, verbose_name='Original Size')),
                 ('press_size', models.CharField(blank=True, max_length=100, null=True, verbose_name='Press Size')),
-                ('press_size_per_parent', models.CharField(blank=True, max_length=100, null=True, verbose_name='Press sheets / Parent')),
+                ('press_sheet_per_parent', models.CharField(blank=True, max_length=100, null=True, verbose_name='Press sheets / Parent')),
                 ('flat_size', models.CharField(blank=True, max_length=100, null=True, verbose_name='Flat Size')),
                 ('finished_size', models.CharField(blank=True, max_length=100, null=True, verbose_name='Finished Size')),
                 ('gangup', models.PositiveBigIntegerField(blank=True, null=True, verbose_name='Gangup')),

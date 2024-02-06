@@ -151,7 +151,7 @@
         "category": 6,
         "name": "#10 Regular",
         "description": null,
-        "template": true
+        "template": false
     }
 },
 {
@@ -161,7 +161,7 @@
         "category": 6,
         "name": "#9 Window",
         "description": "#9 Window",
-        "template": true
+        "template": false
     }
 },
 {
@@ -171,7 +171,7 @@
         "category": 10,
         "name": "2 Part NCR Form",
         "description": "2 Part NCR Form",
-        "template": true
+        "template": false
     }
 },
 {

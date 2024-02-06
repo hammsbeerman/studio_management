@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-from .models import PriceSheet
+from .models import PriceSheet, FixedCost
 
 class PriceSheetAdmin(admin.ModelAdmin):
-        list_display = ('category', 'subcategory', 'name', 'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_size_per_parent',
+        list_display = ('category', 'subcategory', 'name', 'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent',
             'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 'paper_stock', 'price_per_m', 
             #'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'step_send_mailmerge_to_press_price', 'mailmerge_qty', 'mailmerge_price_per_piece', 
@@ -17,4 +17,9 @@ class PriceSheetAdmin(admin.ModelAdmin):
             'misc3_price', 'misc4_description', 'misc4_price')
         
 admin.site.register(PriceSheet,PriceSheetAdmin)
+
+class FixedCostAdmin(admin.ModelAdmin):
+        list_display = ('name', 'value')
+
+admin.site.register(FixedCost,FixedCostAdmin)
 
