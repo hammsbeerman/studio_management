@@ -1,5 +1,5 @@
 from django.db import models
-from vendors.models import Vendor
+from inventory.models import Vendor
 from workorders.models import Workorder
 
 
