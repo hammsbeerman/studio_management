@@ -22,7 +22,13 @@ Pricing templates
     <button hx-get="{% url 'pricesheet:add_template' %}" hx-target="#dialog" class="btn btn-primary">
       Add Template
       </button>
-
+<p>
+  Instructions:<br/>
+  Create a Category, then create a subcategory for the Category<br/>
+  Create a template for the subcategory, and it will then appear in the list.<br/>
+      <p>
+  Click on an item. If it doesn't have a pricing template, it will ask you to create one.<br/>
+  The pricing template will be used to fill out basic form info for the specified subcategory<br/>
 
 <div id="modal" class="modal fade">
     <div id="dialog" class="modal-dialog" hx-target="this"></div>
