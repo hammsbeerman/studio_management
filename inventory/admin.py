@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Inventory, Vendor, InventoryDetail, Measurement
+from .models import Inventory, Vendor, InventoryDetail, Measurement, OrderOut
 
 
 
@@ -38,3 +38,8 @@ class VendorAdmin(admin.ModelAdmin):
 admin.site.register(Vendor, VendorAdmin)
 
 admin.site.register(Measurement)
+
+class OrderOutAdmin(admin.ModelAdmin):
+    list_display = ['workorder', 'customer', 'description', 'quantity', 'total_price']
+
+admin.site.register(OrderOut, OrderOutAdmin)

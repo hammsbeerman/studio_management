@@ -5,9 +5,11 @@ from django.db.models import Avg, Count, Min, Sum
 from decimal import Decimal
 from customers.models import Customer, Contact
 from .models import Workorder, Numbering, Category, DesignType, WorkorderItem, SubCategory
-from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, OrderOutForm
+from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm
 from krueger.forms import KruegerJobDetailForm
 from krueger.models import KruegerJobDetail
+from inventory.forms import OrderOutForm
+from inventory.models import OrderOut
 
 def create_base(request):
     #newcustomerform = CustomerForm(request.POST or None)
@@ -95,6 +97,8 @@ def overview(request, id=None):
     workid = workorder.id
     categories = Category.objects.all().distinct()
     #total = decimal.Decimal(total.total_price__sum)
+    changecustomer = customer.id
+    changeworkorder = workorder.id
     context = {
             'workid': workid,
             'workorder': workorder,
@@ -102,6 +106,8 @@ def overview(request, id=None):
             'contact': contact,
             'history': history,
             'categories':categories,
+            'changecustomer':changecustomer,
+            'changeworkorder':changeworkorder
         }
     return render(request, "workorders/overview.html", context)
 
@@ -138,7 +144,7 @@ def edit_workorder(request):
         form = WorkorderForm(request.POST, instance=obj)
         if form.is_valid():
                 form.save()
-                return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderUpdated'})
+                return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderInfoChanged'})
     else:
         obj = get_object_or_404(Workorder, id=workorder)
         form = WorkorderForm(instance=obj)
@@ -201,7 +207,15 @@ def add_item(request, parent_id):
             print('parent id')
             print(parent.id)
             #print(parent.category)
-            detailbase = KruegerJobDetail(workorder_id = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company,
+            customform = Category.objects.get(id=cat)
+            print(customform.customform)
+            if customform.customform is True:
+                print('customform')
+                detailbase = OrderOut(workorder_id = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company,
+                                          customer_id=parent.customer_id, hr_customer=parent.hr_customer, category = cat, description = desc,)
+            else:
+                print('not custom')
+                detailbase = KruegerJobDetail(workorder_id = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company,
                                           customer_id=parent.customer_id, hr_customer=parent.hr_customer, category = cat, subcategory = subcat, description = desc,
                                           )
             detailbase.save()
@@ -275,17 +289,44 @@ def edit_modal_item(request, pk, cat):
         ####
         #Get form to load from category
         loadform = Category.objects.get(id=category)
-        #formname = loadform.formname
         formname = globals()[loadform.formname]
         form = formname(request.POST, instance=item)
+        #formname = globals()[loadform.formname]
+        #form = OrderOutForm(request.POST, instance=item)
+        #print(formname)
         ####
         #form = DesignItemForm(request.POST, instance=item)
         obj = form.save(commit=False)
         #form.instance.item_category = category
         if form.is_valid():
+            if loadform.customform is True:
+                print('true')
+                ################################### Need to change this to global modal and form if antother is added
+                newobj = get_object_or_404(OrderOut, workorder_item=pk)
+                print(newobj.id)
+                itemform = OrderOutForm(request.POST, instance=newobj)
+                if itemform.is_valid():
+                    itemform.save()
+                    unit_price = request.POST.get('unit_price')
+                    print(unit_price)
+                    lineitem = OrderOut.objects.get(id=itemform.instance.pk)
+                    lineitem.edited = 1
+                    lineitem.unit_price = unit_price
+                    lineitem.save()
+                    # print('pk')
+                    # print(itemform.instance.pk)
+                    #itemform.save(commit=False)
+                    #itemform.edited = 1   
+                else:
+                    print(form.errors)
+            print(form.instance.id)
+            print('valid')
             form.save()
+            print(obj.quantity)
             qty = obj.quantity
             unit_price=obj.unit_price
+            print('unitprice')
+            print(unit_price)
             total=0
             if qty and unit_price:
                 total = qty * unit_price
@@ -313,6 +354,9 @@ def edit_modal_item(request, pk, cat):
     loadform = Category.objects.get(id=cat)
     #formname = loadform.formname
     formname = globals()[loadform.formname]
+    if loadform.customform is True:
+        item = get_object_or_404(OrderOut, workorder_item=pk)
+        price_ea = item.unit_price
     form = formname(instance=item)
     ####
     #form = DesignItemForm(instance=item)
@@ -322,6 +366,7 @@ def edit_modal_item(request, pk, cat):
         'item': item,
         'obj': obj,
         'cat': category,
+        'price_ea': price_ea,
     }
     return render(request, 'workorders/modals/design_item_form.html', context)
 
@@ -479,7 +524,7 @@ def notes(request, pk=None):
         form = NoteForm(request.POST, instance=item)
         if form.is_valid():
                 form.save()
-                return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderUpdated'})
+                return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     form = NoteForm(instance=item)
     context = {
         #'notes':notes,
@@ -498,7 +543,7 @@ def workorder_notes(request, pk=None):
         form = WorkorderNoteForm(request.POST, instance=item)
         if form.is_valid():
                 form.save()
-                return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderUpdated'})
+                return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderInfoChanged'})
     form = WorkorderNoteForm(instance=item)
     context = {
         #'notes':notes,

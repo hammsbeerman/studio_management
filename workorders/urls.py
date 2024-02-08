@@ -41,6 +41,7 @@ urlpatterns = [
     path("workorders/<int:id>", history_overview, name='history_overview'),
     path("edit_workorder", edit_workorder, name='edit_workorder'),
     path("workorder_info/", workorder_info, name='workorder_info'),
+    path("workorder_info/<int:workorder>/", workorder_info, name='workorder_info'),
     path('categories/', subcategory, name='subcategory'),
     path('tax/<str:tax>/<int:id>/', tax, name='tax'),
     path('notes/<int:pk>/', notes, name='notes'),

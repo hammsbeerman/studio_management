@@ -118,7 +118,7 @@ def new_contact(request):
                 #form2 = 
                 print(form.instance.id)
                 print('else')
-            return HttpResponse(status=204, headers={'HX-Trigger': 'ContactAdded'})
+            return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
     else:
         form = ContactForm()
         context = {
@@ -233,12 +233,20 @@ def cust_info(request):
 
 def contact_info(request):
     if request.htmx:
-        contact = request.GET.get('contact')
+        changeworkorder = request.GET.get('workorder')
+        changecustomer = request.GET.get('customer')
+        workorder = Workorder.objects.get(id=changeworkorder)
+        contact = workorder.contact_id
+        print(contact)
         if contact:
             print(contact)
+            print('test')
             contact = Contact.objects.get(id=contact)
             print(contact.id)
-            context = { 'contact': contact,}
+            context = { 'contact': contact,
+                        'changecustomer':changecustomer,
+                        'changeworkorder':changeworkorder
+                       }
             return render(request, 'customers/partials/contact_info.html', context)
         workorder = request.GET.get('workorder')
         print(workorder)
@@ -257,6 +265,8 @@ def contact_info(request):
     context = {
             'workorder': workorder,
             'contact': contact,
+            'changecustomer':changecustomer,
+            'changeworkorder':changeworkorder
         }
     return render(request, 'customers/partials/contact_info.html', context)
 
@@ -270,7 +280,7 @@ def edit_contact(request):
         form = ContactForm(request.POST, instance=obj)
         if form.is_valid():
                 form.save()
-                return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+                return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
     else:
         if not contact:
             workorder = request.GET.get('workorder')
@@ -297,6 +307,7 @@ def change_contact(request):
         obj = Workorder.objects.get(id=workorder)
         obj.contact_id = contact
         obj.save(update_fields=['contact_id'])
+        print('here')
         return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
     print(customer)
     print(workorder)

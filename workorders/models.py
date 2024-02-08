@@ -1,7 +1,6 @@
 from django.db import models
 from django.urls import reverse
 from customers.models import Customer, Contact
-from inventory.models import Vendor
 
 
 class Workorder(models.Model):
@@ -79,7 +78,8 @@ class Category(models.Model):
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     design_type = models.BooleanField('Design Type', blank=True, null=True)
     formname = models.CharField('Form', max_length=100, blank=True, null=True)
-    modal = models.BooleanField('Modal', blank=True, null=True)
+    modelname = models.CharField('Model', max_length=100, blank=True, null=True)
+    modal = models.BooleanField('Popup Modal', blank=True, null=True)
     template = models.BooleanField('Template', blank=True, null=True, default=False)
     customform = models.BooleanField('Uses Custom Form', blank=True, null=True, default=False)
     pricesheet_type = models.ForeignKey(FixedCost, blank=True, null=True, on_delete=models.CASCADE)
@@ -116,9 +116,6 @@ class WorkorderItem(models.Model):
     design_type = models.ForeignKey(DesignType, blank=True, null=True, on_delete=models.CASCADE)
     description = models.CharField('Description', max_length=100, blank=False, null=False)
     item_order = models.PositiveSmallIntegerField('Display Order', blank=True, null=True)
-    vendor = models.ForeignKey(Vendor, blank=False, null=True, on_delete=models.DO_NOTHING)
-    purchase_price = models.DecimalField('Purchase Price', max_digits=6, decimal_places=2, blank=True, null=True)
-    percent_markup = models.DecimalField('Percent Markup', max_digits=6, decimal_places=2, blank=True, null=True)
     quantity = models.DecimalField('Quantity', max_digits=6, decimal_places=2, blank=True, null=True)
     unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)

@@ -1,4 +1,11 @@
-<h5 class="card-title">{% if customer.company_name %}{{ customer.company_name }}</h5>
+
+
+
+                <div class="card-header">
+                    Customer Info
+                    </div>
+                    <div class="card-body" id="custinfo" hx-trigger="CustomerEdit from:body" hx-target="this" >
+                        <h5 class="card-title">{% if customer.company_name %}{{ customer.company_name }}</h5>
             <p class="card-text">
                 Address: {{ customer.address1 }} <br/>
                 {% if customer.address2 %}{{customer.address2}}{% endif %}<br/>
@@ -6,3 +13,9 @@
                 Phone: {{ customer.phone1 }}<br/>
                 Email: {{ customer.email }}<br/>
                 {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <button hx-get="{% url 'customers:edit_customer' %}?customer={{ customer.id }}" hx-target="#dialog">Edit Customer</button>
+                        <button hx-get="{% url 'customers:cust_info' %}?customer={{ customer.id }}" hx-target="#customer-info-card">Refresh</button>
+                    
+                    </div>

@@ -1,3 +1,4 @@
+{% load static %}
 {% for object in items %}
     <tr>
         <td>{{ object.item_category }}</td>
@@ -24,17 +25,27 @@
                     <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_modal_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
                 {% else %}
                 <!-- Edit other category with modal templates-->
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Shouldn't work</button>
+                    <button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Something's broken</button>
                 {% endif %}
             {% endif %}
         </td>
-         <td>   
+        <td>   
             <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk workorder=object.workorder %}" hx-target="#dialog">Copy</button>
             <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk%}" hx-target="#dialog">Copy To:</button>
-
-
         </td>
-        <td>{% if object.notes %}<button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:notes' pk=object.pk%}" hx-target="#dialog">Notes</button>{% endif %}</td>
+        <td>
+            {% if object.notes %}
+                <button class="btn btn-primary-outline" hx-get="{% url 'workorders:notes' pk=object.pk%}" hx-target="#dialog">
+                    <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+                </button>
+            {% else %}
+                <button class="btn btn-primary-outline" hx-get="{% url 'workorders:notes' pk=object.pk%}" hx-target="#dialog">
+                    <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
+                </button>
+            {% endif %}
+
+                
+        </td>
 
         <td id='taxexempt_{{object.pk}}'>{% if object.tax_exempt == 0%}
             <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=object.tax_exempt id=object.pk %}" hx-target="#taxexempt_{{object.pk}}">Tax</button>

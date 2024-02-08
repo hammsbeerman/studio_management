@@ -1,54 +1,24 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% load static %}
+
 
 {% block content %}
-
+<script src="{% static 'js/order_out_form.js' %}"></script>
 <div class="row">
   <div class="col-md-3 mb-sm-0">
-      <div class="card">
-          <div class="card-header">
-          Customer Info
-          </div>
-          <div class="card-body" id="custinfo" hx-trigger="CustomerEdit from:body" hx-target="this" >
-              {% include 'customers/partials/customer_info.html' %}
-          </div>
-          <div class="card-footer">
-              <button hx-get="{% url 'customers:edit_customer' %}?customer={{ customer.id }}" hx-target="#dialog">Edit Customer</button>
-              <button hx-get="{% url 'customers:cust_info' %}?customer={{ customer.id }}" hx-target="#custinfo">Refresh</button>
-          
-          </div>
+    <div id="customer-info-card" class="card" hx-trigger="CustomerAdded from:body" hx-get="{% url 'customers:cust_info'  %}?customer={{ customer.id }}" hx-target="this">
+      {% include 'customers/partials/customer_info.html' %}
       </div>
   </div>
   <div class="col-md-3">
-      <div class="card">
-          <div class="card-header">
-          Contact Info
-          </div>
-              <div class="card-body" id="contactinfo">
-                {% include 'customers/partials/contact_info.html' %}
-                  
-              </div>
-              <div class="card-footer">
-                <button hx-get="{% url 'customers:edit_contact' %}?contact={{ contact.id }}&customer={{ customer.id }}&workorder={{ workorder.id }}" hx-target="#dialog">Edit</button>
-                <button hx-get="{% url 'customers:new_contact' %}?customer={{ customer.id }}&workorder={{ workorder.id }}" hx-target="#dialog">Add</button>
-                <button hx-get="{% url 'customers:change_contact' %}?customer={{ customer.id }}&workorder={{ workorder.id }}" hx-target="#dialog">Change</button>
-                <button hx-get="{% url 'customers:contact_info' %}?workorder={{ workorder.id }}" hx-target="#contactinfo">Refresh</button>
-              </div>
+    <div id="contact-card" class="card" hx-trigger="ContactChanged from:body" hx-get="{% url 'customers:contact_info'  %}?contact={{ contact.id }}&workorder={{changeworkorder}}&customer={{changecustomer}}" hx-target="this">
+      {% include 'customers/partials/contact_info.html' %}
       </div>
   </div>
   <div class="col-md-3">
-      <div class="card">
-          <div class="card-header">
-          Workorder Info
-          </div>
-          <div class="card-body" id="workorderinfo">
-            {% include 'workorders/partials/workorder_info.html' %}
-          </div>
-          <div class="card-footer">
-            <button hx-get="{% url 'workorders:edit_workorder' %}?workorder={{ workorder.id }}" hx-target="#dialog">Edit</button>
-            <button hx-get="{% url 'workorders:workorder_info' %}?workorder={{ workorder.id }}" hx-target="#workorderinfo">Refresh</button>
-            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:workorder_notes' pk=workorder.id %}" hx-target="#dialog">Notes</button>
-          </div>
+      <div id="workorder-info-card" class="card" hx-trigger="WorkorderInfoChanged from:body" hx-get="{% url 'workorders:workorder_info'  %}?workorder={{workorder.id}}" hx-target="this">
+        {% include 'workorders/partials/workorder_info.html' %}
       </div>
   </div>
   <div class="col-md-3">
@@ -178,7 +148,11 @@
 
 {% block scripts %}
 
+<script src="{% static 'js/order_out_form.js' %}"></script>
+
 <script>
+
+  
 
     $(document).ready(function () {
       $("#id_customer").select2();

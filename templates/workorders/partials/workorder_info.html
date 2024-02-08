@@ -1,4 +1,12 @@
-<h5 class="card-title">Invoice #: {{ workorder.workorder }}</h5>
+{% load static %}
+
+
+<div class="card-header">
+Workorder Info
+</div>
+<div class="card-body" id="workorderinfo">
+        
+        <h5 class="card-title">Invoice #: {{ workorder.workorder }}</h5>
               <p class="card-text">
                       Internal Company: {{ workorder.internal_company }}<br/>
                       Description: {{ workorder.description }}<br/>
@@ -9,3 +17,17 @@
                       {% if workorder.original_order %}Original Order #: <a href="{% url 'workorders:overview' id=workorder.original_order %}">{{ workorder.original_order }}</a><br/> {% endif %}
                       {% if workorder.lk_workorder %}LK Workorder #: {{ workorder.lk_workorder }}<br/> {% endif %}
                       {% if workorder.printleader_workorder %}Printleader Order #: {{ workorder.printleader_workorder }} {% endif %}
+</div>
+<div class="card-footer">
+        <button hx-get="{% url 'workorders:edit_workorder' %}?workorder={{ workorder.id }}" hx-target="#dialog">Edit</button>
+        <button hx-get="{% url 'workorders:workorder_info' %}?workorder={{ workorder.id }}" hx-target="#workorder-info-card">Refresh</button>
+        {% if workorder.notes %}
+        <button class="btn btn-primary-outline" hx-get="{% url 'workorders:workorder_notes' pk=workorder.id %}" hx-target="#dialog">
+        <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+        </button>
+        {% else %}
+        <button class="btn btn-primary-outline" hx-get="{% url 'workorders:workorder_notes' pk=workorder.id %}" hx-target="#dialog">
+                <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
+        </button>
+        {% endif %}
+</div>

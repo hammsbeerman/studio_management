@@ -1,5 +1,7 @@
 from django.db import models
 from django.urls import reverse
+from customers.models import Customer
+from workorders.models import Workorder
 
 
 class Measurement(models.Model):
@@ -70,6 +72,37 @@ class InventoryDetail(models.Model):
     vendor_item_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
     test = models.CharField('test', max_length=100, blank=True)
 
+    def __str__(self):
+        return self.item
+
+
+class OrderOut(models.Model):
+    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=False, on_delete=models.CASCADE)
+    hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
+    workorder_item = models.CharField('Workorder Item', max_length=100, blank=True, null=True)
+    internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
+    customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_DEFAULT, default=2)
+    hr_customer = models.CharField('Customer Name', max_length=100, blank=True, null=True)
+    category = models.CharField('Category', max_length=10, blank=True, null=True)
+    description = models.CharField('Description', max_length=100, blank=True, null=True)
+
+    vendor = models.ForeignKey(Vendor, blank=True, null=True, on_delete=models.DO_NOTHING)
+    purchase_price = models.DecimalField('Purchase Price', max_digits=6, decimal_places=2, blank=True, null=True)
+    percent_markup = models.DecimalField('Percent Markup', max_digits=6, decimal_places=2, blank=True, null=True)
+    quantity = models.DecimalField('Quantity', max_digits=6, decimal_places=2, blank=True, null=True)
+    unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
+    total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)
+    override_price = models.DecimalField('Override Price', max_digits=8, decimal_places=2, blank=True, null=True)
+    last_item_order = models.CharField('Original Item Order', max_length=100, blank=True, null=True)
+    last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
+    notes = models.TextField('Notes:', blank=True, null=False)
+    dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    billed = models.BooleanField('Billed', blank=False, null=False, default=False)
+    edited = models.BooleanField('Edited', blank=False, null=False, default=False)
+
+    def __str__(self):
+        return self.workorder
+
 
 ###################Not used yet
 
@@ -82,4 +115,6 @@ class VendorContact(models.Model):
     email = models.EmailField('Email', max_length=100, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+
+
     
