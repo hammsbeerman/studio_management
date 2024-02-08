@@ -58,6 +58,24 @@ class DesignItemForm(forms.ModelForm):
             'unit_price':'Price per Hour',
 
         }
+       
+class DesignItemForm(forms.ModelForm):
+   class Meta:
+       model = WorkorderItem
+       fields = ['internal_company', 'design_type', 'description', 'quantity', 'unit_price', 'last_item_order', 'last_item_price']
+       labels = {
+            'unit_price':'Price per Hour',
+
+        }
+
+class OrderOutForm(forms.ModelForm):
+   class Meta:
+       model = WorkorderItem
+       fields = ['internal_company', 'description', 'quantity', 'vendor', 'purchase_price', 'percent_markup','total_price', 'override_price', 'last_item_order', 'last_item_price']
+       labels = {
+            'total_price':'Item sell price',
+
+        }
 
 class NoteForm(forms.ModelForm):
     class Meta:

@@ -1,6 +1,8 @@
 from django.db import models
 from django.urls import reverse
 from customers.models import Customer, Contact
+from inventory.models import Vendor
+
 
 class Workorder(models.Model):
     customer = models.ForeignKey(Customer, blank=False, null=False, on_delete=models.CASCADE, related_name='workorders')
@@ -79,13 +81,14 @@ class Category(models.Model):
     formname = models.CharField('Form', max_length=100, blank=True, null=True)
     modal = models.BooleanField('Modal', blank=True, null=True)
     template = models.BooleanField('Template', blank=True, null=True, default=False)
+    customform = models.BooleanField('Uses Custom Form', blank=True, null=True, default=False)
     pricesheet_type = models.ForeignKey(FixedCost, blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
     
 class SubCategory(models.Model):
-    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE, related_name="Category")
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     template = models.BooleanField('Template', blank=True, null=True, default=False)
@@ -113,9 +116,13 @@ class WorkorderItem(models.Model):
     design_type = models.ForeignKey(DesignType, blank=True, null=True, on_delete=models.CASCADE)
     description = models.CharField('Description', max_length=100, blank=False, null=False)
     item_order = models.PositiveSmallIntegerField('Display Order', blank=True, null=True)
+    vendor = models.ForeignKey(Vendor, blank=False, null=True, on_delete=models.DO_NOTHING)
+    purchase_price = models.DecimalField('Purchase Price', max_digits=6, decimal_places=2, blank=True, null=True)
+    percent_markup = models.DecimalField('Percent Markup', max_digits=6, decimal_places=2, blank=True, null=True)
     quantity = models.DecimalField('Quantity', max_digits=6, decimal_places=2, blank=True, null=True)
-    unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=3, blank=True, null=True)
+    unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)
+    override_price = models.DecimalField('Override Price', max_digits=8, decimal_places=2, blank=True, null=True)
     last_item_order = models.CharField('Original Item Order', max_length=100, blank=True, null=True)
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
     notes = models.TextField('Notes:', blank=True, null=False)

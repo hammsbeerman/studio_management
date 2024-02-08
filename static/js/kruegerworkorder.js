@@ -645,9 +645,15 @@ $(document).ready(function(){
 
       m = m.toFixed(2);
 
+      price_ea = total / qty
+      price_ea = price_ea.toFixed(4)
+
       $('#id_price_total').val(total);
 
       $('#id_price_total_per_m').val(m);
+
+      $('#price_ea').val(price_ea);
+      document.getElementById("id_price_ea").innerHTML = price_ea;
 
 
   

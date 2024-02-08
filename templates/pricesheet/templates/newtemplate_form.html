@@ -83,24 +83,24 @@ This form should only be used for setting up and editing templates for lineitems
                         <hr>
                         <div class="row">
                             <div class='col'>
-                                <span class="text-primary">{{ form.set_per_book|as_crispy_field }}</span>
+                                {% if form.set_per_book %}<span class="text-primary">{{ form.set_per_book|as_crispy_field }}</span>{% endif %}
                             </div>
                             <div class='col'>
-                                <span class="text-primary">{{ form.pages_per_book|as_crispy_field }}</span>
+                                {% if form.pages_per_book %}<span class="text-primary"><span class="text-primary">{{ form.pages_per_book|as_crispy_field }}</span>{% endif %}
                             </div>
                             <div class='col'>
-                                <span class="text-primary">{{ form.qty_of_sheets|as_crispy_field }}</span>
+                                {% if form.qty_of_sheets %}<span class="text-primary">{{ form.qty_of_sheets|as_crispy_field }}</span>{% endif %}
                             </div>
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {{ form.original_size|as_crispy_field }}
+                                {% if form.original_size %}{{ form.original_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
                                 {% if form.press_size %}{{ form.press_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                <span class="text-primary">{{ form.press_sheet_per_parent|as_crispy_field }}</span>
+                                {% if form.press_sheet_per_parent %}<span class="text-primary">{{ form.press_sheet_per_parent|as_crispy_field }}</span>{% endif %}
                             </div>
                         </div>
                         <div class="row">
@@ -111,24 +111,24 @@ This form should only be used for setting up and editing templates for lineitems
                                 {% if form.finished_size %}{{ form.finished_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                <span class="text-primary">{{ form.gangup|as_crispy_field }}</span>
+                                {% if form.gangup %}<span class="text-primary">{{ form.gangup|as_crispy_field }}</span>{% endif %}
                             </div>
                             <div class='col'>
-                                <span class="text-primary">{{ form.overage|as_crispy_field }}</span>
+                                {% if form.overage %}<span class="text-primary">{{ form.overage|as_crispy_field }}</span>{% endif %}
                             </div>
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {{ form.output_per_sheet|as_crispy_field }}
+                                {% if form.output_per_sheet %}{{ form.output_per_sheet|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.parent_sheets_required|as_crispy_field }}
+                                {% if form.parent_sheets_required %}{{ form.parent_sheets_required|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.side_1_clicks|as_crispy_field }}
+                                {% if form.side_1_clicks %}{{ form.side_1_clicks|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.side_2_clicks|as_crispy_field }}
+                                {% if form.side_2_clicks %}{{ form.side_2_clicks|as_crispy_field }}{% endif %}
                             </div>
                         </div>
 
@@ -165,7 +165,7 @@ This form should only be used for setting up and editing templates for lineitems
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {{ form.material_cost|as_crispy_field }}
+                                {% if form.material_cost %}{{ form.material_cost|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
                                 <label for="id_material_markup_percentage" class="form-label">
@@ -174,25 +174,25 @@ This form should only be used for setting up and editing templates for lineitems
                                 <input type="text" name="material_markup_percentage" maxlength="12" class="textinput form-control" id="id_material_markup_percentage" value="{{ fixed.material_markup}}">
                             </div>
                             <div class='col'>
-                                {{ form.material_markup|as_crispy_field }}
+                                {% if form.material_markup%}{{ form.material_markup|as_crispy_field }}{% endif %}
                             </div>
                         </div>
                         <div class="col-sm-4">
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {{ form.step_print_cost_side_1|as_crispy_field }}
+                                {% if form.step_print_cost_side_1 %}{{ form.step_print_cost_side_1|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.step_print_cost_side_1_price|as_crispy_field }}
+                                {% if form.step_print_cost_side_1_price %}{{ form.step_print_cost_side_1_price|as_crispy_field }}{% endif %}
                             </div>
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {{ form.step_print_cost_side_2|as_crispy_field }}
+                                {% if form.step_print_cost_side_2 %}{{ form.step_print_cost_side_2|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.step_print_cost_side_2_price|as_crispy_field }}
+                                {% if form.step_print_cost_side_2_price%}{{ form.step_print_cost_side_2_price|as_crispy_field }}{% endif %}
                             </div>
                         </div>
                         <div class="row">
@@ -379,57 +379,57 @@ This form should only be used for setting up and editing templates for lineitems
                         <hr>
                         <div class="row" id="misc1-row">
                             <div class='col'>
-                                {{ form.misc1_description|as_crispy_field }}
+                                {% if form.misc1_description %}{{ form.misc1_description|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.misc1_price|as_crispy_field }}
+                                {% if form.misc1_price %}{{ form.misc1_price|as_crispy_field }}{% endif %}
                             </div>
                         </div>
                         <div class="row" id="misc2-row">
                             <div class='col'>
-                                {{ form.misc2_description|as_crispy_field }}
+                                {% if form.misc2_description %}{{ form.misc2_description|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.misc2_price|as_crispy_field }}
+                                {% if form.misc2_price %}{{ form.misc2_price|as_crispy_field }}{% endif %}
                             </div>
                         </div>
                         <div class="row" id="misc3-row">
                             <div class='col'>
-                                {{ form.misc3_description|as_crispy_field }}
+                                {% if form.misc3_description %}{{ form.misc3_description|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.misc3_price|as_crispy_field }}
+                                {% if form.misc3_price %}{{ form.misc3_price|as_crispy_field }}{% endif %}
                             </div>
                         </div>
                         <div class="row" id="misc4-row">
                             <div class='col'>
-                                {{ form.misc4_description|as_crispy_field }}
+                                {% if form.misc4_description %}{{ form.misc4_description|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.misc4_price|as_crispy_field }}
+                                {% if form.misc4_price %}{{ form.misc4_price|as_crispy_field }}{% endif %}
                             </div>
                         </div>
                         <hr>
                         <div class="row">
                             <div class='col'>
-                                {{ form.step_id_count_price|as_crispy_field }}
+                                {% if form.step_id_count_price %}{{ form.step_id_count_price|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.step_count_package_price|as_crispy_field }}
+                                {% if form.step_count_package_price %}{{ form.step_count_package_price|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.step_delivery_price|as_crispy_field }}
+                                {% if form.step_delivery_price %}{{ form.step_delivery_price|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.step_packing_slip_price|as_crispy_field }}
+                                {% if form.step_packing_slip_price %}{{ form.step_packing_slip_price|as_crispy_field }}{% endif %}
                             </div>  
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {{ form.price_total|as_crispy_field }}
+                                {% if form.price_total %}{{ form.price_total|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {{ form.price_total_per_m|as_crispy_field }}
+                                {% if form.price_total_per_m %}{{ form.price_total_per_m|as_crispy_field }}{% endif %}
                             </div> 
                         </div>
                         

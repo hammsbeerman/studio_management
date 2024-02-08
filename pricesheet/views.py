@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
+from decimal import Decimal
 from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateForm, NewTemplateForm, NCRForm
 from .models import PriceSheet, SubCategory
 from workorders.models import WorkorderItem, Category, FixedCost
 from krueger.models import KruegerJobDetail, PaperStock
+from inventory.models import Inventory
 from krueger.forms import KruegerJobDetailForm
+from workorders.forms import DesignItemForm
 
 def envelope(request, pk, cat):
     print(pk)
@@ -64,12 +67,12 @@ def template(request, id=None):
         fixed = ''
     selected_paper = form.instance.paper_stock_id
     try:
-        selected_paper = PaperStock.objects.get(id=selected_paper)
+        selected_paper = Inventory.objects.get(id=selected_paper)
         print(selected_paper.description)
         print(selected_paper)
     except: 
         selected_paper = ''
-    papers = PaperStock.objects.all()
+    papers = Inventory.objects.all()
     formdata = PriceSheet.objects.get(id=id)
     if request.method =="POST":
         print('posted')
@@ -137,6 +140,8 @@ def add_template(request):
         if form.is_valid():
             form.description = name
             form.save()
+        else:
+            print(form.errors)
             print(subcategory)
             #update template field
             try:
@@ -148,8 +153,8 @@ def add_template(request):
                 template.template = 1
                 template.save()
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
-        else:
-            print(form.errors)
+       # else:
+       #     print(form.errors)
     context = {
         'form': form,
         'categories': categories
@@ -178,6 +183,8 @@ def edititem(request, id, pk, cat,):
         obj = get_object_or_404(KruegerJobDetail, pk=workorderitem.id)
         form = KruegerJobDetailForm(request.POST, instance=obj)
         workorder = request.POST.get('workorder')
+        price_ea = request.POST.get('price_ea')
+        internal_company = request.POST.get('internal_company')
         edited = 1
         if form.is_valid():
             obj = form.save(commit=False)
@@ -186,9 +193,12 @@ def edititem(request, id, pk, cat,):
             obj.save()
             #update workorderitem table
             lineitem = WorkorderItem.objects.get(id=pk)
+            lineitem.internal_company = internal_company
             lineitem.pricesheet_modified = edited
             lineitem.description = obj.description
             lineitem.quantity = obj.set_per_book
+            lineitem.unit_price = price_ea
+            lineitem.total_price = obj.price_total
             #lineitem.unit_price = 
             #lineitem.total_price = obj.price_total
             lineitem.save() 
@@ -206,10 +216,14 @@ def edititem(request, id, pk, cat,):
                 description = WorkorderItem.objects.get(pk=pk)
                 description = description.description
                 item = get_object_or_404(PriceSheet, subcategory=modified.item_subcategory)
-                formdata = ''
+                formdata = PriceSheet.objects.get(subcategory_id = modified.item_subcategory)
             #Otherwise load category template
             else:
+                print('cat')
+                print(cat)
                 item = get_object_or_404(PriceSheet, category=cat) 
+                formdata = PriceSheet.objects.get(category_id = cat)
+                description = ''
         #If item contains custom pricing load that               
         else:
             item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
@@ -231,13 +245,13 @@ def edititem(request, id, pk, cat,):
         selected_paper = form.instance.paper_stock_id
         print(selected_paper)
         try:
-            selected_paper = PaperStock.objects.get(id=selected_paper)
+            selected_paper = Inventory.objects.get(id=selected_paper)
             print(selected_paper.description)
             print(selected_paper)
         except: 
             selected_paper = ''
         #populate paper list
-        papers = PaperStock.objects.all()
+        papers = Inventory.objects.all()
         context = {
             'form':form,
             'formdata':formdata,
@@ -287,13 +301,13 @@ def edititem(request, id, pk, cat,):
         selected_paper = form.instance.paper_stock_id
         print(selected_paper)
         try:
-            selected_paper = PaperStock.objects.get(id=selected_paper)
+            selected_paper = Inventory.objects.get(id=selected_paper)
             print(selected_paper.description)
             print(selected_paper)
         except: 
             selected_paper = ''
         #populate paper list
-        papers = PaperStock.objects.all()
+        papers = Inventory.objects.all()
         context = {
             'form':form,
             'formdata':formdata,

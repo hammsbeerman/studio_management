@@ -7,6 +7,7 @@ from .forms import KruegerJobDetailForm
 from workorders.forms import WorkorderNewItemForm
 from .models import KruegerJobDetail, PaperStock
 from workorders.models import WorkorderItem, Category, Workorder
+from inventory.models import Inventory
 
 
 def newjob(request, id, pk):
@@ -26,7 +27,7 @@ def newjob(request, id, pk):
     internal_company = form.instance.internal_company
     selected_paper = form.instance.paper_stock_id
     try:
-        selected_paper = PaperStock.objects.get(id=selected_paper)
+        selected_paper = Inventory.objects.get(id=selected_paper)
         print(selected_paper.description)
         print(selected_paper)
     except: 
@@ -34,7 +35,7 @@ def newjob(request, id, pk):
     formdata = KruegerJobDetail.objects.get(id=jobid)
     print(formdata)
     #selected_paper = formdata.paper_stock.description
-    papers = PaperStock.objects.all()
+    papers = Inventory.objects.all()
     #print(form.instance.internal_company)
     obj = Workorder.objects.get(workorder=workorder)
     print('workorder')
@@ -51,7 +52,7 @@ def newjob(request, id, pk):
         obj = get_object_or_404(KruegerJobDetail, pk=jobid)
         form = KruegerJobDetailForm(request.POST, instance=obj)
         #print(form.cleaned_data)
-        papers = PaperStock.objects.all()
+        papers = Inventory.objects.all()
         obj = Workorder.objects.get(workorder=workorder)
         workorder = obj.workorder
         print('workorder')
@@ -95,7 +96,7 @@ def newjob(request, id, pk):
 def paperprice(request):
     paper = request.GET.get('paper_stock')
     #print(paper)
-    paperprices = PaperStock.objects.filter(pk=paper)
+    paperprices = Inventory.objects.filter(pk=paper)
     context = {'paperprices': paperprices}
     return render(request, 'krueger/partials/paperstockprice.html', context)
 

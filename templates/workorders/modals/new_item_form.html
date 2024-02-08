@@ -8,10 +8,15 @@
   </div>
   <div class="modal-body">
     <select class="custom-select mb-4" id="id_category" hx-trigger="change" name="item_category" hx-get="{% url 'workorders:subcategory' %}" hx-target="#subcategory">
-
+      {{ message }}
+      <br/>
       <option selected>Select Category</option>
       {% for object in categories %}
-        <option value="{{ object.id }}">{{ object.name }}</option>
+        {% if not object.template %}
+          <option value="{{ object.id }}">{{ object.name }}</option>
+        {% else %}
+          <option value="{{ object.id }}">{{ object.name }} Has Template</option>
+        {% endif %}
       {% endfor %}
   </select>
   

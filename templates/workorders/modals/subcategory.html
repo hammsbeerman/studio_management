@@ -4,7 +4,11 @@
 
     <option selected>SubCategory</option>
       {% for object in obj %}
-        <option value="{{ object.id }}">{{ object.name }} </option>
+        {% if object.template %}
+          <option value="{{ object.id }}">{{ object.name }} </option>
+        {% else %}
+          <option value="{{ object.id }}">{{ object.name }} -- No Template</option>
+        {% endif %}
       {% endfor %}
     
 </select>

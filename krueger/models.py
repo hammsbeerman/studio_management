@@ -1,6 +1,7 @@
 from django.db import models
 from customers.models import Customer
 from workorders.models import Workorder
+from inventory.models import Inventory
 
 class PaperStock(models.Model):
     description = models.CharField('description', max_length=100, blank=False, null=False)
@@ -51,7 +52,7 @@ class KruegerJobDetail(models.Model):
     side_2_inktype = models.CharField('Side 1 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=False, null=False)
     #stock_paperstock = models.ForeignKey(Inventory, blank=False, null=True, on_delete=models.DO_NOTHING)
     #paper_stock = models.CharField('Paper Stock', max_length=100, blank=True, null=True)
-    paper_stock = models.ForeignKey(PaperStock, blank=True, null=True, on_delete=models.DO_NOTHING)
+    paper_stock = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.DO_NOTHING)
     price_per_m = models.CharField('Paper Stock Price per M', max_length=100, blank=True, null=True)
     #step_workorder = models.CharField('Create Workorder', max_length=12, blank=True, null=True)
     step_workorder_price = models.CharField('Create Workorder', max_length=12, blank=True, null=True)

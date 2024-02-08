@@ -20,11 +20,11 @@
             <!-- Edit templates that fit in modals-->
             {% if object.item_category.modal == 1 %}
                 <!-- Edit Design item-->
-                {% if object.item_category.id == 1 %}
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_design_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Design</button>
+                {% if object.item_category.customform == 1 %}
+                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_modal_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
                 {% else %}
                 <!-- Edit other category with modal templates-->
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Edit Modal</button>
+                    <button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Shouldn't work</button>
                 {% endif %}
             {% endif %}
         </td>

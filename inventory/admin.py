@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Inventory, Vendor, InventoryDetails
+from .models import Inventory, Vendor, InventoryDetail, Measurement
 
 
 
@@ -11,18 +11,18 @@ from .models import Inventory, Vendor, InventoryDetails
 class InventoryAdmin(admin.ModelAdmin):
     #inlines = [InventoryVendorInline]
     readonly_fields = ['created', 'updated']
-    list_display = ('name','category', 'description')
+    list_display = ('name', 'description')
     #fields = ['name',]
 
 admin.site.register(Inventory, InventoryAdmin)
 
-class InventoryDetailsAdmin(admin.ModelAdmin):
+class InventoryDetailAdmin(admin.ModelAdmin):
     #inlines = [InventoryVendorInline]
     #readonly_fields = ['created', 'updated']
     list_display = ('item','vendor', 'vendor_item_number')
     #fields = ['name',]
 
-admin.site.register(InventoryDetails, InventoryDetailsAdmin)
+admin.site.register(InventoryDetail, InventoryDetailAdmin)
 
 # class InventoryVendorInline(admin.StackedInline):
 #     model = Vendor
@@ -36,3 +36,5 @@ class VendorAdmin(admin.ModelAdmin):
     #fields = ['name', 'category', 'description']
 
 admin.site.register(Vendor, VendorAdmin)
+
+admin.site.register(Measurement)

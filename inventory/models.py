@@ -1,23 +1,30 @@
 from django.db import models
 from django.urls import reverse
-from workorders.models import Category
+
+
+class Measurement(models.Model):
+    name = name = models.CharField('Name', max_length=100, blank=False, null=True)
+
+    def __str__(self):
+        return self.name
+
 
 class Inventory(models.Model):
-    category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length=100, blank=False, null=True)
     name2 = models.CharField('Additional Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     internal_part_number = models.CharField('Internal Part Number', max_length=100, blank=True, null=True)
     unit_cost = models.CharField('Unit Cost', max_length=100, blank=True, null=True)
+    price_per_m = models.CharField('Paper Stock Price per M', max_length=100, blank=True, null=True)
     current_stock = models.CharField('Current Stock', max_length=100, blank=True, null=True)
     #vendor = models.ManyToManyField(Vendor)
     # vendor_part_number
     color = models.CharField('Color', max_length=100, blank=True, null=True)
     size = models.CharField('Size', max_length=100, blank=True, null=True)
-    measurement = models.CharField('Measurement', max_length=100, blank=True, null=True)
-    type_paper = models.BooleanField(default=False)
-    type_envelope = models.BooleanField(default=False)
-    type_wideformat = models.BooleanField(default=False)
+    measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING)
+    type_paper = models.BooleanField('Paper', default=False)
+    type_envelope = models.BooleanField('Envelope', default=False)
+    type_wideformat = models.BooleanField('Wide Format', default=False)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     
@@ -38,7 +45,7 @@ class Vendor(models.Model):
     website = models.URLField('Website', max_length=100, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
-    inventorydetail = models.ManyToManyField(Inventory, through="InventoryDetails")
+    inventorydetails = models.ManyToManyField(Inventory, through="InventoryDetail")
     active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -57,10 +64,11 @@ class Vendor(models.Model):
         return self.vendorcontact_set.all()
     
 
-class InventoryDetails(models.Model):
+class InventoryDetail(models.Model):
     item = models.ForeignKey(Inventory, on_delete=models.CASCADE)
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
     vendor_item_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
+    test = models.CharField('test', max_length=100, blank=True)
 
 
 ###################Not used yet

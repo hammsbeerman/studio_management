@@ -5,7 +5,7 @@ from django.db.models import Avg, Count, Min, Sum
 from decimal import Decimal
 from customers.models import Customer, Contact
 from .models import Workorder, Numbering, Category, DesignType, WorkorderItem, SubCategory
-from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm
+from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, OrderOutForm
 from krueger.forms import KruegerJobDetailForm
 from krueger.models import KruegerJobDetail
 
@@ -263,16 +263,23 @@ def edit_print_item(request):
 
 
 
-
-
-def edit_design_item(request, pk, cat):
+def edit_modal_item(request, pk, cat):
     item = get_object_or_404(WorkorderItem, pk=pk)
     line = request.POST.get('item')
     category = cat
     if request.method == "POST":
         print('hello')
         category = request.POST.get('cat')
-        form = DesignItemForm(request.POST, instance=item)
+        print('category')
+        print(category)
+        ####
+        #Get form to load from category
+        loadform = Category.objects.get(id=category)
+        #formname = loadform.formname
+        formname = globals()[loadform.formname]
+        form = formname(request.POST, instance=item)
+        ####
+        #form = DesignItemForm(request.POST, instance=item)
         obj = form.save(commit=False)
         #form.instance.item_category = category
         if form.is_valid():
@@ -289,6 +296,7 @@ def edit_design_item(request, pk, cat):
             lineitem.quantity = qty
             lineitem.unit_price = unit_price
             lineitem.total_price = total
+            lineitem.pricesheet_modified = 1
             lineitem.save()
             # print(line)
             # lineitem = WorkorderItem.objects.get(id=line)
@@ -300,7 +308,14 @@ def edit_design_item(request, pk, cat):
     print(category)
     obj = Category.objects.get(id=category)        
     print(obj.name)
-    form = DesignItemForm(instance=item)
+    ####
+    #Get form to load from category
+    loadform = Category.objects.get(id=cat)
+    #formname = loadform.formname
+    formname = globals()[loadform.formname]
+    form = formname(instance=item)
+    ####
+    #form = DesignItemForm(instance=item)
     context = {
         'pk':pk,
         'form': form,
