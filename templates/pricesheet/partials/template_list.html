@@ -1,0 +1,17 @@
+{% load static %}
+
+
+<div class="card-header">
+Templates
+</div>
+    <div class="card-body" id="workorderinfo">
+            
+            <h5 class="card-title"></h5>
+                <p class="card-text">
+                    {% for x in template %}
+                    <li><a href='{{ x.get_absolute_url }}'>{{ x.name }}</a> <button class="btn btn-primary-outline" hx-get="{% url 'pricesheet:copy_template' %}?category={{ catid }}&template={{ x.id }}" hx-target="#dialog"><img src="{% static 'img/site/copy-50.png' %}" style="width:20px;height:20px;"></button></li>
+                    {% endfor %}
+    </div>
+    <div class="card-footer">
+            
+    </div>

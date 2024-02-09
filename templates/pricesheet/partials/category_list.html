@@ -1,0 +1,19 @@
+{% load static %}
+
+
+<div class="card-header">
+Categories
+</div>
+    <div class="card-body" id="workorderinfo">
+            
+            <h5 class="card-title"></h5>
+                <p class="card-text">
+                        <ul>
+                        {% for obj in category %}
+                        <li><a class="" href="{% url 'pricesheet:template_list' %}?category={{ obj.id }}">{{ obj.name }}</a></li>
+                        {% endfor %}
+                        </ul>
+    </div>
+    <div class="card-footer">
+            
+    </div>

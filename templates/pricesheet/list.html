@@ -6,13 +6,25 @@
 Pricing templates
 <p>
 {{ message }}
-<p><ul>
-    {% for x in  template %}
-    <li><a href='{{ x.get_absolute_url }}'>{{ x.name }}</a></li>
-    {% endfor %}
-    </ul></p>
+<p>
 
-
+    <div class="row">
+      <div class="col-md-3 mb-sm-0">
+        <div id="category-info-card" class="card" hx-trigger="CategoryListChanged from:body" hx-get="{% url 'pricesheet:template_list'  %}" hx-target="this">
+          {% include 'pricesheet/partials/category_list.html' %}
+          </div>
+      </div>
+      <div class="col-md-3">
+        <div id="contact-card" class="card" hx-trigger="SubcategoryListChanged from:body" hx-get="{% url 'pricesheet:template_list'  %}?category={{ category.id }}" hx-target="this">
+          {% include 'pricesheet/partials/subcategory_list.html' %}
+          </div>
+      </div>
+      <div class="col-md-3">
+          <div id="workorder-info-card" class="card" hx-trigger="TemplateListChanged from:body" hx-get="{% url 'pricesheet:template_list'  %}?category={{ category.id }}" hx-target="this">
+            {% include 'pricesheet/partials/template_list.html' %}
+          </div>
+      </div>
+    </div>
     <button hx-get="{% url 'pricesheet:add_category' %}" hx-target="#dialog" class="btn btn-primary">
         Add Category
         </button>

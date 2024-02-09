@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
+from django.views.decorators.http import require_POST
 from decimal import Decimal
 from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateForm, NewTemplateForm, NCRForm
 from .models import PriceSheet, SubCategory
@@ -91,6 +92,7 @@ def template(request, id=None):
         }
         return redirect('pricesheet:template_list')
     context = {
+        'template_id':id,
         'fixed':fixed,
         'form': form,
         'papers': papers,
@@ -106,7 +108,7 @@ def add_category(request):
         form = CategoryForm(request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+            return HttpResponse(status=204, headers={'HX-Trigger': 'CategoryListChanged'})
         else:
             print(form.errors)
     context = {
@@ -120,7 +122,7 @@ def add_subcategory(request):
         form = SubCategoryForm(request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+            return HttpResponse(status=204, headers={'HX-Trigger': 'ListChanged'})
         else:
             print(form.errors)
     context = {
@@ -142,17 +144,17 @@ def add_template(request):
             form.save()
         else:
             print(form.errors)
-            print(subcategory)
-            #update template field
-            try:
-                template = SubCategory.objects.get(id=subcategory)
-                template.template = 1
-                template.save()
-            except:
-                template = Category.objects.get(id=category)
-                template.template = 1
-                template.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+        print(subcategory)
+        #update template field
+        try:
+            template = SubCategory.objects.get(id=subcategory)
+            template.template = 1
+            template.save()
+        except:
+            template = Category.objects.get(id=category)
+            template.template = 1
+            template.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'teListChanged'})
        # else:
        #     print(form.errors)
     context = {
@@ -161,10 +163,44 @@ def add_template(request):
     }
     return render (request, "pricesheet/modals/add_template.html", context)
 
-def template_list(request):
-    template = PriceSheet.objects.all().order_by('-category', '-name')
+def copy_template(request):
+    if request.method == "POST":
+        catid = request.POST.get('category')
+        template = request.POST.get('template')
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        obj = PriceSheet.objects.get(pk=template)
+        obj.pk = None
+        obj.name = name
+        obj.description = description
+        obj.edited = 0
+        obj.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'TemplateListChanged'})
+    catid = request.GET.get('category')
+    template = request.GET.get('template')
+    subcategory = SubCategory.objects.filter(category_id=catid).exclude(template=1)
+    context = {
+        'catid':catid,
+        'template':template,
+        'subcategory':subcategory
+    }
+    return render (request, "pricesheet/modals/copy_template.html", context)
+
+def template_list(request, id=None):
+    catid = id
+    print(catid)
+    if not catid:
+        catid = request.GET.get('category')
+    print(catid)
+    category = Category.objects.all()
+    subcategory = SubCategory.objects.filter(category_id=catid)
+    template = PriceSheet.objects.filter(category_id=catid)
+    #template = PriceSheet.objects.all().order_by('-category', '-name')
     context = {
         'template': template,
+        'category': category,
+        'subcategory':subcategory,
+        'catid': catid,
     }
     return render(request, 'pricesheet/list.html', context)
 
@@ -319,6 +355,26 @@ def edititem(request, id, pk, cat,):
 
         }
         return render(request, 'pricesheet/templates/master.html', context)
+
+
+@ require_POST
+def remove_template(request):
+    template = request.POST.get('template_id')
+    category = request.POST.get('category_id')
+    print(template)
+    item = get_object_or_404(PriceSheet, pk=template)
+    item.delete()
+    return redirect('pricesheet:template_listing', id=category)
+
+
+
+
+
+# @ require_POST
+# def remove_workorder_item(request, pk):
+#     item = get_object_or_404(WorkorderItem, pk=pk)
+#     item.delete()
+#     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     
 
     

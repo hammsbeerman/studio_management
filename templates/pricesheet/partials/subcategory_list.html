@@ -1,0 +1,17 @@
+{% load static %}
+
+
+<div class="card-header">
+Subcategories
+</div>
+    <div class="card-body" id="workorderinfo">
+            
+            <h5 class="card-title"></h5>
+                <p class="card-text">
+                    {% for obj in subcategory %}
+                        {{ obj.name }}<br/>
+                    {% endfor %}
+    </div>
+    <div class="card-footer">
+            
+    </div>

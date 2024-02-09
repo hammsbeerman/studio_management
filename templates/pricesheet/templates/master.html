@@ -383,7 +383,7 @@ This should be the form for entering line item details
                         <hr>
                         <div class="row">
                             <div class='col'>
-                                {{ form.step_id_count_price|as_crispy_field }}
+                               {% if form.step_id_count_price %}{{ form.step_id_count_price|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
                                 {{ form.step_count_package_price|as_crispy_field }}
