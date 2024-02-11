@@ -1,0 +1,9 @@
+[
+{
+    "model": "controls.setpriceitem",
+    "pk": 1,
+    "fields": {
+        "name": "Business Cards"
+    }
+}
+]

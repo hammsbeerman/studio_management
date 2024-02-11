@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Inventory, Vendor, InventoryDetail, Measurement, OrderOut
+from .models import Inventory, Vendor, InventoryDetail, OrderOut, SetPrice
+from import_export.admin import ImportExportModelAdmin
 
 
 
@@ -8,7 +9,7 @@ from .models import Inventory, Vendor, InventoryDetail, Measurement, OrderOut
 #     extra = 0
 #     #readonly_fields = ['created', 'updated']
 
-class InventoryAdmin(admin.ModelAdmin):
+class InventoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     #inlines = [InventoryVendorInline]
     readonly_fields = ['created', 'updated']
     list_display = ('name', 'description')
@@ -37,9 +38,10 @@ class VendorAdmin(admin.ModelAdmin):
 
 admin.site.register(Vendor, VendorAdmin)
 
-admin.site.register(Measurement)
 
 class OrderOutAdmin(admin.ModelAdmin):
     list_display = ['workorder', 'customer', 'description', 'quantity', 'total_price']
 
 admin.site.register(OrderOut, OrderOutAdmin)
+
+admin.site.register(SetPrice)

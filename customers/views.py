@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponse
 from customers.models import Customer, Contact
 from customers.forms import CustomerForm, ContactForm
-from workorders.models import Workorder, Numbering
+from controls.models import Numbering
+from workorders.models import Workorder
 from workorders.forms import WorkorderForm
 
 

@@ -3,8 +3,9 @@ from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
 from decimal import Decimal
 from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateForm, NewTemplateForm, NCRForm
-from .models import PriceSheet, SubCategory
-from workorders.models import WorkorderItem, Category, FixedCost
+from .models import PriceSheet
+from controls.models import SubCategory, FixedCost
+from workorders.models import WorkorderItem, Category
 from krueger.models import KruegerJobDetail, PaperStock
 from inventory.models import Inventory
 from krueger.forms import KruegerJobDetailForm

@@ -54,14 +54,14 @@ This should be the form for entering line item details
                                     hx-target="#paperprices">
 
                                     {% if form.instance.paper_stock_id %}
-                                        <option value="{{ selected_paper.id }}" selected="">{{ selected_paper.description }}</option>
+                                        <option value="{{ selected_paper.id }}" selected="">{{ selected_paper.name }}</option>
                                     {% else %}
                                         <option selected>Select Paper stock</option>
                                     {% endif %}
                                     
                                     
                                     {% for paper in papers %}
-                                        <option value="{{paper.pk}}">{{ paper.description }}</option>
+                                        <option value="{{paper.pk}}">{{ paper.name }}</option>
                                         {% endfor %}
                                 </select>
                             </div>

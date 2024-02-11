@@ -6,7 +6,8 @@ from django.contrib import messages
 from .forms import KruegerJobDetailForm
 from workorders.forms import WorkorderNewItemForm
 from .models import KruegerJobDetail, PaperStock
-from workorders.models import WorkorderItem, Category, Workorder
+from controls.models import Category
+from workorders.models import WorkorderItem, Workorder
 from inventory.models import Inventory
 
 

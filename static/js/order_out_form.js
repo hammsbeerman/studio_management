@@ -15,7 +15,16 @@ $(document).ready(function(){
         total = total.toFixed(2);
         total = Number(total)
   
-        $('#id_total_price').val(total);
+        var override = $("#id_override_price").val();
+        override = Number(override)
+
+        if (override >= .01 ){
+            var total = $('#id_override_price').val();
+          } else {
+            $('#id_total_price').val(total);
+          }
+
+          
 
         price_ea = total / qty
         price_ea = price_ea.toFixed(4)

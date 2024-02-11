@@ -4,12 +4,13 @@ from django.views.decorators.http import require_POST
 from django.db.models import Avg, Count, Min, Sum
 from decimal import Decimal
 from customers.models import Customer, Contact
-from .models import Workorder, Numbering, Category, DesignType, WorkorderItem, SubCategory
+from controls.models import Numbering, Category, SubCategory
+from .models import Workorder, DesignType, WorkorderItem
 from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm
 from krueger.forms import KruegerJobDetailForm
 from krueger.models import KruegerJobDetail
-from inventory.forms import OrderOutForm
-from inventory.models import OrderOut
+from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
+from inventory.models import OrderOut, SetPrice, Photography
 
 def create_base(request):
     #newcustomerform = CustomerForm(request.POST or None)
@@ -193,6 +194,8 @@ def add_item(request, parent_id):
             obj.item_subcategory_id = subcat
             #obj = request.POST.get
             parent = Workorder.objects.get(pk=parent_id)
+            ('parent id')
+            print(parent_id)
             #Add workorder to form since it wasn't displayed
             obj.workorder_id = parent_id
             print('parent')
@@ -207,11 +210,18 @@ def add_item(request, parent_id):
             print('parent id')
             print(parent.id)
             #print(parent.category)
-            customform = Category.objects.get(id=cat)
-            print(customform.customform)
-            if customform.customform is True:
-                print('customform')
-                detailbase = OrderOut(workorder_id = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company,
+            loadform = Category.objects.get(id=cat)
+            print(loadform.customform)
+            print(parent.workorder)
+            if loadform.customform is True:
+                #loadform = Category.objects.get(id=category)
+                modelname = globals()[loadform.modelname]
+                formname = globals()[loadform.formname]
+                if formname == DesignItemForm:
+                    return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+                #form = formname(request.POST, instance=item)
+                print(modelname)
+                detailbase = modelname(workorder_id = parent.id, hr_workorder=parent.workorder, workorder_item =obj.pk, internal_company = parent.internal_company,
                                           customer_id=parent.customer_id, hr_customer=parent.hr_customer, category = cat, description = desc,)
             else:
                 print('not custom')
@@ -290,6 +300,7 @@ def edit_modal_item(request, pk, cat):
         #Get form to load from category
         loadform = Category.objects.get(id=category)
         formname = globals()[loadform.formname]
+        modelname = globals()[loadform.modelname]
         form = formname(request.POST, instance=item)
         #formname = globals()[loadform.formname]
         #form = OrderOutForm(request.POST, instance=item)
@@ -302,21 +313,24 @@ def edit_modal_item(request, pk, cat):
             if loadform.customform is True:
                 print('true')
                 ################################### Need to change this to global modal and form if antother is added
-                newobj = get_object_or_404(OrderOut, workorder_item=pk)
+                if formname == DesignItemForm:
+                    newobj = get_object_or_404(modelname, pk=pk)
+                else:
+                    newobj = get_object_or_404(modelname, workorder_item=pk)
                 print(newobj.id)
-                itemform = OrderOutForm(request.POST, instance=newobj)
+                itemform = formname(request.POST, instance=newobj)
                 if itemform.is_valid():
                     itemform.save()
                     unit_price = request.POST.get('unit_price')
                     print(unit_price)
-                    lineitem = OrderOut.objects.get(id=itemform.instance.pk)
+                    lineitem = modelname.objects.get(id=itemform.instance.pk)
                     lineitem.edited = 1
                     lineitem.unit_price = unit_price
                     lineitem.save()
                     # print('pk')
                     # print(itemform.instance.pk)
                     #itemform.save(commit=False)
-                    #itemform.edited = 1   
+                    #itemform.edited = 1  
                 else:
                     print(form.errors)
             print(form.instance.id)
@@ -347,15 +361,33 @@ def edit_modal_item(request, pk, cat):
         else:
             print(form.errors)
     print(category)
-    obj = Category.objects.get(id=category)        
+    obj = Category.objects.get(id=category)  
+    print('object name')      
     print(obj.name)
     ####
     #Get form to load from category
     loadform = Category.objects.get(id=cat)
-    #formname = loadform.formname
     formname = globals()[loadform.formname]
+    #formname = loadform.formname
+    modelname = globals()[loadform.modelname]
     if loadform.customform is True:
-        item = get_object_or_404(OrderOut, workorder_item=pk)
+        if loadform.setprice is True:
+            item = get_object_or_404(modelname, workorder_item=pk)
+            price_ea = item.unit_price
+            form = formname(instance=item)
+            context = {
+            'pk':pk,
+            'form': form,
+            'item': item,
+            'obj': obj,
+            'cat': category,
+            'price_ea': price_ea,
+            }
+            return render(request, 'workorders/modals/setprice_item_form.html', context)
+        if formname == DesignItemForm:
+            item = get_object_or_404(WorkorderItem, pk=pk)
+        else:
+            item = get_object_or_404(modelname, workorder_item=pk)
         price_ea = item.unit_price
     form = formname(instance=item)
     ####
@@ -369,6 +401,10 @@ def edit_modal_item(request, pk, cat):
         'price_ea': price_ea,
     }
     return render(request, 'workorders/modals/design_item_form.html', context)
+
+
+def edit_order_out_item(request, pk, cat):
+    pass
 
 
 @ require_POST

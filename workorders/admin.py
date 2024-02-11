@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Workorder, Numbering, Category, WorkorderItem, DesignType, SubCategory, FixedCost #ItemCategory, 
+from .models import Workorder, WorkorderItem#ItemCategory, 
 
 
 class WorkorderAdmin(admin.ModelAdmin):
@@ -10,11 +10,7 @@ class WorkorderAdmin(admin.ModelAdmin):
 admin.site.register(Workorder, WorkorderAdmin)
 
 
-class NumberingAdmin(admin.ModelAdmin):
-    readonly_fields=('value',)
-    list_display = ('name', 'value')
 
-admin.site.register(Numbering, NumberingAdmin)
 
 # class ItemCategoryAdmin(admin.ModelAdmin):
 #    #extra = 0
@@ -33,31 +29,5 @@ admin.site.register(WorkorderItem, WorkorderItemAdmin)
 
 #class ItemCategoryAdmin(admin.ModelAdmin):
 #    fields = ['workorder', 'description', 'category', 'internal_company']
-
-class CategorySubcategoryInline(admin.StackedInline):
-    model = SubCategory
-    extra = 0
-
-
-class CategoryAdmin(admin.ModelAdmin):
-    inlines = [CategorySubcategoryInline]
-    list_display = ('name', 'description', 'design_type', 'formname', 'modal', 'template', 'pricesheet_type')
-
-admin.site.register(Category, CategoryAdmin)
-
-
-
-class SubCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'category', 'description', 'template')
-
-admin.site.register(SubCategory, SubCategoryAdmin)
-
-#class FixedCostAdmin(admin.ModelAdmin):
-
-admin.site.register(FixedCost)
-
-
-
-admin.site.register(DesignType)
 
 

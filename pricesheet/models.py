@@ -3,7 +3,7 @@ from django.urls import reverse
 #from customers.models import Customer
 #from workorders.models import Workorder
 from krueger.models import PaperStock
-from workorders.models import Category, SubCategory
+from controls.models import Category, SubCategory
 from inventory.models import Inventory
 
 class PriceSheet(models.Model):

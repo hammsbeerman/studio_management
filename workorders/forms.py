@@ -1,6 +1,7 @@
 from django.utils.safestring import mark_safe
 from django import forms
-from .models import Workorder, Numbering, WorkorderItem
+from .models import Workorder, WorkorderItem
+from controls.models import Numbering
 from customers.models import Customer, Contact
 from dynamic_forms import DynamicField, DynamicFormMixin
 from django.urls import reverse_lazy

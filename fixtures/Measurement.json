@@ -1,0 +1,9 @@
+[
+{
+    "model": "controls.measurement",
+    "pk": 1,
+    "fields": {
+        "name": "Ea"
+    }
+}
+]

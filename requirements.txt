@@ -18,3 +18,4 @@ gunicorn
 mysqlclient
 whitenoise
 pillow
+django-import-export
