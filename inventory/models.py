@@ -2,14 +2,7 @@ from django.db import models
 from django.urls import reverse
 from customers.models import Customer
 from workorders.models import Workorder
-from controls.models import SubCategory
-
-
-class Measurement(models.Model):
-    name = name = models.CharField('Name', max_length=100, blank=False, null=True)
-
-    def __str__(self):
-        return self.name
+from controls.models import SubCategory, Measurement
 
 
 class Inventory(models.Model):

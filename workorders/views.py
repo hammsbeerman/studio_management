@@ -256,7 +256,9 @@ def workorder_item_list(request, id=None):
     if obj is  None:
         print('broken')
         return HttpResponse("Not found.")
+    test = 'notes'
     context = {
+        "test": test,
         "items": obj,
         "total": total,
     }
@@ -407,6 +409,116 @@ def edit_order_out_item(request, pk, cat):
     pass
 
 
+def edit_design_item(request, pk, cat):
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    line = request.POST.get('item')
+    category = cat
+    if request.method == "POST":
+        form = DesignItemForm(request.POST, instance=item)
+        obj = form.save(commit=False)
+        if form.is_valid():
+            form.save()
+        else:
+            print(form.errors)
+        qty = obj.quantity
+        unit_price=obj.unit_price
+        total=0
+        if qty and unit_price:
+            total = qty * unit_price
+        lineitem = WorkorderItem.objects.get(id=line)
+        lineitem.quantity = qty
+        lineitem.unit_price = unit_price
+        lineitem.total_price = total
+        lineitem.pricesheet_modified = 1
+        lineitem.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    print(category)
+    obj = Category.objects.get(id=category)  
+    print('object name')      
+    print(obj.name)
+    #formname == DesignItemForm:
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    price_ea = item.unit_price
+    form = DesignItemForm(instance=item)
+    ####
+    #form = DesignItemForm(instance=item)
+    context = {
+        'pk':pk,
+        'form': form,
+        'item': item,
+        'obj': obj,
+        'cat': category,
+        'price_ea': price_ea,
+    }
+    return render(request, 'workorders/modals/design_item_form.html', context)
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def edit_design_item(request, pk, cat):
+#     item = get_object_or_404(WorkorderItem, pk=pk)
+#     #line = request.POST.get('item')
+#     category = cat
+#     if request.method == "POST":
+#         print('hello')
+#         category = request.POST.get('cat')
+#         print('category')
+#         print(category)
+#         ####
+#         #Get form to load from category
+#         # loadform = Category.objects.get(id=category)
+#         # formname = globals()[loadform.formname]
+#         # modelname = globals()[loadform.modelname]
+#         form = DesignItemForm(request.POST, instance=item)
+#         obj = form.save(commit=False)
+#         #form.instance.item_category = category
+#         if form.is_valid():
+#             newobj = get_object_or_404(WorkorderItem, pk=pk)
+#             print('newobj')
+#             print(newobj.id)
+#             itemform = DesignItemForm(request.POST, instance=newobj)
+#             if itemform.is_valid():
+#                 itemform.save()
+#                 unit_price = request.POST.get('unit_price')
+#                 print(unit_price)
+#                 lineitem = WorkorderItem.objects.get(id=itemform.instance.pk)
+#                 #lineitem.edited = 1
+#                 lineitem.unit_price = unit_price
+#                 lineitem.save()
+#             else:
+#                 print(form.errors)
+#             qty = obj.quantity
+#             unit_price=obj.unit_price
+#             print('unitprice')
+#             print(unit_price)
+#             total=0
+#             if qty and unit_price:
+#                 total = qty * unit_price
+#             lineitem = WorkorderItem.objects.get(id=pk)
+#             lineitem.quantity = qty
+#             lineitem.unit_price = unit_price
+#             lineitem.total_price = total
+#             lineitem.pricesheet_modified = 1
+#             lineitem.save()
+#             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+#    
+
+
 @ require_POST
 def remove_workorder_item(request, pk):
     item = get_object_or_404(WorkorderItem, pk=pk)
@@ -417,19 +529,22 @@ def remove_workorder_item(request, pk):
 def copy_workorder_item(request, pk, workorder=None):
     #Copy line item to current workorder
     if workorder:
+        print(pk)
         obj = WorkorderItem.objects.get(pk=pk)
         obj.pk = None
         obj.save()
         #print(obj.pk)
         #print(pk)
         #Copy coresponding kruegerjobdetail item
-        objdetail = KruegerJobDetail.objects.get(workorder_item=pk)
-        objdetail.pk = None
-        objdetail.workorder_item = obj.pk
-        objdetail.last_item_order = obj.workorder_hr
-        objdetail.last_item_price = objdetail.price_total
-        objdetail.save()
-        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+        try: 
+            objdetail = KruegerJobDetail.objects.get(workorder_item=pk)
+            objdetail.pk = None
+            objdetail.workorder_item = obj.pk
+            objdetail.last_item_order = obj.workorder_hr
+            objdetail.last_item_price = objdetail.price_total
+            objdetail.save()
+        except:
+            return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     #Copy line item to different workorder
     #This section is called from copy item modal
     if request.method == "POST":
@@ -453,15 +568,17 @@ def copy_workorder_item(request, pk, workorder=None):
         # print(obj.last_item_order)
         obj.save()
         #Copy corresponding kruegerjobdetail to new object
-        objdetail = KruegerJobDetail.objects.get(workorder_item=pk)
-        objdetail.pk = None
-        objdetail.workorder_item = obj.pk
-        objdetail.workorder = new.pk
-        objdetail.hr_workorder = new.workorder
-        objdetail.last_item_order = last_workorder
-        objdetail.last_item_price = objdetail.price_total
-        objdetail.save()
-        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+        try:
+            objdetail = KruegerJobDetail.objects.get(workorder_item=pk)
+            objdetail.pk = None
+            objdetail.workorder_item = obj.pk
+            objdetail.workorder = new.pk
+            objdetail.hr_workorder = new.workorder
+            objdetail.last_item_order = last_workorder
+            objdetail.last_item_price = objdetail.price_total
+            objdetail.save()
+        except:
+            return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     obj = WorkorderItem.objects.get(pk=pk)
     workorders = Workorder.objects.all().exclude(workorder=1111).exclude(billed=1).order_by("-workorder")
     context = {
@@ -509,16 +626,19 @@ def copy_workorder(request, id=None):
         item.save()
         #Copy kruegerjobdetail for each item
         print(item.pk)
-        objdetail = KruegerJobDetail.objects.get(workorder_item=oldid)
-        objdetail.pk = None
-        print('New workorder')
-        print(new_workorder_id)
-        objdetail.workorder_item = item.pk
-        objdetail.workorder_id = new_workorder_id
-        objdetail.hr_workorder = newworkorder
-        objdetail.last_item_order = lastworkorder
-        objdetail.last_item_price = objdetail.price_total
-        objdetail.save()
+        try:
+            objdetail = KruegerJobDetail.objects.get(workorder_item=oldid)
+            objdetail.pk = None
+            print('New workorder')
+            print(new_workorder_id)
+            objdetail.workorder_item = item.pk
+            objdetail.workorder_id = new_workorder_id
+            objdetail.hr_workorder = newworkorder
+            objdetail.last_item_order = lastworkorder
+            objdetail.last_item_price = objdetail.price_total
+            objdetail.save()
+        except:
+            pass
     return redirect('workorders:overview', id=newworkorder)
 
 def subcategory(request):

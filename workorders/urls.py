@@ -19,7 +19,8 @@ from .views import (
     subcategory,
     tax,
     notes,
-    workorder_notes
+    workorder_notes,
+    edit_design_item
     # removed,
 )
 
@@ -29,6 +30,7 @@ urlpatterns = [
     path('', create_base, name='createbase'),
     path('add/<int:parent_id>/', add_item, name='add_item'),
     path('items/<int:pk>/edit/<int:cat>', edit_modal_item, name='edit_modal_item'),
+    path('design/<int:pk>/edit/<int:cat>', edit_design_item, name='edit_design_item'),
     #path('items/<int:pk>/edit/<int:cat>', edit_print_item, name='edit_print_item'),
     path('items/<int:pk>/remove/', remove_workorder_item, name='remove_item'),
     path('items/copy_workorder/<int:id>', copy_workorder, name='copy_workorder'),
