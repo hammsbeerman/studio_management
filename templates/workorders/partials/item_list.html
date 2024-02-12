@@ -6,7 +6,7 @@
         <td>{{ object.description }}</td>
         <td>{% if object.quantity %}{{ object.quantity }}{% endif %}</td>
         <td>{% if object.unit_price %}{{ object.unit_price }}{% endif %}</td>
-        <td>{% if object.total_price %}{{ object.total_price }}{% endif %}</td>
+        <td>{% if object.override_price %}{{object.override_price }}{% elif object.total_price %}{{ object.total_price }}{% endif %}</td>
         <td>
             <!-- Edit Items to big to fit in modal -->
             {% if object.item_category.modal != 1 %}
@@ -23,8 +23,8 @@
                 <!-- Edit Design item-->
                 {% if object.item_category.formname == 'DesignItemForm' %}
                     <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_design_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
-                {% elif %}
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_modal_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
+                {% elif object.item_category.formname == 'OrderOutForm'%}
+                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_orderout_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
                 {% else %}
                 <!-- Edit other category with modal templates-->
                     <button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Something's broken</button>
@@ -71,22 +71,19 @@
 {% endfor %}
     
 
-    {% if total.total_price__sum %} 
+    {% if subtotal.absolute_price__sum %} 
     <tr>
         <td></td>
         <td></td>
         <td></td>
         <td></td>
-        <td><b>Total Price:</b></td>
-        <td><b>{{ total.total_price__sum|floatformat:2 }}</b></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td><b>Subtotal:</b></td>
+        <td><b>{{ subtotal.absolute_price__sum|floatformat:2 }}</b></td>
+        <td><b>Tax:</b></td>
+        <td><b>{{ tax.tax_amount__sum|floatformat:2 }}</b></td>
+        <td><b>Total:</td>
+        <td><b>{{ total.total_with_tax__sum|floatformat:2 }}</b></td>
         <td></td>
         <td></td>
     </tr>
     {% endif %}
-
-
-

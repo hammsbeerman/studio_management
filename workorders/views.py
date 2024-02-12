@@ -200,7 +200,11 @@ def add_item(request, parent_id):
             obj.workorder_id = parent_id
             print('parent')
             print(parent.workorder)
-            obj.tax_exempt = parent.tax_exempt
+            obj.tax_exempt = parent.customer.tax_exempt
+            print(parent.customer.tax_exempt)
+            print(parent.customer.customer_number)
+            print('up')
+            #obj.last_item_price = '78964'
             obj.workorder_hr = parent.workorder
             #obj.item_subcategory = subcategory
             obj.save()
@@ -250,7 +254,11 @@ def workorder_item_list(request, id=None):
         #qs = Workorder.objects.all()
         print(id)
         obj = WorkorderItem.objects.filter(workorder_id=id)
-        total = WorkorderItem.objects.filter(workorder_id=id).aggregate(Sum('total_price'))
+        subtotal = WorkorderItem.objects.filter(workorder_id=id).aggregate(Sum('absolute_price'))
+        tax = WorkorderItem.objects.filter(workorder_id=id).aggregate(Sum('tax_amount'))
+        total = WorkorderItem.objects.filter(workorder_id=id).aggregate(Sum('total_with_tax'))
+        #override_total = WorkorderItem.objects.filter(workorder_id=id).exclude(override_price__isnull=True).aggregate(Sum('override_price'))
+        print(total)
     except:
         obj = None
     if obj is  None:
@@ -260,6 +268,8 @@ def workorder_item_list(request, id=None):
     context = {
         "test": test,
         "items": obj,
+        "subtotal":subtotal,
+        "tax":tax,
         "total": total,
     }
     return render(request, "workorders/partials/item_list.html", context) 
@@ -315,10 +325,7 @@ def edit_modal_item(request, pk, cat):
             if loadform.customform is True:
                 print('true')
                 ################################### Need to change this to global modal and form if antother is added
-                if formname == DesignItemForm:
-                    newobj = get_object_or_404(modelname, pk=pk)
-                else:
-                    newobj = get_object_or_404(modelname, workorder_item=pk)
+                newobj = get_object_or_404(modelname, workorder_item=pk)
                 print(newobj.id)
                 itemform = formname(request.POST, instance=newobj)
                 if itemform.is_valid():
@@ -386,10 +393,7 @@ def edit_modal_item(request, pk, cat):
             'price_ea': price_ea,
             }
             return render(request, 'workorders/modals/setprice_item_form.html', context)
-        if formname == DesignItemForm:
-            item = get_object_or_404(WorkorderItem, pk=pk)
-        else:
-            item = get_object_or_404(modelname, workorder_item=pk)
+        item = get_object_or_404(modelname, workorder_item=pk)
         price_ea = item.unit_price
     form = formname(instance=item)
     ####
@@ -411,7 +415,7 @@ def edit_order_out_item(request, pk, cat):
 
 def edit_design_item(request, pk, cat):
     item = get_object_or_404(WorkorderItem, pk=pk)
-    line = request.POST.get('item')
+    #line = request.POST.get('item')
     category = cat
     if request.method == "POST":
         form = DesignItemForm(request.POST, instance=item)
@@ -430,6 +434,7 @@ def edit_design_item(request, pk, cat):
         lineitem.unit_price = unit_price
         lineitem.total_price = total
         lineitem.pricesheet_modified = 1
+        lineitem.absolute_price = total
         lineitem.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     print(category)
@@ -451,6 +456,85 @@ def edit_design_item(request, pk, cat):
         'price_ea': price_ea,
     }
     return render(request, 'workorders/modals/design_item_form.html', context)
+
+def edit_orderout_item(request, pk, cat):
+    print('pk')
+    print(pk)
+    item = get_object_or_404(OrderOut, workorder_item=pk)
+    #line = request.POST.get('item')
+    #print('line')
+    #print(line)
+    category = cat
+    if request.method == "POST":
+        form = OrderOutForm(request.POST, instance=item)
+        obj = form.save(commit=False)
+        if form.is_valid():
+            form.save()
+        else:
+            print(form.errors)
+        qty = obj.quantity
+        total = obj.total_price
+        override = obj.override_price
+        if override:
+            temp_total = override
+        else:
+            temp_total = total
+        unit_price = temp_total / qty
+        lineitem = WorkorderItem.objects.get(id=pk)
+        lineitem.quantity = qty
+        lineitem.unit_price = unit_price
+        lineitem.total_price = total
+        lineitem.override_price = override
+        lineitem.pricesheet_modified = 1
+        lineitem.absolute_price = temp_total
+        tax_percent = Decimal.from_float(.055)
+        tax = Decimal.from_float(1.055)
+        if lineitem.tax_exempt == 1:
+            lineitem.tax_amount = 0
+            lineitem.total_with_tax = lineitem.absolute_price
+        else:
+            lineitem.tax_amount = lineitem.absolute_price * tax_percent
+            lineitem.total_with_tax = lineitem.absolute_price * tax
+        if lineitem.notes:
+            notes = lineitem.notes
+        else:
+            notes = ''
+        if lineitem.last_item_order:
+            last_order = lineitem.last_item_order
+        else:
+            last_order = ''
+        if lineitem.last_item_price:
+            last_price = lineitem.last_item_order
+        else:
+            last_price = ''
+        lineitem.save()
+        orderoutitem = OrderOut.objects.get(workorder_item=pk)
+        orderoutitem.last_item_order = last_order
+        orderoutitem.last_order_price = last_price
+        orderoutitem.notes = notes
+        orderoutitem.unit_price = unit_price
+        orderoutitem.edited = 1
+        orderoutitem.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    print(category)
+    obj = Category.objects.get(id=category)  
+    print('object name')      
+    print(obj.name)
+    #formname == DesignItemForm:
+    item = get_object_or_404(OrderOut, workorder_item=pk)
+    price_ea = item.unit_price
+    form = OrderOutForm(instance=item)
+    ####
+    #form = DesignItemForm(instance=item)
+    context = {
+        'pk':pk,
+        'form': form,
+        'item': item,
+        'obj': obj,
+        'cat': category,
+        'price_ea': price_ea,
+    }
+    return render(request, 'workorders/modals/order_out_form.html', context)
 
         
 
@@ -544,6 +628,15 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail.last_item_price = objdetail.price_total
             objdetail.save()
         except:
+            pass
+        try:
+            objdetail = OrderOut.objects.get(workorder_item=pk)
+            objdetail.pk = None
+            objdetail.workorder_item = obj.pk
+            objdetail.last_item_order = obj.workorder_hr
+            objdetail.last_item_price = objdetail.price_total
+            objdetail.save()
+        except:
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     #Copy line item to different workorder
     #This section is called from copy item modal
@@ -575,6 +668,15 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail.workorder = new.pk
             objdetail.hr_workorder = new.workorder
             objdetail.last_item_order = last_workorder
+            objdetail.last_item_price = objdetail.price_total
+            objdetail.save()
+        except:
+            pass
+        try:
+            objdetail = OrderOut.objects.get(workorder_item=pk)
+            objdetail.pk = None
+            objdetail.workorder_item = obj.pk
+            objdetail.last_item_order = obj.workorder_hr
             objdetail.last_item_price = objdetail.price_total
             objdetail.save()
         except:
@@ -651,10 +753,14 @@ def subcategory(request):
     return render(request, 'workorders/modals/subcategory.html', context) 
 
 def tax(request, tax, id):
+    tax_percent = Decimal.from_float(.055)
+    tax_sum = Decimal.from_float(1.055)
     if tax == 'False':
         print('False')
         lineitem = WorkorderItem.objects.get(id=id)
         lineitem.tax_exempt = 1
+        lineitem.tax_amount = 0
+        lineitem.total_with_tax = lineitem.absolute_price
         lineitem.save() 
         context = {
             'tax':True,
@@ -664,6 +770,8 @@ def tax(request, tax, id):
         print('True')
         lineitem = WorkorderItem.objects.get(id=id)
         lineitem.tax_exempt = 0
+        lineitem.tax_amount = lineitem.absolute_price * tax_percent
+        lineitem.total_with_tax = lineitem.absolute_price * tax_sum
         lineitem.save()
         context = {
             'tax':False,

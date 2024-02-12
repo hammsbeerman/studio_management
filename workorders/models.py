@@ -57,11 +57,14 @@ class WorkorderItem(models.Model):
     unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)
     override_price = models.DecimalField('Override Price', max_digits=8, decimal_places=2, blank=True, null=True)
+    absolute_price = models.DecimalField('Absolute Price', max_digits=8, decimal_places=2, blank=True, null=True)
     last_item_order = models.CharField('Original Item Order', max_length=100, blank=True, null=True)
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
     notes = models.TextField('Notes:', blank=True, null=False)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
     tax_exempt = models.BooleanField(default=False)
+    tax_amount = models.DecimalField('Tax Amount', max_digits=8, decimal_places=2, blank=True, null=True)
+    total_with_tax = models.DecimalField('Total', max_digits=8, decimal_places=2, blank=True, null=True)
 
 
     def get_absolute_url(self):

@@ -95,7 +95,7 @@ class OrderOut(models.Model):
     edited = models.BooleanField('Edited', blank=False, null=False, default=False)
 
     def __str__(self):
-        return self.workorder
+        return self.workorder.workorder
     
 class SetPrice(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
