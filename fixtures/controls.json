@@ -1,0 +1,407 @@
+[
+{
+    "model": "controls.numbering",
+    "pk": 1,
+    "fields": {
+        "name": "Workorder Number",
+        "value": 5000
+    }
+},
+{
+    "model": "controls.numbering",
+    "pk": 2,
+    "fields": {
+        "name": "Customer Number",
+        "value": 1001
+    }
+},
+{
+    "model": "controls.numbering",
+    "pk": 3,
+    "fields": {
+        "name": "Vendor Number",
+        "value": 50000
+    }
+},
+{
+    "model": "controls.fixedcost",
+    "pk": 1,
+    "fields": {
+        "name": "Envelope",
+        "create_workorder": "5.00",
+        "reclaim_artwork": "5.00",
+        "send_to_press": "5.00",
+        "send_mailmerge_to_press": null,
+        "material_markup": "80.00",
+        "wear_and_tear": "1.00",
+        "trim_to_size": null,
+        "duplo_1": null,
+        "duplo_2": null,
+        "duplo_3": null,
+        "ncr_compound": null,
+        "pad_compound": null
+    }
+},
+{
+    "model": "controls.fixedcost",
+    "pk": 2,
+    "fields": {
+        "name": "Graphic Design",
+        "create_workorder": null,
+        "reclaim_artwork": null,
+        "send_to_press": null,
+        "send_mailmerge_to_press": null,
+        "material_markup": null,
+        "wear_and_tear": null,
+        "trim_to_size": null,
+        "duplo_1": null,
+        "duplo_2": null,
+        "duplo_3": null,
+        "ncr_compound": null,
+        "pad_compound": null
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 1,
+    "fields": {
+        "name": "Graphic Design",
+        "description": "Graphic Design Services",
+        "design_type": true,
+        "formname": "DesignItemForm",
+        "modelname": "WorkorderItem",
+        "modal": true,
+        "setprice": false,
+        "template": false,
+        "customform": true,
+        "pricesheet_type": 2
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 2,
+    "fields": {
+        "name": "Printed Item",
+        "description": "Printed Item",
+        "design_type": false,
+        "formname": null,
+        "modelname": null,
+        "modal": null,
+        "setprice": false,
+        "template": false,
+        "customform": false,
+        "pricesheet_type": null
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 3,
+    "fields": {
+        "name": "Set Price",
+        "description": "Bus Cards, Yard signs, etc",
+        "design_type": false,
+        "formname": "SetPriceForm",
+        "modelname": "SetPrice",
+        "modal": true,
+        "setprice": true,
+        "template": false,
+        "customform": true,
+        "pricesheet_type": null
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 4,
+    "fields": {
+        "name": "Order Out",
+        "description": "Items ordered in",
+        "design_type": false,
+        "formname": "OrderOutForm",
+        "modelname": "OrderOut",
+        "modal": true,
+        "setprice": false,
+        "template": false,
+        "customform": true,
+        "pricesheet_type": null
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 5,
+    "fields": {
+        "name": "Postage",
+        "description": "Postage",
+        "design_type": false,
+        "formname": null,
+        "modelname": null,
+        "modal": null,
+        "setprice": false,
+        "template": false,
+        "customform": false,
+        "pricesheet_type": null
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 6,
+    "fields": {
+        "name": "Envelopes",
+        "description": "Envelopes",
+        "design_type": false,
+        "formname": "EnvelopeForm",
+        "modelname": null,
+        "modal": false,
+        "setprice": false,
+        "template": false,
+        "customform": false,
+        "pricesheet_type": 1
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 7,
+    "fields": {
+        "name": "Business Cards",
+        "description": "Business Cards",
+        "design_type": false,
+        "formname": null,
+        "modelname": null,
+        "modal": null,
+        "setprice": false,
+        "template": false,
+        "customform": false,
+        "pricesheet_type": null
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 8,
+    "fields": {
+        "name": "Avery Labels",
+        "description": "Avery Labels",
+        "design_type": false,
+        "formname": null,
+        "modelname": null,
+        "modal": null,
+        "setprice": false,
+        "template": false,
+        "customform": false,
+        "pricesheet_type": null
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 9,
+    "fields": {
+        "name": "Wide format printing",
+        "description": "Wide format printing",
+        "design_type": false,
+        "formname": null,
+        "modelname": null,
+        "modal": null,
+        "setprice": false,
+        "template": false,
+        "customform": false,
+        "pricesheet_type": null
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 10,
+    "fields": {
+        "name": "NCR",
+        "description": "NCR Forms and books",
+        "design_type": false,
+        "formname": null,
+        "modelname": null,
+        "modal": true,
+        "setprice": false,
+        "template": false,
+        "customform": false,
+        "pricesheet_type": null
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 11,
+    "fields": {
+        "name": "Walk in copy",
+        "description": null,
+        "design_type": false,
+        "formname": null,
+        "modelname": null,
+        "modal": null,
+        "setprice": false,
+        "template": false,
+        "customform": false,
+        "pricesheet_type": null
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 12,
+    "fields": {
+        "name": "Test",
+        "description": null,
+        "design_type": null,
+        "formname": null,
+        "modelname": null,
+        "modal": null,
+        "setprice": false,
+        "template": false,
+        "customform": false,
+        "pricesheet_type": null
+    }
+},
+{
+    "model": "controls.subcategory",
+    "pk": 14,
+    "fields": {
+        "category": 10,
+        "name": "2 Part NCR",
+        "description": "2 Part NCR",
+        "template": false,
+        "set_price": false,
+        "setprice_name": null
+    }
+},
+{
+    "model": "controls.subcategory",
+    "pk": 15,
+    "fields": {
+        "category": 10,
+        "name": "3 Part NCR",
+        "description": "3 Part NCR",
+        "template": false,
+        "set_price": false,
+        "setprice_name": null
+    }
+},
+{
+    "model": "controls.subcategory",
+    "pk": 16,
+    "fields": {
+        "category": 6,
+        "name": "6 3/4 Regular",
+        "description": "6 3/4 Regular",
+        "template": true,
+        "set_price": false,
+        "setprice_name": null
+    }
+},
+{
+    "model": "controls.subcategory",
+    "pk": 17,
+    "fields": {
+        "category": 6,
+        "name": "6 3/4 Regular Tinted Inside",
+        "description": "6 3/4 Regular Tinted Inside",
+        "template": true,
+        "set_price": false,
+        "setprice_name": null
+    }
+},
+{
+    "model": "controls.subcategory",
+    "pk": 18,
+    "fields": {
+        "category": 6,
+        "name": "#9 Regular",
+        "description": "#9 Regular",
+        "template": false,
+        "set_price": false,
+        "setprice_name": null
+    }
+},
+{
+    "model": "controls.subcategory",
+    "pk": 19,
+    "fields": {
+        "category": 6,
+        "name": "#9 Window Envelope",
+        "description": "#9 Window Envelope",
+        "template": false,
+        "set_price": false,
+        "setprice_name": null
+    }
+},
+{
+    "model": "controls.subcategory",
+    "pk": 20,
+    "fields": {
+        "category": 6,
+        "name": "#9 Window Tinted Inside",
+        "description": "#9 Window Tinted Inside",
+        "template": false,
+        "set_price": false,
+        "setprice_name": null
+    }
+},
+{
+    "model": "controls.subcategory",
+    "pk": 21,
+    "fields": {
+        "category": 6,
+        "name": "#10 Regular envelope",
+        "description": "#10 Regular envelope",
+        "template": false,
+        "set_price": false,
+        "setprice_name": null
+    }
+},
+{
+    "model": "controls.subcategory",
+    "pk": 24,
+    "fields": {
+        "category": 2,
+        "name": "sdfsd",
+        "description": "sfsd",
+        "template": false,
+        "set_price": false,
+        "setprice_name": null
+    }
+},
+{
+    "model": "controls.subcategory",
+    "pk": 26,
+    "fields": {
+        "category": 2,
+        "name": "Business Cards",
+        "description": "Custom Business Cards",
+        "template": false,
+        "set_price": false,
+        "setprice_name": null
+    }
+},
+{
+    "model": "controls.designtype",
+    "pk": 1,
+    "fields": {
+        "name": "General Design",
+        "description": "General Design"
+    }
+},
+{
+    "model": "controls.designtype",
+    "pk": 2,
+    "fields": {
+        "name": "Graphic Design - Signshop",
+        "description": "Graphic Design - Signshop"
+    }
+},
+{
+    "model": "controls.designtype",
+    "pk": 3,
+    "fields": {
+        "name": "Graphic Design - Wedplan",
+        "description": "Graphic Design - Wedplan"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 1,
+    "fields": {
+        "name": "Ea"
+    }
+}
+]

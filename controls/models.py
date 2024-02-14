@@ -32,10 +32,12 @@ class Category(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     design_type = models.BooleanField('Design Type', blank=True, null=True)
+
     formname = models.CharField('Form', max_length=100, blank=True, null=True)
     modelname = models.CharField('Model', max_length=100, blank=True, null=True)
     modal = models.BooleanField('Popup Modal', blank=True, null=True, default=False)
     setprice = models.BooleanField('Is setprice category', blank=False, null=True, default=False)
+    material_type = models.CharField('Material Type', max_length=100, blank=True, null=True)
     template = models.BooleanField('Template', blank=True, null=True, default=False)
     customform = models.BooleanField('Uses Custom Form', blank=True, null=True, default=False)
     pricesheet_type = models.ForeignKey(FixedCost, blank=True, null=True, on_delete=models.CASCADE)
@@ -48,10 +50,20 @@ class SubCategory(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     template = models.BooleanField('Template', blank=True, null=True, default=False)
+    set_price = models.BooleanField('Is setprice category', blank=False, null=True, default=False)
+    setprice_name = models.CharField('Name', max_length=100, blank=True, null=True)
     
 
     def __str__(self):
         return self.name
+    
+class SetPriceItem(models.Model):
+    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE)
+    name = models.CharField('Name', max_length=100, blank=False, null=False)
+
+    def __str__(self):
+        return self.name
+
     
 class DesignType(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
@@ -60,19 +72,15 @@ class DesignType(models.Model):
     def __str__(self):
         return self.name
     
-class SetPriceItem(models.Model):
-    name = models.CharField('Name', max_length=100, blank=True, null=True)
-
-    def __str__(self):
-        return self.name
 
 class SetPriceItemPrice(models.Model):
     name = models.ForeignKey(SetPriceItem, max_length=100, blank=True, null=True, on_delete=models.DO_NOTHING)
-    quantity = models.CharField('Quantity', max_length=10, blank=True, null=True)
+    description = models.CharField('Description', max_length=100, blank=False, null=False)
+    set_quantity = models.DecimalField('Quantity / Order', max_digits=10, decimal_places=2, blank=False, null=False)
     price = models.CharField('Price', max_length=10, blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return self.description
     
 class Measurement(models.Model):
     name = name = models.CharField('Name', max_length=100, blank=False, null=True)

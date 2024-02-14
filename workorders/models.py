@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from customers.models import Customer, Contact
-from controls.models import Category, SubCategory, DesignType
+from controls.models import Category, SubCategory, DesignType, SetPriceItem, SetPriceItemPrice
 
 
 class Workorder(models.Model):
@@ -12,6 +12,8 @@ class Workorder(models.Model):
     ##company = models.OneToOneField(Customer, on_delete=models.CASCADE, blank=True, null=True)
     workorder = models.CharField('Workorder', max_length=100, blank=False, null=False, unique=True)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
+    quote = models.CharField('Quote', choices=[('1', 'Quote'), ('0', 'Workorder')], max_length=100, blank=False, null=False)
+    quote_number = models.CharField('Quote Number', max_length=100, blank=True, null=True, unique=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     deadline = models.DateField('Deadline', blank=True, null=True)
     po_number = models.CharField('PO Number', max_length=100, blank=True, null=True)
@@ -46,8 +48,10 @@ class Workorder(models.Model):
 class WorkorderItem(models.Model):
     workorder = models.ForeignKey(Workorder, blank=False, null=True, on_delete=models.CASCADE)
     workorder_hr = models.CharField('Workorder Human Readable', max_length=100, blank=False, null=False)
-    item_category = models.ForeignKey(Category, blank=False, null=False, on_delete=models.CASCADE)
+    item_category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.CASCADE)
     item_subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)
+    setprice_category = models.ForeignKey(SetPriceItem, blank=True, null=True, on_delete=models.SET_NULL)
+    setprice_item = models.ForeignKey(SetPriceItemPrice, blank=True, null=True, on_delete=models.SET_NULL) 
     #item_subcategory = models.CharField('Subcategory', max_length=100, blank=True, null=True)
     pricesheet_modified = models.BooleanField('Pricesheet Modified', blank=True, null=True, default=False)
     design_type = models.ForeignKey(DesignType, blank=True, null=True, on_delete=models.CASCADE)

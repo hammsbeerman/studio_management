@@ -1,0 +1,22 @@
+{% load static %}
+<script src="{% static 'js/setprice_form.js' %}"></script>
+{% if obj %}
+  <select class="custom-select mb-4" id="id_setprice_item" hx-trigger="change" name="setprice_item" hx-get="{% url 'pricesheet:setqty' %}" hx-target="#setqty">
+
+    {% if selected %}
+        <option value="{{ selected.id }}" selected="{{ selected.id }}">{{ selected.description }}</option>
+    {% endif %}
+        <option selected>Select Category</option>
+    
+    {% for object in obj %}
+      <option value="{{ object.id }}">{{ object.description }}</option>
+    {% endfor %}
+
+</select>
+  {% else %}
+  No Preset pricing
+{% endif %}
+
+
+
+<input type="hidden" id="setprice_itemname" name="setprice_itemname" value="{{ selected.description }}">

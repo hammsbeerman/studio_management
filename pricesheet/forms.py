@@ -22,17 +22,7 @@ class EnvelopeForm(forms.ModelForm):
 
         }
 
-class SubCategoryForm(forms.ModelForm):
 
-    class Meta:
-        model = SubCategory
-        fields = ['category', 'name', 'description']
-
-class CategoryForm(forms.ModelForm):
-
-    class Meta:
-        model = Category
-        fields = ['name', 'description', 'design_type', 'formname', 'modal']
 
 class CreateTemplateForm(forms.ModelForm):
 
@@ -45,7 +35,7 @@ class NCRForm(forms.ModelForm):
     class Meta:
         model = PriceSheet
         fields = [
-            'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent',
+            'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent', 'step_NCR_compound_price',
             'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 'side_1_inktype', 'side_2_inktype', 'paper_stock', 'price_per_m', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'material_cost', 'material_markup_percentage', 'material_markup', 'step_print_cost_side_1', 
             'step_print_cost_side_1_price', 'step_print_cost_side_2', 'step_id_count_price', 'step_print_cost_side_2_price', 'step_count_package_price', 'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_m', 'misc1_description', 'misc1_price', 'misc2_description', 'misc2_price', 'misc3_description',

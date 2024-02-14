@@ -5,7 +5,7 @@ from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Mea
 
 
 class NumberingAdmin(admin.ModelAdmin):
-    readonly_fields=('value',)
+    
     list_display = ('name', 'value')
 
 admin.site.register(Numbering, NumberingAdmin)
@@ -17,7 +17,7 @@ class CategorySubcategoryInline(admin.StackedInline):
 
 class CategoryAdmin(admin.ModelAdmin):
     inlines = [CategorySubcategoryInline]
-    list_display = ('name', 'description', 'design_type', 'formname', 'modal', 'template', 'pricesheet_type')
+    list_display = ('name', 'description', 'design_type', 'formname', 'modelname', 'modal', 'template', 'pricesheet_type')
 
 admin.site.register(Category, CategoryAdmin)
 

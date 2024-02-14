@@ -14,6 +14,7 @@ from .views import (
     contact_info,
     change_contact,
     new_cust_contact,
+    customer_list,
 )
 
 app_name='customers'
@@ -22,7 +23,8 @@ urlpatterns = [
 
     #path("customer_info/", customer_info, name='customer_info'), #Create base details of new workorder
     path("contacts/", contacts, name='contacts'),
-    path("customers/", customers, name='customer_list'),
+    path("customers/", customers, name='customers'),
+    path("customer_list/", customer_list, name='customer_list'),
     path("new_customer/", new_customer, name='new_customer'),
     path("new_contact/", new_contact, name='new_contact'),
     path("new_cust_contact/", new_cust_contact, name='new_cust_contact'),

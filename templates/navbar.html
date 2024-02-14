@@ -13,11 +13,6 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'logout' %}">Logout</a>
             </li>
-            {% if user.is_superuser %}
-            <li class="nav-item">
-              <a class="nav-link" href="/admin">Admin</a>
-            </li>
-            {% endif %}
           {% else %}
             <li class="nav-item">
               <a class="nav-link" href="{% url 'login' %}">Login</a>
@@ -26,16 +21,16 @@
               <a class="nav-link" href="{% url 'register' %}">Register</a>
             </li>
           {% endif %}
-          <li class="nav-item dropdown">
+          <!-- <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Customers
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-              <li><a class="dropdown-item" href="#">Customer List</a></li>
+              <li><a class="dropdown-item" href="{% url 'customers:customer_list' %}">Customer List</a></li>
               <li><a class="dropdown-item" href="#">Add Customer</a></li>
-              <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
+              <li><a class="dropdown-item" href="">Add Customer Contact</a></li>
             </ul> 
-          </li>
+          </li> -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Workorders
@@ -43,6 +38,7 @@
             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
               <li><a class="dropdown-item" href="{% url 'workorders:workorder_list' %}">Workorder List</a></li>
               <li><a class="dropdown-item" href="{% url 'workorders:createbase' %}">Add Workorder</a></li>
+              <li><a class="dropdown-item" href="{% url 'workorders:quote_list' %}">Quote List</a></li>
               <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
             </ul> 
           </li>
@@ -52,6 +48,9 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
               <li><a class="dropdown-item" href="{% url 'pricesheet:template_list' %}">Price Templates</a></li>
+              {% if user.is_superuser %}
+                <li><a class="dropdown-item" href="/admin">Admin</a></li>
+              {% endif %}
               <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
             </ul> 
           </li>

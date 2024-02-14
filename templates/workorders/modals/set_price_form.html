@@ -1,0 +1,124 @@
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+{% load static %}
+<script src="{% static 'js/setprice_form.js' %}"></script>
+{% with WIDGET_ERROR_CLASS='is-invalid' %}
+<form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Edit Set Price Item</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div id="modal-body" class="modal-body">
+    <input type="hidden" id="price_ea" name="unit_price" value="{{ price_ea }}">
+
+    <label for="id_internal_company" class="form-label requiredField">
+      Internal Company<span class="asteriskField">*</span></label>
+    <select name="internal_company" class="select form-select" required="" id="id_internal_company">
+      {% if form.instance.internal_company %}
+          <option value="{{ form.instance.internal_company }}" selected="{{ form.instance.internal_company }}">{{ form.instance.internal_company }}</option>
+      {% else %}
+          <option value="LK Design" selected="">LK Design</option>
+      {% endif %}
+          <option value="LK Design"">LK Design</option>
+          
+          <option value="Krueger Printing">Krueger Printing</option>
+    </select>
+    <p>
+      <p>
+
+
+    <select class="custom-select mb-4" id="id_setprice_category" hx-trigger="change" name="setprice_category" hx-get="{% url 'pricesheet:setprices' %}" hx-target="#setprices">
+
+      {% if form.instance.setprice_category %}
+          {% if setprice_selected %}
+            <option value="{{ form.instance.setprice_category }}" selected="{{ form.instance.setprice_category }}">{{ setprice_selected }}</option>
+          {% else %}
+            <option selected>Select Category</option>
+          {% endif %}
+      {% endif %}
+      {% for object in setprice_category %}
+        <option value="{{ object.id }}">{{ object.name }}</option>
+      {% endfor %}
+    </select>
+
+
+    <div id="setprices">
+      {% if selected %}
+      <select class="custom-select mb-4" id="id_setprice_item" hx-trigger="change" name="setprice_item" hx-get="{% url 'pricesheet:setqty' %}" hx-target="#setqty">
+        
+        {% if selected %}
+            <option value="{{ selected.id }}" selected="{{ selected.id }}">{{ selected.description }}</option>
+        {% endif %}
+        
+        {% for object in obj %}
+          <option value="{{ object.id }}">{{ object.description }}</option>
+        {% endfor %}
+    
+      </select>
+      {% endif %}
+    
+    
+    
+    <input type="hidden" id="setprice_itemname" name="setprice_itemname" value="{{ selected.description }}"> 
+    </div>
+
+    <div id="setqty">
+      <input type="hidden" id="set_qty" name="setprice_qty" value="{{ selected.set_quantity }}">
+      <input type="hidden" id="set_price" name="setprice_price" value="{{ selected.price }}">
+    </div>
+
+    <p>
+
+
+      <div class='col'>
+        {{ form.quantity|as_crispy_field }}
+    </div>
+
+    
+
+  <div class='col'>
+    {{ form.total_pieces|as_crispy_field }}
+</div>
+
+<div class='col'>
+  {{ form.description|as_crispy_field }}
+</div>
+
+<div class='col'>
+  {{ form.unit_price|as_crispy_field }}
+</div>
+
+<div class='col'>
+  {{ form.total_price|as_crispy_field }}
+</div>
+
+    <div class='col'>
+      {{ form.override_price|as_crispy_field }}
+  </div>
+
+  <div class='col'>
+    {{ form.last_item_order|as_crispy_field }}
+</div>
+
+<div class='col'>
+  {{ form.last_item_price|as_crispy_field }}
+</div>
+
+
+
+
+    <input type="hidden" id="cat" name="cat" value="{{ cat }}">
+    <input type="hidden" id="item" name="item" value="{{ pk }}">
+  </div>
+  <div class="modal-footer">
+    {% if item %}
+    <button type="button" class="btn btn-danger" hx-post="{% url 'workorders:remove_item' pk=item.pk %}">Remove</button>
+    <span class="flex-grow-1"></span>
+    {% endif %}
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>
+{% endwith %}

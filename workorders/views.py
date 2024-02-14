@@ -4,7 +4,7 @@ from django.views.decorators.http import require_POST
 from django.db.models import Avg, Count, Min, Sum
 from decimal import Decimal
 from customers.models import Customer, Contact
-from controls.models import Numbering, Category, SubCategory
+from controls.models import Numbering, Category, SubCategory, SetPriceItem, SetPriceItemPrice
 from .models import Workorder, DesignType, WorkorderItem
 from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm
 from krueger.forms import KruegerJobDetailForm
@@ -36,8 +36,11 @@ def create_base(request):
         form = WorkorderForm(request.POST)
         #print(form.internal_company)
         print(form.errors)
+        quote = request.POST.get('quote')
+        form.fields['quote'].choices = [(quote, quote)]
         if form.is_valid():
             form.instance.customer_id = request.POST.get('customer')
+            quote = request.POST.get('quote')
             cust = form.instance.customer_id
             select = 'Select Customer'
             if cust == select:
@@ -67,8 +70,18 @@ def create_base(request):
                 hrcont = hrcont.fname
                 form.instance.hr_contact = hrcont
             ##Increase workorder numbering
-            n = Numbering.objects.get(pk=1)
-            form.instance.workorder = n.value
+            print('quote')
+            print(quote)
+            if quote == '1':
+                print('quote')
+                n = Numbering.objects.get(name='Quote Number')
+                form.instance.quote_number = n.value
+                form.instance.workorder = n.value
+                print(n.value)
+            else: 
+                print('workorder')
+                n = Numbering.objects.get(name='Workorder Number')
+                form.instance.workorder = n.value
             workorder = n.value
             inc = int('1')
             n.value = n.value + inc
@@ -129,11 +142,18 @@ def history_overview(request, id):
     return render(request, "workorders/partials/history_overview.html", context)
 
 def workorder_list(request):
-    workorder = Workorder.objects.all().exclude(workorder=1111)
+    workorder = Workorder.objects.all().exclude(workorder=1111).exclude(quote=1)
     context = {
         'workorders': workorder,
     }
     return render(request, 'workorders/list.html', context)
+
+def quote_list(request):
+    workorder = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0)
+    context = {
+        'workorders': workorder,
+    }
+    return render(request, 'workorders/quotes.html', context)
 
 def edit_workorder(request):
     workorder = request.GET.get('workorder')
@@ -429,12 +449,20 @@ def edit_design_item(request, pk, cat):
         total=0
         if qty and unit_price:
             total = qty * unit_price
-        lineitem = WorkorderItem.objects.get(id=line)
+        lineitem = WorkorderItem.objects.get(id=pk)
         lineitem.quantity = qty
         lineitem.unit_price = unit_price
         lineitem.total_price = total
         lineitem.pricesheet_modified = 1
         lineitem.absolute_price = total
+        tax_percent = Decimal.from_float(.055)
+        tax = Decimal.from_float(1.055)
+        if lineitem.tax_exempt == 1:
+            lineitem.tax_amount = 0
+            lineitem.total_with_tax = lineitem.absolute_price
+        else:
+            lineitem.tax_amount = lineitem.absolute_price * tax_percent
+            lineitem.total_with_tax = lineitem.absolute_price * tax
         lineitem.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     print(category)
@@ -481,6 +509,7 @@ def edit_orderout_item(request, pk, cat):
             temp_total = total
         unit_price = temp_total / qty
         lineitem = WorkorderItem.objects.get(id=pk)
+        lineitem.description = obj.description
         lineitem.quantity = qty
         lineitem.unit_price = unit_price
         lineitem.total_price = total
@@ -535,6 +564,129 @@ def edit_orderout_item(request, pk, cat):
         'price_ea': price_ea,
     }
     return render(request, 'workorders/modals/order_out_form.html', context)
+
+def edit_set_price_item(request, pk, cat):
+    pass
+    print('pk')
+    print(pk)
+    item = get_object_or_404(SetPrice, workorder_item=pk)
+    print(item.setprice_category)
+    print(item.setprice_item)
+    print('above')
+    try:
+        setprice = SetPriceItem.objects.get(id=item.setprice_category)
+        setprice_selected = setprice.name
+        print(setprice_selected)
+        try:
+            obj_item = SetPriceItemPrice.objects.filter(name=item.setprice_category)
+            try:
+                selected = SetPriceItemPrice.objects.get(id=item.setprice_item)
+            except:
+                selected = ''
+                pass
+                print(item)
+                print(obj)
+        except:
+            obj_item = ''
+            selected = ''
+            pass
+    except:
+        selected = ''
+        obj_item = ''
+        setprice_selected = ''
+    setprice_category = SetPriceItem.objects.all()
+    category = cat
+    if request.method == "POST":
+        form = SetPriceForm(request.POST, instance=item)
+        obj = form.save(commit=False)
+        if form.is_valid():
+            form.save()
+        else:
+            print(form.errors)
+        #setpric = request.POST.get('unit_price')
+        qty = obj.quantity
+        total = obj.total_price
+        override = obj.override_price
+        #setprice_category = obj.setprice_item
+        setprice_category = request.POST.get('setprice_category')
+        setprice_item = request.POST.get('setprice_item')
+
+       # print(setprice)
+        #setprice_category = get_object_or_404(SetPriceItem, id=setprice)
+        # setprice_item = SetPriceItem.objects.get(id=setprice)
+        # print('name')
+        # print(setprice_item.name)
+        
+        #print('setprice')
+        #print(setprice_item.name)
+        #print(setprice_item.description)
+        if override:
+            temp_total = override
+        else:
+            temp_total = total
+        unit_price = temp_total / qty
+        lineitem = WorkorderItem.objects.get(id=pk)
+        lineitem.quantity = qty
+        lineitem.setprice_category_id = setprice_category
+        lineitem.setprice_item_id = setprice_item
+        lineitem.description = obj.description
+        lineitem.unit_price = unit_price
+        lineitem.total_price = total
+        lineitem.override_price = override
+        lineitem.pricesheet_modified = 1
+        lineitem.absolute_price = temp_total
+        tax_percent = Decimal.from_float(.055)
+        tax = Decimal.from_float(1.055)
+        if lineitem.tax_exempt == 1:
+            lineitem.tax_amount = 0
+            lineitem.total_with_tax = lineitem.absolute_price
+        else:
+            lineitem.tax_amount = lineitem.absolute_price * tax_percent
+            lineitem.total_with_tax = lineitem.absolute_price * tax
+        if lineitem.notes:
+            notes = lineitem.notes
+        else:
+            notes = ''
+        if lineitem.last_item_order:
+            last_order = lineitem.last_item_order
+        else:
+            last_order = ''
+        if lineitem.last_item_price:
+            last_price = lineitem.last_item_order
+        else:
+            last_price = ''
+        lineitem.save()
+        orderoutitem = SetPrice.objects.get(workorder_item=pk)
+        orderoutitem.last_item_order = last_order
+        orderoutitem.last_item_price = last_price
+        orderoutitem.notes = notes
+        orderoutitem.unit_price = unit_price
+        orderoutitem.edited = 1
+        orderoutitem.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    print(category)
+    #obj = Category.objects.get(id=category)  
+    #print('object name')      
+    #print(obj.name)
+    #formname == DesignItemForm:
+    item = get_object_or_404(SetPrice, workorder_item=pk)
+    price_ea = item.unit_price
+    form = SetPriceForm(instance=item)
+    ####
+    #form = DesignItemForm(instance=item)
+    context = {
+        'pk':pk,
+        'form': form,
+        'item': item,
+        'obj': obj_item,
+        'selected':selected,
+        'cat': category,
+        'price_ea': price_ea,
+        'setprice_category':setprice_category,
+        #'setprice_item': setprice_item,
+        'setprice_selected':setprice_selected,
+    }
+    return render(request, 'workorders/modals/set_price_form.html', context)
 
         
 

@@ -1,0 +1,14 @@
+{% load static %}
+<script src="{% static 'js/setprice_form.js' %}"></script>
+{% if obj %}
+  
+<label>Pieces/ Set: </label> {{ obj.set_quantity }}
+<input type="hidden" id="set_qty" name="setprice_qty" value="{{ obj.set_quantity }}">
+<p>
+    <br/>
+<label>Price/ Set: </label> {{ obj.price }}
+<input type="hidden" id="set_price" name="setprice_price" value="{{ obj.price }}">
+
+
+
+{% endif %}

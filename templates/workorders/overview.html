@@ -32,6 +32,7 @@
           <div class="card-footer"></div>
       </div>
       <a href="{% url 'workorders:copy_workorder' id=workid %}" class="btn btn-primary btn-sm" role="button">Duplicate Workorder</a>
+      {% if workorder.quote == '1' %}<a href="" class="btn btn-primary btn-sm" role="button">Convert to Workorder</a>{% endif %}
   </div>
 </div>
 

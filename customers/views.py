@@ -48,6 +48,14 @@ def customers(request):
     #print(contacts)
     return render(request, 'customers/partials/customers.html', context)
 
+def customer_list(request):
+    customer = Customer.objects.all()
+    context = {
+        'customers': customer
+        }
+    return render(request, 'customers/list.html', context)
+
+
 def new_customer(request):
     if request.method == "POST":
         form = CustomerForm(request.POST)

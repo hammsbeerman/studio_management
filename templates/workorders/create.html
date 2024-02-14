@@ -7,13 +7,13 @@
 <form action='' method="POST">
   {% csrf_token %}
 
- <!-- <div id="testing" hx-trigger="CustomerAdded from:body" hx-refresh="True" hx-get="{% url 'customers:customer_list' %}" hx-target="#custlist">
+ <!-- <div id="testing" hx-trigger="CustomerAdded from:body" hx-refresh="True" hx-get="{% url 'customers:customers' %}" hx-target="#custlist">
 </div> -->
 <div class="container">
     <div class="row row-cols-3">
         <div class="col">
           {{ message }}
-          <div id="custlist" hx-trigger="CustomerAdded from:body" hx-get="{% url 'customers:customer_list' %}" hx-target="this">
+          <div id="custlist" hx-trigger="CustomerAdded from:body" hx-get="{% url 'customers:customers' %}" hx-target="this">
             <div class="input-group">
             {% include 'customers/partials/customers.html' %}
           </div>
@@ -27,6 +27,7 @@
           </div>
         <div class="col">
             <div id="workorder">
+                {{form.quote|as_crispy_field}}<br/>
                 {{form.internal_company|as_crispy_field}}<br/>
                 {{form.description|as_crispy_field}}<br/>
                 {{form.deadline|as_crispy_field}}<br/>

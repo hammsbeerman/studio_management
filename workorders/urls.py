@@ -22,6 +22,8 @@ from .views import (
     workorder_notes,
     edit_design_item,
     edit_orderout_item,
+    edit_set_price_item,
+    quote_list,
     # removed,
 )
 
@@ -33,6 +35,7 @@ urlpatterns = [
     path('items/<int:pk>/edit/<int:cat>', edit_modal_item, name='edit_modal_item'),
     path('design/<int:pk>/edit/<int:cat>', edit_design_item, name='edit_design_item'),
     path('orderout/<int:pk>/edit/<int:cat>', edit_orderout_item, name='edit_orderout_item'),
+    path('setprice/<int:pk>/edit/<int:cat>', edit_set_price_item, name='edit_set_price_item'),
     #path('items/<int:pk>/edit/<int:cat>', edit_print_item, name='edit_print_item'),
     path('items/<int:pk>/remove/', remove_workorder_item, name='remove_item'),
     path('items/copy_workorder/<int:id>', copy_workorder, name='copy_workorder'),
@@ -41,6 +44,7 @@ urlpatterns = [
     path("item/<int:id>/", workorder_item_list, name='workorder_item_list'),
     path("createbase/", create_base, name='createbase'), #Create base details of new workorder
     path("workorders/", workorder_list, name='workorder_list'),
+    path("quotes/", quote_list, name='quote_list'),
     path("workorders/<int:id>", overview, name='overview'),
     path("workorders/<int:id>", history_overview, name='history_overview'),
     path("edit_workorder", edit_workorder, name='edit_workorder'),

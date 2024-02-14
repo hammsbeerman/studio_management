@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
 from decimal import Decimal
-from .forms import EnvelopeForm, SubCategoryForm, CategoryForm, CreateTemplateForm, NewTemplateForm, NCRForm
+from .forms import EnvelopeForm, CreateTemplateForm, NewTemplateForm, NCRForm
 from .models import PriceSheet
-from controls.models import SubCategory, FixedCost
+from controls.models import SubCategory, FixedCost, SetPriceItem, SetPriceItemPrice
+from controls.forms import SubCategoryForm, CategoryForm
 from workorders.models import WorkorderItem, Category
 from krueger.models import KruegerJobDetail, PaperStock
 from inventory.models import Inventory
@@ -103,33 +104,7 @@ def template(request, id=None):
     return render(request, "pricesheet/templates/newtemplate_form.html", context)
 
 
-def add_category(request):
-    form = CategoryForm()
-    if request.method =="POST":
-        form = CategoryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'CategoryListChanged'})
-        else:
-            print(form.errors)
-    context = {
-        'form': form,
-    }
-    return render (request, "pricesheet/modals/add_category.html", context)
 
-def add_subcategory(request):
-    form = SubCategoryForm()
-    if request.method =="POST":
-        form = SubCategoryForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'ListChanged'})
-        else:
-            print(form.errors)
-    context = {
-        'form': form,
-    }
-    return render (request, "pricesheet/modals/add_subcategory.html", context)
 
 def add_template(request):
     form = CreateTemplateForm()
@@ -214,6 +189,36 @@ def subcategory(request):
     }
     return render(request, 'pricesheet/modals/subcategory.html', context) 
 
+def setprices(request):
+    item = request.GET.get('setprice_category')
+    print(item)
+    obj = SetPriceItemPrice.objects.filter(name=item)
+    try:
+        selected = SetPriceItemPrice.objects.get(name=item)
+    except:
+        selected = ''
+        pass
+    print(item)
+    print(obj)
+    context = {
+        'obj':obj,
+        'selected':selected
+    }
+    return render(request, 'workorders/modals/setprices.html', context) 
+
+def setqty(request):
+    item = request.GET.get('setprice_item')
+    print(item)
+    obj = SetPriceItemPrice.objects.get(pk=item)
+    print(item)
+    print(obj)
+    print(obj.description)
+    context = {
+        'obj':obj
+    }
+    return render(request, 'workorders/modals/setqty.html', context) 
+
+
 def edititem(request, id, pk, cat,):
     if request.method == "POST":
         workorderitem = KruegerJobDetail.objects.get(workorder_item=pk)
@@ -244,7 +249,9 @@ def edititem(request, id, pk, cat,):
         return redirect('workorders:overview', id=obj.hr_workorder)
     if request.htmx:
         print('HTMX')
+        
         modified = WorkorderItem.objects.get(pk=pk)
+
         internal_company = modified.internal_company
         #If new lineitem, load default pricing template
         if not modified.pricesheet_modified:
@@ -302,15 +309,21 @@ def edititem(request, id, pk, cat,):
         return render (request, "pricesheet/modals/edit_item.html", context)
     else:
         print('Not HTMX')
+        print(pk)
         modified = WorkorderItem.objects.get(pk=pk)
+        print('here')
         internal_company = modified.internal_company
         #If new lineitem, load default pricing template
         if not modified.pricesheet_modified:
+            print('here')
             #If there is a subcategory, load the pricing template for subcategory
             if modified.item_subcategory:
                 description = WorkorderItem.objects.get(pk=pk)
                 description = description.description
+                print('here')
+                print(description)
                 item = get_object_or_404(PriceSheet, subcategory=modified.item_subcategory)
+                print('here')
                 formdata = PriceSheet.objects.get(subcategory_id = modified.item_subcategory)
             #Otherwise load category template
             else:
@@ -318,6 +331,7 @@ def edititem(request, id, pk, cat,):
                 formdata = PriceSheet.objects.get(category_id = cat)
         #If item contains custom pricing load that               
         else:
+            print('not here')
             item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
             #formdata loads static data to template
             formdata = KruegerJobDetail.objects.get(workorder_item=pk)

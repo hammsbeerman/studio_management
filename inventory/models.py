@@ -66,8 +66,8 @@ class InventoryDetail(models.Model):
     vendor_item_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
     test = models.CharField('test', max_length=100, blank=True)
 
-    def __str__(self):
-        return self.item
+    # def __str__(self):
+    #     return self.item
 
 
 class OrderOut(models.Model):
@@ -106,10 +106,14 @@ class SetPrice(models.Model):
     customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_DEFAULT, default=2)
     hr_customer = models.CharField('Customer Name', max_length=100, blank=True, null=True)
     category = models.CharField('Category', max_length=10, blank=True, null=True)
-    subcategory = models.ForeignKey(SubCategory, max_length=100, blank=True, null=True, on_delete=models.DO_NOTHING)
+    setprice_category = models.CharField('Item Category', max_length=10, blank=True, null=True)
+    setprice_item = models.CharField('Item', max_length=10, blank=True, null=True)
+    setprice_qty = models.CharField('Pieces / set', max_length=10, blank=True, null=True)
+    setprice_price = models.CharField('Price / set', max_length=10, blank=True, null=True)
+    total_pieces = models.CharField('Total pieces', max_length=10, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
-
-    quantity = models.DecimalField('Quantity', max_digits=6, decimal_places=2, blank=True, null=True)
+    
+    quantity = models.PositiveIntegerField('Quantity', blank=True, null=True)
     unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)
     override_price = models.DecimalField('Override Price', max_digits=8, decimal_places=2, blank=True, null=True)
@@ -121,7 +125,7 @@ class SetPrice(models.Model):
     edited = models.BooleanField('Edited', blank=False, null=False, default=False)
 
     def __str__(self):
-        return self.id
+        return self.workorder.workorder
 
 class Photography(models.Model):
     workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=False, on_delete=models.CASCADE)
