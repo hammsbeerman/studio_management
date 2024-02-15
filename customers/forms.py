@@ -50,3 +50,8 @@ class ContactForm(forms.ModelForm):
             self.fields[str(field)].widget.attrs.update(
                 new_data
             )
+
+class CustomerNoteForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['notes']

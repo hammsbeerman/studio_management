@@ -6,7 +6,7 @@ from decimal import Decimal
 from customers.models import Customer, Contact
 from controls.models import Numbering, Category, SubCategory, SetPriceItem, SetPriceItemPrice
 from .models import Workorder, DesignType, WorkorderItem
-from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm
+from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm
 from krueger.forms import KruegerJobDetailForm
 from krueger.models import KruegerJobDetail
 from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
@@ -221,6 +221,7 @@ def add_item(request, parent_id):
             print('parent')
             print(parent.workorder)
             obj.tax_exempt = parent.customer.tax_exempt
+            obj.internal_company = parent.internal_company
             print(parent.customer.tax_exempt)
             print(parent.customer.customer_number)
             print('up')
@@ -241,7 +242,7 @@ def add_item(request, parent_id):
                 #loadform = Category.objects.get(id=category)
                 modelname = globals()[loadform.modelname]
                 formname = globals()[loadform.formname]
-                if formname == DesignItemForm:
+                if formname == DesignItemForm or formname == CustomItemForm:
                     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
                 #form = formname(request.POST, instance=item)
                 print(modelname)
@@ -485,6 +486,58 @@ def edit_design_item(request, pk, cat):
     }
     return render(request, 'workorders/modals/design_item_form.html', context)
 
+def edit_custom_item(request, pk, cat):
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    #line = request.POST.get('item')
+    category = cat
+    if request.method == "POST":
+        form = CustomItemForm(request.POST, instance=item)
+        obj = form.save(commit=False)
+        if form.is_valid():
+            form.save()
+        else:
+            print(form.errors)
+        qty = obj.quantity
+        unit_price=obj.unit_price
+        total=0
+        if qty and unit_price:
+            total = qty * unit_price
+        lineitem = WorkorderItem.objects.get(id=pk)
+        lineitem.quantity = qty
+        lineitem.unit_price = unit_price
+        lineitem.total_price = total
+        lineitem.pricesheet_modified = 1
+        lineitem.absolute_price = total
+        tax_percent = Decimal.from_float(.055)
+        tax = Decimal.from_float(1.055)
+        if lineitem.tax_exempt == 1:
+            lineitem.tax_amount = 0
+            lineitem.total_with_tax = lineitem.absolute_price
+        else:
+            lineitem.tax_amount = lineitem.absolute_price * tax_percent
+            lineitem.total_with_tax = lineitem.absolute_price * tax
+        lineitem.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    print(category)
+    obj = Category.objects.get(id=category)  
+    print('object name')      
+    print(obj.name)
+    #formname == DesignItemForm:
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    price_ea = item.unit_price
+    form = CustomItemForm(instance=item)
+    ####
+    #form = DesignItemForm(instance=item)
+    context = {
+        'pk':pk,
+        'form': form,
+        'item': item,
+        'obj': obj,
+        'cat': category,
+        'price_ea': price_ea,
+    }
+    return render(request, 'workorders/modals/custom_item_form.html', context)
+
 def edit_orderout_item(request, pk, cat):
     print('pk')
     print(pk)
@@ -631,6 +684,7 @@ def edit_set_price_item(request, pk, cat):
         lineitem.setprice_item_id = setprice_item
         lineitem.description = obj.description
         lineitem.unit_price = unit_price
+        lineitem.internal_company = obj.internal_company
         lineitem.total_price = total
         lineitem.override_price = override
         lineitem.pricesheet_modified = 1
@@ -656,13 +710,13 @@ def edit_set_price_item(request, pk, cat):
         else:
             last_price = ''
         lineitem.save()
-        orderoutitem = SetPrice.objects.get(workorder_item=pk)
-        orderoutitem.last_item_order = last_order
-        orderoutitem.last_item_price = last_price
-        orderoutitem.notes = notes
-        orderoutitem.unit_price = unit_price
-        orderoutitem.edited = 1
-        orderoutitem.save()
+        setpriceitem = SetPrice.objects.get(workorder_item=pk)
+        setpriceitem.last_item_order = last_order
+        setpriceitem.last_item_price = last_price
+        setpriceitem.notes = notes
+        setpriceitem.unit_price = unit_price
+        setpriceitem.edited = 1
+        setpriceitem.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     print(category)
     #obj = Category.objects.get(id=category)  
@@ -674,6 +728,7 @@ def edit_set_price_item(request, pk, cat):
     form = SetPriceForm(instance=item)
     ####
     #form = DesignItemForm(instance=item)
+    print(setprice_selected)
     context = {
         'pk':pk,
         'form': form,

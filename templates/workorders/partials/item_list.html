@@ -23,6 +23,8 @@
                 <!-- Edit Design item-->
                 {% if object.item_category.formname == 'DesignItemForm' %}
                     <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_design_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
+                {% elif object.item_category.formname == 'CustomItemForm' %}
+                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_custom_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
                 {% elif object.item_category.formname == 'OrderOutForm'%}
                     <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_orderout_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
                 {% elif object.item_category.formname == 'SetPriceForm'%}

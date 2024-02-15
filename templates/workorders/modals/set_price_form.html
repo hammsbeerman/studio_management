@@ -28,17 +28,18 @@
 
 
     <select class="custom-select mb-4" id="id_setprice_category" hx-trigger="change" name="setprice_category" hx-get="{% url 'pricesheet:setprices' %}" hx-target="#setprices">
-
       {% if form.instance.setprice_category %}
-          {% if setprice_selected %}
+          {% if setprice_selected|length %}
             <option value="{{ form.instance.setprice_category }}" selected="{{ form.instance.setprice_category }}">{{ setprice_selected }}</option>
           {% else %}
             <option selected>Select Category</option>
           {% endif %}
-      {% endif %}
+      {% else %}
+      <option selected>Select Category</option>
       {% for object in setprice_category %}
         <option value="{{ object.id }}">{{ object.name }}</option>
       {% endfor %}
+      {% endif %}
     </select>
 
 

@@ -12,7 +12,7 @@
     "pk": 2,
     "fields": {
         "name": "Customer Number",
-        "value": 1001
+        "value": 1000
     }
 },
 {
@@ -21,6 +21,14 @@
     "fields": {
         "name": "Vendor Number",
         "value": 50000
+    }
+},
+{
+    "model": "controls.numbering",
+    "pk": 4,
+    "fields": {
+        "name": "Quote Number",
+        "value": 100000000
     }
 },
 {
@@ -255,7 +263,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 14,
+    "pk": 1,
     "fields": {
         "category": 10,
         "name": "2 Part NCR",
@@ -267,7 +275,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 15,
+    "pk": 2,
     "fields": {
         "category": 10,
         "name": "3 Part NCR",
@@ -279,7 +287,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 16,
+    "pk": 3,
     "fields": {
         "category": 6,
         "name": "6 3/4 Regular",
@@ -291,7 +299,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 17,
+    "pk": 4,
     "fields": {
         "category": 6,
         "name": "6 3/4 Regular Tinted Inside",
@@ -303,7 +311,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 18,
+    "pk": 5,
     "fields": {
         "category": 6,
         "name": "#9 Regular",
@@ -315,7 +323,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 19,
+    "pk": 6,
     "fields": {
         "category": 6,
         "name": "#9 Window Envelope",
@@ -327,7 +335,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 20,
+    "pk": 7,
     "fields": {
         "category": 6,
         "name": "#9 Window Tinted Inside",
@@ -339,7 +347,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 21,
+    "pk": 8,
     "fields": {
         "category": 6,
         "name": "#10 Regular envelope",
@@ -351,7 +359,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 24,
+    "pk": 9,
     "fields": {
         "category": 2,
         "name": "sdfsd",
@@ -363,7 +371,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 26,
+    "pk": 10,
     "fields": {
         "category": 2,
         "name": "Business Cards",
@@ -402,6 +410,95 @@
     "pk": 1,
     "fields": {
         "name": "Ea"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 2,
+    "fields": {
+        "name": "Ft"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 3,
+    "fields": {
+        "name": "mL"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 4,
+    "fields": {
+        "name": "Sht"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 5,
+    "fields": {
+        "name": "Sq Ft"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 6,
+    "fields": {
+        "name": "Yd"
+    }
+},
+{
+    "model": "controls.setpriceitem",
+    "pk": 1,
+    "fields": {
+        "category": 3,
+        "name": "Business Cards"
+    }
+},
+{
+    "model": "controls.setpriceitem",
+    "pk": 2,
+    "fields": {
+        "category": 3,
+        "name": "Banners"
+    }
+},
+{
+    "model": "controls.setpriceitem",
+    "pk": 3,
+    "fields": {
+        "category": 3,
+        "name": "Grede"
+    }
+},
+{
+    "model": "controls.setpriceitemprice",
+    "pk": 1,
+    "fields": {
+        "name": 1,
+        "description": "500 Business Cards",
+        "set_quantity": "500.00",
+        "price": "45.00"
+    }
+},
+{
+    "model": "controls.setpriceitemprice",
+    "pk": 2,
+    "fields": {
+        "name": 1,
+        "description": "1000 Business Cards",
+        "set_quantity": "1000.00",
+        "price": "75.00"
+    }
+},
+{
+    "model": "controls.setpriceitemprice",
+    "pk": 3,
+    "fields": {
+        "name": 3,
+        "description": "Cast Routing Form",
+        "set_quantity": "500.00",
+        "price": "1000.00"
     }
 }
 ]

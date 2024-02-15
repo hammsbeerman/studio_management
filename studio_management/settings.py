@@ -68,6 +68,7 @@ LOCAL_APPS = [
     'inventory',
     'finance',
     'krueger',
+    'pdf',
     'pricesheet',
     #'vendors',
     'workorders',

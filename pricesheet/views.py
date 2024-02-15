@@ -65,8 +65,10 @@ def template(request, id=None):
     form = formname(instance=item)
     #form = NewTemplateForm(instance=obj)
     if not obj.edited:
+        print('ned')
         fixed = FixedCost.objects.get(id=obj.category.pricesheet_type.id)
     else:
+        print('ed')
         fixed = ''
     selected_paper = form.instance.paper_stock_id
     try:

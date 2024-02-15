@@ -1,0 +1,78 @@
+[
+{
+    "model": "inventory.vendor",
+    "pk": 1,
+    "fields": {
+        "name": "Steen Macek",
+        "address1": null,
+        "address2": null,
+        "city": "Reedsburg",
+        "state": "WI",
+        "zipcode": null,
+        "phone1": null,
+        "phone2": null,
+        "email": null,
+        "website": null,
+        "created": "2024-02-13T21:04:40.331Z",
+        "updated": "2024-02-13T21:04:40.331Z",
+        "active": true
+    }
+},
+{
+    "model": "inventory.vendor",
+    "pk": 2,
+    "fields": {
+        "name": "Western States",
+        "address1": null,
+        "address2": null,
+        "city": "Reedsburg",
+        "state": "WI",
+        "zipcode": null,
+        "phone1": null,
+        "phone2": null,
+        "email": null,
+        "website": null,
+        "created": "2024-02-13T21:04:53.263Z",
+        "updated": "2024-02-13T21:04:53.263Z",
+        "active": true
+    }
+},
+{
+    "model": "inventory.vendor",
+    "pk": 3,
+    "fields": {
+        "name": "Prestige Box",
+        "address1": null,
+        "address2": null,
+        "city": "Reedsburg",
+        "state": "WI",
+        "zipcode": null,
+        "phone1": null,
+        "phone2": null,
+        "email": null,
+        "website": null,
+        "created": "2024-02-13T21:20:04.553Z",
+        "updated": "2024-02-13T21:20:04.553Z",
+        "active": true
+    }
+},
+{
+    "model": "inventory.vendor",
+    "pk": 4,
+    "fields": {
+        "name": "Grimco",
+        "address1": null,
+        "address2": null,
+        "city": "Reedsburg",
+        "state": "WI",
+        "zipcode": null,
+        "phone1": null,
+        "phone2": null,
+        "email": null,
+        "website": null,
+        "created": "2024-02-13T21:20:15.596Z",
+        "updated": "2024-02-13T21:20:15.596Z",
+        "active": true
+    }
+}
+]

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponse
-from customers.models import Customer, Contact
-from customers.forms import CustomerForm, ContactForm
+from .models import Customer, Contact
+from .forms import CustomerForm, ContactForm, CustomerNoteForm
 from controls.models import Numbering
 from workorders.models import Workorder
 from workorders.forms import WorkorderForm
@@ -326,3 +326,24 @@ def change_contact(request):
         'workorder': workorder
     }
     return render(request, 'customers/modals/change_contact.html', context)
+
+def customer_notes(request, pk=None):
+    #pk = request.GET.get('customer')
+    item = get_object_or_404(Customer, pk=pk)
+    if request.method == "POST":
+        id = request.POST.get('id')
+        print(id)
+        item = get_object_or_404(Customer, id=id)
+        form = CustomerNoteForm(request.POST, instance=item)
+        if form.is_valid():
+                form.save()
+                return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+        else:
+            print(form.errors)
+    form = CustomerNoteForm(instance=item)
+    context = {
+        #'notes':notes,
+        'form':form,
+        'pk': pk,
+    }
+    return render(request, 'customers/modals/notes.html', context) 

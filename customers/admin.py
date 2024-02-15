@@ -11,7 +11,7 @@ class CustomerContactInline(admin.StackedInline):
 class CustomerAdmin(admin.ModelAdmin):
     inlines = [CustomerContactInline]
     readonly_fields = ['created', 'updated']
-    fields = ['company_name', 'address1', 'address2', 'city', 'state', 'zipcode', 'phone1', 'phone2', 'email', 'website', 'po_number', 'tax_exempt']
+    fields = ['company_name', 'address1', 'address2', 'city', 'state', 'zipcode', 'phone1', 'phone2', 'email', 'logo', 'notes', 'website', 'po_number', 'tax_exempt']
 
 
 admin.site.register(Customer, CustomerAdmin)

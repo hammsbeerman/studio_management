@@ -1,0 +1,44 @@
+[
+{
+    "model": "controls.measurement",
+    "pk": 1,
+    "fields": {
+        "name": "Ea"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 2,
+    "fields": {
+        "name": "Ft"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 3,
+    "fields": {
+        "name": "mL"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 4,
+    "fields": {
+        "name": "Sht"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 5,
+    "fields": {
+        "name": "Sq Ft"
+    }
+},
+{
+    "model": "controls.measurement",
+    "pk": 6,
+    "fields": {
+        "name": "Yd"
+    }
+}
+]

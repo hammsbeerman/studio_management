@@ -136,11 +136,14 @@ This form should only be used for setting up and editing templates for lineitems
                         <hr>
                         <div class="row">
                             <div class='col'>
-
-                                <label for="id_step_workorder_price" class="form-label">
-                                    Create Workorder
-                                </label>
-                                <input type="text" name="step_workorder_price" maxlength="12" class="textinput form-control" id="id_step_workorder_price" value="{{ fixed.create_workorder}}">
+                                {% if fixed.create_workorder %}
+                                    <label for="id_step_workorder_price" class="form-label">
+                                        Create Workorder
+                                    </label>
+                                    <input type="text" name="step_workorder_price" maxlength="12" class="textinput form-control" id="id_step_workorder_price" value="{{ fixed.create_workorder}}">
+                                {% else %}
+                                    {{ form.step_workorder_price|as_crispy_field }}
+                                {% endif %}
                             </div>
                             <div class='col'>
                                 <label for="id_step_reclaim_artwork_price" class="form-label">

@@ -24,6 +24,7 @@ from .views import (
     edit_orderout_item,
     edit_set_price_item,
     quote_list,
+    edit_custom_item,
     # removed,
 )
 
@@ -34,6 +35,7 @@ urlpatterns = [
     path('add/<int:parent_id>/', add_item, name='add_item'),
     path('items/<int:pk>/edit/<int:cat>', edit_modal_item, name='edit_modal_item'),
     path('design/<int:pk>/edit/<int:cat>', edit_design_item, name='edit_design_item'),
+    path('custom/<int:pk>/edit/<int:cat>', edit_custom_item, name='edit_custom_item'),
     path('orderout/<int:pk>/edit/<int:cat>', edit_orderout_item, name='edit_orderout_item'),
     path('setprice/<int:pk>/edit/<int:cat>', edit_set_price_item, name='edit_set_price_item'),
     #path('items/<int:pk>/edit/<int:cat>', edit_print_item, name='edit_print_item'),

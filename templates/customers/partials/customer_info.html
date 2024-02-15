@@ -1,4 +1,4 @@
-
+{% load static %}
 
 
                 <div class="card-header">
@@ -17,5 +17,14 @@
                     <div class="card-footer">
                         <button hx-get="{% url 'customers:edit_customer' %}?customer={{ customer.id }}" hx-target="#dialog">Edit Customer</button>
                         <button hx-get="{% url 'customers:cust_info' %}?customer={{ customer.id }}" hx-target="#customer-info-card">Refresh</button>
+                        {% if customer.notes %}
+                            <button class="btn btn-primary-outline" hx-get="{% url 'customers:customer_notes' pk=customer.id %}" hx-target="#dialog">
+                            <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+                            </button>
+                        {% else %}
+                            <button class="btn btn-primary-outline" hx-get="{% url 'customers:customer_notes' pk=customer.id %}" hx-target="#dialog">
+                                    <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
+                            </button>
+                        {% endif %}
                     
                     </div>

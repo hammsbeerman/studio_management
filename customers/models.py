@@ -22,6 +22,8 @@ class Customer(models.Model):
     phone2 = models.CharField('Phone 2', max_length=100, blank=True, null=False)
     email = models.EmailField('Email', max_length=100, blank=True, null=False)
     website = models.URLField('Website', max_length=100, blank=True, null=False)
+    logo = models.ImageField('Logo', blank=True, null=True)
+    notes = models.TextField('Notes:', blank=True, null=False)
     po_number = models.CharField('PO Number', max_length=100, blank=True, null=False)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)

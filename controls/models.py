@@ -77,7 +77,7 @@ class SetPriceItemPrice(models.Model):
     name = models.ForeignKey(SetPriceItem, max_length=100, blank=True, null=True, on_delete=models.DO_NOTHING)
     description = models.CharField('Description', max_length=100, blank=False, null=False)
     set_quantity = models.DecimalField('Quantity / Order', max_digits=10, decimal_places=2, blank=False, null=False)
-    price = models.CharField('Price', max_length=10, blank=True, null=True)
+    price = models.DecimalField('Price', max_digits=10, decimal_places=2, blank=True, null=True)
 
     def __str__(self):
         return self.description
