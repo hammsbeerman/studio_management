@@ -174,8 +174,9 @@ $(document).ready(function(){
         document.getElementById("id_parent_required").innerHTML = parent;
         document.getElementById("id_clicks_one").innerHTML = click1;
         document.getElementById("id_clicks_two").innerHTML = click2;
-        document.getElementById("id_clickscharge_one").innerHTML = clickcost1;
-        document.getElementById("id_clickscharge_two").innerHTML = clickcost2;
+        document.getElementById("id_side_one_charge").innerHTML = clickcost1;
+        document.getElementById("id_side_two_charge").innerHTML = clickcost2;
+
 
     
       });
@@ -683,7 +684,7 @@ $(document).ready(function(){
 
 
       document.getElementById("id_price_ea").innerHTML = price_ea;
-      document.getElementById("id_count").innerHTML = count;
+      document.getElementById("id_count_x").innerHTML = count;
       document.getElementById("id_delivery").innerHTML = deliver;
       document.getElementById("id_packing_slip").innerHTML = packing_slip;
       document.getElementById("id_total").innerHTML = total;

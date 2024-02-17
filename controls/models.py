@@ -48,6 +48,7 @@ class Category(models.Model):
     customform = models.BooleanField('Uses Custom Form', blank=True, null=True, default=False)
     pricesheet_type = models.ForeignKey(FixedCost, blank=True, null=True, on_delete=models.CASCADE)
     inventory_category = models.ForeignKey(InventoryCategory, blank=True, null=True, on_delete=models.DO_NOTHING)
+    active = models.BooleanField('Active', blank=True, null=True, default=True)
 
     def __str__(self):
         return self.name

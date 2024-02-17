@@ -1,6 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 from django.urls import reverse_lazy
+from django.db.models.functions import Lower
 from .models import OrderOut, SetPrice, Photography, Vendor
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
@@ -15,6 +16,8 @@ class AddVendorForm(forms.ModelForm):
         }
 
 class OrderOutForm(forms.ModelForm):
+   vendor = forms.ModelChoiceField(queryset=Vendor.objects.all().order_by(Lower('name')))
+
    class Meta:
        model = OrderOut
        fields = ['internal_company', 'description', 'quantity', 'vendor', 'purchase_price', 'percent_markup','total_price', 'override_price', 'last_item_order', 'last_item_price']

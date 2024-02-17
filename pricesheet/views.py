@@ -107,7 +107,7 @@ def template(request, id=None):
 
 def add_template(request):
     form = CreateTemplateForm()
-    categories = Category.objects.all()
+    categories = Category.objects.all().distinct().order_by('name')
     if request.method =="POST":
         category = request.POST.get('category')
         subcategory = request.POST.get('subcategory')
@@ -174,7 +174,7 @@ def template_list(request, id=None):
     if not catid:
         catid = request.GET.get('category')
     print(catid)
-    category = Category.objects.all()
+    category = Category.objects.all().distinct().order_by('name')
     subcategory = SubCategory.objects.filter(category_id=catid)
     template = PriceSheet.objects.filter(category_id=catid)
     #template = PriceSheet.objects.all().order_by('-category', '-name')

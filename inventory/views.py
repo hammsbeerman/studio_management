@@ -9,6 +9,29 @@ def list(request):
 
 def add_vendor(request):
     form = AddVendorForm()
+    if request.htmx:
+        if request.method == "POST":
+            form = AddVendorForm(request.POST)
+            pk = request.POST.get('item')
+            cat = request.POST.get('cat')
+            if form.is_valid():
+                form.save()
+                context = {
+                    'pk': pk,
+                    'cat': cat,
+                }
+                return redirect('workorders:edit_orderout_item', pk=pk, cat=cat)
+        pk = request.GET.get('item')
+        cat = request.GET.get('cat')
+        print(pk)
+        print(cat)
+        context = {
+                'form': form,
+                'pk': pk,
+                'cat': cat,
+                #'categories': categories
+            }
+        return render (request, "inventory/vendors/add_vendor_modal.html", context)
     if request.method == "POST":
         form = AddVendorForm(request.POST)
         if form.is_valid():

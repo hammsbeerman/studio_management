@@ -8,7 +8,7 @@ from controls.models import SubCategory, Measurement, InventoryCategory
 
 
 class Inventory(models.Model):
-    name = models.CharField('Name', max_length=100, blank=False, null=True)
+    name = models.CharField('Name', max_length=100, blank=True, null=True)
     name2 = models.CharField('Additional Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     internal_part_number = models.CharField('Internal Part Number', max_length=100, blank=True, null=True)
@@ -36,7 +36,7 @@ class Vendor(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     address1 = models.CharField('Address 1', max_length=100, blank=True, null=True)
     address2 = models.CharField('Adddress 2', max_length=100, blank=True, null=True)
-    city = models.CharField('City', max_length=100, null=True)
+    city = models.CharField('City', max_length=100, blank=True, null=True)
     state = models.CharField('State', max_length=100, null=True)
     zipcode = models.CharField('Zipcode', max_length=100, blank=True, null=True)
     phone1 = models.CharField('Phone 1', max_length=100, blank=True, null=True)

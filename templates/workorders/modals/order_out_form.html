@@ -20,6 +20,9 @@
     <button type="button" class="btn btn-danger" hx-post="{% url 'workorders:remove_item' pk=item.pk %}">Remove</button>
     <span class="flex-grow-1"></span>
     {% endif %}
+    <button type="button" class="btn btn-info" hx-get="{% url 'inventory:add_vendor' %}?item={{pk}}&cat={{cat}}" hx-target="#dialog">
+      Add Vendor
+    </button>
     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
       Cancel
     </button>

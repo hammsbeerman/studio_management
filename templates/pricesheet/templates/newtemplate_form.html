@@ -62,7 +62,7 @@ This form should only be used for setting up and editing templates for lineitems
                                     {% if form.instance.paper_stock_id %}
                                         <option value="{{ selected_paper.id }}" selected="">{{ selected_paper.description }}</option>
                                     {% else %}
-                                        <option selected>Select Paper stock</option>
+                                        <option value='' selected=''>Select Paper stock</option>
                                     {% endif %}
                                     
                                     

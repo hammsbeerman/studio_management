@@ -23,7 +23,7 @@ def create_base(request):
     #print(workorder)
             # workorder = workorder += 1
             # print(workorder)
-    categories = Category.objects.all().distinct()
+    categories = Category.objects.all().distinct().order_by('name')
     context = {
         'customers': customer,
         #'newcustomerform': newcustomerform,
@@ -109,7 +109,7 @@ def overview(request, id=None):
     print(id)
     history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).order_by("-workorder")[:5]
     workid = workorder.id
-    categories = Category.objects.all().distinct()
+    categories = Category.objects.all().distinct().order_by('name')
     #total = decimal.Decimal(total.total_price__sum)
     changecustomer = customer.id
     changeworkorder = workorder.id
@@ -186,7 +186,7 @@ def workorder_info(request):
 ##########Add Items
 def add_item(request, parent_id):
     print(parent_id)
-    categories = Category.objects.all().order_by
+    categories = Category.objects.all().distinct().order_by('name')
     if request.method == "POST":
         form = WorkorderNewItemForm(request.POST)
         desc = request.POST.get('description')

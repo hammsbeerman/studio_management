@@ -12,7 +12,7 @@
 {{ message }}
 
 <h3>Master Template Form</h3>
-This should be the form for entering line item details
+Form for entering line item details
 <div class="row">
     <div class="col-sm-8">
         <div class="MyForm">
@@ -206,13 +206,15 @@ This should be the form for entering line item details
                                 {% if form.step_insert_frontback_cover_price %}<td>Wraparound: <input type="checkbox" id="show-wraparound"></td>{% endif %}
                             </tr>
                             {% endif %}
+                            {% if form.step_set_to_drill_price or form.step_set_to_staple_price or form.step_set_folder_price or form.tabs_price_per_tab or form.step_bulk_mail_tray_sort_paperwork_price %}
                             <tr>    
-                                <td>Set to Drill: <input type="checkbox" id="show-drill"></td>
-                                <td>Staple: <input type="checkbox" id="show-staple"></td>
-                                <td>Fold: <input type="checkbox" id="show-fold"></td>
-                                <td>Tab: <input type="checkbox" id="show-tab"></td>
-                                <td>Bulk Mail: <input type="checkbox" id="show-bulkmail"></td>
+                                {% if form.step_set_to_drill_price %}<td>Set to Drill: <input type="checkbox" id="show-drill"></td>{% endif %}
+                                {% if form.step_set_to_staple_price %}<td>Staple: <input type="checkbox" id="show-staple"></td>{% endif %}
+                                {% if form.step_set_folder_price %}<td>Fold: <input type="checkbox" id="show-fold"></td>{% endif %}
+                                {% if form.tabs_price_per_tab %}<td>Tab: <input type="checkbox" id="show-tab"></td>{% endif %}
+                                {% if form.step_bulk_mail_tray_sort_paperwork_price %}<td>Bulk Mail: <input type="checkbox" id="show-bulkmail"></td>{% endif %}
                             </tr>
+                            {% endif %}
                             <tr>    
                                 <td>Misc 1: <input type="checkbox" id="show-misc1"></td>
                                 <td>Misc 2: <input type="checkbox" id="show-misc2"></td>
@@ -459,13 +461,7 @@ This should be the form for entering line item details
     </div>
     <div class="col-sm-2">
         <div class="recent">
-            <span class="">Column 3</span>
-            <br>
-            Something:
-            <p>
-                &nbsp;
-            <p>
-            Something Else
+            <span class=""></span>
 
         </div>
     </div>
