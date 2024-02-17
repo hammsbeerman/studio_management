@@ -105,9 +105,6 @@ def template(request, id=None):
     }
     return render(request, "pricesheet/templates/newtemplate_form.html", context)
 
-
-
-
 def add_template(request):
     form = CreateTemplateForm()
     categories = Category.objects.all()

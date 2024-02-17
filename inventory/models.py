@@ -52,16 +52,16 @@ class Vendor(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("vendors:detail", kwargs={"id": self.id})
+        return reverse("inventory:detail", kwargs={"id": self.id})
 
-    def get_hx_url(self):
-        return reverse("vendors:hx-detail", kwargs={"id": self.id})
+    # def get_hx_url(self):
+    #     return reverse("vendors:hx-detail", kwargs={"id": self.id})
 
-    def get_edit_url(self): #reference these, that way changes are only made one place
-        return reverse("vendors:update", kwargs={"id": self.id})
+    # def get_edit_url(self): #reference these, that way changes are only made one place
+    #     return reverse("vendors:update", kwargs={"id": self.id})
     
-    def get_contacts_children(self):
-        return self.vendorcontact_set.all()
+    # def get_contacts_children(self):
+    #     return self.vendorcontact_set.all()
     
 
 class InventoryDetail(models.Model):

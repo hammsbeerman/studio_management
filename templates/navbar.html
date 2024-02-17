@@ -54,6 +54,16 @@
               <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
             </ul> 
           </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Vendors
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <li><a class="dropdown-item" href="{% url 'inventory:add_vendor' %}">Add Vendor</a></li>
+              <li><a class="dropdown-item" href="{% url 'inventory:vendor_list' %}">Vendor List</a></li>
+              <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
+            </ul> 
+          </li>
         </ul>
         <form class="d-flex" role="search">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">

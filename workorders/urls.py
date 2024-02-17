@@ -25,6 +25,7 @@ from .views import (
     edit_set_price_item,
     quote_list,
     edit_custom_item,
+    quote_to_workorder
     # removed,
 )
 
@@ -57,6 +58,7 @@ urlpatterns = [
     path('notes/<int:pk>/', notes, name='notes'),
     path('notes/', notes, name='notes'),
     path('workordernotes/<int:pk>/', workorder_notes, name='workorder_notes'),
+    path('quote_to_workorder/', quote_to_workorder, name='quote_to_workorder'),
     # path('removed/', removed, name='removed')
     
 

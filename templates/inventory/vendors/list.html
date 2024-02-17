@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+List of vendors
+
+<a href="{% url 'inventory:add_vendor' %}">Add Vendor</a>
+
+<p><ul>
+    {% for x in  vendors %}
+    <li><a href='{{ x.get_absolute_url }}'>{{ x.name }}</a></li>
+    {% endfor %}
+    </ul></p>
+
+{% endblock content %}

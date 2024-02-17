@@ -1,10 +1,18 @@
 from django import forms
 from django.forms import ModelForm
 from django.urls import reverse_lazy
-from .models import OrderOut, SetPrice, Photography
+from .models import OrderOut, SetPrice, Photography, Vendor
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
+from localflavor.us.forms import USStateSelect
 
+class AddVendorForm(forms.ModelForm):
+   state = forms.CharField(widget=USStateSelect(), initial='WI')
+   class Meta:
+       model = Vendor
+       fields = ['name', 'address1', 'address2', 'city', 'state', 'zipcode', 'phone1', 'phone2', 'email', 'website']
+       labels = {
+        }
 
 class OrderOutForm(forms.ModelForm):
    class Meta:

@@ -1029,249 +1029,57 @@ def workorder_notes(request, pk=None):
             
 
 
-
-
-
-
-
-
-
-
-
-
-            # form.instance.workorder = n.value
-            # workorder = n.value
-            # inc = int('1')
-            # n.value = n.value + inc
-            # print(n.value)
-            # n.save()
-            # ## End of numbering
-            # print('hello')
-            # form.save()
-            # context = {
-            #     'id': n.value,
-            # }
-            # return redirect("workorders:overview", id=workorder)
-
-
-
-
-
-
-
-
-
-
-
-
-    # if request.method == "GET":
-    #     obj = WorkorderItem.objects.get(pk=pk)
-    #     obj.pk = None
-    #     obj.save()
-    #     # message = 'Item duplicated'
-    #     # context ={
-    #     #     'message': message
-    #     # }
-    #     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
-    # if request.method == "POST":
-    #     workorder = request.POST.get('workorder')
-    #     parent = Workorder.objects.get(workorder=workorder)
-    #     print(parent.pk)
-    #     obj = WorkorderItem.objects.get(pk=pk)
-    #     obj.pk = None
-    #     obj.workorder_hr = workorder
-    #     obj.workorder_id = parent.pk
-    #     obj.save()
-    #     return HttpResponse(status=204, headers={'HX-Trigger': 'Item Added'})
-    # obj = WorkorderItem.objects.get(pk=pk)
-    # context = {
-    #     'obj': obj,
-    #     #'workorder': workorder
-    # }
-    # return render(request, 'workorders/modals/copy_item.html', context)
-
-
-
-
-
-
-
-
-
-
-
-
-
-###########
-    
-
-
-    
-
-
-
-# def customer_info(request):
-#     if request.htmx:
-#         customer = request.GET.get('customer')
-#         contact = request.GET.get('contacts')
-#         if contact:
-#             contact = Contact.objects.get(id=contact)
-#         if customer:
-#             customer = Customer.objects.get(id=customer)
-#         print(contact)
-#         #print(customer)
-#     #print(customer.company_name)
-#     #customer = request.POST.get('customers.id')
-#     #customer = get_object_or_404(Customer, id=company)
-#     return render(request, "customers/partials/customer_info.html", {
-#         #'customer': customer,
-#         'customer': customer,
-#         'contact': contact,
-#         'form': WorkorderForm(),
-#     })
-
-# def contacts(request):
-#     customer = request.GET.get('customer')
-#     #print(customer)
-#     contact = Contact.objects.filter(customer=customer)
-#     context = {
-#         'customer': customer,
-#         'contacts': contact
-#         }
-#     #print(contacts)
-#     return render(request, 'customers/partials/contacts.html', context)
-
-# def customers(request):
-#     customer = Customer.objects.all()
-#     context = {
-#         'customers': customer
-#         }
-#     #print(customer)
-#     #print(contacts)
-#     return render(request, 'customers/partials/customers.html', context)
-
-# def new_customer(request):
-#     if request.method == "POST":
-#         form = CustomerForm(request.POST)
-#         if form.is_valid():
-#             #obj = form.save(commit=False)
-#             #customer = request.POST.get("company_name")
-#             #print(customer)
-#             cn = request.POST.get('company_name')
-#             fn = request.POST.get('first_name')
-#             ln = request.POST.get('last_name')
-#             if not cn and not fn and not ln:
-#                 message = 'Please fill in Company name or Customer Name'
-#                 context = {
-#                     'message': message,
-#                     'form': form
-#                 }
-#                 return render(request, 'customers/modals/newcustomer_form.html', context)
-#             if not cn:
-#                 print('Empty string')
-#                 print(fn)
-#                 print(ln)
-#                 form.instance.company_name = fn + ' ' + ln
-#                 #print(obj.company_name)
-#                 form.save()
-#                 return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
-#             if cn:
-#                 print(cn)
-#                 form.save()
-#                 return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
-#             #obj.save
-#             #form.save()
-#             #return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
-#     else:
-#         form = CustomerForm()
-#     return render(request, 'customers/modals/newcustomer_form.html', {
-#         'form': form,
-#     })
-
-# def new_contact(request):
-#     customer = request.GET.get('customer')
-#     if request.method == "POST":
-#         form = ContactForm(request.POST)
-#         if form.is_valid():
-#             company_num = request.POST.get("customer")
-#             form.instance.customer_id = company_num
-#             print(company_num)
-#             form.save()
-#             return HttpResponse(status=204, headers={'HX-Trigger': 'ContactAdded'})
-
-#     else:
-#         form = ContactForm()
-#         context = {
-#             'form': form,
-#             'customer': customer
-#         }
-#     return render(request, 'customers/modals/newcontact_form.html', context)
-
-# def edit_customer(request):
-#     customer = request.GET.get('customer')
-#     #print(customer)
-#     #customer = 12
-#     #obj = get_object_or_404(Customer, id=customer)
-#     #form = CustomerForm(instance=obj)
-#     print(customer)
-#     print('hi')
-#     if request.method == "POST":
-#         company_num = request.POST.get("customer")
-#         print(company_num)
-#         obj = get_object_or_404(Customer, pk=company_num)
-#         print('hello')
-#         form = CustomerForm(request.POST, instance=obj)
-#         #print(form.errors)
-#         if form.is_valid():
-#             form.save()
-#             return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerEdit'})
-#     else:
-#         obj = get_object_or_404(Customer, id=customer)
-#         form = CustomerForm(instance=obj)
-#         context = {
-#             'form': form,
-#             'customer': customer
-#         }
-#     return render(request, 'customers/modals/edit_customer.html', context)
-
-
-
-# def new_contact(request):
-#     customer = request.GET.get('customer')
-#     if request.method == "POST":
-#         form = ContactForm(request.POST)
-#         if form.is_valid():
-#             company_num = request.POST.get("customer")
-#             form.instance.customer_id = company_num
-#             print(company_num)
-#             form.save()
-#             return HttpResponse(status=204, headers={'HX-Trigger': 'ContactAdded'})
-
-#     else:
-#         form = ContactForm()
-#         context = {
-#             'form': form,
-#             'customer': customer
-#         }
-#     return render(request, 'customers/modals/newcontact_form.html', context)
-
-# def cust_info(request):
-#     if request.htmx:
-#         customer = request.GET.get('customer')
-#         print(customer)
-#         customer = Customer.objects.get(id=customer)
-#         print(customer.id)
-#         context = { 'customer': customer,}
-#         return render(request, 'customers/partials/customer_info.html', context)
-#     workorder = Workorder.objects.get(workorder=id)
-#     customer = Customer.objects.get(id=workorder.customer_id)
-#     if workorder.contact_id:
-#         contact = Contact.objects.get(id=workorder.contact_id)
-#     else: 
-#         contact = ''
-#     context = {
-#             'workorder': workorder,
-#             'customer': customer,
-#             'contact': contact,
-#         }
-#     return render(request, 'customers/partials/customer_info.html', context)
+def quote_to_workorder(request):
+    quote = request.GET.get('quote')
+    n = Numbering.objects.get(name='Workorder Number')
+    workorder_number = n.value
+    try:
+        item = Workorder.objects.get(workorder = quote)
+        if item.quote == 0:
+            return redirect("workorders:overview", id=item.workorder)
+        print(item.workorder)
+        print(item.quote)
+        item.workorder = workorder_number
+        item.quote = 0
+        item.save()
+    except:
+        pass
+    print(quote)
+    try:
+        items = WorkorderItem.objects.filter(workorder_hr = quote)
+        for item in items:
+            item.workorder_hr = workorder_number
+            item.save()
+    except:
+        print('pass')
+        pass
+    try:
+        items = OrderOut.objects.filter(workorder_hr = quote)
+        for item in items:
+            item.workorder_hr = workorder_number
+            item.save()
+    except:
+        print('pass')
+        pass
+    try:
+        items = SetPrice.objects.filter(workorder_hr = quote)
+        for item in items:
+            item.workorder_hr = workorder_number
+            item.save()
+    except:
+        print('pass')
+        pass
+    try:
+        items = Photography.objects.filter(workorder_hr = quote)
+        for item in items:
+            item.workorder_hr = workorder_number
+            item.save()
+    except:
+        print('pass')
+        pass
+    print(n.value)
+    inc = int('1')
+    n.value = n.value + inc
+    print(n.value)
+    n.save()
+    return redirect("workorders:overview", id=workorder_number)
