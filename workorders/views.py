@@ -186,7 +186,7 @@ def workorder_info(request):
 ##########Add Items
 def add_item(request, parent_id):
     print(parent_id)
-    categories = Category.objects.all()
+    categories = Category.objects.all().order_by
     if request.method == "POST":
         form = WorkorderNewItemForm(request.POST)
         desc = request.POST.get('description')
@@ -257,7 +257,7 @@ def add_item(request, parent_id):
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     else:
         form = WorkorderNewItemForm()
-        categories = Category.objects.all().distinct()
+        categories = Category.objects.all().distinct().order_by('name')
     context = {
         'form': form,
         'categories': categories,
@@ -324,6 +324,8 @@ def edit_modal_item(request, pk, cat):
     item = get_object_or_404(WorkorderItem, pk=pk)
     line = request.POST.get('item')
     category = cat
+    inventory = item.item_category.inventory_category
+    print(inventory)
     if request.method == "POST":
         print('hello')
         category = request.POST.get('cat')
@@ -490,6 +492,8 @@ def edit_custom_item(request, pk, cat):
     item = get_object_or_404(WorkorderItem, pk=pk)
     #line = request.POST.get('item')
     category = cat
+    inventory = item.item_category.inventory_category
+    print(inventory)
     if request.method == "POST":
         form = CustomItemForm(request.POST, instance=item)
         obj = form.save(commit=False)

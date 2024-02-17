@@ -132,6 +132,7 @@ class KruegerJobDetail(models.Model):
     misc4_price = models.CharField('Misc extra 4 price', max_length=50, blank=True, null=True)
     #step_bulk_mail_tray_sort_paperwork = models.CharField('Prepare Bulk Mailing', max_length=12, blank=True, null=True)
     step_bulk_mail_tray_sort_paperwork_price = models.CharField('Prepare Bulk Mailing', max_length=12, blank=True, null=True)
+    packaging = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.CASCADE, related_name='packaging')
     #step_id_count = models.CharField('ID / Count', max_length=12, blank=True, null=True)
     step_id_count_price = models.CharField('ID / Count', max_length=12, blank=True, null=True)
     #step_count_package = models.CharField('Count / Package', max_length=12, blank=True, null=True)

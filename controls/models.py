@@ -28,6 +28,12 @@ class FixedCost(models.Model):
     def __str__(self):
         return self.name
     
+class InventoryCategory(models.Model):
+    name = models.CharField('Name', max_length=100, null = True)
+
+    def __str__(self):
+        return self.name
+    
 class Category(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
@@ -41,6 +47,7 @@ class Category(models.Model):
     template = models.BooleanField('Template', blank=True, null=True, default=False)
     customform = models.BooleanField('Uses Custom Form', blank=True, null=True, default=False)
     pricesheet_type = models.ForeignKey(FixedCost, blank=True, null=True, on_delete=models.CASCADE)
+    inventory_category = models.ForeignKey(InventoryCategory, blank=True, null=True, on_delete=models.DO_NOTHING)
 
     def __str__(self):
         return self.name
@@ -87,3 +94,4 @@ class Measurement(models.Model):
 
     def __str__(self):
         return self.name
+    

@@ -144,14 +144,21 @@ def add_template(request):
 def copy_template(request):
     if request.method == "POST":
         catid = request.POST.get('category')
+        subcat = request.POST.get('subcategory')
         template = request.POST.get('template')
         name = request.POST.get('name')
         description = request.POST.get('description')
+        print(name)
+        print(description)
         obj = PriceSheet.objects.get(pk=template)
         obj.pk = None
         obj.name = name
         obj.description = description
+        obj.subcategory_id = subcat
         obj.edited = 0
+        obj.save()
+        obj = SubCategory.objects.get(pk=subcat)
+        obj.template = 1
         obj.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'TemplateListChanged'})
     catid = request.GET.get('category')
@@ -297,7 +304,13 @@ def edititem(request, id, pk, cat,):
         except: 
             selected_paper = ''
         #populate paper list
-        papers = Inventory.objects.all()
+        print('inventory cat')
+        if loadform.inventory_category is not None:
+            inventory_cat = loadform.inventory_category.id
+            print(inventory_cat)
+            papers = Inventory.objects.filter(inventory_category = inventory_cat)
+        else:
+            papers = Inventory.objects.all()
         context = {
             'form':form,
             'formdata':formdata,
@@ -360,7 +373,12 @@ def edititem(request, id, pk, cat,):
         except: 
             selected_paper = ''
         #populate paper list
-        papers = Inventory.objects.all()
+        print('inventory cat')
+        if loadform.inventory_category is not None:
+            inventory_cat = loadform.inventory_category.id
+            papers = Inventory.objects.filter(inventory_category = inventory_cat)
+        else:
+            papers = Inventory.objects.all()
         context = {
             'form':form,
             'formdata':formdata,

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Measurement, SetPriceItem, SetPriceItemPrice
+from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Measurement, SetPriceItem, SetPriceItemPrice, InventoryCategory
 
 
 
@@ -14,6 +14,11 @@ class CategorySubcategoryInline(admin.StackedInline):
     model = SubCategory
     extra = 0
 
+class InventoryCategoryAdmin(admin.ModelAdmin):
+    
+    list_display = ('name',)
+
+admin.site.register(InventoryCategory, InventoryCategoryAdmin)
 
 class CategoryAdmin(admin.ModelAdmin):
     inlines = [CategorySubcategoryInline]

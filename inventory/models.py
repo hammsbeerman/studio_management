@@ -2,7 +2,9 @@ from django.db import models
 from django.urls import reverse
 from customers.models import Customer
 from workorders.models import Workorder
-from controls.models import SubCategory, Measurement
+from controls.models import SubCategory, Measurement, InventoryCategory
+
+
 
 
 class Inventory(models.Model):
@@ -23,6 +25,8 @@ class Inventory(models.Model):
     type_wideformat = models.BooleanField('Wide Format', default=False)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+    inventory_category = models.ManyToManyField(InventoryCategory)
+
     
 
     def __str__(self):
@@ -70,6 +74,9 @@ class InventoryDetail(models.Model):
     #     return self.item
 
 
+
+
+
 class OrderOut(models.Model):
     workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=False, on_delete=models.CASCADE)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
@@ -112,7 +119,9 @@ class SetPrice(models.Model):
     setprice_price = models.CharField('Price / set', max_length=10, blank=True, null=True)
     total_pieces = models.CharField('Total pieces', max_length=10, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
-    
+    paper_stock = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.SET_NULL)
+    side_1_inktype = models.CharField('Side 1 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=True, null=True)
+    side_2_inktype = models.CharField('Side 1 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=True, null=True)
     quantity = models.PositiveIntegerField('Quantity', blank=True, null=True)
     unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)

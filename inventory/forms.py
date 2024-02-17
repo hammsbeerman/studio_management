@@ -18,7 +18,7 @@ class OrderOutForm(forms.ModelForm):
 class SetPriceForm(forms.ModelForm):
    class Meta:
        model = SetPrice
-       fields = ['internal_company', 'description', 'quantity', 'setprice_category', 'setprice_item', 'setprice_qty', 'setprice_price', 'unit_price', 'total_pieces', 'total_price', 'override_price', 'last_item_order', 'last_item_price']
+       fields = ['internal_company', 'description', 'quantity', 'setprice_category', 'setprice_item', 'setprice_qty', 'paper_stock', 'side_1_inktype', 'side_2_inktype', 'setprice_price', 'unit_price', 'total_pieces', 'total_price', 'override_price', 'last_item_order', 'last_item_price']
        labels = {
             'total_price':'Item sell price',
 

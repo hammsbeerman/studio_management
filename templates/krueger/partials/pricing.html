@@ -1,45 +1,69 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
-# of sets/pieces:
+# of sets/pieces: <span id="id_price_qty">{{ formdata.set_per_book }}</span>
 <br/>
-Pages per set/piece:
+Pages per set/piece: <span id="id_pages_qty">{{ formdata. }}</span>
 <br/>
-Qty:
+Total finished sheets: <span id="id_sheets">{{ formdata.qty_of_sheets }}</span>
 <br/>
-Original Size:
+Original Size: <span id="id_original_size">{{ formdata. }}</span>
 <br/>
-Press Size:
+Press Size: <span id="id_press_size">{{ formdata. }}</span>
 <br/>
-Press Sht/Parent:
+Press Sht/Parent: <span id="id_press_per_parent">{{ formdata. }}</span>
 <br/>
-Flat size:
+Finished Size:  <span id="id_finished_size">{{ formdata. }}</span>
 <br/>
-Finished Size:
+Gangup: <span id="id_gangup_cnt">{{ formdata. }}</span>
 <br/>
-Gangup:
-<br/>
-Overage:
+Overage: <span id="id_overage_cnt">{{ formdata. }}</span>
 <br/>
 &nbsp;
 &nbsp;
 <br/>
-Markup:
+Output / Parent: <span id="id_parent_output">{{ formdata. }}</span>
+<br/>
+Parent Sheets Required: <span id="id_parent_required">{{ formdata. }}</span>
 <br/>
 &nbsp;
+&nbsp;
 <br/>
-Side one click:
+Side one click: <span id="id_clicks_one">{{ formdata. }}</span>
 <br/>
-Side two click:
+Side two click: <span id="id_clicks_two">{{ formdata. }}</span>
+<br/>
+<br/>
+Paper Stock:
+<br/>
+Paper Price / M: <span id="id_paper_price">{{ formdata. }}</span>
+<br/>
+Material Cost: <span id="id_material_costs">{{ formdata. }}</span>
+<br/>
+&nbsp;
+&nbsp;
+<br/>
+Markup <span id="id_markup_percent">{{ formdata. }}</span>
+<br/>
+&nbsp;
+&nbsp;
+<br/>
+Side one click charge: <span id="id_clickcharge_one">{{ formdata. }}</span>
+<br/>
+Side two click charge: <span id="id_clickcharge_two">{{ formdata. }}</span>
+<br/>
+&nbsp;
+&nbsp;
+<br/>
+Count / Package: <span id="id_count">{{ formdata. }}</span>
+<br/>
+Delivery: <span id="id_delivery">{{ formdata. }}</span>
+<br/>
+Packing slip / invoice: <span id="id_packing_slip">{{ formdata. }}</span>
+<br/>
+&nbsp;
+&nbsp;
 <br/>
 
-
-Price Each: <span id="id_price_ea">{{ formdata.price_each }}</span>
-    <br>
-
-
-
-
-Number of sheets: <span id="id_sheets">{{ formdata.qty_of_sheets }}</span>
 <br/>
-Number of pages:
+Total Price:<span id="id_total">{{ formdata. }}</span>

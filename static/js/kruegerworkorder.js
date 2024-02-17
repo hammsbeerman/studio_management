@@ -163,6 +163,20 @@ $(document).ready(function(){
         $('#id_staple_number_of_pieces').val(set_per_book)
         $('#id_tabs_number_of_pieces').val(set_per_book)
         
+
+        //Fill in pricing sheet on side
+        document.getElementById("id_price_qty").innerHTML = set_per_book;
+        document.getElementById("id_pages_qty").innerHTML = pages_per_book;
+        document.getElementById("id_press_per_parent").innerHTML = press_sheet_per_parent;
+        document.getElementById("id_gangup_cnt").innerHTML = gangup;
+        document.getElementById("id_overage_cnt").innerHTML = overage;
+        document.getElementById("id_parent_output").innerHTML = output;
+        document.getElementById("id_parent_required").innerHTML = parent;
+        document.getElementById("id_clicks_one").innerHTML = click1;
+        document.getElementById("id_clicks_two").innerHTML = click2;
+        document.getElementById("id_clickscharge_one").innerHTML = clickcost1;
+        document.getElementById("id_clickscharge_two").innerHTML = clickcost2;
+
     
       });
   
@@ -206,6 +220,12 @@ $(document).ready(function(){
 
           $('#id_material_cost').val(paper_cost);
 
+
+
+
+          document.getElementById("id_paper_price").innerHTML = price_per_m;
+          document.getElementById("id_material_costs").innerHTML = paper_cost;
+
       });
 
     //Material Markup. Needs to use same handler as material cost when that is discovered
@@ -221,6 +241,8 @@ $(document).ready(function(){
       
       
       var material_markup_percentage = Number(material_markup_percentage);
+      document.getElementById("id_markup_percent").innerHTML = material_markup_percentage;
+
       var price_per_m = Number(price_per_m);
       var sheets = Number(sheets);
 
@@ -242,6 +264,8 @@ $(document).ready(function(){
       markup = markup.toFixed(2);
 
       $('#id_material_markup').val(markup);
+
+      
     });
 
 
@@ -654,6 +678,18 @@ $(document).ready(function(){
 
       $('#price_ea').val(price_ea);
       document.getElementById("id_price_ea").innerHTML = price_ea;
+
+
+
+
+      document.getElementById("id_price_ea").innerHTML = price_ea;
+      document.getElementById("id_count").innerHTML = count;
+      document.getElementById("id_delivery").innerHTML = deliver;
+      document.getElementById("id_packing_slip").innerHTML = packing_slip;
+      document.getElementById("id_total").innerHTML = total;
+
+
+
 
 
   

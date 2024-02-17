@@ -28,6 +28,10 @@ This form should only be used for setting up and editing templates for lineitems
                         
                         <div class="row">
                             <div class='col'>
+                                <label class="form-label" for="id_name">Name</label>
+                                <input id="id_name" class="textinput form-control" type="text" name="name" maxlength="100" value="{{formdata.name}}">
+                            </div>
+                            <div class='col'>
                                 <label class="form-label" for="id_description">Job Description</label>
                                 <input id="id_description" class="textinput form-control" type="text" name="description" maxlength="100" value="{{formdata.description}}">
                             </div>
@@ -414,6 +418,9 @@ This form should only be used for setting up and editing templates for lineitems
                         </div>
                         <hr>
                         <div class="row">
+                            <div class='col'>
+                                {% if form.packaging %}{{ form.packaging|as_crispy_field }}{% endif %}
+                             </div>
                             <div class='col'>
                                 {% if form.step_id_count_price %}{{ form.step_id_count_price|as_crispy_field }}{% endif %}
                             </div>

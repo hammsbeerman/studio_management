@@ -93,7 +93,7 @@ This should be the form for entering line item details
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {{ form.original_size|as_crispy_field }}
+                                {% if form.original_size %}{{ form.original_size|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
                                 {% if form.press_size %}{{ form.press_size|as_crispy_field }}{% endif %}
@@ -382,6 +382,9 @@ This should be the form for entering line item details
                         </div>
                         <hr>
                         <div class="row">
+                            <div class='col'>
+                                {% if form.packaging %}{{ form.packaging|as_crispy_field }}{% endif %}
+                             </div>
                             <div class='col'>
                                {% if form.step_id_count_price %}{{ form.step_id_count_price|as_crispy_field }}{% endif %}
                             </div>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Inventory, Vendor, InventoryDetail, OrderOut, SetPrice
+from .models import Inventory, Vendor, InventoryDetail, OrderOut, SetPrice, InventoryCategory
 from import_export.admin import ImportExportModelAdmin
 
 
@@ -45,3 +45,11 @@ class OrderOutAdmin(admin.ModelAdmin):
 admin.site.register(OrderOut, OrderOutAdmin)
 
 admin.site.register(SetPrice)
+
+# class InventoryCategoryAdmin(admin.ModelAdmin):
+#     #inlines = [InventoryVendorInline]
+#     #readonly_fields = ['created', 'updated']
+#     list_display = ('item', 'category')
+#     #fields = ['name',]
+
+# admin.site.register(InventoryCategory, InventoryCategoryAdmin)
