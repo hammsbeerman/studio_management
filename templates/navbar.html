@@ -48,6 +48,7 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
               <li><a class="dropdown-item" href="{% url 'pricesheet:template_list' %}">Price Templates</a></li>
+              <li><a class="dropdown-item" href="{% url 'pdf:management' %}">PDF Options</a></li>
               {% if user.is_superuser %}
                 <li><a class="dropdown-item" href="/admin">Admin</a></li>
               {% endif %}
@@ -61,6 +62,15 @@
             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
               <li><a class="dropdown-item" href="{% url 'inventory:add_vendor' %}">Add Vendor</a></li>
               <li><a class="dropdown-item" href="{% url 'inventory:vendor_list' %}">Vendor List</a></li>
+              <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
+            </ul> 
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              PDF Tests
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <li><a class="dropdown-item" href="{% url 'pdf:showitems' %}">Item list w/ xhtml2pdf</a></li>
               <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
             </ul> 
           </li>

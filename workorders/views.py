@@ -274,10 +274,11 @@ def workorder_item_list(request, id=None):
         #obj = get_object_or_404(Workorder, id=id,)
         #qs = Workorder.objects.all()
         print(id)
+        completed = Workorder.objects.get(id=id)
         obj = WorkorderItem.objects.filter(workorder_id=id)
-        subtotal = WorkorderItem.objects.filter(workorder_id=id).aggregate(Sum('absolute_price'))
-        tax = WorkorderItem.objects.filter(workorder_id=id).aggregate(Sum('tax_amount'))
-        total = WorkorderItem.objects.filter(workorder_id=id).aggregate(Sum('total_with_tax'))
+        subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('absolute_price'))
+        tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('tax_amount'))
+        total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('total_with_tax'))
         #override_total = WorkorderItem.objects.filter(workorder_id=id).exclude(override_price__isnull=True).aggregate(Sum('override_price'))
         print(total)
     except:
@@ -293,6 +294,9 @@ def workorder_item_list(request, id=None):
         "tax":tax,
         "total": total,
     }
+    print(completed.completed)
+    if completed.completed == 1:
+        return render(request, "workorders/partials/item_list_completed.html", context)
     return render(request, "workorders/partials/item_list.html", context) 
 
 def workorder_total(request, id=None):
@@ -909,6 +913,8 @@ def copy_workorder(request, id=None):
     lastworkorder = obj.workorder
     n = Numbering.objects.get(pk=1)
     obj.workorder = n.value
+    obj.quote_number = ''
+    obj.completed = 0
     obj.original_order = lastworkorder
     #Increment workorder number
     newworkorder = obj.workorder
@@ -981,8 +987,9 @@ def tax(request, tax, id):
         print('True')
         lineitem = WorkorderItem.objects.get(id=id)
         lineitem.tax_exempt = 0
-        lineitem.tax_amount = lineitem.absolute_price * tax_percent
-        lineitem.total_with_tax = lineitem.absolute_price * tax_sum
+        if lineitem.absolute_price is not None:
+            lineitem.tax_amount = lineitem.absolute_price * tax_percent
+            lineitem.total_with_tax = lineitem.absolute_price * tax_sum
         lineitem.save()
         context = {
             'tax':False,
@@ -1020,6 +1027,24 @@ def workorder_notes(request, pk=None):
                 form.save()
                 return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderInfoChanged'})
     form = WorkorderNoteForm(instance=item)
+    context = {
+        #'notes':notes,
+        'form':form,
+        'pk': pk,
+    }
+    return render(request, 'workorders/modals/notes.html', context) 
+
+def readnotes(request, pk=None):
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    if request.method == "POST":
+    #     id = request.POST.get('id')
+    #     print(id)
+    #     item = get_object_or_404(WorkorderItem, pk=id)
+    #     form = NoteForm(request.POST, instance=item)
+    #     if form.is_valid():
+    #             form.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    form = NoteForm(instance=item)
     context = {
         #'notes':notes,
         'form':form,
@@ -1083,3 +1108,32 @@ def quote_to_workorder(request):
     print(n.value)
     n.save()
     return redirect("workorders:overview", id=workorder_number)
+
+def complete_status(request):
+    workorder = request.GET.get('workorder')
+    print(workorder)
+    item = Workorder.objects.get(id = workorder)
+    if item.completed == 0:
+        item.completed = 1
+        item.save()
+    else:
+        item.completed = 0
+        item.save()
+    return redirect("workorders:overview", id=item.workorder)
+
+def billable_status(request, id):
+    item = id
+    item = WorkorderItem.objects.get(id=item)
+    if item.billable == 0:
+        item.billable = 1
+        item.save()
+        billable = True
+    else:
+        item.billable = 0
+        item.save()
+        billable = False
+    context = {
+        'id':id,
+        'billable':billable,
+    }
+    return render(request, 'workorders/partials/billable.html', context)

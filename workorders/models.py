@@ -13,7 +13,7 @@ class Workorder(models.Model):
     workorder = models.CharField('Workorder', max_length=100, blank=False, null=False, unique=True)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
     quote = models.CharField('Quote', choices=[('1', 'Quote'), ('0', 'Workorder')], max_length=100, blank=False, null=False)
-    quote_number = models.CharField('Quote Number', max_length=100, blank=True, null=True, unique=True)
+    quote_number = models.CharField('Quote Number', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     deadline = models.DateField('Deadline', blank=True, null=True)
     po_number = models.CharField('PO Number', max_length=100, blank=True, null=True)
@@ -31,6 +31,7 @@ class Workorder(models.Model):
     tax = models.CharField('Tax', max_length=100, blank=True, null=True)
     subtotal = models.CharField('Subtotal', max_length=100, blank=True, null=True)
     workorder_total = models.CharField('Workorder Total', max_length=100, blank=True, null=True)
+    completed = models.BooleanField(blank=False, null=False, default=False)
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})
@@ -64,6 +65,7 @@ class WorkorderItem(models.Model):
     absolute_price = models.DecimalField('Absolute Price', max_digits=8, decimal_places=2, blank=True, null=True)
     last_item_order = models.CharField('Original Item Order', max_length=100, blank=True, null=True)
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
+    billable = models.BooleanField(default=True)
     notes = models.TextField('Notes:', blank=True, null=False)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
     tax_exempt = models.BooleanField(default=False)

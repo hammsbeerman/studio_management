@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<a href="{% url 'pdf:export_batch_statement_pdf' %}" class="btn btn-primary">
+    Batch Print Statements
+    </a>
+
+
+{% endblock content %}

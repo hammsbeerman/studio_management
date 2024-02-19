@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                
+                <table class="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Description</th>
+                        <th scope="col">Qty</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Tax</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                      <tr>
+                        <td>{{item.description}}</td>
+                        <td>{{item.quantity}}</td>
+                        <td>{{item.absolute_price}}</td>
+                        <td>{% if item.tax_exempt %}T{% else %}-{%endif%}</td>
+
+
+                      </tr>
+                        {% endfor %}
+                      
+                    </tbody>
+                  </table>
+
+
+
+
+
+
+            </div>
+            
+        </div>
+        <a class="btn btn-primary m-2" href="{% url 'pdf:create_pdf' %}">Create PDF</a>
+    </div>
+
+{% endblock content %}

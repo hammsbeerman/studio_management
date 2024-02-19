@@ -1,0 +1,79 @@
+{% load static %}
+{% for object in items %}
+    <tr>
+        <td>{% if object.setprice_category %}{{ object.setprice_category}}{% else %}{{ object.item_category }}{% endif %}</td>
+        <td>{% if object.setprice_item %}{{ object.setprice_item}}{% else %}{{ object.item_subcategory.name }}{% endif %}</td>
+        <td>{{ object.description }}</td>
+        <td>{% if object.quantity %}{{ object.quantity }}{% endif %}</td>
+        <td>{% if object.unit_price %}{{ object.unit_price }}{% endif %}</td>
+        <td>{% if object.override_price %}{{object.override_price }}{% elif object.total_price %}{{ object.total_price }}{% endif %}</td>
+        <td>
+           --
+        </td>
+        <td>   
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk%}" hx-target="#dialog">Copy To:</button>
+        </td>
+        <td>
+            {% if object.notes %}
+                <button class="btn btn-primary-outline" hx-get="{% url 'workorders:readnotes' pk=object.pk%}" hx-target="#dialog">
+                    <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+                </button>
+            {% endif %}
+
+                
+        </td>
+        <td>
+            {% if object.billable == 0 %}
+            NB
+            {% else %}
+            B
+            {% endif %}
+        </td>
+        <td id='taxexempt_{{object.pk}}'>
+            {% if object.tax_exempt == 0 %}
+            Tax
+            {% else %}
+            NonTax
+            {% endif %}
+        </td>
+        
+        
+        
+        
+        
+        
+        
+        <td>{% if object.last_item_order %}{{object.last_item_order}}{% endif %}</td>
+        <td>{% if object.last_item_order %}{{object.last_item_price}}{% endif %}</td>
+        <td><a href="{% url 'pdf:lineitem_pdf' id=object.pk %}" class="btn btn-primary">Create PDF Invoice</a></td>
+        
+        
+    </tr>
+
+{% endfor %}
+    
+
+    {% if subtotal.absolute_price__sum %} 
+    <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><b>Subtotal:</b></td>
+        <td><b>{{ subtotal.absolute_price__sum|floatformat:2 }}</b></td>
+        <td><b>Tax:</b></td>
+        <td><b>{{ tax.tax_amount__sum|floatformat:2 }}</b></td>
+        <td><b>Total:</td>
+        <td><b>{{ total.total_with_tax__sum|floatformat:2 }}</b></td>
+        <td></td>
+        <td></td>
+    </tr>
+    {% endif %}
+
+    <script>
+
+        $(document).ready(function () {
+          $("#id_paper_stock").select2();
+        })
+      
+      </script>

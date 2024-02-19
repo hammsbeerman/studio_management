@@ -25,7 +25,10 @@ from .views import (
     edit_set_price_item,
     quote_list,
     edit_custom_item,
-    quote_to_workorder
+    quote_to_workorder,
+    readnotes,
+    complete_status,
+    billable_status,
     # removed,
 )
 
@@ -57,8 +60,11 @@ urlpatterns = [
     path('tax/<str:tax>/<int:id>/', tax, name='tax'),
     path('notes/<int:pk>/', notes, name='notes'),
     path('notes/', notes, name='notes'),
+    path('readnotes/<int:pk>/', readnotes, name='readnotes'),
     path('workordernotes/<int:pk>/', workorder_notes, name='workorder_notes'),
     path('quote_to_workorder/', quote_to_workorder, name='quote_to_workorder'),
+    path('complete_status/', complete_status, name='complete_status'),
+    path('billable_status/<int:id>', billable_status, name='billable_status'),
     # path('removed/', removed, name='removed')
     
 

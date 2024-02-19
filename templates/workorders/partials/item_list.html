@@ -52,11 +52,18 @@
 
                 
         </td>
-
-        <td id='taxexempt_{{object.pk}}'>{% if object.tax_exempt == 0%}
+        <td id='billable_{{object.pk}}'>
+            {% if object.billable == 0 %}
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:billable_status' id=object.pk %}" hx-target="#billable_{{object.pk}}">NB</button>
+            {% else %}
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:billable_status' id=object.pk %}" hx-target="#billable_{{object.pk}}">B</button>
+            {% endif %}
+        </td>
+        <td id='taxexempt_{{object.pk}}'>
+            {% if object.tax_exempt == 0 %}
             <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=object.tax_exempt id=object.pk %}" hx-target="#taxexempt_{{object.pk}}">Tax</button>
             {% else %}
-            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=object.tax_exempt id=object.pk%}" hx-target="#taxexempt_{{object.pk}}">NonTax</button>
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=object.tax_exempt id=object.pk %}" hx-target="#taxexempt_{{object.pk}}">NonTax</button>
             {% endif %}
         </td>
         
