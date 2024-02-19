@@ -2,15 +2,8 @@
 
 {% block content %}
 
-<h4>LK Design Studio / Krueger Printing Studio Manager</h4>
-    <p>{{ Content }}</p>
+<center><h4>LK Design Studio / Krueger Printing Studio Manager</h4></center>
 
-    <ul>
-        {% for x in object_list %}
-            {% if x.title %}
-                <li><a href='{{ x.get_absolute_url }}'>{{ x.title }} - {{ x.content }}</a></li>
-            {% endif %}
-        {% endfor %}
-    </ul>
+
 
 {% endblock content %}

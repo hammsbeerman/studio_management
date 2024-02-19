@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
 from django.db.models import Avg, Count, Min, Sum
+from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 from customers.models import Customer, Contact
 from controls.models import Numbering, Category, SubCategory, SetPriceItem, SetPriceItemPrice
@@ -12,6 +13,7 @@ from krueger.models import KruegerJobDetail
 from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
 from inventory.models import OrderOut, SetPrice, Photography
 
+@login_required
 def create_base(request):
     #newcustomerform = CustomerForm(request.POST or None)
     customer = Customer.objects.all()
@@ -97,6 +99,7 @@ def create_base(request):
             #return render(request, "workorders/overview.html", context)
     return render(request, "workorders/create.html", context)
 
+@login_required
 def overview(request, id=None):
     workorder = Workorder.objects.get(workorder=id)
     #if not workorder:
@@ -125,6 +128,7 @@ def overview(request, id=None):
         }
     return render(request, "workorders/overview.html", context)
 
+@login_required
 def history_overview(request, id):
     workorder = Workorder.objects.get(workorder=id)
     customer = Customer.objects.get(id=workorder.customer_id)
@@ -141,6 +145,7 @@ def history_overview(request, id):
         }
     return render(request, "workorders/partials/history_overview.html", context)
 
+@login_required
 def workorder_list(request):
     workorder = Workorder.objects.all().exclude(workorder=1111).exclude(quote=1)
     context = {
@@ -148,6 +153,7 @@ def workorder_list(request):
     }
     return render(request, 'workorders/list.html', context)
 
+@login_required
 def quote_list(request):
     workorder = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0)
     context = {
@@ -155,6 +161,7 @@ def quote_list(request):
     }
     return render(request, 'workorders/quotes.html', context)
 
+@login_required
 def edit_workorder(request):
     workorder = request.GET.get('workorder')
     #customer = request.GET.get('customer')
@@ -175,6 +182,7 @@ def edit_workorder(request):
         }
     return render(request, 'workorders/modals/edit_workorder.html', context)
 
+@login_required
 def workorder_info(request):
     if request.htmx:
         workorder = request.GET.get('workorder')
@@ -184,6 +192,7 @@ def workorder_info(request):
         return render(request, 'workorders/partials/workorder_info.html', context)
     
 ##########Add Items
+@login_required
 def add_item(request, parent_id):
     print(parent_id)
     categories = Category.objects.all().distinct().order_by('name')
@@ -264,6 +273,7 @@ def add_item(request, parent_id):
     }
     return render(request, 'workorders/modals/new_item_form.html', context)
 
+@login_required
 def workorder_item_list(request, id=None):
     #print(id)
     if not request.htmx:
@@ -299,6 +309,7 @@ def workorder_item_list(request, id=None):
         return render(request, "workorders/partials/item_list_completed.html", context)
     return render(request, "workorders/partials/item_list.html", context) 
 
+@login_required
 def workorder_total(request, id=None):
     #print(id)
     if not request.htmx:
@@ -318,12 +329,14 @@ def workorder_total(request, id=None):
 
 
 
+@login_required
 def edit_print_item(request):
     pass
 
 
 
 
+@login_required
 def edit_modal_item(request, pk, cat):
     item = get_object_or_404(WorkorderItem, pk=pk)
     line = request.POST.get('item')
@@ -436,10 +449,12 @@ def edit_modal_item(request, pk, cat):
     return render(request, 'workorders/modals/design_item_form.html', context)
 
 
+@login_required
 def edit_order_out_item(request, pk, cat):
     pass
 
 
+@login_required
 def edit_design_item(request, pk, cat):
     item = get_object_or_404(WorkorderItem, pk=pk)
     #line = request.POST.get('item')
@@ -492,6 +507,7 @@ def edit_design_item(request, pk, cat):
     }
     return render(request, 'workorders/modals/design_item_form.html', context)
 
+@login_required
 def edit_custom_item(request, pk, cat):
     item = get_object_or_404(WorkorderItem, pk=pk)
     #line = request.POST.get('item')
@@ -546,6 +562,7 @@ def edit_custom_item(request, pk, cat):
     }
     return render(request, 'workorders/modals/custom_item_form.html', context)
 
+@login_required
 def edit_orderout_item(request, pk, cat):
     print('pk')
     print(pk)
@@ -626,6 +643,7 @@ def edit_orderout_item(request, pk, cat):
     }
     return render(request, 'workorders/modals/order_out_form.html', context)
 
+@login_required
 def edit_set_price_item(request, pk, cat):
     pass
     print('pk')
@@ -819,12 +837,14 @@ def edit_set_price_item(request, pk, cat):
 
 
 @ require_POST
+@login_required
 def remove_workorder_item(request, pk):
     item = get_object_or_404(WorkorderItem, pk=pk)
     item.delete()
     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
 
 
+@login_required
 def copy_workorder_item(request, pk, workorder=None):
     #Copy line item to current workorder
     if workorder:
@@ -906,6 +926,7 @@ def copy_workorder_item(request, pk, workorder=None):
     return render(request, 'workorders/modals/copy_item.html', context)
 
 #This is for the duplicate workorder button
+@login_required
 def copy_workorder(request, id=None):
     print (id)
     #Get data from current workorder
@@ -960,6 +981,7 @@ def copy_workorder(request, id=None):
             pass
     return redirect('workorders:overview', id=newworkorder)
 
+@login_required
 def subcategory(request):
     cat = request.GET.get('item_category')
     print(cat)
@@ -969,6 +991,7 @@ def subcategory(request):
     }
     return render(request, 'workorders/modals/subcategory.html', context) 
 
+@login_required
 def tax(request, tax, id):
     tax_percent = Decimal.from_float(.055)
     tax_sum = Decimal.from_float(1.055)
@@ -997,6 +1020,7 @@ def tax(request, tax, id):
         }
     return render(request, 'workorders/partials/tax.html', context)
 
+@login_required
 def notes(request, pk=None):
     item = get_object_or_404(WorkorderItem, pk=pk)
     if request.method == "POST":
@@ -1016,6 +1040,7 @@ def notes(request, pk=None):
     return render(request, 'workorders/modals/notes.html', context) 
 
 
+@login_required
 def workorder_notes(request, pk=None):
     item = get_object_or_404(Workorder, pk=pk)
     if request.method == "POST":
@@ -1034,6 +1059,7 @@ def workorder_notes(request, pk=None):
     }
     return render(request, 'workorders/modals/notes.html', context) 
 
+@login_required
 def readnotes(request, pk=None):
     item = get_object_or_404(WorkorderItem, pk=pk)
     if request.method == "POST":
@@ -1054,6 +1080,7 @@ def readnotes(request, pk=None):
             
 
 
+@login_required
 def quote_to_workorder(request):
     quote = request.GET.get('quote')
     n = Numbering.objects.get(name='Workorder Number')
@@ -1109,6 +1136,7 @@ def quote_to_workorder(request):
     n.save()
     return redirect("workorders:overview", id=workorder_number)
 
+@login_required
 def complete_status(request):
     workorder = request.GET.get('workorder')
     print(workorder)
@@ -1121,6 +1149,7 @@ def complete_status(request):
         item.save()
     return redirect("workorders:overview", id=item.workorder)
 
+@login_required
 def billable_status(request, id):
     item = id
     item = WorkorderItem.objects.get(id=item)

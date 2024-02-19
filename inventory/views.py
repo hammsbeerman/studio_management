@@ -1,12 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from .forms import AddVendorForm
 from .models import Vendor
 
 # Create your views here.
 
+@login_required
 def list(request):
     pass
 
+@login_required
 def add_vendor(request):
     form = AddVendorForm()
     if request.htmx:
@@ -48,6 +51,7 @@ def add_vendor(request):
     return render (request, "inventory/vendors/add_vendor.html", context)
 
 
+@login_required
 def vendor_list(request):
     vendor = Vendor.objects.all()
     print('vendors')
@@ -56,6 +60,7 @@ def vendor_list(request):
     }
     return render(request, 'inventory/vendors/list.html', context)
 
+@login_required
 def detail(request, id):
     vendor = get_object_or_404(Vendor, id=id)
     context = {

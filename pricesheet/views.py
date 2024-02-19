@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 from .forms import EnvelopeForm, CreateTemplateForm, NewTemplateForm, NCRForm
 from .models import PriceSheet
@@ -12,6 +13,7 @@ from inventory.models import Inventory
 from krueger.forms import KruegerJobDetailForm
 from workorders.forms import DesignItemForm
 
+@login_required
 def envelope(request, pk, cat):
     print(pk)
     item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
@@ -50,6 +52,7 @@ def envelope(request, pk, cat):
     }
     return render(request, 'pricesheet/modals/envelopes.html', context)
 
+@login_required
 def template(request, id=None):
     obj = PriceSheet.objects.get(id=id)
     print('modified')
@@ -105,6 +108,7 @@ def template(request, id=None):
     }
     return render(request, "pricesheet/templates/newtemplate_form.html", context)
 
+@login_required
 def add_template(request):
     form = CreateTemplateForm()
     categories = Category.objects.all().distinct().order_by('name')
@@ -138,6 +142,7 @@ def add_template(request):
     }
     return render (request, "pricesheet/modals/add_template.html", context)
 
+@login_required
 def copy_template(request):
     if request.method == "POST":
         catid = request.POST.get('category')
@@ -168,6 +173,7 @@ def copy_template(request):
     }
     return render (request, "pricesheet/modals/copy_template.html", context)
 
+@login_required
 def template_list(request, id=None):
     catid = id
     print(catid)
@@ -186,6 +192,7 @@ def template_list(request, id=None):
     }
     return render(request, 'pricesheet/list.html', context)
 
+@login_required
 def subcategory(request):
     cat = request.GET.get('category')
     print(cat)
@@ -195,6 +202,7 @@ def subcategory(request):
     }
     return render(request, 'pricesheet/modals/subcategory.html', context) 
 
+@login_required
 def setprices(request):
     item = request.GET.get('setprice_category')
     print(item)
@@ -212,6 +220,7 @@ def setprices(request):
     }
     return render(request, 'workorders/modals/setprices.html', context) 
 
+@login_required
 def setqty(request):
     item = request.GET.get('setprice_item')
     print(item)
@@ -225,6 +234,7 @@ def setqty(request):
     return render(request, 'workorders/modals/setqty.html', context) 
 
 
+@login_required
 def edititem(request, id, pk, cat,):
     if request.method == "POST":
         workorderitem = KruegerJobDetail.objects.get(workorder_item=pk)
@@ -390,6 +400,7 @@ def edititem(request, id, pk, cat,):
 
 
 @ require_POST
+@login_required
 def remove_template(request):
     template = request.POST.get('template_id')
     category = request.POST.get('category_id')
@@ -403,7 +414,8 @@ def remove_template(request):
 
 
 # @ require_POST
-# def remove_workorder_item(request, pk):
+# @login_required
+#def remove_workorder_item(request, pk):
 #     item = get_object_or_404(WorkorderItem, pk=pk)
 #     item.delete()
 #     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
@@ -425,7 +437,8 @@ def remove_template(request):
 
 
 # # ####Working edititem
-# def edititem(request, id, pk, cat,):
+# @login_required
+#def edititem(request, id, pk, cat,):
 #     if request.method == "POST":
 #         workorderitem = KruegerJobDetail.objects.get(workorder_item=pk)
 #         obj = get_object_or_404(KruegerJobDetail, pk=workorderitem.id)
@@ -466,7 +479,8 @@ def remove_template(request):
 #         print('Not HTMX')
 #         modified = WorkorderItem.objects.get(pk=pk)
 #         internal_company = modified.internal_company
-#         #If new lineitem, load default pricing template
+#         #If new lineitem, load @login_required
+#default pricing template
 #         if not modified.pricesheet_modified:
 #             #If there is a subcategory, load the pricing template for subcategory
 #             if modified.item_subcategory:

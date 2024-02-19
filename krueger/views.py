@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib import messages
 from .forms import KruegerJobDetailForm
@@ -11,6 +12,7 @@ from workorders.models import WorkorderItem, Workorder
 from inventory.models import Inventory
 
 
+@login_required
 def newjob(request, id, pk):
     workorder = id
     item = pk
@@ -94,6 +96,7 @@ def newjob(request, id, pk):
     return render(request, "pricesheet/templates/master.html", context)
 
 
+@login_required
 def paperprice(request):
     paper = request.GET.get('paper_stock')
     #print(paper)
@@ -102,6 +105,7 @@ def paperprice(request):
     return render(request, 'krueger/partials/paperstockprice.html', context)
 
 @ require_POST
+@login_required
 def remove_workorder_item(request):
     jobid = request.POST.get('jobid')
     print(jobid)

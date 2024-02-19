@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from .models import Customer, Contact
 from .forms import CustomerForm, ContactForm, CustomerNoteForm
@@ -6,7 +7,7 @@ from controls.models import Numbering
 from workorders.models import Workorder
 from workorders.forms import WorkorderForm
 
-
+@login_required
 def customer_info(request):
     if request.htmx:
         customer = request.GET.get('customer')
@@ -27,6 +28,7 @@ def customer_info(request):
         'form': WorkorderForm(),
     })
 
+@login_required
 def contacts(request):
     customer = request.GET.get('customer')
     print('customer')
@@ -39,6 +41,7 @@ def contacts(request):
     #print(contacts)
     return render(request, 'customers/partials/contacts.html', context)
 
+@login_required
 def customers(request):
     customer = Customer.objects.all()
     context = {
@@ -48,6 +51,7 @@ def customers(request):
     #print(contacts)
     return render(request, 'customers/partials/customers.html', context)
 
+@login_required
 def customer_list(request):
     customer = Customer.objects.all()
     context = {
@@ -56,6 +60,7 @@ def customer_list(request):
     return render(request, 'customers/list.html', context)
 
 
+@login_required
 def new_customer(request):
     if request.method == "POST":
         form = CustomerForm(request.POST)
@@ -105,6 +110,7 @@ def new_customer(request):
         'form': form,
     })
 
+@login_required
 def new_contact(request):
     customer = request.GET.get('customer')
     workorder = request.GET.get('workorder')
@@ -137,6 +143,7 @@ def new_contact(request):
         }
     return render(request, 'customers/modals/newcontact_form.html', context)
 
+@login_required
 def new_cust_contact(request):
     customer = request.GET.get('customer')
     #workorder = request.GET.get('workorder')
@@ -174,6 +181,7 @@ def new_cust_contact(request):
         }
     return render(request, 'customers/modals/newcontact_form.html', context)
 
+@login_required
 def edit_customer(request):
     customer = request.GET.get('customer')
     if request.method == "POST":
@@ -218,6 +226,7 @@ def edit_customer(request):
         }
     return render(request, 'customers/modals/edit_customer.html', context)
 
+@login_required
 def cust_info(request):
     if request.htmx:
         customer = request.GET.get('customer')
@@ -240,6 +249,7 @@ def cust_info(request):
     #     }
     #return render(request, 'customers/partials/customer_info.html', context)
 
+@login_required
 def contact_info(request):
     if request.htmx:
         changeworkorder = request.GET.get('workorder')
@@ -279,6 +289,7 @@ def contact_info(request):
         }
     return render(request, 'customers/partials/contact_info.html', context)
 
+@login_required
 def edit_contact(request):
     contact = request.GET.get('contact')
     #customer = request.GET.get('customer')
@@ -303,6 +314,7 @@ def edit_contact(request):
         }
     return render(request, 'customers/modals/edit_contact.html', context)
 
+@login_required
 def change_contact(request):
     customer = request.GET.get('customer')
     workorder = request.GET.get('workorder')
@@ -327,6 +339,7 @@ def change_contact(request):
     }
     return render(request, 'customers/modals/change_contact.html', context)
 
+@login_required
 def customer_notes(request, pk=None):
     #pk = request.GET.get('customer')
     item = get_object_or_404(Customer, pk=pk)
