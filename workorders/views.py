@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST
 from django.db.models import Avg, Count, Min, Sum
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal
+from datetime import datetime
 from customers.models import Customer, Contact
 from controls.models import Numbering, Category, SubCategory, SetPriceItem, SetPriceItemPrice
 from .models import Workorder, DesignType, WorkorderItem
@@ -25,7 +26,7 @@ def create_base(request):
     #print(workorder)
             # workorder = workorder += 1
             # print(workorder)
-    categories = Category.objects.all().distinct().order_by('name')
+    categories = Category.objects.all().distinct().exclude(active=0).order_by('name')
     context = {
         'customers': customer,
         #'newcustomerform': newcustomerform,
@@ -55,6 +56,8 @@ def create_base(request):
                 print(select)
                 return render(request, "workorders/create.html", context)
             hrcust = Customer.objects.get(id=cust)
+            hrcust.updated=datetime.now
+            hrcust.save()
             print(hrcust.tax_exempt)
             if hrcust.tax_exempt:
                 print('tax exempt')
@@ -112,7 +115,7 @@ def overview(request, id=None):
     print(id)
     history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).order_by("-workorder")[:5]
     workid = workorder.id
-    categories = Category.objects.all().distinct().order_by('name')
+    categories = Category.objects.all().distinct().exclude(active=0).order_by('name')
     #total = decimal.Decimal(total.total_price__sum)
     changecustomer = customer.id
     changeworkorder = workorder.id
@@ -147,9 +150,13 @@ def history_overview(request, id):
 
 @login_required
 def workorder_list(request):
-    workorder = Workorder.objects.all().exclude(workorder=1111).exclude(quote=1)
+    workorder = Workorder.objects.all().exclude(workorder=1111).exclude(completed=1).exclude(quote=1).order_by("-workorder")
+    completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
+    quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
     context = {
         'workorders': workorder,
+        'completed': completed,
+        'quote': quote,
     }
     return render(request, 'workorders/list.html', context)
 
@@ -195,7 +202,7 @@ def workorder_info(request):
 @login_required
 def add_item(request, parent_id):
     print(parent_id)
-    categories = Category.objects.all().distinct().order_by('name')
+    categories = Category.objects.all().distinct().exclude(active=0).order_by('name')
     if request.method == "POST":
         form = WorkorderNewItemForm(request.POST)
         desc = request.POST.get('description')
@@ -266,7 +273,7 @@ def add_item(request, parent_id):
             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     else:
         form = WorkorderNewItemForm()
-        categories = Category.objects.all().distinct().order_by('name')
+        categories = Category.objects.all().distinct().exclude(active=0).order_by('name')
     context = {
         'form': form,
         'categories': categories,
@@ -767,6 +774,8 @@ def edit_set_price_item(request, pk, cat):
         #'setprice_item': setprice_item,
         'setprice_selected':setprice_selected,
     }
+    print(pk)
+    print(pk)
     return render(request, 'workorders/modals/set_price_form.html', context)
 
         
@@ -840,6 +849,9 @@ def edit_set_price_item(request, pk, cat):
 @login_required
 def remove_workorder_item(request, pk):
     item = get_object_or_404(WorkorderItem, pk=pk)
+    if item.setprice_category:
+        subitem = get_object_or_404(SetPrice, workorder_item=pk)
+        subitem.delete()
     item.delete()
     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
 

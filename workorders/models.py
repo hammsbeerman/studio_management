@@ -31,6 +31,8 @@ class Workorder(models.Model):
     tax = models.CharField('Tax', max_length=100, blank=True, null=True)
     subtotal = models.CharField('Subtotal', max_length=100, blank=True, null=True)
     workorder_total = models.CharField('Workorder Total', max_length=100, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     completed = models.BooleanField(blank=False, null=False, default=False)
 
     def get_absolute_url(self):
@@ -71,7 +73,8 @@ class WorkorderItem(models.Model):
     tax_exempt = models.BooleanField(default=False)
     tax_amount = models.DecimalField('Tax Amount', max_digits=8, decimal_places=2, blank=True, null=True)
     total_with_tax = models.DecimalField('Total', max_digits=8, decimal_places=2, blank=True, null=True)
-
+    created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
 
     def get_absolute_url(self):
         return self.workorder.get_absolute_url()

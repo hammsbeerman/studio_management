@@ -1,0 +1,91 @@
+{% load static %}
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <link href="static/pdf/lk_invoice.css" media="print" rel="stylesheet">
+    <title>Inoice</title>
+
+
+
+
+    <meta name="description" content="Invoice demo sample">
+  </head>
+  
+  <body>
+    
+    <h1>Invoice</h1>
+
+    <aside>
+      <address id="from">
+        {{customer.company_name}}<br/>
+        {{customer.address1}}<br/>
+        {% if customer.address2 is not None %}{{customer.address2}}<br/>{% endif %}
+        {{customer.city}}, {{customer.state}} {{customer.zipcode}}<br/>
+      </address>
+
+      <address id="to">
+        LK Design Studio<br/>
+        170 E Main Street<br/>
+        Reedsburg, WI 53959<br/>
+      </address>
+    </aside>
+
+    <dl id="informations">
+      <dt>Invoice number</dt>
+      <dd>{{workorder.workorder}}</dd>
+      <dt>Date</dt>
+      <dd>{{date|date:"M d, Y"}}</dd>
+    </dl>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th>Price</th>
+          <th>Quantity</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+                          <tr>
+                            <td>{{item.description}}</td>
+                            <td>{{item.quantity}}</td>
+                            <td>{{item.absolute_price}}</td>
+                            <td>{% if item.tax_exempt %}--{% else %}T{%endif%}</td>
+    
+    
+                          </tr>
+                            {% endfor %}
+                            
+      </tbody>
+    
+
+
+    </table>
+    <footer>
+      <totals align:right>
+        Subtotal: {{subtotal.absolute_price__sum|floatformat:2}}
+        <p>
+        Tax: {{ tax.tax_amount__sum|floatformat:2 }}
+        </totals>
+      <table id="total">
+        <thead>
+          <tr>
+            <th>Due by</th>
+            <th>Account number</th>
+            <th>Total due</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>May 10, 2018</td>
+            <td>132 456 789 012</td>
+            <td>${{total.total_with_tax__sum|floatformat:2}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </footer>
+  </body>
+</html>

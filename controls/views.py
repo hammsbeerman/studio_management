@@ -2,10 +2,13 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from .forms import SubCategoryForm, CategoryForm
 from .models import SetPriceItem, SubCategory
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def home(request):
     pass
 
+@login_required
 def add_category(request):
     form = CategoryForm()
     if request.method =="POST":
@@ -20,6 +23,7 @@ def add_category(request):
     }
     return render (request, "pricesheet/modals/add_category.html", context)
 
+@login_required
 def add_subcategory(request):
     form = SubCategoryForm()
     if request.method =="POST":

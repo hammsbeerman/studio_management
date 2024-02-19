@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 ###The following for weasyprint
 from django.template.loader import get_template, render_to_string
-from weasyprint import HTML
+from weasyprint import HTML, CSS
 import tempfile
 import datetime
 from django.db.models import Sum
@@ -66,10 +66,17 @@ def export_pdf(request, id):
     response['Content-Transfer-Encoding'] = 'binary'
 
     items = WorkorderItem.objects.filter(workorder=id)
+    workorder = Workorder.objects.get(id=id)
+    customer = Customer.objects.get(id=workorder.customer.id)
+    #print(customer.company_name)
+    date = datetime.date.today()
+    subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('absolute_price'))
+    tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('tax_amount'))
+    total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('total_with_tax'))
 
 
-    html_string=render_to_string('pdf/weasyprint/pdf-output.html', {'items':items})
-    html = HTML(string=html_string)
+    html_string=render_to_string('pdf/weasyprint/lk_invoice.html', {'items':items, 'workorder':workorder, 'customer':customer, 'date':date, 'subtotal':subtotal, 'tax':tax, 'total':total})
+    html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
 
     result = html.write_pdf()
 

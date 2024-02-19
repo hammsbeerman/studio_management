@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice V5</title>
+
+    <!-- <link href="static/pdf/lk_invoice.css" media="print" rel="stylesheet"> -->
+    <link rel="static/pdf/stylesheet.css" media="print" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <section id="invoice">
+        <div class="container">
+
+            <div class="px-5"
+                style="background-image:url(static/pdf/lk_header.jpg); background-repeat: no-repeat; background-position: center center;">
+                <div class="container py-5">
+                    <div class=" d-md-flex justify-content-between align-items-center py-5">
+                        <div>
+                            <img src="images/logo_dark.png" alt="">
+                        </div>
+                        <div class="mt-5 mt-md-0">
+
+                            <h5 class="fw-bold mb-4">Contact Info</h5>
+                            <ul class="list-unstyled">
+                                <li><iconify-icon class="social-icon text-black fs-5 me-2" icon="mdi:location"
+                                        style="vertical-align:text-bottom"></iconify-icon> 30 E Lake St, Chicago, USA
+                                </li>
+                                <li><iconify-icon class="social-icon text-black fs-5 me-2" icon="solar:phone-bold"
+                                        style="vertical-align:text-bottom"></iconify-icon> (510) 710-3464</li>
+                                <li><iconify-icon class="social-icon text-black fs-5 me-2" icon="ic:baseline-email"
+                                        style="vertical-align:text-bottom"></iconify-icon> info@worldcourse.com</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-md-flex justify-content-between align-items-center px-5 my-5">
+
+                <div class="">
+                    <h2 class="display-6 fw-bold">Invoice V5 </h2>
+                    <p class="m-0"><span class="fw-semibold">Invoice No:</span> 12345</p>
+                </div>
+
+                <div class="mt-5 mt-md-0">
+                    <ul class="list-unstyled">
+                        <li><span class="fw-semibold">Invoice Date:</span> 20 May, 2024</li>
+                        <li><span class="fw-semibold">Due Date:</span> 20 June, 2024</li>
+                    </ul>
+                </div>
+            </div>
+
+
+            <div class="d-md-flex justify-content-between px-5">
+                <div>
+                    <p class="fw-bold fs-5">Invoice To</p>
+                    <h6>Roger Y. Will</h6>
+                    <ul class="list-unstyled">
+                        <li>XYZ Company</li>
+                        <li>info@xyzcompany.com</li>
+                        <li>123 Main Street</li>
+                    </ul>
+                </div>
+                <div class="mt-5 mt-md-0">
+                    <p class="fw-bold fs-5">Invoice From</p>
+                    <h6>William Peter</h6>
+                    <ul class="list-unstyled">
+                        <li>ABC Company</li>
+                        <li>info@abccompany.com</li>
+                        <li>456 Main Street</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="px-5">
+                <table class="table table-striped border my-5">
+                    <thead>
+                        <tr>
+                            <th scope="col">S.No.</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">VAT(15%)</th>
+                            <th scope="col">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+
+                            <th>1</th>
+                            <td>Brand Designing</td>
+                            <td>$350.00</td>
+                            <td>$50.00</td>
+                            <td>$700.00</td>
+                        </tr>
+                        <tr>
+
+                            <th></th>
+                            <td></td>
+                            <td></td>
+                            <td class="fw-bold">Sub-Total</td>
+                            <td class="fw-bold">$2,350.00</td>
+                        </tr>
+                        <tr>
+
+                            <th></th>
+                            <td></td>
+                            <td></td>
+                            <td class="fw-bold">Discount</td>
+                            <td class="fw-bold">$470.00</td>
+                        </tr>
+                        <tr>
+
+                            <th></th>
+                            <td></td>
+                            <td></td>
+                            <td class="fs-5 fw-bold">Grand-Total</td>
+                            <td class="fs-5 fw-bold">$1,880.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+            <div class="px-5">
+                <div class="row mt-4 mb-5">
+
+                    <div class="col-md-6">
+                        <h5 class="fw-bold mb-4">Payment Info</h5>
+                        <ul class="list-unstyled">
+                            <li><span class="fw-semibold">Account No: </span> 102 3345 56938</li>
+                            <li><span class="fw-semibold">Account Name: </span> William Peter</li>
+                            <li><span class="fw-semibold">Branch Name: </span> XYZ </li>
+
+                        </ul>
+                    </div>
+
+                    <div class="col-md-6 mt-5 mt-md-0">
+                        <h5 class="fw-bold mb-4 ">Terms & Conditions</h5>
+                        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquam reiciendis quasi ullam
+                            delectus
+                            iusto ipsum veritatis accusantium quis, praesentium pariatur molestiae ducimus voluptate
+                            perspiciatis.</p>
+                    </div>
+
+                </div>
+
+                <div class="text-center mt-5">
+                    <p class="text-muted"><span class="fw-semibold">NOTICE: </span> A finance charge of 1.5% will be
+                        made on
+                        unpaid balances after 30 days.</p>
+                </div>
+            </div>
+
+            <div class="px-5"
+                style="background-image:url(images/bg3.jpg); background-repeat: no-repeat; background-position: center center;">
+                <div class="container mt-5 border-top">
+                    <div class="row mt-4">
+                        <div class="col-md-6 copyright">
+                            <p>© 2024 Invoice. All Rights Reserved.</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <p>Free HTML Template by: <a href="https://templatesjungle.com/" target="_blank"
+                                    class="text-decoration-none text-black-50">
+                                    TemplatesJungle</a> </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>

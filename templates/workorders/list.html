@@ -6,11 +6,32 @@
 List of workorders
 
 <a href="{% url 'workorders:createbase' %}">Add Workorder</a>
-
-<p><ul>
-    {% for x in  workorders %}
-    <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
-    {% endfor %}
-    </ul></p>
+<p>
+<div class="row">
+    <div class="col-sm-4">
+        Active Workorders
+        <p><ul>
+            {% for x in  workorders %}
+            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+            {% endfor %}
+            </ul></p>
+    </div>
+    <div class="col-sm-4">
+        Recently Completed
+        <p><ul>
+            {% for x in  completed %}
+            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+            {% endfor %}
+            </ul></p>
+    </div>
+    <div class="col-sm-4">
+        Quotes
+        <p><ul>
+            {% for x in  quote %}
+            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+            {% endfor %}
+            </ul></p>
+    </div>
+</div>
 
 {% endblock content %}
