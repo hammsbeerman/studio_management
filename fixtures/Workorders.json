@@ -29,9 +29,9 @@
 },
 {
     "model": "workorders.workorder",
-    "pk": 30,
+    "pk": 1,
     "fields": {
-        "customer": 403,
+        "customer": 1,
         "contact": null,
         "hr_customer": null,
         "hr_contact": null,
