@@ -1,0 +1,63 @@
+[
+{
+    "model": "customers.customer",
+    "pk": 1,
+    "fields": {
+        "company_name": "Internal",
+        "first_name": "",
+        "last_name": "",
+        "address1": "",
+        "address2": null,
+        "city": "",
+        "state": "",
+        "zipcode": "",
+        "phone1": "",
+        "phone2": "",
+        "email": "",
+        "website": "",
+        "logo": "",
+        "notes": "",
+        "po_number": "",
+        "created": "2024-02-20T18:58:06.540Z",
+        "updated": "2024-02-20T18:58:06.540Z",
+        "active": true,
+        "customer_number": "",
+        "tax_exempt": false,
+        "tax_exempt_number": null,
+        "tax_exempt_paperwork": ""
+    }
+},
+{
+    "model": "workorders.workorder",
+    "pk": 30,
+    "fields": {
+        "customer": 403,
+        "contact": null,
+        "hr_customer": null,
+        "hr_contact": null,
+        "workorder": "1111",
+        "internal_company": "LK Design",
+        "quote": "",
+        "quote_number": null,
+        "description": null,
+        "deadline": null,
+        "po_number": null,
+        "budget": null,
+        "quoted_price": null,
+        "original_order": null,
+        "notes": "",
+        "lk_workorder": null,
+        "printleader_workorder": null,
+        "billed": false,
+        "tax_exempt": false,
+        "percent_discount": null,
+        "dollar_discount": null,
+        "tax": null,
+        "subtotal": null,
+        "workorder_total": null,
+        "created": "2024-02-20T19:02:36.730Z",
+        "updated": "2024-02-20T19:02:36.730Z",
+        "completed": false
+    }
+}
+]

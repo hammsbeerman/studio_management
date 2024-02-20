@@ -5598,5 +5598,33 @@
         "tax_exempt_number": null,
         "tax_exempt_paperwork": ""
     }
+},
+{
+    "model": "customers.customer",
+    "pk": 403,
+    "fields": {
+        "company_name": "Internal",
+        "first_name": "",
+        "last_name": "",
+        "address1": "",
+        "address2": null,
+        "city": "",
+        "state": "",
+        "zipcode": "",
+        "phone1": "",
+        "phone2": "",
+        "email": "",
+        "website": "",
+        "logo": "",
+        "notes": "",
+        "po_number": "",
+        "created": "2024-02-20T18:58:06.540Z",
+        "updated": "2024-02-20T18:58:06.540Z",
+        "active": true,
+        "customer_number": "",
+        "tax_exempt": false,
+        "tax_exempt_number": null,
+        "tax_exempt_paperwork": ""
+    }
 }
 ]
