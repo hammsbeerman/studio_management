@@ -4,7 +4,7 @@
     "pk": 1,
     "fields": {
         "category": 6,
-        "subcategory": 11,
+        "subcategory": 2,
         "name": "Generic Envelope",
         "description": "None",
         "set_per_book": 500,
@@ -184,7 +184,7 @@
     "pk": 3,
     "fields": {
         "category": 2,
-        "subcategory": 12,
+        "subcategory": 3,
         "name": "General Printed Item",
         "description": "None",
         "set_per_book": null,

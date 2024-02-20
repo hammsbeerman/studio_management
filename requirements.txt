@@ -20,3 +20,4 @@ whitenoise
 pillow
 django-import-export
 xhtml2pdf
+weasyprint
