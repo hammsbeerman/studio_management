@@ -1,0 +1,3938 @@
+[
+{
+    "model": "inventory.inventory",
+    "pk": 1,
+    "fields": {
+        "name": "Corrugated Box 12 1/4\" x 9 1/4\" x 12 x Boxes",
+        "name2": "",
+        "description": "Corrugated Box 12 1/4\" x 9 1/4\" x 12 x Boxes",
+        "internal_part_number": "",
+        "unit_cost": "",
+        "price_per_m": "0",
+        "current_stock": "",
+        "color": "",
+        "size": "",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.128Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 2,
+    "fields": {
+        "name": "Corrugated Box 17 1/2\" x 11 1/2\" x 10 1/2\" x Boxes",
+        "name2": "",
+        "description": "Corrugated Box 17 1/2\" x 11 1/2\" x 10 1/2\" x Boxes",
+        "internal_part_number": "",
+        "unit_cost": "",
+        "price_per_m": "0",
+        "current_stock": "",
+        "color": "",
+        "size": "",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.121Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 3,
+    "fields": {
+        "name": "Corrugated Box 14 1/2\" x 8 3/4\" x 12\" x Boxes",
+        "name2": "",
+        "description": "Corrugated Box 14 1/2\" x 8 3/4\" x 12\" x Boxes",
+        "internal_part_number": "",
+        "unit_cost": "",
+        "price_per_m": "0",
+        "current_stock": "",
+        "color": "",
+        "size": "",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.114Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 4,
+    "fields": {
+        "name": "Corrugated Box 11 1/4\" x8 3/4\" x 6\" x Boxes",
+        "name2": "",
+        "description": "Corrugated Box 11 1/4\" x8 3/4\" x 6\" x Boxes",
+        "internal_part_number": "",
+        "unit_cost": "",
+        "price_per_m": "0",
+        "current_stock": "",
+        "color": "",
+        "size": "",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.106Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 5,
+    "fields": {
+        "name": "Corrugated Box 11 1/4\" x8 3/4\" x 12\" x Boxes",
+        "name2": "",
+        "description": "Corrugated Box 11 1/4\" x8 3/4\" x 12\" x Boxes",
+        "internal_part_number": "",
+        "unit_cost": "",
+        "price_per_m": "0",
+        "current_stock": "",
+        "color": "",
+        "size": "",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.099Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 6,
+    "fields": {
+        "name": "Corrugated Box 17 1/4\" x11 1/4\"\" x 12\" x Boxes",
+        "name2": "",
+        "description": "Corrugated Box 17 1/4\" x11 1/4\"\" x 12\" x Boxes",
+        "internal_part_number": "",
+        "unit_cost": "",
+        "price_per_m": "0",
+        "current_stock": "",
+        "color": "",
+        "size": "",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.092Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 7,
+    "fields": {
+        "name": "Corrugated Box 11.5” x 9” x 10”",
+        "name2": "",
+        "description": "Corrugated Box 11.5” x 9” x 10”",
+        "internal_part_number": "ILZZEMP01ZZ",
+        "unit_cost": "1.12",
+        "price_per_m": "1120",
+        "current_stock": "",
+        "color": "",
+        "size": "11.5x9x10",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.085Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 8,
+    "fields": {
+        "name": "6-3/4 Reg",
+        "name2": null,
+        "description": "6-3/4 Reg",
+        "internal_part_number": "424",
+        "unit_cost": "0.02207",
+        "price_per_m": "22.07",
+        "current_stock": null,
+        "color": null,
+        "size": "3 5/8 x 6 ½",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:49:13.758Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 9,
+    "fields": {
+        "name": "6-3/4 Reg TI",
+        "name2": "",
+        "description": "6-3/4 Reg TI",
+        "internal_part_number": "488",
+        "unit_cost": "0.03378",
+        "price_per_m": "33.78",
+        "current_stock": "",
+        "color": "",
+        "size": "3 5/8 x 6 ½",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.071Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 10,
+    "fields": {
+        "name": "6-3/4 Window Digi",
+        "name2": "",
+        "description": "6-3/4 Window Digi",
+        "internal_part_number": "889",
+        "unit_cost": "0.03361",
+        "price_per_m": "33.61",
+        "current_stock": "",
+        "color": "",
+        "size": "3 5/8 x 6 ½",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.064Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 11,
+    "fields": {
+        "name": "#9 Reg",
+        "name2": "",
+        "description": "#9 Reg",
+        "internal_part_number": "1864",
+        "unit_cost": "0.02215",
+        "price_per_m": "22.15",
+        "current_stock": "",
+        "color": "",
+        "size": "3 7/8 x 8 7/8",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.057Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 12,
+    "fields": {
+        "name": "#9 Window Digi",
+        "name2": "",
+        "description": "#9 Window Digi",
+        "internal_part_number": "2333",
+        "unit_cost": "0.04249",
+        "price_per_m": "42.49",
+        "current_stock": "",
+        "color": "",
+        "size": "3 7/8 x 8 7/8",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.050Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 13,
+    "fields": {
+        "name": "#9 Short Window",
+        "name2": "",
+        "description": "#9 Short Window",
+        "internal_part_number": "2336",
+        "unit_cost": "0.02883",
+        "price_per_m": "28.83",
+        "current_stock": "",
+        "color": "",
+        "size": "3 7/8 x 8 7/8",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.043Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 14,
+    "fields": {
+        "name": "#9 Window TI ",
+        "name2": "",
+        "description": "#9 Window TI ",
+        "internal_part_number": "2360",
+        "unit_cost": "0.03991",
+        "price_per_m": "39.91",
+        "current_stock": "",
+        "color": "",
+        "size": "3 7/8 x 8 7/8",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.036Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 15,
+    "fields": {
+        "name": "#10 Reg",
+        "name2": "",
+        "description": "#10 Reg",
+        "internal_part_number": "2584",
+        "unit_cost": "0.0215",
+        "price_per_m": "21.5",
+        "current_stock": "",
+        "color": "",
+        "size": "4 1/8 x 9 ½",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.029Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 16,
+    "fields": {
+        "name": "#10 Window Digi TI",
+        "name2": "",
+        "description": "#10 Window Digi TI",
+        "internal_part_number": "2611",
+        "unit_cost": "0.04082",
+        "price_per_m": "40.82",
+        "current_stock": "",
+        "color": "",
+        "size": "4 1/8 x 9 ½",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.021Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 17,
+    "fields": {
+        "name": "#10 Reg Ti",
+        "name2": "",
+        "description": "#10 Reg Ti",
+        "internal_part_number": "2648",
+        "unit_cost": "0.03227",
+        "price_per_m": "32.27",
+        "current_stock": "",
+        "color": "",
+        "size": "4 1/8 x 9 ½",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.014Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 18,
+    "fields": {
+        "name": "#10 Reg Kwik Tak",
+        "name2": "",
+        "description": "#10 Reg Kwik Tak",
+        "internal_part_number": "2649",
+        "unit_cost": "0.08085",
+        "price_per_m": "80.85",
+        "current_stock": "",
+        "color": "",
+        "size": "4 1/8 x 9 ½",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.007Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 19,
+    "fields": {
+        "name": "#10 Window Digi",
+        "name2": "",
+        "description": "#10 Window Digi",
+        "internal_part_number": "3180",
+        "unit_cost": "0.02995",
+        "price_per_m": "29.95",
+        "current_stock": "",
+        "color": "",
+        "size": "4 1/8 x 9 ½",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:50.000Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 20,
+    "fields": {
+        "name": "9 x 12 Catalog, White",
+        "name2": "",
+        "description": "9 x 12 Catalog, White",
+        "internal_part_number": "4902",
+        "unit_cost": "0.08597",
+        "price_per_m": "85.97",
+        "current_stock": "",
+        "color": "",
+        "size": "9 x 12",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.993Z",
+        "inventory_category": [
+            6
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 21,
+    "fields": {
+        "name": "H28 – 4x3.5x2",
+        "name2": "",
+        "description": "H28 – 4x3.5x2",
+        "internal_part_number": "H28",
+        "unit_cost": "0.3675",
+        "price_per_m": "367.5",
+        "current_stock": "",
+        "color": "",
+        "size": "4x3.5x2",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.986Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 22,
+    "fields": {
+        "name": "H25 – 6x3.5x2",
+        "name2": "",
+        "description": "H25 – 6x3.5x2",
+        "internal_part_number": "H25",
+        "unit_cost": "0.38125",
+        "price_per_m": "381.25",
+        "current_stock": "",
+        "color": "",
+        "size": "6x3.5x2",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.979Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 23,
+    "fields": {
+        "name": "H22 – 7x3.3x2",
+        "name2": "",
+        "description": "H22 – 7x3.3x2",
+        "internal_part_number": "H22",
+        "unit_cost": "0.38875",
+        "price_per_m": "388.75",
+        "current_stock": "",
+        "color": "",
+        "size": "7x3.3x2",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.971Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 24,
+    "fields": {
+        "name": "H26 – 12x3.5x2",
+        "name2": "",
+        "description": "H26 – 12x3.5x2",
+        "internal_part_number": "H26",
+        "unit_cost": "0.44125",
+        "price_per_m": "441.25",
+        "current_stock": "",
+        "color": "",
+        "size": "12x3.5x2",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.964Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 25,
+    "fields": {
+        "name": "K6 – 11-1/8 x 9-1/2 x 3",
+        "name2": "",
+        "description": "K6 – 11-1/8 x 9-1/2 x 3",
+        "internal_part_number": "K6",
+        "unit_cost": "0.6016666667",
+        "price_per_m": "601.6666666667",
+        "current_stock": "",
+        "color": "",
+        "size": "11-1/8 x 9-1/2 x 3",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.957Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 26,
+    "fields": {
+        "name": "K4 – 5-3/4 x 9-1/2 x3",
+        "name2": "",
+        "description": "K4 – 5-3/4 x 9-1/2 x3",
+        "internal_part_number": "K4",
+        "unit_cost": "0.45625",
+        "price_per_m": "456.25",
+        "current_stock": "",
+        "color": "",
+        "size": "5-3/4 x 9-1/2 x3",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.950Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 27,
+    "fields": {
+        "name": "J1 – 8-1/2 x 11 x 2",
+        "name2": "",
+        "description": "J1 – 8-1/2 x 11 x 2",
+        "internal_part_number": "J1",
+        "unit_cost": "0.38375",
+        "price_per_m": "383.75",
+        "current_stock": "",
+        "color": "",
+        "size": "8-1/2 x 11 x 2",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.943Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 28,
+    "fields": {
+        "name": "J2 – 8-1/2 x 14 x 2",
+        "name2": "",
+        "description": "J2 – 8-1/2 x 14 x 2",
+        "internal_part_number": "J2",
+        "unit_cost": "0.47",
+        "price_per_m": "470",
+        "current_stock": "",
+        "color": "",
+        "size": "8-1/2 x 14 x 2",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.936Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 29,
+    "fields": {
+        "name": "J5 – 5-1/2 x 8-1/2 x 2",
+        "name2": "",
+        "description": "J5 – 5-1/2 x 8-1/2 x 2",
+        "internal_part_number": "J5",
+        "unit_cost": "0.4275",
+        "price_per_m": "427.5",
+        "current_stock": "",
+        "color": "",
+        "size": "5-1/2 x 8-1/2 x 2",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.928Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 30,
+    "fields": {
+        "name": "JA1 – 8-1/2 x 11 x 2-1/2",
+        "name2": "",
+        "description": "JA1 – 8-1/2 x 11 x 2-1/2",
+        "internal_part_number": "JA-1",
+        "unit_cost": "0.4375",
+        "price_per_m": "437.5",
+        "current_stock": "",
+        "color": "",
+        "size": "8-1/2 x 11 x 2-1/2",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.921Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 31,
+    "fields": {
+        "name": "JB1 – 8-1/2 x 11 x 4",
+        "name2": "",
+        "description": "JB1 – 8-1/2 x 11 x 4",
+        "internal_part_number": "JB-1",
+        "unit_cost": "0.5566666667",
+        "price_per_m": "556.6666666667",
+        "current_stock": "",
+        "color": "",
+        "size": "8-1/2 x 11 x 4",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.914Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 32,
+    "fields": {
+        "name": "JY1 – 17 x 11 x 2",
+        "name2": "",
+        "description": "JY1 – 17 x 11 x 2",
+        "internal_part_number": "JY-1",
+        "unit_cost": "0.7466666667",
+        "price_per_m": "746.6666666667",
+        "current_stock": "",
+        "color": "",
+        "size": "17 x 11 x 2",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.907Z",
+        "inventory_category": [
+            3
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 33,
+    "fields": {
+        "name": "Economy Stake, 10”x30”",
+        "name2": "",
+        "description": "Economy Stake, 10”x30”",
+        "internal_part_number": "CORO1l",
+        "unit_cost": "1.05",
+        "price_per_m": "1050",
+        "current_stock": "",
+        "color": "",
+        "size": "10x30",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.899Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 34,
+    "fields": {
+        "name": "Fasnap Grommets - Self Piercing, - Brass, Diameter: 3/8 \", Grommet Size: #2, 500",
+        "name2": "",
+        "description": "Fasnap Grommets - Self Piercing, - Brass, Diameter: 3/8 \", Grommet Size: #2, 500",
+        "internal_part_number": "GR38500",
+        "unit_cost": "0.15446",
+        "price_per_m": "154.46",
+        "current_stock": "",
+        "color": "",
+        "size": "3/8",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.892Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 35,
+    "fields": {
+        "name": "Corrugated Plastic Sign Blank 24”x18”, 18” Flute",
+        "name2": "",
+        "description": "Corrugated Plastic Sign Blank 24”x18”, 18” Flute",
+        "internal_part_number": "CP241PWBOX",
+        "unit_cost": "0.99",
+        "price_per_m": "990",
+        "current_stock": "",
+        "color": "White",
+        "size": "24x18",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.885Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 36,
+    "fields": {
+        "name": "Corrugated Plastic Sign Blanks, 36 \" x 24 \", White, Flute Length: 24 \"",
+        "name2": "",
+        "description": "Corrugated Plastic Sign Blanks, 36 \" x 24 \", White, Flute Length: 24 \"",
+        "internal_part_number": "CP3624W",
+        "unit_cost": "3.27",
+        "price_per_m": "3270",
+        "current_stock": "",
+        "color": "",
+        "size": "36X24",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.878Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 37,
+    "fields": {
+        "name": "Corrugated Plastic Sign Blanks, 18 \" x 24 \", White, Flute Length: 24 \"",
+        "name2": "",
+        "description": "Corrugated Plastic Sign Blanks, 18 \" x 24 \", White, Flute Length: 24 \"",
+        "internal_part_number": "CP1824W",
+        "unit_cost": "1.27",
+        "price_per_m": "1270",
+        "current_stock": "",
+        "color": "White",
+        "size": "18x24",
+        "measurement": 1,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.872Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 38,
+    "fields": {
+        "name": "Roll Bond Premium Bond Paper, 36 “ x 150 ', 24lb",
+        "name2": "",
+        "description": "Roll Bond Premium Bond Paper, 36 “ x 150 ', 24lb",
+        "internal_part_number": "1079791",
+        "unit_cost": "0.1711555",
+        "price_per_m": "171.1555",
+        "current_stock": "",
+        "color": "",
+        "size": "36x150",
+        "measurement": 2,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.864Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 39,
+    "fields": {
+        "name": "HP Premium Poster Paper, 36 “ x 200 '",
+        "name2": "",
+        "description": "HP Premium Poster Paper, 36 “ x 200 '",
+        "internal_part_number": "HPN3T48A",
+        "unit_cost": "0.3239333",
+        "price_per_m": "323.9333",
+        "current_stock": "",
+        "color": "",
+        "size": "36X200",
+        "measurement": 2,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.857Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 40,
+    "fields": {
+        "name": "Sihl 3672 SL Performance Paper, 54 \" x 165 '",
+        "name2": "",
+        "description": "Sihl 3672 SL Performance Paper, 54 \" x 165 '",
+        "internal_part_number": "3672-54165",
+        "unit_cost": "1.1581212",
+        "price_per_m": "1158.1212",
+        "current_stock": "",
+        "color": "",
+        "size": "54x165",
+        "measurement": 2,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.850Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 41,
+    "fields": {
+        "name": "HP 831A Latex Inks, - Light Cyan",
+        "name2": "",
+        "description": "HP 831A Latex Inks, - Light Cyan",
+        "internal_part_number": "HPCA686A",
+        "unit_cost": "0.196129",
+        "price_per_m": "196.129",
+        "current_stock": "",
+        "color": "",
+        "size": "775",
+        "measurement": 3,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.843Z",
+        "inventory_category": [
+            8
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 42,
+    "fields": {
+        "name": "HP 831A Latex Inks, - Light Magenta",
+        "name2": "",
+        "description": "HP 831A Latex Inks, - Light Magenta",
+        "internal_part_number": "HPCZ687A",
+        "unit_cost": "0.196129",
+        "price_per_m": "196.129",
+        "current_stock": "",
+        "color": "",
+        "size": "775",
+        "measurement": 3,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.836Z",
+        "inventory_category": [
+            8
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 43,
+    "fields": {
+        "name": "HP 831A Latex Inks, - Yellow",
+        "name2": "",
+        "description": "HP 831A Latex Inks, - Yellow",
+        "internal_part_number": "HPCZ685A",
+        "unit_cost": "0.196129",
+        "price_per_m": "196.129",
+        "current_stock": "",
+        "color": "",
+        "size": "775",
+        "measurement": 3,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.829Z",
+        "inventory_category": [
+            8
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 44,
+    "fields": {
+        "name": "HP 831A Latex Inks, - Optimizer",
+        "name2": "",
+        "description": "HP 831A Latex Inks, - Optimizer",
+        "internal_part_number": "HPCZ706A",
+        "unit_cost": "0.196129",
+        "price_per_m": "196.129",
+        "current_stock": "",
+        "color": "",
+        "size": "775",
+        "measurement": 3,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.821Z",
+        "inventory_category": [
+            8
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 45,
+    "fields": {
+        "name": "HP 831A Latex Inks, - Magenta",
+        "name2": "",
+        "description": "HP 831A Latex Inks, - Magenta",
+        "internal_part_number": "HPCZ684A",
+        "unit_cost": "0.196129",
+        "price_per_m": "196.129",
+        "current_stock": "",
+        "color": "",
+        "size": "775",
+        "measurement": 3,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.814Z",
+        "inventory_category": [
+            8
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 46,
+    "fields": {
+        "name": "HP 831A Latex Inks, - Cyan",
+        "name2": "",
+        "description": "HP 831A Latex Inks, - Cyan",
+        "internal_part_number": "HPCZ683A",
+        "unit_cost": "0.196129",
+        "price_per_m": "196.129",
+        "current_stock": "",
+        "color": "",
+        "size": "775",
+        "measurement": 3,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.807Z",
+        "inventory_category": [
+            8
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 47,
+    "fields": {
+        "name": "HP 831A Latex Inks, - Black",
+        "name2": "",
+        "description": "HP 831A Latex Inks, - Black",
+        "internal_part_number": "HPCZ682A",
+        "unit_cost": "0.196129",
+        "price_per_m": "196.129",
+        "current_stock": "",
+        "color": "",
+        "size": "775",
+        "measurement": 3,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.800Z",
+        "inventory_category": [
+            8
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 48,
+    "fields": {
+        "name": "HP 831A Latex Inks, - Magenta",
+        "name2": "",
+        "description": "HP 831A Latex Inks, - Magenta",
+        "internal_part_number": "HPCZ684A",
+        "unit_cost": "0.196129",
+        "price_per_m": "196.129",
+        "current_stock": "",
+        "color": "",
+        "size": "775",
+        "measurement": 3,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.793Z",
+        "inventory_category": [
+            8
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 49,
+    "fields": {
+        "name": "105# CF MNLA TAG NCR 8.5X11",
+        "name2": "",
+        "description": "105# CF MNLA TAG NCR 8.5X11",
+        "internal_part_number": "9IACNCR0157",
+        "unit_cost": "0.21049",
+        "price_per_m": "210.49",
+        "current_stock": "",
+        "color": "Manilla",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.786Z",
+        "inventory_category": [
+            4
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 50,
+    "fields": {
+        "name": "2 PT REV NCR 8.5X14 SUP",
+        "name2": "",
+        "description": "2 PT REV NCR 8.5X14 SUP",
+        "internal_part_number": "82ARCBL03I4",
+        "unit_cost": "0.07199",
+        "price_per_m": "71.99",
+        "current_stock": "",
+        "color": "CNRY/WHT",
+        "size": "8.5x14",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.779Z",
+        "inventory_category": [
+            4
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 51,
+    "fields": {
+        "name": "CB WHITE NCR 8.5X11 SUP",
+        "name2": "",
+        "description": "CB WHITE NCR 8.5X11 SUP",
+        "internal_part_number": "9MAWCBL0100",
+        "unit_cost": "0.07764",
+        "price_per_m": "77.64",
+        "current_stock": "",
+        "color": "White",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.772Z",
+        "inventory_category": [
+            4
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 52,
+    "fields": {
+        "name": "2 PT REV NCR 8.5X11 SUP",
+        "name2": "",
+        "description": "2 PT REV NCR 8.5X11 SUP",
+        "internal_part_number": "82ARCBL01I4",
+        "unit_cost": "0.05662",
+        "price_per_m": "56.62",
+        "current_stock": "",
+        "color": "CNRY/WHT",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.765Z",
+        "inventory_category": [
+            4
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 53,
+    "fields": {
+        "name": "3 PT REV NCR 8.5X11 SUP",
+        "name2": "",
+        "description": "3 PT REV NCR 8.5X11 SUP",
+        "internal_part_number": "83ARCBL01I4",
+        "unit_cost": "0.06369",
+        "price_per_m": "63.69",
+        "current_stock": "",
+        "color": "PNK/CNRY/WHT",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.758Z",
+        "inventory_category": [
+            4
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 54,
+    "fields": {
+        "name": "3 PT REV NCR 8.5X14 SUP",
+        "name2": "",
+        "description": "3 PT REV NCR 8.5X14 SUP",
+        "internal_part_number": "83ARCBL03I4",
+        "unit_cost": "0.08093",
+        "price_per_m": "80.93",
+        "current_stock": "",
+        "color": "PNK/CNRY/WHT",
+        "size": "8.5x14",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.751Z",
+        "inventory_category": [
+            4
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 55,
+    "fields": {
+        "name": "CF CANARY NCR 8.5X11 SUP",
+        "name2": "",
+        "description": "CF CANARY NCR 8.5X11 SUP",
+        "internal_part_number": "9OACCBL0121",
+        "unit_cost": "0.0568",
+        "price_per_m": "56.8",
+        "current_stock": "",
+        "color": "Canary",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.743Z",
+        "inventory_category": [
+            4
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 56,
+    "fields": {
+        "name": "105# CF WHT TAG NCR 8.5X11",
+        "name2": "",
+        "description": "105# CF WHT TAG NCR 8.5X11",
+        "internal_part_number": "9IAWNCR0100",
+        "unit_cost": "0.21049",
+        "price_per_m": "210.49",
+        "current_stock": "",
+        "color": "White",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.736Z",
+        "inventory_category": [
+            4
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 57,
+    "fields": {
+        "name": "2 PT REV NCR 8.5X11 SUP",
+        "name2": "",
+        "description": "2 PT REV NCR 8.5X11 SUP",
+        "internal_part_number": "82ARCBL01H4",
+        "unit_cost": "0.05662",
+        "price_per_m": "56.62",
+        "current_stock": "",
+        "color": "PNK/WHT",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.729Z",
+        "inventory_category": [
+            4
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 58,
+    "fields": {
+        "name": "PROD PTS C2S 23X35-10 PT",
+        "name2": "",
+        "description": "PROD PTS C2S 23X35-10 PT",
+        "internal_part_number": "22XGPRO4800P",
+        "unit_cost": "0.52632",
+        "price_per_m": "526.32",
+        "current_stock": "",
+        "color": "",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.722Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 59,
+    "fields": {
+        "name": "PROD PTS C1S 18X12-10 PT",
+        "name2": "",
+        "description": "PROD PTS C1S 18X12-10 PT",
+        "internal_part_number": "21XGPRO3900P",
+        "unit_cost": "0.14455",
+        "price_per_m": "144.55",
+        "current_stock": "",
+        "color": "",
+        "size": "18x12",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.715Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 60,
+    "fields": {
+        "name": "EAGLE CLR 30 8.5X11-20 CANARY",
+        "name2": "",
+        "description": "EAGLE CLR 30 8.5X11-20 CANARY",
+        "internal_part_number": "5K2CEAG0121",
+        "unit_cost": "0.01251",
+        "price_per_m": "12.51",
+        "current_stock": "",
+        "color": "Canary",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.708Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 61,
+    "fields": {
+        "name": "EAGLE CLR 30 8.5X11-20 PINK",
+        "name2": "",
+        "description": "EAGLE CLR 30 8.5X11-20 PINK",
+        "internal_part_number": "5K2CEAG0172",
+        "unit_cost": "0.01251",
+        "price_per_m": "12.51",
+        "current_stock": "",
+        "color": "Pink",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.701Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 62,
+    "fields": {
+        "name": "FIREWORX 8.5X11-20 BTLRCKTBLUE",
+        "name2": "",
+        "description": "FIREWORX 8.5X11-20 BTLRCKTBLUE",
+        "internal_part_number": "5K2CFIR01DI",
+        "unit_cost": "0.01251",
+        "price_per_m": "12.51",
+        "current_stock": "",
+        "color": "Bottle Rocket Blue",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.693Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 63,
+    "fields": {
+        "name": "FIREWORX 8.5X11-20 FLASH IVORY",
+        "name2": "",
+        "description": "FIREWORX 8.5X11-20 FLASH IVORY",
+        "internal_part_number": "5K2CFIR01KI",
+        "unit_cost": "0.01251",
+        "price_per_m": "12.51",
+        "current_stock": "",
+        "color": "Flash Ivory",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.686Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 64,
+    "fields": {
+        "name": "HAML COLORS 8.5X11-20 LILAC",
+        "name2": "",
+        "description": "HAML COLORS 8.5X11-20 LILAC",
+        "internal_part_number": "5K2CFOR012I",
+        "unit_cost": "0.01251",
+        "price_per_m": "12.51",
+        "current_stock": "",
+        "color": "Lilac",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.679Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 65,
+    "fields": {
+        "name": "SPRING VELLUM 23X35-67 CANARY",
+        "name2": "",
+        "description": "SPRING VELLUM 23X35-67 CANARY",
+        "internal_part_number": "6V6CSPR4821",
+        "unit_cost": "0.29491",
+        "price_per_m": "294.91",
+        "current_stock": "",
+        "color": "Canary",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.672Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 66,
+    "fields": {
+        "name": "HAML COLORS 8.5X14-20 ORCHID",
+        "name2": "",
+        "description": "HAML COLORS 8.5X14-20 ORCHID",
+        "internal_part_number": "5K2CFOR0366",
+        "unit_cost": "0.01729",
+        "price_per_m": "17.29",
+        "current_stock": "",
+        "color": "Orchid",
+        "size": "8.5x14",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.664Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 67,
+    "fields": {
+        "name": "HAML COLORS 11X17-20 GOLDENROD",
+        "name2": "",
+        "description": "HAML COLORS 11X17-20 GOLDENROD",
+        "internal_part_number": "5K2CFOR1342",
+        "unit_cost": "0.02718",
+        "price_per_m": "27.18",
+        "current_stock": "",
+        "color": "Goldenrod",
+        "size": "11x17",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.657Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 68,
+    "fields": {
+        "name": "FIREWORX 8.5X11-20 SMOKE GRAY",
+        "name2": "",
+        "description": "FIREWORX 8.5X11-20 SMOKE GRAY",
+        "internal_part_number": "5K2CIFR01XI",
+        "unit_cost": "0.01375",
+        "price_per_m": "13.75",
+        "current_stock": "",
+        "color": "Smoke Gray",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.650Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 69,
+    "fields": {
+        "name": "STER PRM GLS CV 8.5X11-100",
+        "name2": "",
+        "description": "STER PRM GLS CV 8.5X11-100",
+        "internal_part_number": "2CHGSTD0100",
+        "unit_cost": "0.07055",
+        "price_per_m": "70.55",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.643Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 70,
+    "fields": {
+        "name": "STER PRM GLS CV 18X12-100",
+        "name2": "",
+        "description": "STER PRM GLS CV 18X12-100",
+        "internal_part_number": "2CHGSTD3900",
+        "unit_cost": "0.16265",
+        "price_per_m": "162.65",
+        "current_stock": "",
+        "color": "",
+        "size": "18x12",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.636Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 71,
+    "fields": {
+        "name": "STER PRM GLS CV 18X12-80",
+        "name2": "",
+        "description": "STER PRM GLS CV 18X12-80",
+        "internal_part_number": "2C8GSTD3900",
+        "unit_cost": "0.12933",
+        "price_per_m": "129.33",
+        "current_stock": "",
+        "color": "",
+        "size": "18x12",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.628Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 72,
+    "fields": {
+        "name": "#301105 STRATHMORE WOVE COVER",
+        "name2": "",
+        "description": "#301105 STRATHMORE WOVE COVER",
+        "internal_part_number": "840215-001",
+        "unit_cost": "0.278",
+        "price_per_m": "278",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.621Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 73,
+    "fields": {
+        "name": "FINCH OPA DI CVR 17X11-80 BRT",
+        "name2": "",
+        "description": "FINCH OPA DI CVR 17X11-80 BRT",
+        "internal_part_number": "3C8WFIN2016",
+        "unit_cost": "0.11115",
+        "price_per_m": "111.15",
+        "current_stock": "",
+        "color": "",
+        "size": "17x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.614Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 74,
+    "fields": {
+        "name": "FINCH OPA DI CVR 8.5X11-80 BRT",
+        "name2": "",
+        "description": "FINCH OPA DI CVR 8.5X11-80 BRT",
+        "internal_part_number": "3C8WFIN0116",
+        "unit_cost": "0.05558",
+        "price_per_m": "55.58",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.606Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 75,
+    "fields": {
+        "name": "FINCH OPA DI CVR 18X12-80 BULK",
+        "name2": "",
+        "description": "FINCH OPA DI CVR 18X12-80 BULK",
+        "internal_part_number": "3C8WFIN3916",
+        "unit_cost": "0.12839",
+        "price_per_m": "128.39",
+        "current_stock": "",
+        "color": "",
+        "size": "18x12",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.600Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 76,
+    "fields": {
+        "name": "ROY/SUN LIN CVR 8.5X11-80BRTWH",
+        "name2": "",
+        "description": "ROY/SUN LIN CVR 8.5X11-80BRTWH",
+        "internal_part_number": "4CIWROY0116",
+        "unit_cost": "0.10829",
+        "price_per_m": "108.29",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.593Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 77,
+    "fields": {
+        "name": "ROY/SUN FBR ENV 10-24 NATURAL",
+        "name2": "",
+        "description": "ROY/SUN FBR ENV 10-24 NATURAL",
+        "internal_part_number": "EWRCROY0G630",
+        "unit_cost": "0.10034",
+        "price_per_m": "100.34",
+        "current_stock": "",
+        "color": "Natural",
+        "size": "#10",
+        "measurement": 4,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.586Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 78,
+    "fields": {
+        "name": "ROY/SUN LIN ENV 10-24 GRAY",
+        "name2": "",
+        "description": "ROY/SUN LIN ENV 10-24 GRAY",
+        "internal_part_number": "EWRCROY0G438",
+        "unit_cost": "0.09338",
+        "price_per_m": "93.38",
+        "current_stock": "",
+        "color": "Gray",
+        "size": "#10",
+        "measurement": 4,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.580Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 79,
+    "fields": {
+        "name": "A2 ROY/SUN LIN ENV 70 BRILLWHT",
+        "name2": "",
+        "description": "A2 ROY/SUN LIN ENV 70 BRILLWHT",
+        "internal_part_number": "EARWROY1ACY",
+        "unit_cost": "0.09841",
+        "price_per_m": "98.41",
+        "current_stock": "",
+        "color": "",
+        "size": "A2",
+        "measurement": 4,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.573Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 80,
+    "fields": {
+        "name": "ROY/SUN FBR ENV 10-24 WHITE",
+        "name2": "",
+        "description": "ROY/SUN FBR ENV 10-24 WHITE",
+        "internal_part_number": "EWRWROY0G00",
+        "unit_cost": "0.09446",
+        "price_per_m": "94.46",
+        "current_stock": "",
+        "color": "White",
+        "size": "#10",
+        "measurement": 4,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.567Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 81,
+    "fields": {
+        "name": "IMPACT ENV #10-24# REGULAR",
+        "name2": "",
+        "description": "IMPACT ENV #10-24# REGULAR",
+        "internal_part_number": "EERWIMP0G00",
+        "unit_cost": "0.04328",
+        "price_per_m": "43.28",
+        "current_stock": "",
+        "color": "",
+        "size": "#10",
+        "measurement": 4,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.560Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 82,
+    "fields": {
+        "name": "PRINTMASTER OSDS DI ENV 10-24",
+        "name2": "",
+        "description": "PRINTMASTER OSDS DI ENV 10-24",
+        "internal_part_number": "EEWWPDI0G00",
+        "unit_cost": "0.04859",
+        "price_per_m": "48.59",
+        "current_stock": "",
+        "color": "",
+        "size": "#10",
+        "measurement": 4,
+        "type_paper": false,
+        "type_envelope": true,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.554Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 83,
+    "fields": {
+        "name": "PADDING COMPOUND NCR (QUART)",
+        "name2": "",
+        "description": "PADDING COMPOUND NCR (QUART)",
+        "internal_part_number": "IPZZPADNCRQ",
+        "unit_cost": "",
+        "price_per_m": "0",
+        "current_stock": "",
+        "color": "",
+        "size": "",
+        "measurement": 4,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.548Z",
+        "inventory_category": [
+            8
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 84,
+    "fields": {
+        "name": "PADDING COMPOUND WHITE(GALLON)",
+        "name2": "",
+        "description": "PADDING COMPOUND WHITE(GALLON)",
+        "internal_part_number": "IPZZPADWHTG",
+        "unit_cost": "",
+        "price_per_m": "0",
+        "current_stock": "",
+        "color": "",
+        "size": "",
+        "measurement": 4,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.541Z",
+        "inventory_category": [
+            8
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 85,
+    "fields": {
+        "name": "Chipboard 8.5x11 x Boxes",
+        "name2": "",
+        "description": "Chipboard 8.5x11 x Boxes",
+        "internal_part_number": "",
+        "unit_cost": "",
+        "price_per_m": "0",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.534Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 86,
+    "fields": {
+        "name": "Chipboard 11x17 x Boxes",
+        "name2": "",
+        "description": "Chipboard 11x17 x Boxes",
+        "internal_part_number": "",
+        "unit_cost": "",
+        "price_per_m": "0",
+        "current_stock": "",
+        "color": "",
+        "size": "11x17",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.528Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 87,
+    "fields": {
+        "name": "Chipboard 22.5X34.5-.020",
+        "name2": "",
+        "description": "Chipboard 22.5X34.5-.020",
+        "internal_part_number": "IBZZCHI44ZZU",
+        "unit_cost": "0.3764",
+        "price_per_m": "376.4",
+        "current_stock": "",
+        "color": "",
+        "size": "22.5x34.5",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.521Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 88,
+    "fields": {
+        "name": "BLAZER DI GLS TXT 11X17-80",
+        "name2": "",
+        "description": "BLAZER DI GLS TXT 11X17-80",
+        "internal_part_number": "2T8GBLA1300",
+        "unit_cost": "0.05027",
+        "price_per_m": "50.27",
+        "current_stock": "",
+        "color": "",
+        "size": "11x17",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.515Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 89,
+    "fields": {
+        "name": "ESSENTIAL COPY 11X17-20 WHT",
+        "name2": "",
+        "description": "ESSENTIAL COPY 11X17-20 WHT",
+        "internal_part_number": "5K2WESS1300",
+        "unit_cost": "0.01919",
+        "price_per_m": "19.19",
+        "current_stock": "",
+        "color": "",
+        "size": "11x17",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.508Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 90,
+    "fields": {
+        "name": "ESSENTIAL COPY 8.5X11-20 WHT",
+        "name2": "",
+        "description": "ESSENTIAL COPY 8.5X11-20 WHT",
+        "internal_part_number": "5K2WESS0100",
+        "unit_cost": "0.0091",
+        "price_per_m": "9.1",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.502Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 91,
+    "fields": {
+        "name": "WMS OPA 11X17-60 WHT SM",
+        "name2": "",
+        "description": "WMS OPA 11X17-60 WHT SM",
+        "internal_part_number": "3T6WWOP1300",
+        "unit_cost": "0.02346",
+        "price_per_m": "23.46",
+        "current_stock": "",
+        "color": "",
+        "size": "11x17",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.495Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 92,
+    "fields": {
+        "name": "WMS OPA 11X17-70 WHT SM",
+        "name2": "",
+        "description": "WMS OPA 11X17-70 WHT SM",
+        "internal_part_number": "3T7WWRO1300",
+        "unit_cost": "0.02737",
+        "price_per_m": "27.37",
+        "current_stock": "",
+        "color": "",
+        "size": "11x17",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.489Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 93,
+    "fields": {
+        "name": "WMS OPA 23X35-70 WHT SM",
+        "name2": "",
+        "description": "WMS OPA 23X35-70 WHT SM",
+        "internal_part_number": "3T7WWMS4800",
+        "unit_cost": "0.10698",
+        "price_per_m": "106.98",
+        "current_stock": "",
+        "color": "",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.482Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 94,
+    "fields": {
+        "name": "WMS OPA 8.5X11-60 WHT SM",
+        "name2": "",
+        "description": "WMS OPA 8.5X11-60 WHT SM",
+        "internal_part_number": "3T6WWOP0100",
+        "unit_cost": "0.0109",
+        "price_per_m": "10.9",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.476Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 95,
+    "fields": {
+        "name": "WMS OPA 8.5X11-70 WHT SM",
+        "name2": "",
+        "description": "WMS OPA 8.5X11-70 WHT SM",
+        "internal_part_number": "3T7WWOP0100",
+        "unit_cost": "0.01271",
+        "price_per_m": "12.71",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.469Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 96,
+    "fields": {
+        "name": "BOISE X9 8.5X14-20 WHT",
+        "name2": "",
+        "description": "BOISE X9 8.5X14-20 WHT",
+        "internal_part_number": "5K2WBOI0300",
+        "unit_cost": "0.01281",
+        "price_per_m": "12.81",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x14",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.463Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 97,
+    "fields": {
+        "name": "ESSENTIAL COPY 8.5X14-20 WHT",
+        "name2": "",
+        "description": "ESSENTIAL COPY 8.5X14-20 WHT",
+        "internal_part_number": "5K2WESS0300",
+        "unit_cost": "0.01171",
+        "price_per_m": "11.71",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x14",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.456Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 98,
+    "fields": {
+        "name": "ROY/SUN FBR 8.5X11-24 WHITE",
+        "name2": "",
+        "description": "ROY/SUN FBR 8.5X11-24 WHITE",
+        "internal_part_number": "5W2FROY0100",
+        "unit_cost": "0.04773",
+        "price_per_m": "47.73",
+        "current_stock": "",
+        "color": "White",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.450Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 99,
+    "fields": {
+        "name": "POLARIS MP 8.5X11-20 WHT",
+        "name2": "",
+        "description": "POLARIS MP 8.5X11-20 WHT",
+        "internal_part_number": "5K2WPOL0100",
+        "unit_cost": "0.00991",
+        "price_per_m": "9.91",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.443Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 100,
+    "fields": {
+        "name": "ROY/SUN FBR 8.5X11-24 NATURAL",
+        "name2": "",
+        "description": "ROY/SUN FBR 8.5X11-24 NATURAL",
+        "internal_part_number": "5W2FROY0163",
+        "unit_cost": "0.04773",
+        "price_per_m": "47.73",
+        "current_stock": "",
+        "color": "Natural",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.437Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 101,
+    "fields": {
+        "name": "EXACT INDEX 22.5X35-140# WHT",
+        "name2": "",
+        "description": "EXACT INDEX 22.5X35-140# WHT",
+        "internal_part_number": "6IHWEXA45001",
+        "unit_cost": "0.60548",
+        "price_per_m": "605.48",
+        "current_stock": "",
+        "color": "White",
+        "size": "22.5x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.430Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 102,
+    "fields": {
+        "name": "SPRING INDEX 22.5X35-110 WHT",
+        "name2": "",
+        "description": "SPRING INDEX 22.5X35-110 WHT",
+        "internal_part_number": "6IHWSPR4500G",
+        "unit_cost": "0.37134",
+        "price_per_m": "371.34",
+        "current_stock": "",
+        "color": "White",
+        "size": "22.5x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.424Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 103,
+    "fields": {
+        "name": "ASTRP 8.5X11-60 ANCIENT GOLD",
+        "name2": "",
+        "description": "ASTRP 8.5X11-60 ANCIENT GOLD",
+        "internal_part_number": "4TPCAST01CZ",
+        "unit_cost": "0.0451",
+        "price_per_m": "45.1",
+        "current_stock": "",
+        "color": "Ancient Gold",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.417Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 104,
+    "fields": {
+        "name": "ASTRP CVR 8.5X11-65 ANCNT GOLD",
+        "name2": "",
+        "description": "ASTRP CVR 8.5X11-65 ANCNT GOLD",
+        "internal_part_number": "4CPCAST01CZ",
+        "unit_cost": "0.08936",
+        "price_per_m": "89.36",
+        "current_stock": "",
+        "color": "Ancient Gold",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.410Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 105,
+    "fields": {
+        "name": "HAML OPA 23X35-50 CANARY",
+        "name2": "",
+        "description": "HAML OPA 23X35-50 CANARY",
+        "internal_part_number": "3T5CSPR4821",
+        "unit_cost": "0.10872",
+        "price_per_m": "108.72",
+        "current_stock": "",
+        "color": "Canary",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.404Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 106,
+    "fields": {
+        "name": "ROY/SUN FBR CVR 35X23-80 GRAY",
+        "name2": "",
+        "description": "ROY/SUN FBR CVR 35X23-80 GRAY",
+        "internal_part_number": "4CSFROY4843",
+        "unit_cost": "0.93787",
+        "price_per_m": "937.87",
+        "current_stock": "",
+        "color": "Gray",
+        "size": "35x23",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.397Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 107,
+    "fields": {
+        "name": "HAML OPA 8.5X11-60 PINK",
+        "name2": "",
+        "description": "HAML OPA 8.5X11-60 PINK",
+        "internal_part_number": "3T6CSPR0172",
+        "unit_cost": "0.02139",
+        "price_per_m": "21.39",
+        "current_stock": "",
+        "color": "Pink",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.391Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 108,
+    "fields": {
+        "name": "ACCENT OPA CVR 18X12-100 WHTSM",
+        "name2": "",
+        "description": "ACCENT OPA CVR 18X12-100 WHTSM",
+        "internal_part_number": "3CHWACC3900",
+        "unit_cost": "0.16205",
+        "price_per_m": "162.05",
+        "current_stock": "",
+        "color": "",
+        "size": "18x12",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.384Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 109,
+    "fields": {
+        "name": "ASTRB CVR 23X35-65 CELEST BLUE",
+        "name2": "",
+        "description": "ASTRB CVR 23X35-65 CELEST BLUE",
+        "internal_part_number": "3C6BAST890A",
+        "unit_cost": "0.56904",
+        "price_per_m": "569.04",
+        "current_stock": "",
+        "color": "Celest Blue",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.378Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 110,
+    "fields": {
+        "name": "ASTRB CVR 35X23-65 SOLR YELLOW",
+        "name2": "",
+        "description": "ASTRB CVR 35X23-65 SOLR YELLOW",
+        "internal_part_number": "3C6BAST890P",
+        "unit_cost": "0.56904",
+        "price_per_m": "569.04",
+        "current_stock": "",
+        "color": "Solar Yellow",
+        "size": "35x23",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.371Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 111,
+    "fields": {
+        "name": "EXACT INDEX 11X17-110# WHT",
+        "name2": "",
+        "description": "EXACT INDEX 11X17-110# WHT",
+        "internal_part_number": "6IHWEXA1300G",
+        "unit_cost": "0.12012",
+        "price_per_m": "120.12",
+        "current_stock": "",
+        "color": "",
+        "size": "11x17",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.365Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 112,
+    "fields": {
+        "name": "EXACT INDEX 8.5X11-110# WHT",
+        "name2": "",
+        "description": "EXACT INDEX 8.5X11-110# WHT",
+        "internal_part_number": "6IHWEXA01001",
+        "unit_cost": "0.05774",
+        "price_per_m": "57.74",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.358Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 113,
+    "fields": {
+        "name": "ASTRB CVR 23X35-65 GAMMA GREEN",
+        "name2": "",
+        "description": "ASTRB CVR 23X35-65 GAMMA GREEN",
+        "internal_part_number": "3C6BAST890E",
+        "unit_cost": "0.56904",
+        "price_per_m": "569.04",
+        "current_stock": "",
+        "color": "Gamma Green",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.352Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 114,
+    "fields": {
+        "name": "ASTRB CVR 23X35-65 PLNT PURPLE",
+        "name2": "",
+        "description": "ASTRB CVR 23X35-65 PLNT PURPLE",
+        "internal_part_number": "3C6BAST890L",
+        "unit_cost": "0.56904",
+        "price_per_m": "569.04",
+        "current_stock": "",
+        "color": "Planetary Purple",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.345Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 115,
+    "fields": {
+        "name": "SPRING OPA/HAML 23X35-24 GOLD",
+        "name2": "",
+        "description": "SPRING OPA/HAML 23X35-24 GOLD",
+        "internal_part_number": "3T6CSPR4841",
+        "unit_cost": "0.15398",
+        "price_per_m": "153.98",
+        "current_stock": "",
+        "color": "Gold",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.339Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 116,
+    "fields": {
+        "name": "ASTRB 8.5X11-60 LIFTOFF LEMON",
+        "name2": "",
+        "description": "ASTRB 8.5X11-60 LIFTOFF LEMON",
+        "internal_part_number": "3T6BAST010G",
+        "unit_cost": "0.02816",
+        "price_per_m": "28.16",
+        "current_stock": "",
+        "color": "Liftoff Lemon",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.332Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 117,
+    "fields": {
+        "name": "EXACT BRTS 8.5X11-50 BRT ORNGE",
+        "name2": "",
+        "description": "EXACT BRTS 8.5X11-50 BRT ORNGE",
+        "internal_part_number": "3T5BEXA01C5",
+        "unit_cost": "0.01882",
+        "price_per_m": "18.82",
+        "current_stock": "",
+        "color": "Bright Orange",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.326Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 118,
+    "fields": {
+        "name": "ASTRB CVR 23X35-65 ROCKET RED",
+        "name2": "",
+        "description": "ASTRB CVR 23X35-65 ROCKET RED",
+        "internal_part_number": "3C6BAST890O",
+        "unit_cost": "0.56904",
+        "price_per_m": "569.04",
+        "current_stock": "",
+        "color": "Rocket Red",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.319Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 119,
+    "fields": {
+        "name": "ACCENT OPA CVR 23X35-80 WHT SM",
+        "name2": "",
+        "description": "ACCENT OPA CVR 23X35-80 WHT SM",
+        "internal_part_number": "3C8WACC4800",
+        "unit_cost": "0.4336",
+        "price_per_m": "433.6",
+        "current_stock": "",
+        "color": "",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.313Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 120,
+    "fields": {
+        "name": "ASTRB CVR 23X35-65 LUNAR BLUE",
+        "name2": "",
+        "description": "ASTRB CVR 23X35-65 LUNAR BLUE",
+        "internal_part_number": "3C6BAST890H",
+        "unit_cost": "0.56904",
+        "price_per_m": "569.04",
+        "current_stock": "",
+        "color": "Lunar Blue",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.306Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 121,
+    "fields": {
+        "name": "ASTRB CVR 23X35-65 PULSAR PINK",
+        "name2": "",
+        "description": "ASTRB CVR 23X35-65 PULSAR PINK",
+        "internal_part_number": "3C6BAST890M1",
+        "unit_cost": "0.56904",
+        "price_per_m": "569.04",
+        "current_stock": "",
+        "color": "Pulsar Pink",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.300Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 122,
+    "fields": {
+        "name": "SOPOR DI 12X18-60 WHT",
+        "name2": "",
+        "description": "SOPOR DI 12X18-60 WHT",
+        "internal_part_number": "3T6WSOP1600",
+        "unit_cost": "0.04984",
+        "price_per_m": "49.84",
+        "current_stock": "",
+        "color": "",
+        "size": "12x18",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.293Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 123,
+    "fields": {
+        "name": "SPRING INDEX 22.5X35-110 CHRRY",
+        "name2": "",
+        "description": "SPRING INDEX 22.5X35-110 CHRRY",
+        "internal_part_number": "6IHCSPR4523G",
+        "unit_cost": "0.38597",
+        "price_per_m": "385.97",
+        "current_stock": "",
+        "color": "Cherry",
+        "size": "22.5x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.287Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 124,
+    "fields": {
+        "name": "SPRING OPA 23X35-60 GOLD",
+        "name2": "",
+        "description": "SPRING OPA 23X35-60 GOLD",
+        "internal_part_number": "3T6CSPR4841",
+        "unit_cost": "0.15398",
+        "price_per_m": "153.98",
+        "current_stock": "",
+        "color": "Gold",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.280Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 125,
+    "fields": {
+        "name": "SPRING OPA 23X35-70 GRAY",
+        "name2": "",
+        "description": "SPRING OPA 23X35-70 GRAY",
+        "internal_part_number": "3T7CSPR4843",
+        "unit_cost": "0.20319",
+        "price_per_m": "203.19",
+        "current_stock": "",
+        "color": "Gray",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.274Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 126,
+    "fields": {
+        "name": "SPRING VELLUM 8.5X11-67 CANARY",
+        "name2": "",
+        "description": "SPRING VELLUM 8.5X11-67 CANARY",
+        "internal_part_number": "6V6CSPR0121",
+        "unit_cost": "0.03514",
+        "price_per_m": "35.14",
+        "current_stock": "",
+        "color": "Canary",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.267Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 127,
+    "fields": {
+        "name": "SPRING OPA 23X35-70 BLUE",
+        "name2": "",
+        "description": "SPRING OPA 23X35-70 BLUE",
+        "internal_part_number": "3T7CSPR4813",
+        "unit_cost": "0.20319",
+        "price_per_m": "203.19",
+        "current_stock": "",
+        "color": "Blue",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.261Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 128,
+    "fields": {
+        "name": "EXACT VELLUM 23X35-67# WHT",
+        "name2": "",
+        "description": "EXACT VELLUM 23X35-67# WHT",
+        "internal_part_number": "6V6WEXA48001",
+        "unit_cost": "0.35817",
+        "price_per_m": "358.17",
+        "current_stock": "",
+        "color": "White",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.254Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 129,
+    "fields": {
+        "name": "SPRING VELLUM 11X17-67 WHT",
+        "name2": "",
+        "description": "SPRING VELLUM 11X17-67 WHT",
+        "internal_part_number": "6V6WSPR13000",
+        "unit_cost": "0.07018",
+        "price_per_m": "70.18",
+        "current_stock": "",
+        "color": "White",
+        "size": "11x17",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.248Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 130,
+    "fields": {
+        "name": "ASTRB CVR 23X35-65 COSM ORANGE",
+        "name2": "",
+        "description": "ASTRB CVR 23X35-65 COSM ORANGE",
+        "internal_part_number": "3C6BAST890B",
+        "unit_cost": "0.56904",
+        "price_per_m": "569.04",
+        "current_stock": "",
+        "color": "Cosmic Orange",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.241Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 131,
+    "fields": {
+        "name": "EXACT VELLUM 23X35-67# YELLOW",
+        "name2": "",
+        "description": "EXACT VELLUM 23X35-67# YELLOW",
+        "internal_part_number": "6V6CEXA4899",
+        "unit_cost": "0.3852",
+        "price_per_m": "385.2",
+        "current_stock": "",
+        "color": "Yellow",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.234Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 132,
+    "fields": {
+        "name": "ASTRB CVR 23X35-65 RE-ENT RED",
+        "name2": "",
+        "description": "ASTRB CVR 23X35-65 RE-ENT RED",
+        "internal_part_number": "3C6BAST890N",
+        "unit_cost": "0.56904",
+        "price_per_m": "569.04",
+        "current_stock": "",
+        "color": "Reentry Red",
+        "size": "23x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.228Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 133,
+    "fields": {
+        "name": "EXACT INDEX 22.5X35-110# CANRY",
+        "name2": "",
+        "description": "EXACT INDEX 22.5X35-110# CANRY",
+        "internal_part_number": "6IHCEXA4521G",
+        "unit_cost": "0.51131",
+        "price_per_m": "511.31",
+        "current_stock": "",
+        "color": "Canary",
+        "size": "22.5x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.221Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 134,
+    "fields": {
+        "name": "EXACT INDEX 22.5X35-140# IVORY",
+        "name2": "",
+        "description": "EXACT INDEX 22.5X35-140# IVORY",
+        "internal_part_number": "6IHCEXA4549J",
+        "unit_cost": "0.60548",
+        "price_per_m": "605.48",
+        "current_stock": "",
+        "color": "Ivory",
+        "size": "22.5x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.215Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 135,
+    "fields": {
+        "name": "SPRING INDEX 22.5X35-110 BUFF",
+        "name2": "",
+        "description": "SPRING INDEX 22.5X35-110 BUFF",
+        "internal_part_number": "6IHCSPR4519G",
+        "unit_cost": "0.38597",
+        "price_per_m": "385.97",
+        "current_stock": "",
+        "color": "Buff",
+        "size": "22.5x35",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.208Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 136,
+    "fields": {
+        "name": "ACCENT OPA CVR 8.5X11-80 WHT",
+        "name2": "",
+        "description": "ACCENT OPA CVR 8.5X11-80 WHT",
+        "internal_part_number": "3C8WACC0100",
+        "unit_cost": "0.05558",
+        "price_per_m": "55.58",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.202Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 137,
+    "fields": {
+        "name": "ROY/SUN FBR 8.5X11-70 WHT",
+        "name2": "",
+        "description": "ROY/SUN FBR 8.5X11-70 WHT",
+        "internal_part_number": "4TSFROY0100",
+        "unit_cost": "0.05481",
+        "price_per_m": "54.81",
+        "current_stock": "",
+        "color": "",
+        "size": "8.5x11",
+        "measurement": 4,
+        "type_paper": true,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.195Z",
+        "inventory_category": [
+            1
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 138,
+    "fields": {
+        "name": "3M™ Scotchcal™ Graphic Film with Comply™ Adhesive IJ35C",
+        "name2": "",
+        "description": "3M™ Scotchcal™ Graphic Film with Comply™ Adhesive IJ35C",
+        "internal_part_number": "3MIJ35C-10-54",
+        "unit_cost": "0.4087407407",
+        "price_per_m": "408.7407407407",
+        "current_stock": "",
+        "color": "",
+        "size": "54x50",
+        "measurement": 5,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.189Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 139,
+    "fields": {
+        "name": "Sihl Value Line 3218 Window Perf, 54 \" x 100 '",
+        "name2": "",
+        "description": "Sihl Value Line 3218 Window Perf, 54 \" x 100 '",
+        "internal_part_number": "3218-54100",
+        "unit_cost": "0.5596444",
+        "price_per_m": "559.6444",
+        "current_stock": "",
+        "color": "",
+        "size": "54x100",
+        "measurement": 5,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.182Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 140,
+    "fields": {
+        "name": "3M™ Print Wrap IJ180mC-10LSE Film, 54 \" x 50 yd",
+        "name2": "",
+        "description": "3M™ Print Wrap IJ180mC-10LSE Film, 54 \" x 50 yd",
+        "internal_part_number": "3M180MC-10LSE54",
+        "unit_cost": "1.2060592",
+        "price_per_m": "1206.0592",
+        "current_stock": "",
+        "color": "",
+        "size": "54x50",
+        "measurement": 5,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.176Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 141,
+    "fields": {
+        "name": "Palight Premium Foamed PVC Sheets, 4 ' x 8 ', White, 1 mm",
+        "name2": "",
+        "description": "Palight Premium Foamed PVC Sheets, 4 ' x 8 ', White, 1 mm",
+        "internal_part_number": "P841MW",
+        "unit_cost": "0.66375",
+        "price_per_m": "663.75",
+        "current_stock": "",
+        "color": "White",
+        "size": "4x8",
+        "measurement": 5,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.169Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 142,
+    "fields": {
+        "name": "Palight Premium Foamed PVC Sheets, 4 ' x 8 ', White, 3 mm",
+        "name2": "",
+        "description": "Palight Premium Foamed PVC Sheets, 4 ' x 8 ', White, 3 mm",
+        "internal_part_number": "P843MW",
+        "unit_cost": "1.4521875",
+        "price_per_m": "1452.1875",
+        "current_stock": "",
+        "color": "White",
+        "size": "4x8",
+        "measurement": 5,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.163Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 143,
+    "fields": {
+        "name": "Duratex Foamboard, 48 \" x 96 \", White, 3/16 \"",
+        "name2": "",
+        "description": "Duratex Foamboard, 48 \" x 96 \", White, 3/16 \"",
+        "internal_part_number": "FMB4896316W",
+        "unit_cost": "0.518125",
+        "price_per_m": "518.125",
+        "current_stock": "",
+        "color": "White",
+        "size": "4x8",
+        "measurement": 5,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.156Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 144,
+    "fields": {
+        "name": "Magnum Magnetics Sheeting, 24 \" x 50 ', White, Matte, .030 \"",
+        "name2": "",
+        "description": "Magnum Magnetics Sheeting, 24 \" x 50 ', White, Matte, .030 \"",
+        "internal_part_number": "MAG2450",
+        "unit_cost": "1.804",
+        "price_per_m": "1804",
+        "current_stock": "",
+        "color": "",
+        "size": "24x50",
+        "measurement": 5,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.150Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 145,
+    "fields": {
+        "name": "MAXMETAL™, 4 ' x 8 ', White, 3 mm",
+        "name2": "",
+        "description": "MAXMETAL™, 4 ' x 8 ', White, 3 mm",
+        "internal_part_number": "MM843MW",
+        "unit_cost": "1.519375",
+        "price_per_m": "1519.375",
+        "current_stock": "",
+        "color": "",
+        "size": "4x8",
+        "measurement": 5,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.143Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 146,
+    "fields": {
+        "name": "Corrugated Plastic Panel, 48 “ x 96 “, White, Flute Length: 96 “",
+        "name2": "",
+        "description": "Corrugated Plastic Panel, 48 “ x 96 “, White, Flute Length: 96 “",
+        "internal_part_number": "CP84W",
+        "unit_cost": "0.3153125",
+        "price_per_m": "315.3125",
+        "current_stock": "",
+        "color": "",
+        "size": "48x96",
+        "measurement": 5,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.137Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 147,
+    "fields": {
+        "name": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 30 \" x 50 yd, Black",
+        "name2": "",
+        "description": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 30 \" x 50 yd, Black",
+        "internal_part_number": "7125-12-30U",
+        "unit_cost": "8.8038",
+        "price_per_m": "8803.8",
+        "current_stock": "",
+        "color": "Black",
+        "size": "30x50",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.130Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 148,
+    "fields": {
+        "name": "3M™ Controltac™ Graphic Film with Comply™ Adhesive 180mC, 24 \" x 50 yd, Gold Metallic",
+        "name2": "",
+        "description": "3M™ Controltac™ Graphic Film with Comply™ Adhesive 180mC, 24 \" x 50 yd, Gold Metallic",
+        "internal_part_number": "180MC-241-24",
+        "unit_cost": "12.2606",
+        "price_per_m": "12260.6",
+        "current_stock": "",
+        "color": "Gold Metallic",
+        "size": "24x50",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.124Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 149,
+    "fields": {
+        "name": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 50 yd, Black",
+        "name2": "",
+        "description": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 50 yd, Black",
+        "internal_part_number": "7125-12-24",
+        "unit_cost": "7.0434",
+        "price_per_m": "7043.4",
+        "current_stock": "",
+        "color": "Black",
+        "size": "24x50",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.117Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 150,
+    "fields": {
+        "name": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 50 yd, White",
+        "name2": "",
+        "description": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 50 yd, White",
+        "internal_part_number": "7125-10-24",
+        "unit_cost": "7.0434",
+        "price_per_m": "7043.4",
+        "current_stock": "",
+        "color": "White",
+        "size": "24x50",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.111Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 151,
+    "fields": {
+        "name": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 50 yd, Cardinal Red",
+        "name2": "",
+        "description": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 50 yd, Cardinal Red",
+        "internal_part_number": "7125-53-24",
+        "unit_cost": "8.1106",
+        "price_per_m": "8110.6",
+        "current_stock": "",
+        "color": "Cardinal Red",
+        "size": "24x50",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.104Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 152,
+    "fields": {
+        "name": "Avery Dennison SC 950 Cast Opaque Cut Vinyl Film, 24 \" x 10 yd, Light Gold Metallic",
+        "name2": "",
+        "description": "Avery Dennison SC 950 Cast Opaque Cut Vinyl Film, 24 \" x 10 yd, Light Gold Metallic",
+        "internal_part_number": "A950-217-2410",
+        "unit_cost": "11.535",
+        "price_per_m": "11535",
+        "current_stock": "",
+        "color": "Light Gold Metallic",
+        "size": "24x10",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.098Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 153,
+    "fields": {
+        "name": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Lime Green",
+        "name2": "",
+        "description": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Lime Green",
+        "internal_part_number": "7125-136-2410",
+        "unit_cost": "8.516",
+        "price_per_m": "8516",
+        "current_stock": "",
+        "color": "Lime Green",
+        "size": "24x10",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.091Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 154,
+    "fields": {
+        "name": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Satin Aluminum",
+        "name2": "",
+        "description": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Satin Aluminum",
+        "internal_part_number": "7125-120-2410",
+        "unit_cost": "7.757",
+        "price_per_m": "7757",
+        "current_stock": "",
+        "color": "Satin Aluminum",
+        "size": "24x10",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.085Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 155,
+    "fields": {
+        "name": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Deep Red",
+        "name2": "",
+        "description": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Deep Red",
+        "internal_part_number": "7125-23-2410",
+        "unit_cost": "7.757",
+        "price_per_m": "7757",
+        "current_stock": "",
+        "color": "Deep Red",
+        "size": "24x10",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.078Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 156,
+    "fields": {
+        "name": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Terra Cotta",
+        "name2": "",
+        "description": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Terra Cotta",
+        "internal_part_number": "7125-24-2410",
+        "unit_cost": "6.716",
+        "price_per_m": "6716",
+        "current_stock": "",
+        "color": "Terra Cotta",
+        "size": "24x10",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.072Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 157,
+    "fields": {
+        "name": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Peacock Blue",
+        "name2": "",
+        "description": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Peacock Blue",
+        "internal_part_number": "7125-77-2410",
+        "unit_cost": "6.716",
+        "price_per_m": "6716",
+        "current_stock": "",
+        "color": "Peacock Blue",
+        "size": "24x10",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.065Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 158,
+    "fields": {
+        "name": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Burgundy",
+        "name2": "",
+        "description": "3M™ 7125 Scotchcal ElectroCut Graphic Film, 24 \" x 10 yd, Burgundy",
+        "internal_part_number": "7125-58-2410",
+        "unit_cost": "6.716",
+        "price_per_m": "6716",
+        "current_stock": "",
+        "color": "Burgundy",
+        "size": "24x10",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.059Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 159,
+    "fields": {
+        "name": "3M™ Scotchcal™ Gloss Overlaminate 8508, 60 \" x 100 yd",
+        "name2": "",
+        "description": "3M™ Scotchcal™ Gloss Overlaminate 8508, 60 \" x 100 yd",
+        "internal_part_number": "3M8508-61100",
+        "unit_cost": "6.89",
+        "price_per_m": "6890",
+        "current_stock": "",
+        "color": "",
+        "size": "60x100",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.052Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 160,
+    "fields": {
+        "name": "RTape Conform 4075RLA Transfer Tape, 30 \" x 100 yd",
+        "name2": "",
+        "description": "RTape Conform 4075RLA Transfer Tape, 30 \" x 100 yd",
+        "internal_part_number": "R30",
+        "unit_cost": "1.3698",
+        "price_per_m": "1369.8",
+        "current_stock": "",
+        "color": "White",
+        "size": "30x100",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.046Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 161,
+    "fields": {
+        "name": "RTape Conform 4075RLA Transfer Tape, 24 \" x 100 yd",
+        "name2": "",
+        "description": "RTape Conform 4075RLA Transfer Tape, 24 \" x 100 yd",
+        "internal_part_number": "R24",
+        "unit_cost": "1.0917",
+        "price_per_m": "1091.7",
+        "current_stock": "",
+        "color": "White",
+        "size": "24x100",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.039Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 162,
+    "fields": {
+        "name": "RTape Clear Choice AT75, 24 \" x 100 yd",
+        "name2": "",
+        "description": "RTape Clear Choice AT75, 24 \" x 100 yd",
+        "internal_part_number": "RCAT75-24",
+        "unit_cost": "1.7921",
+        "price_per_m": "1792.1",
+        "current_stock": "",
+        "color": "Clear",
+        "size": "24x100",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T20:36:49.033Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 163,
+    "fields": {
+        "name": "Kraft Paper, 54 \" x 500 '",
+        "name2": null,
+        "description": "Kraft Paper, 54 \" x 500 '",
+        "internal_part_number": "KRAFT5054",
+        "unit_cost": "0.4161",
+        "price_per_m": "416.1",
+        "current_stock": null,
+        "color": null,
+        "size": "54x500",
+        "measurement": 6,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": true,
+        "created": "2024-02-15T23:48:10Z",
+        "updated": "2024-02-16T21:52:17.619Z",
+        "inventory_category": [
+            2
+        ]
+    }
+},
+{
+    "model": "inventory.inventory",
+    "pk": 164,
+    "fields": {
+        "name": "Placeholder",
+        "name2": null,
+        "description": null,
+        "internal_part_number": null,
+        "unit_cost": null,
+        "price_per_m": null,
+        "current_stock": null,
+        "color": null,
+        "size": null,
+        "measurement": null,
+        "type_paper": false,
+        "type_envelope": false,
+        "type_wideformat": false,
+        "created": "2024-02-17T17:47:05.291Z",
+        "updated": "2024-02-17T17:47:05.291Z",
+        "inventory_category": [
+            8
+        ]
+    }
+}
+]
