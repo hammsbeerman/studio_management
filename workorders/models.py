@@ -19,7 +19,7 @@ class Workorder(models.Model):
     po_number = models.CharField('PO Number', max_length=100, blank=True, null=True)
     budget = models.CharField('Budget', max_length=100, blank=True, null=True)
     quoted_price = models.CharField('Quoted Price', max_length=100, blank=True, null=True)
-    original_order = models.CharField('Original Order', max_length=100, blank=True, null=True)
+    original_order = models.PositiveSmallIntegerField('Original Order', blank=True, null=True)
     notes = models.TextField('Notes:', blank=True, null=False)
     lk_workorder = models.CharField('LK Workorder', max_length=100, blank=True, null=True)
     printleader_workorder = models.CharField('Printleader', max_length=100, blank=True, null=True)

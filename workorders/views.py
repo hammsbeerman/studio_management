@@ -5,6 +5,7 @@ from django.db.models import Avg, Count, Min, Sum
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 from datetime import datetime
+from django.contrib import messages
 from customers.models import Customer, Contact
 from controls.models import Numbering, Category, SubCategory, SetPriceItem, SetPriceItemPrice
 from .models import Workorder, DesignType, WorkorderItem
@@ -33,6 +34,7 @@ def create_base(request):
         'form': WorkorderForm(),
         #'workordernum': workordernum,
         'categories':categories,
+        #'messages':messages,
     }
     if request.method == "POST":
         print('hi')
@@ -41,7 +43,12 @@ def create_base(request):
         print(form.errors)
         quote = request.POST.get('quote')
         form.fields['quote'].choices = [(quote, quote)]
-        if form.is_valid():
+        if not form.is_valid():
+            print(form.errors)
+            print('error')
+            messages.error(request, "Please correct the errors below and resubmit.")
+            return render(request, context)
+        else:# form.is_valid():
             form.instance.customer_id = request.POST.get('customer')
             quote = request.POST.get('quote')
             cust = form.instance.customer_id
@@ -91,15 +98,22 @@ def create_base(request):
             inc = int('1')
             n.value = n.value + inc
             print(n.value)
-            n.save()
+            
             ## End of numbering
             print('hello')
             form.save()
             context = {
                 'id': n.value,
             }
+            n.save()
+            #messages.success(request, 'workorder added.')
             return redirect("workorders:overview", id=workorder)
             #return render(request, "workorders/overview.html", context)
+        # else:
+        #     for error in form.errors:
+        #         messages.error(request, WorkorderForm.errors[error])
+        #         return redirect(request.path)
+    
     return render(request, "workorders/create.html", context)
 
 @login_required
