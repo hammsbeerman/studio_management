@@ -5,13 +5,6 @@
     <title>LK invoice</title>
     <!-- paper.css -->
     <style>
-@font-face {
-    
-    font-weight: normal;
-    font-style: normal;
-
-}	
-	
       * {
         -webkit-print-color-adjust: exact !important;
         color-adjust: exact !important;
@@ -24,7 +17,7 @@
       body {
         margin: 0;
 		color: #333;
-        font-family: 'mission_gothiclight';
+        font-family: "Arial";
         font-size: 13px;
       }
 img {
@@ -68,26 +61,26 @@ img {
           * {-webkit-print-color-adjust: exact !important;color-adjust: exact !important;print-color-adjust: exact !important;}
         }
 
-        body.A4 {width: 8.5in;}
+        body.A4 {width: 210mm;}
       }
 
       /*Main Style here*/
-      @page {size: 8.5in 11in;}
+      @page {size: A4;}
 
-.fix{overflow:hidden;}
 table{border-collapse: collapse;}
+
 /*header*/
-.header{overflow: hidden;overflow: hidden;}
+.header{overflow: hidden;}
 .header img{max-width:100%;}
 .address {text-align: center;margin-bottom: 30px;overflow: hidden;}
 
 
 /*Order-Info*/
-.order-info {display: flex;justify-content: space-between;align-items: flex-start;margin-top:20px;margin-bottom:20px;overflow: hidden;}
-.order-left {width: 287px; height: 137px;border: 2px solid #ddd;padding: 8px;} 
+.order-info {margin-top: 20px; margin-bottom: 20px;position: relative;overflow: hidden;}
+.order-left {width: 287px;height: 137px;border: 2px solid #ddd;padding: 8px;float: left;} 
 .order-left p {margin: 0;padding: 0;}
 
-.order-right {width: 404px;text-align: center;}
+.order-right {width: 404px;text-align: center;float: left;margin-left: 46px;}
 .order-right table {width: 100%;border-collapse: collapse;}
 table.ordert-first {margin-bottom: 11px;}
 
@@ -96,13 +89,13 @@ table.ordert-first {margin-bottom: 11px;}
 	    
 
 /*items area*/
-.items-area {overflow: hidden;    border: 1px solid #ddd;height: 425px;}
+.items-area {overflow: hidden;}
 .items-area table {width: 100%;border-collapse: collapse;margin-bottom:10px;}
 .items-area tr td {text-align: center;padding: 5px;line-height: normal;}
 .items-area table tr th, .items-area table tr td {border: 1px solid #ddd;}
 .items-area table tr td {border-top: 0 !important; border-bottom: 0 !important;}
 .items-area table tr th{text-align:center;text-transform:uppercase;padding:8px 0;font-weight:normal;}
-/*.items-area tr:last-child td{border-bottom: 1px solid #ddd !important;}*/
+.items-area tr:last-child td{border-bottom: 1px solid #ddd !important;}
 .items-area tr td:nth-child(2) {text-align: left;}
 
 
@@ -121,21 +114,18 @@ table.ordert-first {margin-bottom: 11px;}
     <section class="sheet padding-10mm">
 	<!-- Header -->
 	
-	<div class="header fix" spellcheck="false" contenteditable="false">
+	<div class="header" spellcheck="false" contenteditable="false">
 	<img src="https://i.postimg.cc/JhTMXJzw/header.png" alt="" />
 	</div>
-	<div class="address fix">170 E. Main Street, Reedsburg, WI 53959  •  608 768 0092  lindsey@lkdesignstudio.com  •  www.lkdesignstudio.com</div>
+	<div class="address">170 E. Main Street, Reedsburg, WI 53959  •  608 768 0092  lindsey@lkdesignstudio.com  •  www.lkdesignstudio.com</div>
 	
 	
 
 
 <!-- Order info -->
-      <div class="order-info fix">
+      <div class="order-info">
         <div class="order-left">
-          {{customer.company_name}}<br/>
-          {{customer.address1}}<br/>
-          {% if customer.address2 is not None %}{{customer.address2}}<br/>{% endif %}
-          {{customer.city}}, {{customer.state}} {{customer.zipcode}}<br/>
+Ray McDaniel Art
         </div>
         <div class="order-right">
           <table class="ordert-first">
@@ -145,9 +135,9 @@ table.ordert-first {margin-bottom: 11px;}
 				<th>  P.O.#</th>
             </tr>
             <tr>
-              <td>{{date|date:"M d, Y"}}</td>
-              <td>{{workorder.workorder}}</td>
-              <td>{{workorder.po_number}}</td>
+              <td>AbeBooks PO #:</td>
+              <td>673624348</td>
+              <td>673624348</td>
             </tr>
           </table>
           <table>
@@ -156,64 +146,72 @@ table.ordert-first {margin-bottom: 11px;}
 				<th>PHONE</th>
             </tr>
             <tr>
-              <td>{{contact.fname}} {{contact.lname}}</td>
-              <td>{{contact.phone1}}</td>
+              <td>AbeBooks PO #:</td>
+              <td>673624348</td>
             </tr>
           </table>
         </div>
       </div>
+<!-- Order info -->
 
 
-
-<!-- main table -->
-      <div class="items-area fix">
+      <div class="items-area">
         <table>
           <thead><tr>
-			  <th>QUANTITY</th>
+			  <th width="100px">QUANTITY</th>
               <th>DESCRIPTION</th>
-              <th>RATE</th>
-              <th>AMOUNT</th>
-              <th>Tax</th>
+              <th width="127px">RATE</th>
+              <th width="127px">AMOUNT</th>
             </tr>
           </thead>
           <tbody>
-            {% for item in items %}
             <tr>
-              <td>{{item.quantity}}</td>
-              <td>{{item.description}}</td>
-              <td>{{item.absolute_price}}</td>
-              <td></td>
-              <td>{% if item.tax_exempt %}--{% else %}T{%endif%}</td>          
+              <td>1</td>
+              <td>36”x24” Heart of Baraboo Banner #1</td>
+              <td>$22.30</td>
+              <td>$22.30</td>
             </tr>
-            {% endfor %}
-            {% autoescape off %}
-                {{ rows }}
-            {% endautoescape %}
-
-  
-              
-
-
+            <tr>
+              <td>1</td>
+              <td>36”x24” Heart of Baraboo Banner #11</td>
+              <td>$22.30</td>
+              <td>$22.30</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>36”x24” Heart of Baraboo Banner #12</td>
+              <td>$22.30</td>
+              <td>$22.30</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>36”x24” Heart of Baraboo Banner #13</td>
+              <td>$22.30</td>
+              <td>$22.30</td>
+            </tr>
 			
           </tbody>
         </table>
+		
+			
       </div>
 
 
-<!-- Total table -->
-<div class="last-table-area fix">
+
+<div class="last-table-area">
+		
 	<table class="last-table">
 		<tbody>
 	      
 		  <tr>
               <td style="width: 65.5%;text-align: justify;font-size: 9pt;padding: 13px 12px;" colspan="2" rowspan="2">Terms: To be paid within 30 business days of invoice date. Please make all checks payable to LK Design Studio. Unpaid balances incur interest at 1.5% per month. If you have any questions, please call (608) 768-0092 or email lindsey@lkdesignstudio.com</td>
               <td width="113" style="font-weight:bold;">SUBTOTAL</td>
-              <td width="113" style="font-weight:bold;">${{subtotal.absolute_price__sum|floatformat:2}}</td>
+              <td width="113" style="font-weight:bold;">$465.10</td>
             </tr>
 			
 			<tr>
-			  {% if credit %}<td width="113" style="font-weight:bold;color:red;">Credit</td>
-              <td width="113" style="font-weight:bold;color:red;">$0.00</td>{% endif %}
+			  <td width="113" style="font-weight:bold;color:red;">Credit</td>
+              <td width="113" style="font-weight:bold;color:red;">$0.00</td>
 			</tr>
 
 
@@ -222,20 +220,26 @@ table.ordert-first {margin-bottom: 11px;}
 			  <div style="width:148px;">We offer vehicle lettering, signs, and large format printing. Inquire today!</div></td>
               <td  rowspan="2"><div style="width:126px;">WeAsk us about Wedding and Portrait Photography!</div></td>
               <td width="113" style="font-weight:bold;">SALES TAX (5.5%)</td>
-              <td width="113" style="font-weight:bold;">${{ tax.tax_amount__sum|floatformat:2 }}</td>
+              <td width="113" style="font-weight:bold;">$25.58</td>
             </tr>
 			
 			<tr>
-			  {% if payment %} <td width="113" style="font-weight:bold;">PAYMENT</td>
-              <td width="113" style="font-weight:bold;">$0</td>{% endif %}
+			  <td width="113" style="font-weight:bold;">PAYMENT</td>
+              <td width="113" style="font-weight:bold;">$0</td>
 			</tr>	
 			
 
 		     <tr>
               <td colspan="2"><span style="font-weight:bold;font-size:18px;font-style:italic;text-align: center;">Thank you for your business!</span></td>
               <td width="110" style="font-size:15px;">BALANCE DUE</td>
-              <td width="110" style="font-size:16pt;font-weight:bold;">${{total.total_with_tax__sum|floatformat:2}}</td>
+              <td width="110" style="font-size:16pt;font-weight:bold;">$490.60</td>
             </tr>	
+
+
+
+
+	
+		
 		</tbody>
 	</table>	
 

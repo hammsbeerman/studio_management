@@ -171,6 +171,7 @@ def workorder_list(request):
         'workorders': workorder,
         'completed': completed,
         'quote': quote,
+
     }
     return render(request, 'workorders/list.html', context)
 

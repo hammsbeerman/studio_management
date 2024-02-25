@@ -14,7 +14,7 @@ from django.db.models import Sum
 from xhtml2pdf import pisa
 from django.views.generic import ListView
 #from django.contrib.staticfiles import finders
-from customers.models import Customer
+from customers.models import Customer, Contact
 from workorders.models import WorkorderItem, Workorder
 from krueger.models import KruegerJobDetail
 
@@ -68,14 +68,38 @@ def export_pdf(request, id):
     items = WorkorderItem.objects.filter(workorder=id)
     workorder = Workorder.objects.get(id=id)
     customer = Customer.objects.get(id=workorder.customer.id)
+    contact = Contact.objects.get(id = workorder.contact)
     #print(customer.company_name)
     date = datetime.date.today()
     subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('absolute_price'))
     tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('tax_amount'))
     total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('total_with_tax'))
+    l = len(items)
+    print(l)
+    n = 40 - l
+    print(n)
+    rows = ''
+    for x in range(n):
+        string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
+        #string = 'hello<br/>'
+        print('test')
+        rows += string
+    print(rows)
+
+    context = {
+        'items':items,
+        'workorder':workorder,
+        'customer':customer,
+        'contact':contact,
+        'date':date,
+        'subtotal':subtotal,
+        'tax':tax, 
+        'total':total,
+        'rows': rows
+    }
 
 
-    html_string=render_to_string('pdf/weasyprint/lk_invoice.html', {'items':items, 'workorder':workorder, 'customer':customer, 'date':date, 'subtotal':subtotal, 'tax':tax, 'total':total})
+    html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
     html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
 
     result = html.write_pdf()

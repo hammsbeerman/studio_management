@@ -33,5 +33,7 @@ List of workorders
             </ul></p>
     </div>
 </div>
-
+{% autoescape off %}
+{{ rows }}
+{% endautoescape %} 
 {% endblock content %}
