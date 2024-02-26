@@ -10,9 +10,11 @@
             <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
           </li>
           
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-            </li>
+          {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>
+          {% else %}
 
             <li class="nav-item">
               <a class="nav-link" href="{% url 'login' %}">Login</a>
@@ -21,7 +23,14 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'register' %}">Register</a>
             </li>
+            {% endif %}
+           
 
+
+
+
+
+            {% if user.is_authenticated %}
           <!-- <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Customers
@@ -32,7 +41,7 @@
               <li><a class="dropdown-item" href="">Add Customer Contact</a></li>
             </ul> 
           </li> -->
-     
+          
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Workorders
@@ -50,10 +59,11 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
               <li><a class="dropdown-item" href="{% url 'pricesheet:template_list' %}">Price Templates</a></li>
+              {% if user.is_authenticated %}
               <li><a class="dropdown-item" href="{% url 'pdf:management' %}">PDF Options</a></li>
           
                 <li><a class="dropdown-item" href="/admin">Admin</a></li>
-          
+              {% endif %}
               <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
             </ul> 
           </li>
@@ -67,6 +77,7 @@
               <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
             </ul> 
           </li>
+          {% if user.is_authenticated %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               PDF Tests
@@ -76,11 +87,15 @@
               <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
             </ul> 
           </li>
+          {% endif %}
+          {% endif %}
         </ul>
+        {% if user.is_authenticated %}
         <form class="d-flex" role="search">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-success" type="submit">Search</button>
         </form>
+        {% endif %}
      
       </div>
     </div>

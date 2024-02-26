@@ -43,7 +43,7 @@ def contacts(request):
 
 @login_required
 def customers(request):
-    customer = Customer.objects.all()
+    customer = Customer.objects.all().order_by('company_name')
     context = {
         'customers': customer
         }
@@ -53,7 +53,7 @@ def customers(request):
 
 @login_required
 def customer_list(request):
-    customer = Customer.objects.all()
+    customer = Customer.objects.all().order_by('company_name')
     context = {
         'customers': customer
         }

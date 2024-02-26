@@ -1,5 +1,6 @@
 #import random
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.template.loader import render_to_string
 #from articles.models import Article
 
@@ -15,5 +16,6 @@ def home_view(request, id=None):
     context = {
         
     }
-    HTML_STRING = render_to_string("home.html", context)
-    return HttpResponse(HTML_STRING)
+    #HTML_STRING = render_to_string("home.html", context)
+    #return HttpResponse(HTML_STRING)
+    return render(request, 'home.html', context)
