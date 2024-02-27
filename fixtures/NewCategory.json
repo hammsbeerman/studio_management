@@ -1,0 +1,21 @@
+[
+{
+    "model": "controls.category",
+    "pk": 13,
+    "fields": {
+        "name": "Parent Item",
+        "description": "Add multiple line items together",
+        "design_type": false,
+        "formname": "ParentItemForm",
+        "modelname": "WorkorderItem",
+        "modal": true,
+        "setprice": false,
+        "material_type": null,
+        "template": false,
+        "customform": true,
+        "pricesheet_type": null,
+        "inventory_category": null,
+        "active": true
+    }
+}
+]
