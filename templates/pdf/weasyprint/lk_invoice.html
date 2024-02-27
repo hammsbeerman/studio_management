@@ -178,13 +178,15 @@ table.ordert-first {margin-bottom: 11px;}
           </thead>
           <tbody>
             {% for item in items %}
-            <tr>
-              <td>{{item.quantity}}</td>
-              <td>{{item.description}}</td>
-              <td>{{item.absolute_price}}</td>
-              <td></td>
-              <td>{% if item.tax_exempt %}--{% else %}T{%endif%}</td>          
-            </tr>
+              {% if item.child == 0 %}
+              <tr>
+                <td>{{item.quantity}}</td>
+                <td>{{item.description}}</td>
+                <td>{{item.absolute_price}}</td>
+                <td></td>
+                <td>{% if item.tax_exempt %}--{% else %}T{%endif%}</td>          
+              </tr>
+              {% endif %}
             {% endfor %}
             {% autoescape off %}
                 {{ rows }}

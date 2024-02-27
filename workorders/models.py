@@ -73,6 +73,10 @@ class WorkorderItem(models.Model):
     tax_exempt = models.BooleanField(default=False)
     tax_amount = models.DecimalField('Tax Amount', max_digits=8, decimal_places=2, blank=True, null=True)
     total_with_tax = models.DecimalField('Total', max_digits=8, decimal_places=2, blank=True, null=True)
+    parent_item = models.PositiveSmallIntegerField('Parent Item', blank=True, null=True)
+    added_to_parent = models.BooleanField(blank=False, null=False, default=False)
+    parent = models.BooleanField(blank=False, null=False, default=False)
+    child = models.BooleanField(blank=False, null=False, default=False)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
 

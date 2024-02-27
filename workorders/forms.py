@@ -78,3 +78,8 @@ class WorkorderNoteForm(forms.ModelForm):
     class Meta:
         model = Workorder
         fields = ['notes']
+
+class ParentItemForm(forms.ModelForm):
+    class Meta:
+        model = WorkorderItem
+        fields = ['description', 'quantity', 'parent_item', 'parent', 'added_to_parent']

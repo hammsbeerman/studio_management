@@ -9,7 +9,7 @@ from django.contrib import messages
 from customers.models import Customer, Contact
 from controls.models import Numbering, Category, SubCategory, SetPriceItem, SetPriceItemPrice
 from .models import Workorder, DesignType, WorkorderItem
-from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm
+from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm, ParentItemForm
 from krueger.forms import KruegerJobDetailForm
 from krueger.models import KruegerJobDetail
 from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
@@ -260,6 +260,14 @@ def add_item(request, parent_id):
             obj.workorder_hr = parent.workorder
             #obj.item_subcategory = subcategory
             obj.save()
+            print('objpk')
+            print(obj.pk)
+            print(cat)
+            if cat=='13':
+                obj = WorkorderItem.objects.get(id=obj.pk)
+                obj.parent_item = obj.pk
+                print(obj.parent_item)
+                obj.save()
             print(obj.pk)
             print(parent.customer)
             print(parent.customer_id)
@@ -273,7 +281,7 @@ def add_item(request, parent_id):
                 #loadform = Category.objects.get(id=category)
                 modelname = globals()[loadform.modelname]
                 formname = globals()[loadform.formname]
-                if formname == DesignItemForm or formname == CustomItemForm:
+                if formname == DesignItemForm or formname == CustomItemForm or formname == ParentItemForm:
                     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
                 #form = formname(request.POST, instance=item)
                 print(modelname)
@@ -308,9 +316,9 @@ def workorder_item_list(request, id=None):
         print(id)
         completed = Workorder.objects.get(id=id)
         obj = WorkorderItem.objects.filter(workorder_id=id)
-        subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('absolute_price'))
-        tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('tax_amount'))
-        total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('total_with_tax'))
+        subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
+        tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
+        total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
         #override_total = WorkorderItem.objects.filter(workorder_id=id).exclude(override_price__isnull=True).aggregate(Sum('override_price'))
         print(total)
     except:
@@ -793,6 +801,75 @@ def edit_set_price_item(request, pk, cat):
     print(pk)
     return render(request, 'workorders/modals/set_price_form.html', context)
 
+
+@login_required
+def edit_parent_item(request, pk, cat, workorder):
+    wo = workorder
+    pass
+    print('pk')
+    print(pk)
+    item = WorkorderItem.objects.filter(workorder = wo, parent_item__isnull=True).exclude(item_category=13) | WorkorderItem.objects.filter(parent_item = pk).exclude(item_category=13)
+
+    if request.method == "POST":
+        formerchildren = WorkorderItem.objects.filter(workorder = wo, parent_item = pk)
+        formerchildren.update(child=0)
+        formerchildren.update(parent_item=None)
+        #item.update(child=0)
+        childs = request.POST.getlist('child')
+        qty = request.POST.get('quantity')
+        desc = request.POST.get('description')
+        print(childs)
+        ap = 0
+        ta = 0
+        twt = 0
+        for c in childs:
+            x = WorkorderItem.objects.get(pk=c)
+            print('pk')
+            print(pk)
+            x.child = 1
+            x.parent_item = pk
+            x.save()
+            try:
+                ap = ap + x.absolute_price
+            except:
+                pass
+            try:
+                ta = ta + x.tax_amount
+            except:
+                pass
+            try:
+                twt = twt + x.total_with_tax
+            except:
+                pass
+            print(twt)
+        print(twt)
+        parent = WorkorderItem.objects.get(pk=pk)
+        if qty:
+            parent.quantity = qty
+        parent.description = desc
+        parent.absolute_price = ap
+        parent.tax_amount = ta
+        parent.total_with_tax = twt
+        parent.parent_item = pk
+        parent.parent = 1
+        parent.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    formitem = get_object_or_404(WorkorderItem, pk=pk)
+    form = ParentItemForm(instance=formitem)
+    context = {
+        'pk':pk,
+        'form': form,
+        'item': item,
+        # 'obj': obj_item,
+        # 'selected':selected,
+        # 'cat': category,
+        # 'price_ea': price_ea,
+        # 'setprice_category':setprice_category,
+        #'setprice_item': setprice_item,
+        #'setprice_selected':setprice_selected,
+    }
+    return render(request, 'workorders/modals/parent_item_form.html', context)
+
         
 
 
@@ -867,6 +944,8 @@ def remove_workorder_item(request, pk):
     if item.setprice_category:
         subitem = get_object_or_404(SetPrice, workorder_item=pk)
         subitem.delete()
+    groupitem = WorkorderItem.objects.filter(parent_item=pk)
+    groupitem.update(parent_item=None, child=0)
     item.delete()
     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
 
@@ -889,17 +968,27 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail.last_item_order = obj.workorder_hr
             objdetail.last_item_price = objdetail.price_total
             objdetail.save()
-        except:
-            pass
+        except Exception as e:
+            print("The error is:", e)
         try:
             objdetail = OrderOut.objects.get(workorder_item=pk)
             objdetail.pk = None
             objdetail.workorder_item = obj.pk
             objdetail.last_item_order = obj.workorder_hr
-            objdetail.last_item_price = objdetail.price_total
+            objdetail.last_item_price = objdetail.total_price
             objdetail.save()
-        except:
-            return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+        except Exception as e:
+            print("The error is:", e)
+        try:
+            objdetail = SetPrice.objects.get(workorder_item=pk)
+            objdetail.pk = None
+            objdetail.workorder_item = obj.pk
+            objdetail.last_item_order = obj.workorder_hr
+            objdetail.last_item_price = objdetail.total_price
+            objdetail.save()
+        except Exception as e:
+            print("The error is:", e)
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     #Copy line item to different workorder
     #This section is called from copy item modal
     if request.method == "POST":
@@ -932,17 +1021,29 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail.last_item_order = last_workorder
             objdetail.last_item_price = objdetail.price_total
             objdetail.save()
-        except:
-            pass
+        except Exception as e:
+            print("The error is:", e)
         try:
             objdetail = OrderOut.objects.get(workorder_item=pk)
+            print('hello')
             objdetail.pk = None
             objdetail.workorder_item = obj.pk
             objdetail.last_item_order = obj.workorder_hr
-            objdetail.last_item_price = objdetail.price_total
+            objdetail.last_item_price = objdetail.total_price
             objdetail.save()
-        except:
-            return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+        except Exception as e:
+            print("The error is:", e)
+        try:
+            objdetail = SetPrice.objects.get(workorder_item=pk)
+            objdetail.pk = None
+            print(objdetail.description)
+            objdetail.workorder_item = obj.pk
+            objdetail.last_item_order = obj.workorder_hr
+            objdetail.last_item_price = objdetail.total_price
+            objdetail.save()
+        except Exception as e:
+            print("The error is:", e)
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     obj = WorkorderItem.objects.get(pk=pk)
     workorders = Workorder.objects.all().exclude(workorder=1111).exclude(billed=1).order_by("-workorder")
     context = {
@@ -979,6 +1080,8 @@ def copy_workorder(request, id=None):
     #print(new_id)
     workorder_item = WorkorderItem.objects.filter(workorder_id=id)
     for item in workorder_item:
+        #print('workorder item id')
+        #print(item.id)
         oldid = item.id
         workorder = item.workorder_hr
         price = item.total_price
@@ -989,7 +1092,7 @@ def copy_workorder(request, id=None):
         item.pk=None
         item.workorder_hr=newworkorder
         item.last_item_order=workorder
-        item.last_item_price=price
+        item.last_item_price=price            
         item.save()
         #Copy kruegerjobdetail for each item
         print(item.pk)
@@ -1004,8 +1107,50 @@ def copy_workorder(request, id=None):
             objdetail.last_item_order = lastworkorder
             objdetail.last_item_price = objdetail.price_total
             objdetail.save()
-        except:
-            pass
+        except Exception as e:
+            print("The error is:", e)
+        try:
+            objdetail = OrderOut.objects.get(workorder_item=oldid)
+            print('hello')
+            objdetail.workorder_item = item.pk
+            objdetail.workorder_id = new_workorder_id
+            objdetail.pk = None
+            objdetail.hr_workorder = newworkorder
+            objdetail.last_item_order = lastworkorder
+            objdetail.last_item_price = objdetail.total_price
+            objdetail.save()
+        except Exception as e:
+            print("The error is:", e)
+        try:
+            objdetail = SetPrice.objects.get(workorder_item=oldid)
+            objdetail.workorder_item = item.pk
+            objdetail.workorder_id = new_workorder_id
+            objdetail.pk = None
+            print(objdetail.description)
+            objdetail.hr_workorder = newworkorder
+            objdetail.last_item_order = lastworkorder
+            objdetail.last_item_price = objdetail.total_price
+            objdetail.save()
+        except Exception as e:
+            print("The error is:", e)
+    print(newworkorder)
+    workorder_parent = WorkorderItem.objects.filter(workorder_hr=newworkorder, parent=1)
+    for item in workorder_parent:
+        parent = item.id
+        oldparent = item.parent_item
+        print(item.created)
+        print(item.id)
+        print('oldparent')
+        print(item.parent_item)
+        print(oldparent)
+        print('parent')
+        print(parent)
+        children = WorkorderItem.objects.filter(workorder_hr=newworkorder, parent_item=oldparent)
+        for c in children:
+            c.parent_item = item.id
+            print(c.parent_item)
+            print(item.id)
+            c.save()
     return redirect('workorders:overview', id=newworkorder)
 
 @login_required
@@ -1167,6 +1312,35 @@ def quote_to_workorder(request):
 def complete_status(request):
     workorder = request.GET.get('workorder')
     print(workorder)
+    parent = WorkorderItem.objects.filter(workorder=workorder, parent=1)
+    parent.update(absolute_price = 0, tax_amount = 0, total_with_tax = 0)
+    for p in parent:
+        ap = 0
+        ta = 0
+        twt = 0
+        childs = WorkorderItem.objects.filter(parent_item=p.id)
+        for c in childs:
+            x = WorkorderItem.objects.get(pk=c.id)
+            if x.billable:
+                try:
+                    ap = ap + x.absolute_price
+                except:
+                    pass
+                try:
+                    ta = ta + x.tax_amount
+                except:
+                    pass
+                try:
+                    twt = twt + x.total_with_tax
+                except:
+                    pass
+                print(twt)
+        print(twt)
+        parent = WorkorderItem.objects.get(pk=p.id)
+        parent.absolute_price = ap
+        parent.tax_amount = ta
+        parent.total_with_tax = twt
+        parent.save()
     item = Workorder.objects.get(id = workorder)
     if item.completed == 0:
         item.completed = 1
@@ -1193,3 +1367,71 @@ def billable_status(request, id):
         'billable':billable,
     }
     return render(request, 'workorders/partials/billable.html', context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# @login_required
+# def edit_parent_item(request, pk, cat, workorder):
+#     wo = workorder
+#     pass
+#     print('pk')
+#     print(pk)
+#     item = WorkorderItem.objects.filter(workorder = wo)
+
+#     if request.method == "POST":
+#         item.update(child=0)
+#         childs = request.POST.getlist('child')
+#         print(childs)
+#         ap = 0
+#         ta = 0
+#         twt = 0
+#         for c in childs:
+#             x = WorkorderItem.objects.get(pk=c)
+#             x.child = 1
+#             x.save()
+#             try:
+#                 ap = ap + x.absolute_price
+#             except:
+#                 pass
+#             try:
+#                 ta = ta + x.tax_amount
+#             except:
+#                 pass
+#             try:
+#                 twt = twt + x.total_with_tax
+#             except:
+#                 pass
+#             print(twt)
+#         print(twt)
+#         parent = WorkorderItem.objects.get(pk=pk)
+#         parent.absolute_price = ap
+#         parent.tax_amount = ta
+#         parent.total_with_tax = twt
+#         parent.parent = 1
+#         parent.save()
+#         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+        
+#     form = ParentItemForm
+#     context = {
+#         'pk':pk,
+#         'form': form,
+#         'item': item,
+#         # 'obj': obj_item,
+#         # 'selected':selected,
+#         # 'cat': category,
+#         # 'price_ea': price_ea,
+#         # 'setprice_category':setprice_category,
+#         #'setprice_item': setprice_item,
+#         #'setprice_selected':setprice_selected,
+#     }
+#     return render(request, 'workorders/modals/parent_item_form.html', context)

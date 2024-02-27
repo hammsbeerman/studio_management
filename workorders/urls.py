@@ -29,6 +29,7 @@ from .views import (
     readnotes,
     complete_status,
     billable_status,
+    edit_parent_item,
     # removed,
 )
 
@@ -42,6 +43,7 @@ urlpatterns = [
     path('custom/<int:pk>/edit/<int:cat>', edit_custom_item, name='edit_custom_item'),
     path('orderout/<int:pk>/edit/<int:cat>', edit_orderout_item, name='edit_orderout_item'),
     path('setprice/<int:pk>/edit/<int:cat>', edit_set_price_item, name='edit_set_price_item'),
+    path('parent/<int:pk>/workorder/<int:workorder>/edit/<int:cat>', edit_parent_item, name='edit_parent_item'),
     #path('items/<int:pk>/edit/<int:cat>', edit_print_item, name='edit_print_item'),
     path('items/<int:pk>/remove/', remove_workorder_item, name='remove_item'),
     path('items/copy_workorder/<int:id>', copy_workorder, name='copy_workorder'),

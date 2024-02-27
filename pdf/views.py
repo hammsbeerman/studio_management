@@ -68,12 +68,15 @@ def export_pdf(request, id):
     items = WorkorderItem.objects.filter(workorder=id)
     workorder = Workorder.objects.get(id=id)
     customer = Customer.objects.get(id=workorder.customer.id)
-    contact = Contact.objects.get(id = workorder.contact)
+    try:
+        contact = Contact.objects.get(id = workorder.contact)
+    except:
+        contact = ''
     #print(customer.company_name)
     date = datetime.date.today()
-    subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('absolute_price'))
-    tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('tax_amount'))
-    total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).aggregate(Sum('total_with_tax'))
+    subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
+    tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
+    total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
     l = len(items)
     print(l)
     n = 40 - l
@@ -82,9 +85,9 @@ def export_pdf(request, id):
     for x in range(n):
         string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
         #string = 'hello<br/>'
-        print('test')
+        #print('test')
         rows += string
-    print(rows)
+    #print(rows)
 
     context = {
         'items':items,
