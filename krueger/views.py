@@ -108,7 +108,10 @@ def paperprice(request):
 def wideformat_paperprice(request):
     paper = request.GET.get('paper_stock')
     #print(paper)
-    paperprices = Inventory.objects.filter(pk=paper)
+    try:
+        paperprices = Inventory.objects.filter(pk=paper)
+    except:
+        paperprices = ''
     context = {'paperprices': paperprices}
     return render(request, 'krueger/partials/wideformat_paperstockprice.html', context)
 
@@ -116,7 +119,10 @@ def wideformat_paperprice(request):
 def wideformat_maskprice(request):
     paper = request.GET.get('mask')
     #print(paper)
-    paperprices = Inventory.objects.filter(pk=paper)
+    try:
+        paperprices = Inventory.objects.filter(pk=paper)
+    except:
+        paperprices = ''
     context = {'paperprices': paperprices}
     return render(request, 'krueger/partials/wideformat_maskprice.html', context)
 
@@ -124,7 +130,10 @@ def wideformat_maskprice(request):
 def wideformat_laminateprice(request):
     paper = request.GET.get('laminate')
     #print(paper)
-    paperprices = Inventory.objects.filter(pk=paper)
+    try:
+        paperprices = Inventory.objects.filter(pk=paper)
+    except:
+        paperprices = ''
     context = {'paperprices': paperprices}
     return render(request, 'krueger/partials/wideformat_laminateprice.html', context)
 
@@ -132,7 +141,10 @@ def wideformat_laminateprice(request):
 def wideformat_substrateprice(request):
     paper = request.GET.get('substrate')
     #print(paper)
-    paperprices = Inventory.objects.filter(pk=paper)
+    try:
+        paperprices = Inventory.objects.filter(pk=paper)
+    except:
+        paperprices = ''
     context = {'paperprices': paperprices}
     return render(request, 'krueger/partials/wideformat_substrateprice.html', context)
 

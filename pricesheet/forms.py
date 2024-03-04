@@ -129,7 +129,7 @@ class WideFormatForm(forms.ModelForm):
     class Meta:
         model = WideFormatPriceSheet
         fields = [
-            'internal_company', 'description', 'quantity', 'media_width', 
+            'internal_company', 'description', 'quantity', 'media_width', 'material',
             'print_width', 'print_height', 'usable_width', 'print_w_margin', 'print_h_margin', 'prints_per_row', 'number_of_rows', 'media_length', 'kiss_cut_time', 'flex_cut_time', 
             'weeding_time', 'masking_time', 'machine_rate', 'labor_rate', 'total_sq_ft', 'inkcost_sq_ft', 'price_per_sqft', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'material_cost', 'material_markup_percentage', 'material_markup', 'print_cost_sqft', 

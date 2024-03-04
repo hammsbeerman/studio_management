@@ -68,7 +68,7 @@ Form for editing wide format item details
                             <div class='col'>
                                 <div id="paperprices">
                                     <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
-                                    <input label="Price / M" type="text" class="no-outline" id="id_price_per_m" name="price_per_m" value="{{ formdata.price_per_m }}"><br>
+                                    <input label="Price per" type="text" class="no-outline" id="id_price_per" name="price_per" value="{{ formdata.price_per_m }}"><br>
                                     {% include 'krueger/partials/wideformat_paperstockprice.html' %}
                                 </div>
                             </div>
@@ -116,6 +116,22 @@ Form for editing wide format item details
                         <div class="row">
                             <div class='col'>
                                 {{ form.media_length|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.total_sq_ft|as_crispy_field }}
+                            </div>
+
+                            <div class='col'>
+                                {{ form.machine_rate|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.labor_rate|as_crispy_field }}
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.masking_time|as_crispy_field }}
                             </div>
                             <div class='col'>
                                 {{ form.kiss_cut_time|as_crispy_field }}
@@ -213,38 +229,31 @@ Form for editing wide format item details
                             </div>
                         </div>
                         <hr>
-                        <div class="row">
-                            <div class='col'>
-                                {{ form.masking_time|as_crispy_field }}
-                            </div>
-                            <div class='col'>
-                                {{ form.machine_rate|as_crispy_field }}
-                            </div>
-                            <div class='col'>
-                                {{ form.labor_rate|as_crispy_field }}
-                            </div>
-                            <div class='col'>
-                                {{ form.total_sq_ft|as_crispy_field }}
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class='col'>
-                                {{ form.inkcost_sq_ft|as_crispy_field }}
-                            </div>
-                            <div class='col'>
-                                {{ form.price_per_sqft|as_crispy_field }}
-                            </div>
+                        <input type="hidden" id="id_inkcost_sq_ft" name="inkcost_sq_ft" value=".11">
+                        <div class="row">                            
                             <div class='col'>
                                 {{ form.step_workorder_price|as_crispy_field }}
                             </div>
                             <div class='col'>
                                 {{ form.step_reclaim_artwork_price|as_crispy_field }}
                             </div>
-                        </div>
-                        <div class="row">
                             <div class='col'>
                                 {{ form.step_send_to_press_price|as_crispy_field }}
                             </div>
+                        </div>
+                        <div class='row'>
+                            <div class='col'>
+                                {{ form.step_count_package_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_delivery_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_packing_slip_price|as_crispy_field }}
+                            </div>  
+                        </div>
+                        <div class="row">
+                            
                             <div class='col'>
                                 {{ form.material_cost|as_crispy_field }}
                             </div>
@@ -255,15 +264,7 @@ Form for editing wide format item details
                                 {{ form.material_markup|as_crispy_field }}
                             </div>
                         </div>
-                        <div class="row">
-                            <div class='col'>
-                                {{ form.print_cost_sqft|as_crispy_field }}
-                            </div>
-                            <div class='col'>
-                                {{ form.print_cost|as_crispy_field }}
-                            </div>
-                            
-                        </div>
+                        
                 
                         
                         <hr>
@@ -309,23 +310,7 @@ Form for editing wide format item details
                             </div>
                         </div>
                         <hr>
-                        <div class="row">
-                            <div class='col'>
-                                {% if form.packaging %}{{ form.packaging|as_crispy_field }}{% endif %}
-                             </div>
-                            <div class='col'>
-                               {% if form.step_id_count_price %}{{ form.step_id_count_price|as_crispy_field }}{% endif %}
-                            </div>
-                            <div class='col'>
-                                {{ form.step_count_package_price|as_crispy_field }}
-                            </div>
-                            <div class='col'>
-                                {{ form.step_delivery_price|as_crispy_field }}
-                            </div>
-                            <div class='col'>
-                                {{ form.step_packing_slip_price|as_crispy_field }}
-                            </div>  
-                        </div>
+  
                         <div class="row">
                             <div class='col'>
                                 {{ form.price_total|as_crispy_field }}
@@ -380,7 +365,7 @@ Form for editing wide format item details
         <div class="recent">
             <span class="">Pricing</span>
             <br><br>
-            {% include 'krueger/partials/pricing.html' %}
+            {% include 'krueger/partials/wideformat_pricing.html' %}
         </div>
     </div>
     <div class="col-sm-2">

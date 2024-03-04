@@ -40,11 +40,11 @@ This form should only be used for setting up and editing wideformat for lineitem
                                     Internal Company<span class="asteriskField">*</span></label>
                                 <select name="internal_company" class="select form-select" required="" id="id_internal_company">
                                     {% if form.instance.internal_company %}
-                                        <option value="{{ internal_company }}" selected="{{ internal_company }}">{{ internal_company }}</option>
+                                        <option value="{{ form.instance.internal_company }}" selected="{{ form.instance.internal_company }}">{{ form.instance.internal_company }}</option>
                                     {% else %}
                                         <option value="LK Design" selected="">LK Design</option>
                                     {% endif %}
-                                        <option value="LK Design"">LK Design</option>
+                                        <option value="LK Design">LK Design</option>
                                         
                                         <option value="Krueger Printing">Krueger Printing</option>
                                 </select>
@@ -54,12 +54,12 @@ This form should only be used for setting up and editing wideformat for lineitem
                         <div class="row">
                             <div class='col'>
                                 <select id="paper_stock"
-                                    name="paper_stock" 
+                                    name="material" 
                                     hx-get="{% url 'krueger:paperprice' %}"
                                     hx-trigger="change"
                                     hx-target="#paperprices">
 
-                                    {% if form.instance.paper_stock_id %}
+                                    {% if form.instance.material_id %}
                                         <option value="{{ selected_paper.id }}" selected="">{{ selected_paper.description }}</option>
                                     {% else %}
                                         <option value='' selected=''>Select Paper stock</option>
@@ -89,6 +89,7 @@ This form should only be used for setting up and editing wideformat for lineitem
                             <div class='col'>
                                 {{ form.quantity|as_crispy_field }}
                             </div>
+                            
                         </div>
                         <div class="row">
                             <div class='col'>
@@ -143,6 +144,7 @@ This form should only be used for setting up and editing wideformat for lineitem
 
                                     {% if form.instance.mask_id %}
                                         <option value="{{ mask.id }}" selected="">{{ mask.name }}</option>
+                                        <option value=''>Select Mask</option>
                                     {% else %}
                                         <option selected>Select Mask</option>
                                     {% endif %}
@@ -171,6 +173,7 @@ This form should only be used for setting up and editing wideformat for lineitem
 
                                     {% if form.instance.laminate_id %}
                                         <option value="{{ laminate.id }}" selected="">{{ laminate.name }}</option>
+                                        <option value=''>Select Laminate</option>
                                     {% else %}
                                         <option selected>Select Laminate</option>
                                     {% endif %}
@@ -199,6 +202,7 @@ This form should only be used for setting up and editing wideformat for lineitem
 
                                     {% if form.instance.substrate_id %}
                                         <option value="{{ substrate.id }}" selected="">{{ substrate.name }}</option>
+                                        <option value=''>Select Substrate</option>
                                     {% else %}
                                         <option selected>Select Substrate</option>
                                     {% endif %}
@@ -346,7 +350,7 @@ This form should only be used for setting up and editing wideformat for lineitem
                         </div>
                         
                         <div class="row">
-                            {{formdata.category_id}}
+
                                 <div class='col-auto me-auto'>
                                     <button type="submit" class="btn btn-primary">Save</button>
                                 </div>

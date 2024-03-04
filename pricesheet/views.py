@@ -629,22 +629,46 @@ def wideformat_template(request, id=None):
         print('ed')
         fixed = ''
     selected_paper = form.instance.material_id
+    mask = form.instance.mask_id
+    laminate = form.instance.laminate_id
+    substrate = form.instance.substrate_id
+    print('selected paper')
+    print(selected_paper)
     try:
         selected_paper = Inventory.objects.get(id=selected_paper)
         print(selected_paper.description)
         print(selected_paper)
     except: 
         selected_paper = ''
+    try: 
+        mask = Inventory.objects.get(id=mask)
+    except:
+        mask = ''
+    try: 
+        laminate = Inventory.objects.get(id=laminate)
+    except:
+        laminate = ''
+    try: 
+        substrate = Inventory.objects.get(id=substrate)
+    except:
+        substrate = ''
     papers = Inventory.objects.all()
     masks = Inventory.objects.filter(type_mask = 1).order_by('name')
     laminates = Inventory.objects.filter(type_laminate = 1).order_by('name')
     substrates = Inventory.objects.filter(type_substrate = 1).order_by('name')
     formdata = WideFormatPriceSheet.objects.get(id=id)
     if request.method =="POST":
+        mask = request.POST.get('mask')
+        laminate = request.POST.get('laminate')
+        substrate = request.POST.get('substrate')
         print('posted')
         form = WideFormatForm(request.POST, instance=item)
         if form.is_valid():
-            form.save()
+            obj = form.save(commit=False)
+            obj.mask_id = mask
+            obj.laminate_id = laminate
+            obj.substrate_id = substrate
+            obj.save()
         else:
             print(form.errors)
         print(id)
@@ -662,9 +686,12 @@ def wideformat_template(request, id=None):
         'form': form,
         'papers': papers,
         'selected_paper': selected_paper,
+        'mask':mask,
         'masks':masks,
         'laminates':laminates,
+        'laminate':laminate,
         'substrates':substrates,
+        'substrate':substrate,
         'formdata': formdata,
     }
     return render(request, "pricesheet/templates/wideformat_template_form.html", context)
