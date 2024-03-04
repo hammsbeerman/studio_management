@@ -85,7 +85,7 @@ $(document).ready(function(){
       $('#misc4-row').slideToggle(200)
       });
 
-      $('#id_container').on("click change",function(){
+      $('#id_container').on("click change load",function(){
 
         var workorder_price = $('#id_step_workorder_price').val();
         var reclaim_artwork_price = $('#id_step_reclaim_artwork_price').val();
@@ -188,63 +188,76 @@ $(document).ready(function(){
 
         //$('#id_labor_rate').val(print_height);
 
-        if ($("#paper_stock").length){
+        if ($("#id_price_per").length){
           var price = $('#id_price_per').val();
           var material_measurement = $('#material_measurement').val();
+          if (material_measurement === 'SqFt') {
+            var material_cost = price * total_sq_ft
+            //var material_cost = 1
+          } else if (material_measurement === 'Yd'){
+            var material_cost = media_length / 36 * price
+            //var material_cost = 2
+          }
         } else {
-          //var material_cost = 0;
+          var material_cost = 0;
+        }
+        $('#id_step_delivery_price').val(material_cost);
+
+        if ($("#id_mask_price_per").length){
+          var mask_price = $('#id_mask_price_per').val();
+          var mask_measurement = $('#mask_measurement').val();
+          if (mask_measurement === 'SqFt') {
+            var mask_cost = mask_price * total_sq_ft
+            //var material_cost = 1
+          } else if (mask_measurement === 'Yd'){
+            var mask_cost = media_length / 36 * mask_price
+            //var material_cost = 2
+          }
+        } else {
+          var mask_cost = 0;
         }
 
-        if (material_measurement === 'SqFt') {
-          var material_cost = price * total_sq_ft
-          //var material_cost = 1
-        } else if (material_measurement === 'Yd'){
-          var material_cost = media_length / 36 * price
-          //var material_cost = 2
+        if ($("#id_laminate_price_per").length){
+          var laminate_price = $('#id_laminate_price_per').val();
+          var laminate_measurement = $('#laminate_measurement').val();
+          if (laminate_measurement === 'SqFt') {
+            var laminate_cost = laminate_price * total_sq_ft
+            //var material_cost = 1
+          } else if (laminate_measurement === 'Yd'){
+            var laminate_cost = media_length / 36 * laminate_price
+            //var material_cost = 2
+          }
+        } else {
+          var laminate_cost = 0;
         }
 
-        var mask_price = $('#id_mask_price_per').val();
-        var mask_measurement = $('#mask_measurement').val();
-        if (mask_measurement === 'SqFt') {
-          var mask_cost = mask_price * total_sq_ft
-          //var material_cost = 1
-        } else if (mask_measurement === 'Yd'){
-          var mask_cost = media_length / 36 * mask_price
-          //var material_cost = 2
+        if ($("#id_substrate_price_per").length){
+          var substrate_price = $('#id_substrate_price_per').val();
+          var substrate_measurement = $('#substrate_measurement').val();
+          if (substrate_measurement === 'SqFt') {
+            var substrate_cost = substrate_price * total_sq_ft
+            //var material_cost = 1
+          } else if (substrate_measurement === 'Yd'){
+            var substrate_cost = media_length / 36 * substrate_price
+            //var material_cost = 2
+          } else if (substrate_measurement === 'Ea'){
+            substrate_price = Number(substrate_price);
+            var substrate_cost = substrate_price * quantity
+            substrate_cost = Number(substrate_cost);
+          }
+        } else {
+          var substrate_cost = 0;
         }
 
-        var laminate_price = $('#id_laminate_price_per').val();
-        var laminate_measurement = $('#laminate_measurement').val();
-        if (laminate_measurement === 'SqFt') {
-          var laminate_cost = laminate_price * total_sq_ft
-          //var material_cost = 1
-        } else if (laminate_measurement === 'Yd'){
-          var laminate_cost = media_length / 36 * laminate_price
-          //var material_cost = 2
-        }
-
-        var substrate_price = $('#id_substrate_price_per').val();
-        var substrate_measurement = $('#substrate_measurement').val();
-        if (substrate_measurement === 'SqFt') {
-          var substrate_cost = substrate_price * total_sq_ft
-          //var material_cost = 1
-        } else if (substrate_measurement === 'Yd'){
-          var substrate_cost = media_length / 36 * substrate_price
-          //var material_cost = 2
-        } else if (substrate_measurement === 'Ea'){
-          substrate_price = Number(substrate_price);
-          var substrate_cost = substrate_price * quantity
-          substrate_cost = Number(substrate_cost);
-        }
-
+        
         var ink_price = $('#id_inkcost_sq_ft').val();
         var ink_cost = ink_price * total_sq_ft
 
         
-        /*if ($('#paper_stock').length){
+        if ($('#id_price_per').length){
         } else {
           material_cost = 0
-        }*/
+        }
         if ($('#id_mask_price_per').length){
         } else {
           mask_cost = 0
@@ -263,6 +276,12 @@ $(document).ready(function(){
         }
         var total_material_cost = material_cost + mask_cost + laminate_cost + substrate_cost + ink_cost
 
+        total_material_cost = Number(total_material_cost)
+
+        total_material_cost = total_material_cost.toFixed(2);
+
+        total_material_cost = Number(total_material_cost)
+
         $('#id_material_cost').val(total_material_cost);
 
         var material_markup_percentage = $('#id_material_markup_percentage').val();
@@ -270,12 +289,30 @@ $(document).ready(function(){
         var percent = material_markup_percentage / 100
         //var markup = price_per_m * percent
         var markup = total_material_cost * percent
+        markup = Number(markup);
+
+        markup = markup.toFixed(2);
 
         $('#id_material_markup').val(markup);
 
+        admin_cost = Number(admin_cost);
+        misc = Number(misc);
+        machine_cost = Number(machine_cost);
+        labor_cost = Number(labor_cost);
+        markup = Number(markup);
+        //var total_price = admin_cost + misc + machine_cost + labor_cost + total_material_cost + markup
+
         var total_price = admin_cost + misc + machine_cost + labor_cost + total_material_cost + markup
 
+        total_price = total_price.toFixed(2);
+
         $('#id_price_total').val(total_price);
+
+        var price_ea = total_price / quantity
+
+        price_ea = price_ea.toFixed(2)
+
+        $('#price_ea').val(price_ea);
 
         
         
@@ -311,9 +348,6 @@ $(document).ready(function(){
         document.getElementById("ink_cost").innerHTML = ink_cost;
         document.getElementById("total_material_cost").innerHTML = total_material_cost;
 
-        
-
-        
 
     });
 

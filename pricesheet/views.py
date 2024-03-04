@@ -427,11 +427,20 @@ def edit_wideformat_item(request, pk, cat,):
         workorder = request.POST.get('workorder')
         price_ea = request.POST.get('price_ea')
         internal_company = request.POST.get('internal_company')
+        material = request.POST.get('paper_stock')
+        mask = request.POST.get('mask')
+        laminate = request.POST.get('laminate')
+        substrate = request.POST.get('substrate')
         edited = 1
         if form.is_valid():
+            #print(request.POST)
             obj = form.save(commit=False)
             obj.workorder.id = workorder
             obj.edited = edited
+            obj.material_id = material
+            obj.mask_id = mask
+            obj.laminate_id = laminate
+            obj.substrate_id = substrate
             obj.save()
             #update workorderitem table
             lineitem = WorkorderItem.objects.get(id=pk)
@@ -555,6 +564,7 @@ def edit_wideformat_item(request, pk, cat,):
         # if cat == 10:
         #     form = NCRForm(instance=item)
         #If paper is selected, load that
+        print(formname)
         selected_paper = form.instance.material_id
         print(selected_paper)
         try:

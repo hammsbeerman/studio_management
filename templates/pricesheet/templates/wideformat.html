@@ -53,7 +53,7 @@ Form for editing wide format item details
                                     hx-trigger="change"
                                     hx-target="#paperprices">
 
-                                    {% if form.instance.paper_stock_id %}
+                                    {% if form.instance.material_id %}
                                         <option value="{{ selected_paper.id }}" selected="">{{ selected_paper.name }}</option>
                                     {% else %}
                                         <option selected>Select Paper stock</option>
@@ -67,8 +67,12 @@ Form for editing wide format item details
                             </div>
                             <div class='col'>
                                 <div id="paperprices">
-                                    <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
-                                    <input label="Price per" type="text" class="no-outline" id="id_price_per" name="price_per" value="{{ formdata.price_per_m }}"><br>
+                                    
+                                    
+                                        <input label="Price Per" type="text" class="no-outline" id="id_price_per" name="price_per" value={{ selected_paper.unit_cost }}> per {{selected_paper.measurement}}<br>
+                                        <input type="hidden" id="material_measurement" name="material_measurement" value="{{paperprice.measurement}}">
+                                        {% if selected_paper.width %} Width <input label="Width" type="text" class="no-outline" id="id_width" name="width" value={{ selected_paper.width }}>{% endif %}
+                                        
                                     {% include 'krueger/partials/wideformat_paperstockprice.html' %}
                                 </div>
                             </div>
@@ -154,10 +158,11 @@ Form for editing wide format item details
 
                                     {% if form.instance.mask_id %}
                                         <option value="{{ mask.id }}" selected="">{{ mask.name }}</option>
+                                        <option value="">Select Mask</option>
                                     {% else %}
                                         <option selected>Select Mask</option>
                                     {% endif %}
-                                    
+                                    asdvaa
                                     
                                     {% for mask in masks %}
                                         <option value="{{mask.pk}}">{{ mask.name }}</option>
@@ -166,8 +171,8 @@ Form for editing wide format item details
                             </div>
                             <div class='col'>
                                 <div id="maskprice">
-                                    <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
-                                    <input label="Price / M" type="text" class="no-outline" id="id_mask_price_per_sq" name="mask_price_per_sq" value="{{ formdata.price_per_m }}"><br>
+                                    <input label="Mask Price" type="text" class="no-outline" id="id_mask_price_per" name="mask_price_per" value={{ mask.unit_cost }}> per {{mask.measurement}}<br>
+                                    <input type="hidden" id="mask_measurement" name="mask_measurement" value="{{mask.measurement}}">
                                     {% include 'krueger/partials/wideformat_maskprice.html' %}
                                 </div>
                             </div>
@@ -182,6 +187,7 @@ Form for editing wide format item details
 
                                     {% if form.instance.laminate_id %}
                                         <option value="{{ laminate.id }}" selected="">{{ laminate.name }}</option>
+                                        <option value="">Select Laminate</option>
                                     {% else %}
                                         <option selected>Select Laminate</option>
                                     {% endif %}
@@ -210,6 +216,7 @@ Form for editing wide format item details
 
                                     {% if form.instance.substrate_id %}
                                         <option value="{{ substrate.id }}" selected="">{{ substrate.name }}</option>
+                                        <option value="">Select Substrate</option>
                                     {% else %}
                                         <option selected>Select Substrate</option>
                                     {% endif %}
