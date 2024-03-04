@@ -46,15 +46,16 @@ class Category(models.Model):
     material_type = models.CharField('Material Type', max_length=100, blank=True, null=True)
     template = models.BooleanField('Template', blank=True, null=True, default=False)
     customform = models.BooleanField('Uses Custom Form', blank=True, null=True, default=False)
-    pricesheet_type = models.ForeignKey(FixedCost, blank=True, null=True, on_delete=models.CASCADE)
+    pricesheet_type = models.ForeignKey(FixedCost, blank=True, null=True, on_delete=models.SET_NULL)
     inventory_category = models.ForeignKey(InventoryCategory, blank=True, null=True, on_delete=models.DO_NOTHING)
+    wideformat = models.BooleanField('Wide Format', blank=False, null=True, default=False)
     active = models.BooleanField('Active', blank=True, null=True, default=True)
 
     def __str__(self):
         return self.name
     
 class SubCategory(models.Model):
-    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE, related_name="Category")
+    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.SET_NULL, related_name="Category")
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     template = models.BooleanField('Template', blank=True, null=True, default=False)
@@ -66,7 +67,7 @@ class SubCategory(models.Model):
         return self.name
     
 class SetPriceItem(models.Model):
-    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.SET_NULL)
     name = models.CharField('Name', max_length=100, blank=False, null=False)
 
     def __str__(self):
@@ -74,6 +75,13 @@ class SetPriceItem(models.Model):
 
     
 class DesignType(models.Model):
+    name = models.CharField('Name', max_length=100, blank=True, null=True)
+    description = models.CharField('Description', max_length=100, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+    
+class PostageType(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
 

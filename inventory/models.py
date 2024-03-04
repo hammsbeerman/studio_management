@@ -14,15 +14,24 @@ class Inventory(models.Model):
     internal_part_number = models.CharField('Internal Part Number', max_length=100, blank=True, null=True)
     unit_cost = models.CharField('Unit Cost', max_length=100, blank=True, null=True)
     price_per_m = models.CharField('Paper Stock Price per M', max_length=100, blank=True, null=True)
+    price_per_sqft = models.CharField('Price per SqFt', max_length=100, blank=True, null=True)
     current_stock = models.CharField('Current Stock', max_length=100, blank=True, null=True)
     #vendor = models.ManyToManyField(Vendor)
     # vendor_part_number
     color = models.CharField('Color', max_length=100, blank=True, null=True)
     size = models.CharField('Size', max_length=100, blank=True, null=True)
+    width = models.CharField('Width', max_length=100, blank=True, null=True)
+    width_measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='width_mea')
+    length = models.CharField('Length', max_length=100, blank=True, null=True)
+    length_measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='length_mea')
     measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING)
     type_paper = models.BooleanField('Paper', default=False)
     type_envelope = models.BooleanField('Envelope', default=False)
     type_wideformat = models.BooleanField('Wide Format', default=False)
+    type_vinyl = models.BooleanField('Vinyl', default=False)
+    type_mask = models.BooleanField('Mask', default=False)
+    type_laminate = models.BooleanField('Laminate', default=False)
+    type_substrate = models.BooleanField('Substrate', default=False)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     inventory_category = models.ManyToManyField(InventoryCategory)
@@ -65,8 +74,8 @@ class Vendor(models.Model):
     
 
 class InventoryDetail(models.Model):
-    item = models.ForeignKey(Inventory, on_delete=models.CASCADE)
-    vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
+    item = models.ForeignKey(Inventory, null=True, on_delete=models.SET_NULL)
+    vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
     vendor_item_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
     test = models.CharField('test', max_length=100, blank=True)
 
@@ -78,7 +87,7 @@ class InventoryDetail(models.Model):
 
 
 class OrderOut(models.Model):
-    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=False, on_delete=models.CASCADE)
+    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.SET_NULL)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=True, null=True)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
@@ -106,7 +115,7 @@ class OrderOut(models.Model):
     
 class SetPrice(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
-    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=False, on_delete=models.CASCADE)
+    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.SET_NULL)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=True, null=True)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
@@ -137,7 +146,7 @@ class SetPrice(models.Model):
         return self.workorder.workorder
 
 class Photography(models.Model):
-    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=False, on_delete=models.CASCADE)
+    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.SET_NULL)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=True, null=True)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
@@ -164,8 +173,8 @@ class Photography(models.Model):
 ###################Not used yet
 
 class VendorContact(models.Model):
-    vendor = models.ForeignKey(Vendor, blank=True, null=True, on_delete=models.CASCADE)
-    #company = models.OneToOneField(Customer, on_delete=models.CASCADE, blank=True, null=True)
+    vendor = models.ForeignKey(Vendor, blank=True, null=True, on_delete=models.SET_NULL)
+    #company = models.OneToOneField(Customer, on_delete=models.SET_NULL, blank=True, null=True)
     fname = models.CharField('First Name', max_length=100, blank=True, null=True)
     lname = models.CharField('Last Name', max_length=100, blank=True, null=True)
     phone1 = models.CharField('Phone', max_length=100, blank=True, null=True)

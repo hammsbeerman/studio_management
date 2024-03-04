@@ -1,5 +1,6 @@
 {% load static %}
 {% for object in items %}
+    
     <tr>
         <td>{% if object.setprice_category %}{{ object.setprice_category}}{% else %}{{ object.item_category }}{% endif %}</td>
         <td>{% if object.setprice_item %}{{ object.setprice_item}}{% else %}{{ object.item_subcategory.name }}{% endif %}</td>
@@ -11,8 +12,12 @@
             <!-- Edit Items to big to fit in modal -->
             {% if object.item_category.modal != 1 %}
                 {% if object.item_category.template == 1 or object.item_subcategory.template == 1 %}
+                    {% if object.item_category.wideformat == 1 %}
+                    <a href="{% url 'pricesheet:edit_wideformat_item' pk=object.pk cat=object.item_category_id %}" class="btn btn-primary btn-sm" role="button">Edit Wideformat</a>
+                    {% else %}
                     <!-- Edit Category items with predefined templates-->
                     <a href="{{ object.edit_template_item_url }}" class="btn btn-primary btn-sm" role="button">Edit Template</a>
+                    {% endif %}
                 {% else %}
                     <!-- Edit category item without template -->
                     <a href="{{ object.edit_print_item_url }}" class="btn btn-primary btn-sm" role="button">Edit</a>
@@ -31,6 +36,8 @@
                     <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_set_price_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
                 {% elif object.item_category.formname == 'ParentItemForm'%}
                     <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_parent_item' pk=object.pk  workorder=object.workorder_id cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
+                {% elif object.item_category.formname == 'PostageItemForm'%}
+                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_postage_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit Modal</button>
                 {% else %}
                 <!-- Edit other category with modal templates-->
                     <button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Something's broken</button>

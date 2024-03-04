@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+
+
+{% block content %}
+<script src="{% static 'js/wideformat.js' %}"></script>
+
+{{ submitted }}
+{{ message }}
+
+<h3>Master Template Form</h3>
+Form for editing wide format item details
+<div class="row">
+    <div class="col-sm-8">
+        <div class="MyForm">
+            <form method='POST' action=''>
+                {% csrf_token %}
+                <div class="container" id="id_container">
+                <input type="hidden" id="jobid" name="jobid" value="{{ jobid }}">
+                <input type="hidden" id="workorder" name="workorder" value="{{ workorder_id }}">
+                <input type="hidden" id="price_ea" name="price_ea">
+                <div class="row">
+                    <div class="col-sm-12">
+                        
+                        <div class="row">
+                            <div class='col'>
+                                <label class="form-label" for="id_description">Job Description</label>
+                                <input id="id_description" class="textinput form-control" type="text" name="description" maxlength="100" value="{{formdata.description}}">
+                            </div>
+                            <div class='col'>
+                                <label for="id_internal_company" class="form-label requiredField">
+                                    Internal Company<span class="asteriskField">*</span></label>
+                                <select name="internal_company" class="select form-select" required="" id="id_internal_company">
+                                    {% if form.instance.internal_company %}
+                                        <option value="{{ formdata.internal_company }}" selected="{{ formdata.internal_company }}">{{ formdata.internal_company }}</option>
+                                    {% else %}
+                                        <option value="LK Design" selected="">LK Design</option>
+                                    {% endif %}
+                                        <option value="LK Design"">LK Design</option>
+                                        
+                                        <option value="Krueger Printing">Krueger Printing</option>
+                                </select>
+                            </div>
+                            <hr>
+                        <div class="row">
+                            <div class='col'>
+                                <select id="paper_stock"
+                                    name="paper_stock" 
+                                    hx-get="{% url 'krueger:wideformat_paperprice' %}"
+                                    hx-trigger="change"
+                                    hx-target="#paperprices">
+
+                                    {% if form.instance.paper_stock_id %}
+                                        <option value="{{ selected_paper.id }}" selected="">{{ selected_paper.name }}</option>
+                                    {% else %}
+                                        <option selected>Select Paper stock</option>
+                                    {% endif %}
+                                    
+                                    
+                                    {% for paper in papers %}
+                                        <option value="{{paper.pk}}">{{ paper.name }}</option>
+                                        {% endfor %}
+                                </select>
+                            </div>
+                            <div class='col'>
+                                <div id="paperprices">
+                                    <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
+                                    <input label="Price / M" type="text" class="no-outline" id="id_price_per_m" name="price_per_m" value="{{ formdata.price_per_m }}"><br>
+                                    {% include 'krueger/partials/wideformat_paperstockprice.html' %}
+                                </div>
+                            </div>
+                        </div>
+                        <!-- <div class="row">
+                            <div id="paperprice">
+                                {% include 'krueger/partials/paperstockprice.html' %}
+                            </div>
+                        </div> -->
+                        <hr>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.quantity|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.media_width|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.usable_width|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.print_height|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.print_width|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.print_w_margin|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.print_h_margin|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.prints_per_row|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.number_of_rows|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.media_length|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.kiss_cut_time|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.flex_cut_time|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.weeding_time|as_crispy_field }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class='col'>
+                                Mask: <select id="mask"
+                                    name="mask" 
+                                    hx-get="{% url 'krueger:wideformat_maskprice' %}"
+                                    hx-trigger="change"
+                                    hx-target="#maskprice">
+
+                                    {% if form.instance.mask_id %}
+                                        <option value="{{ mask.id }}" selected="">{{ mask.name }}</option>
+                                    {% else %}
+                                        <option selected>Select Mask</option>
+                                    {% endif %}
+                                    
+                                    
+                                    {% for mask in masks %}
+                                        <option value="{{mask.pk}}">{{ mask.name }}</option>
+                                        {% endfor %}
+                                </select>
+                            </div>
+                            <div class='col'>
+                                <div id="maskprice">
+                                    <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
+                                    <input label="Price / M" type="text" class="no-outline" id="id_mask_price_per_sq" name="mask_price_per_sq" value="{{ formdata.price_per_m }}"><br>
+                                    {% include 'krueger/partials/wideformat_maskprice.html' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                Laminate: <select id="laminate"
+                                    name="laminate" 
+                                    hx-get="{% url 'krueger:wideformat_laminateprice' %}"
+                                    hx-trigger="change"
+                                    hx-target="#laminateprice">
+
+                                    {% if form.instance.laminate_id %}
+                                        <option value="{{ laminate.id }}" selected="">{{ laminate.name }}</option>
+                                    {% else %}
+                                        <option selected>Select Laminate</option>
+                                    {% endif %}
+                                    
+                                    
+                                    {% for laminate in laminates %}
+                                        <option value="{{laminate.pk}}">{{ laminate.name }}</option>
+                                        {% endfor %}
+                                </select>
+                            </div>
+                            <div class='col'>
+                                <div id="laminateprice">
+                                    <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
+                                    <input label="Price / M" type="text" class="no-outline" id="id_laminate_price_per_sq" name="laminate_price_per_sq" value="{{ formdata.price_per_m }}"><br>
+                                    {% include 'krueger/partials/wideformat_laminateprice.html' %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                Substrate: <select id="substrate"
+                                    name="substrate" 
+                                    hx-get="{% url 'krueger:wideformat_substrateprice' %}"
+                                    hx-trigger="change"
+                                    hx-target="#substrateprice">
+
+                                    {% if form.instance.substrate_id %}
+                                        <option value="{{ substrate.id }}" selected="">{{ substrate.name }}</option>
+                                    {% else %}
+                                        <option selected>Select Substrate</option>
+                                    {% endif %}
+                                    
+                                    
+                                    {% for substrate in substrates %}
+                                        <option value="{{substrate.pk}}">{{ substrate.name }}</option>
+                                        {% endfor %}
+                                </select>
+                            </div>
+                            <div class='col'>
+                                <div id="substrateprice">
+                                    <!-- <span id='id_price_per_m' name="price_per_m">{{ formdata.price_per_m }}</span> -->
+                                    <input label="Price / M" type="text" class="no-outline" id="id_substrate_price_per_sq" name="substrate_price_per_sq" value="{{ formdata.price_per_m }}"><br>
+                                    {% include 'krueger/partials/wideformat_substrateprice.html' %}
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.masking_time|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.machine_rate|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.labor_rate|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.total_sq_ft|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.inkcost_sq_ft|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.price_per_sqft|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_workorder_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_reclaim_artwork_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.step_send_to_press_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.material_cost|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.material_markup_percentage|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.material_markup|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.print_cost_sqft|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.print_cost|as_crispy_field }}
+                            </div>
+                            
+                        </div>
+                
+                        
+                        <hr>
+                        <table class="table table-bordered">
+                            
+                            <tr>    
+                                <td>Misc 1: <input type="checkbox" id="show-misc1"></td>
+                                <td>Misc 2: <input type="checkbox" id="show-misc2"></td>
+                                <td>Misc 3: <input type="checkbox" id="show-misc3"></td>
+                                <td>Misc 4: <input type="checkbox" id="show-misc4"></td>
+                            </tr>
+                        </table>
+                        <div class="row" id="misc1-row">
+                            <div class='col'>
+                                {{ form.misc1_description|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.misc1_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row" id="misc2-row">
+                            <div class='col'>
+                                {{ form.misc2_description|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.misc2_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row" id="misc3-row">
+                            <div class='col'>
+                                {{ form.misc3_description|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.misc3_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <div class="row" id="misc4-row">
+                            <div class='col'>
+                                {{ form.misc4_description|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.misc4_price|as_crispy_field }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class='col'>
+                                {% if form.packaging %}{{ form.packaging|as_crispy_field }}{% endif %}
+                             </div>
+                            <div class='col'>
+                               {% if form.step_id_count_price %}{{ form.step_id_count_price|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_count_package_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_delivery_price|as_crispy_field }}
+                            </div>
+                            <div class='col'>
+                                {{ form.step_packing_slip_price|as_crispy_field }}
+                            </div>  
+                        </div>
+                        <div class="row">
+                            <div class='col'>
+                                {{ form.price_total|as_crispy_field }}
+                            </div>
+                            
+                        </div>
+                        
+                        <div class="row">
+                            <div class='col-auto me-auto'>
+                                <button type="submit" class="btn btn-primary">Save</button>
+                                </form>
+                            </div>
+                            <div class='col-auto'>
+                                {% if jobid %}
+                                <form action="{% url 'krueger:remove_item' %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" id="jobid" name="jobid" value="{{ jobid }}">
+                                    <input type="submit" class="btn btn-danger" value="DELETE" name="submit" />
+                                </form> 
+                                {% endif %}
+                            </div>
+
+                            
+                           
+                        
+                            
+                            
+                            <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> 
+                            Cancel
+                            </button> -->
+                            
+                        
+
+
+                        
+                        </div>
+
+                        
+                        <!-- <p>
+                            <button id='more-line' type="button" class="btn btn-primary">Show / Hide Paper Stock</button>
+                        <p> -->
+                            <!-- <button type="submit" class="btn btn-primary">Save</button> -->
+                        <!-- <input type="submit" value='Save'/> -->
+                    </div>
+                </div>
+            </div>    
+        
+        </div>
+    </div>
+
+    <div class="col-sm-2">
+        <div class="recent">
+            <span class="">Pricing</span>
+            <br><br>
+            {% include 'krueger/partials/pricing.html' %}
+        </div>
+    </div>
+    <div class="col-sm-2">
+        <div class="recent">
+            <span class=""></span>
+
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

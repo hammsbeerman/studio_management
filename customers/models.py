@@ -33,7 +33,7 @@ class Customer(models.Model):
     tax_exempt_number = models.CharField('Tax ID Number', max_length=100, blank=True, null=True)
     #Need to modify paperwork settings
     tax_exempt_paperwork = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=True)
-
+    
     def get_absolute_url(self):
         return reverse("customers:detail", kwargs={"id": self.id})
 
@@ -46,8 +46,8 @@ class Customer(models.Model):
 
     
 class Contact(models.Model):
-    customer = models.ForeignKey(Customer, blank=False, null=False, on_delete=models.CASCADE, related_name='contacts')
-    #company = models.OneToOneField(Customer, on_delete=models.CASCADE, blank=True, null=True)
+    customer = models.ForeignKey(Customer, blank=False, null=True, on_delete=models.SET_NULL, related_name='contacts')
+    #company = models.OneToOneField(Customer, on_delete=models.SET_NULL, blank=True, null=True)
     fname = models.CharField('First Name', max_length=100, blank=False, null=False)
     lname = models.CharField('Last Name', max_length=100, blank=True, null=False)
     address1 = models.CharField('Address 1', max_length=100, blank=True, null=False)

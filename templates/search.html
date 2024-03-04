@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<center><h4>Search results</h4></center>
+
+Workorders:
+<p>
+{% for x in workorders %}
+    <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+{% endfor %}
+<p>
+Workorders Items:
+<p>
+{% for x in workorder_item %}
+    <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+{% endfor %}
+<p>
+Customers:
+<p>
+{% for x in customer %}
+<li><a href='{{ x.get_absolute_url }}'>{{ x.company_name }}</a></li>
+{% endfor %}
+<p>
+Contact:
+<p>
+{% for x in contact %}
+<li><a href='{{ x.get_absolute_url }}'>{{ x.fname }}</a></li>
+{% endfor %}
+
+
+
+{% endblock content %}

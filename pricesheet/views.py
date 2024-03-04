@@ -3,14 +3,14 @@ from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal
-from .forms import EnvelopeForm, CreateTemplateForm, NewTemplateForm, NCRForm
-from .models import PriceSheet
+from .forms import EnvelopeForm, CreateTemplateForm, NewTemplateForm, NCRForm, CreateWideFormatTemplateForm, WideFormatForm
+from .models import PriceSheet, WideFormatPriceSheet
 from controls.models import SubCategory, FixedCost, SetPriceItem, SetPriceItemPrice
 from controls.forms import SubCategoryForm, CategoryForm
 from workorders.models import WorkorderItem, Category
-from krueger.models import KruegerJobDetail, PaperStock
+from krueger.models import KruegerJobDetail, PaperStock, WideFormat
 from inventory.models import Inventory
-from krueger.forms import KruegerJobDetailForm
+from krueger.forms import KruegerJobDetailForm, WideFormatDetailForm
 from workorders.forms import DesignItemForm
 
 @login_required
@@ -117,7 +117,11 @@ def add_template(request):
         subcategory = request.POST.get('subcategory')
         name = request.POST.get('name')
         print(category)
-        form = CreateTemplateForm(request.POST)
+        category_type = Category.objects.get(id=category)
+        if category_type.wideformat == 1:
+            form = CreateWideFormatTemplateForm(request.POST)
+        else:
+            form = CreateTemplateForm(request.POST)
         if form.is_valid():
             form.description = name
             form.save()
@@ -183,9 +187,11 @@ def template_list(request, id=None):
     category = Category.objects.all().distinct().order_by('name')
     subcategory = SubCategory.objects.filter(category_id=catid)
     template = PriceSheet.objects.filter(category_id=catid)
+    wftemplate = WideFormatPriceSheet.objects.filter(category_id=catid)
     #template = PriceSheet.objects.all().order_by('-category', '-name')
     context = {
         'template': template,
+        'wftemplate': wftemplate,
         'category': category,
         'subcategory':subcategory,
         'catid': catid,
@@ -412,118 +418,253 @@ def remove_template(request):
 
 
 
+@login_required
+def edit_wideformat_item(request, pk, cat,):
+    if request.method == "POST":
+        workorderitem = WideFormat.objects.get(workorder_item=pk)
+        obj = get_object_or_404(WideFormat, pk=workorderitem.id)
+        form = WideFormatForm(request.POST, instance=obj)
+        workorder = request.POST.get('workorder')
+        price_ea = request.POST.get('price_ea')
+        internal_company = request.POST.get('internal_company')
+        edited = 1
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.workorder.id = workorder
+            obj.edited = edited
+            obj.save()
+            #update workorderitem table
+            lineitem = WorkorderItem.objects.get(id=pk)
+            lineitem.internal_company = internal_company
+            lineitem.pricesheet_modified = edited
+            lineitem.description = obj.description
+            lineitem.quantity = obj.quantity
+            lineitem.unit_price = price_ea
+            lineitem.total_price = obj.price_total
+            #lineitem.unit_price = 
+            #lineitem.total_price = obj.price_total
+            lineitem.save() 
+        else:
+            print(form.errors)
+        return redirect('workorders:overview', id=obj.hr_workorder)
+    if request.htmx:
+        print('HTMX')
+        
+        # modified = WorkorderItem.objects.get(pk=pk)
 
-# @ require_POST
-# @login_required
-#def remove_workorder_item(request, pk):
-#     item = get_object_or_404(WorkorderItem, pk=pk)
-#     item.delete()
-#     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+        # internal_company = modified.internal_company
+        # #If new lineitem, load default pricing template
+        # if not modified.pricesheet_modified:
+        #     #If there is a subcategory, load the pricing template for subcategory
+        #     if modified.item_subcategory:
+        #         description = WorkorderItem.objects.get(pk=pk)
+        #         description = description.description
+        #         item = get_object_or_404(PriceSheet, subcategory=modified.item_subcategory)
+        #         formdata = PriceSheet.objects.get(subcategory_id = modified.item_subcategory)
+        #     #Otherwise load category template
+        #     else:
+        #         print('cat')
+        #         print(cat)
+        #         item = get_object_or_404(PriceSheet, category=cat) 
+        #         formdata = PriceSheet.objects.get(category_id = cat)
+        #         description = ''
+        # #If item contains custom pricing load that               
+        # else:
+        #     item = get_object_or_404(WideFormat, workorder_item=pk)
+        #     #formdata loads static data to template
+        #     formdata = WideFormat.objects.get(workorder_item=pk)
+        #     print('pk')
+        #     print(pk)
+        #     description = item.description
+        # #Get form to load from category
+        # loadform = Category.objects.get(id=cat)
+        # #formname = loadform.formname
+        # formname = globals()[loadform.formname]
+        # form = formname(instance=item)
+        # # if cat == 6:
+        # #     form = testform(instance=item)
+        # # if cat == 10:
+        # #     form = NCRForm(instance=item)
+        # #If paper is selected, load that
+        # selected_paper = form.instance.paper_stock_id
+        # print(selected_paper)
+        # try:
+        #     selected_paper = Inventory.objects.get(id=selected_paper)
+        #     print(selected_paper.description)
+        #     print(selected_paper)
+        # except: 
+        #     selected_paper = ''
+        # #populate paper list
+        # print('inventory cat')
+        # if loadform.inventory_category is not None:
+        #     inventory_cat = loadform.inventory_category.id
+        #     print(inventory_cat)
+        #     papers = Inventory.objects.filter(inventory_category = inventory_cat)
+        # else:
+        #     papers = Inventory.objects.all()
+        # context = {
+        #     'form':form,
+        #     'formdata':formdata,
+        #     'description':description,
+        #     'papers':papers,
+        #     'selected_paper':selected_paper,
+        #     'workorder_id':id,
+        #     'internal_company':internal_company,
+
+        # }
+        # return render (request, "pricesheet/modals/edit_item.html", context)
+    else:
+        print('Not HTMX')
+        print(pk)
+        modified = WorkorderItem.objects.get(pk=pk)
+        print('here')
+        internal_company = modified.internal_company
+        #If new lineitem, load default pricing template
+        if not modified.pricesheet_modified:
+            print('here1')
+            #If there is a subcategory, load the pricing template for subcategory
+            if modified.item_subcategory:
+                description = WorkorderItem.objects.get(pk=pk)
+                description = description.description
+                print('here2')
+                print(description)
+                item = get_object_or_404(WideFormatPriceSheet, subcategory=modified.item_subcategory)
+                print('here3')
+                formdata = WideFormatPriceSheet.objects.get(subcategory_id = modified.item_subcategory)
+            #Otherwise load category template
+            else:
+                item = get_object_or_404(WideFormatPriceSheet, category=cat)
+                formdata = WideFormatPriceSheet.objects.get(category_id = cat)
+        #If item contains custom pricing load that               
+        else:
+            print('not here')
+            item = get_object_or_404(WideFormat, workorder_item=pk)
+            #formdata loads static data to template
+            formdata = WideFormat.objects.get(workorder_item=pk)
+            print('pk')
+            print(pk)
+            print(formdata.internal_company)
+            description = item.description
+        #Get form to load from category
+        loadform = Category.objects.get(id=cat)
+        #formname = loadform.formname
+        formname = globals()[loadform.formname]
+        form = formname(instance=item)
+        # if cat == 6:
+        #     form = testform(instance=item)
+        # if cat == 10:
+        #     form = NCRForm(instance=item)
+        #If paper is selected, load that
+        selected_paper = form.instance.material_id
+        print(selected_paper)
+        try:
+            selected_paper = Inventory.objects.get(id=selected_paper)
+            print(selected_paper.description)
+            print(selected_paper)
+        except: 
+            selected_paper = ''
+        mask = form.instance.mask_id
+        try:
+            mask = Inventory.objects.get(id=mask)
+        except: 
+            mask = ''
+        laminate = form.instance.laminate_id
+        try:
+            laminate = Inventory.objects.get(id=laminate)
+        except: 
+            laminate = ''
+        substrate = form.instance.substrate_id
+        try:
+            substrate = Inventory.objects.get(id=substrate)
+        except: 
+            substrate = ''
+        #populate paper list
+        print('inventory cat')
+        if loadform.inventory_category is not None:
+            inventory_cat = loadform.inventory_category.id
+            papers = Inventory.objects.filter(type_vinyl = 1).order_by('name')
+            masks = Inventory.objects.filter(type_mask = 1).order_by('name')
+            laminates = Inventory.objects.filter(type_laminate = 1).order_by('name')
+            substrates = Inventory.objects.filter(type_substrate = 1).order_by('name')
+        else:
+            papers = Inventory.objects.all().order_by('name')
+        context = {
+            'form':form,
+            'formdata':formdata,
+            'description':description,
+            'papers':papers,
+            'selected_paper':selected_paper,
+            'mask':mask,
+            'masks':masks,
+            'laminate':laminate,
+            'laminates':laminates,
+            'substrate':substrate,
+            'substrates':substrates,
+            'workorder_id':id,
+            'internal_company':internal_company,
+
+        }
+        return render(request, 'pricesheet/templates/wideformat.html', context)
     
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # ####Working edititem
-# @login_required
-#def edititem(request, id, pk, cat,):
-#     if request.method == "POST":
-#         workorderitem = KruegerJobDetail.objects.get(workorder_item=pk)
-#         obj = get_object_or_404(KruegerJobDetail, pk=workorderitem.id)
-#         form = KruegerJobDetailForm(request.POST, instance=obj)
-#         workorder = request.POST.get('workorder')
-#         edited = 1
-#         if form.is_valid():
-#             obj = form.save(commit=False)
-#             obj.workorder_id = workorder
-#             obj.edited = edited
-#             obj.save()
-#             #update workorderitem table
-#             lineitem = WorkorderItem.objects.get(id=pk)
-#             lineitem.pricesheet_modified = edited
-#             lineitem.description = obj.description
-#             lineitem.quantity = obj.set_per_book
-#             #lineitem.unit_price = 
-#             #lineitem.total_price = obj.price_total
-#             lineitem.save() 
-#         else:
-#             print(form.errors)
-#         return redirect('workorders:overview', id=obj.hr_workorder)
-#     if request.htmx:
-#         print('HTMX')
-#         print(pk)
-#         item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
-#         if cat == 6:
-#             form = EnvelopeForm(instance=item)
-#         if cat == 10:
-#             form = NCRForm(instance=item)
-#         if cat == 4:
-#             form = testform(instance=item)
-#         context = {
-#             'form':form
-#     }
-#         return render (request, "pricesheet/modals/edit_item.html", context)
-#     else:
-#         print('Not HTMX')
-#         modified = WorkorderItem.objects.get(pk=pk)
-#         internal_company = modified.internal_company
-#         #If new lineitem, load @login_required
-#default pricing template
-#         if not modified.pricesheet_modified:
-#             #If there is a subcategory, load the pricing template for subcategory
-#             if modified.item_subcategory:
-#                 description = WorkorderItem.objects.get(pk=pk)
-#                 description = description.description
-#                 item = get_object_or_404(PriceSheet, subcategory=modified.item_subcategory)
-#                 formdata = ''
-#             #Otherwise load category template
-#             else:
-#                 item = get_object_or_404(PriceSheet, category=cat) 
-#         #If item contains custom pricing load that               
-#         else:
-#             item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
-#             #formdata loads static data to template
-#             formdata = KruegerJobDetail.objects.get(workorder_item=pk)
-#             print('pk')
-#             print(pk)
-#             description = item.description
-#         if cat == 6:
-#             form = EnvelopeForm(instance=item)
-#         if cat == 10:
-#             form = NCRForm(instance=item)
-#         #If paper is selected, load that
-#         selected_paper = form.instance.paper_stock_id
-#         print(selected_paper)
-#         try:
-#             selected_paper = PaperStock.objects.get(id=selected_paper)
-#             print(selected_paper.description)
-#             print(selected_paper)
-#         except: 
-#             selected_paper = ''
-#         #populate paper list
-#         papers = PaperStock.objects.all()
-#         context = {
-#             'form':form,
-#             'formdata':formdata,
-#             'description':description,
-#             'papers':papers,
-#             'selected_paper':selected_paper,
-#             'workorder_id':id,
-#             'internal_company':internal_company,
-
-#     }
-#         return render(request, 'pricesheet/templates/master.html', context)
-
-
+@login_required
+def wideformat_template(request, id=None):
+    obj = WideFormatPriceSheet.objects.get(id=id)
+    print('modified')
+    print(obj.edited)
+    print(obj.category.pricesheet_type.id)
+    item = get_object_or_404(WideFormatPriceSheet, id=id)
+    print(item.name)
+    print(obj.category_id)
+    #Get form to load from category
+    loadform = Category.objects.get(id=obj.category_id)
+    #formname = loadform.formname
+    formname = globals()[loadform.formname]
+    form = formname(instance=item)
+    #form = NewTemplateForm(instance=obj)
+    if not obj.edited:
+        print('ned')
+        fixed = FixedCost.objects.get(id=obj.category.pricesheet_type.id)
+        print(obj.category.pricesheet_type.id)
+    else:
+        print('ed')
+        fixed = ''
+    selected_paper = form.instance.material_id
+    try:
+        selected_paper = Inventory.objects.get(id=selected_paper)
+        print(selected_paper.description)
+        print(selected_paper)
+    except: 
+        selected_paper = ''
+    papers = Inventory.objects.all()
+    masks = Inventory.objects.filter(type_mask = 1).order_by('name')
+    laminates = Inventory.objects.filter(type_laminate = 1).order_by('name')
+    substrates = Inventory.objects.filter(type_substrate = 1).order_by('name')
+    formdata = WideFormatPriceSheet.objects.get(id=id)
+    if request.method =="POST":
+        print('posted')
+        form = WideFormatForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+        else:
+            print(form.errors)
+        print(id)
+        edited = WideFormatPriceSheet.objects.get(id=id)
+        print(id)
+        edited.edited = 1
+        edited.save()
+        context = {
+            'message': 'Form saved successfully'
+        }
+        return redirect('pricesheet:template_list')
+    context = {
+        'template_id':id,
+        'fixed':fixed,
+        'form': form,
+        'papers': papers,
+        'selected_paper': selected_paper,
+        'masks':masks,
+        'laminates':laminates,
+        'substrates':substrates,
+        'formdata': formdata,
+    }
+    return render(request, "pricesheet/templates/wideformat_template_form.html", context)

@@ -8,7 +8,7 @@ from inventory.models import Inventory
 
 class PriceSheet(models.Model):
     ##Note: Any changes here need to be reflected in Krueger.models.KruegerJobDetail
-    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.SET_NULL)
     subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
@@ -30,7 +30,7 @@ class PriceSheet(models.Model):
     side_2_inktype = models.CharField('Side 1 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=False, null=False)
     #stock_paperstock = models.ForeignKey(Inventory, blank=False, null=True, on_delete=models.DO_NOTHING)
     #paper_stock = models.CharField('Paper Stock', max_length=100, blank=True, null=True)
-    paper_stock = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.CASCADE)
+    paper_stock = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.SET_NULL)
     price_per_m = models.CharField('Paper Stock Price per M', max_length=100, blank=True, null=True)
     #step_workorder = models.CharField('Create Workorder', max_length=12, blank=True, null=True)
     step_workorder_price = models.CharField('Create Workorder', max_length=12, blank=True, null=True)
@@ -110,7 +110,7 @@ class PriceSheet(models.Model):
     misc4_price = models.CharField('Misc extra 4 price', max_length=50, blank=True, null=True)
     #step_bulk_mail_tray_sort_paperwork = models.CharField('Prepare Bulk Mailing', max_length=12, blank=True, null=True)
     step_bulk_mail_tray_sort_paperwork_price = models.CharField('Prepare Bulk Mailing', max_length=12, blank=True, null=True)
-    packaging = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.CASCADE, related_name='boxtype')
+    packaging = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.SET_NULL, related_name='boxtype')
     #step_id_count = models.CharField('ID / Count', max_length=12, blank=True, null=True)
     step_id_count_price = models.CharField('ID / Count', max_length=12, blank=True, null=True)
     #step_count_package = models.CharField('Count / Package', max_length=12, blank=True, null=True)
@@ -130,4 +130,68 @@ class PriceSheet(models.Model):
     def __str__(self):
         return self.name
 
+
+class WideFormatPriceSheet(models.Model):
+    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.SET_NULL)
+    subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)
+    name = models.CharField('Name', max_length=100, blank=False, null=False)
+    #jobquote = models.CharField('Job Type', max_length=100, choices=JobQuote.choices, blank=False, null=False)
+    internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
+    description = models.CharField('Job Description', max_length=100, blank=True, null=True)
+    quantity = models.PositiveIntegerField('Quantity', blank=True, null=True)
+    material = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='wf_material')
+    substrate = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='wf_substrate')
+    laminate = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='wf_laminate')
+    mask = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='wf_mask')
+    media_width = models.CharField('Media Width', max_length=100, blank=True, null=True)
+    print_width = models.CharField('Print Width', max_length=100, blank=True, null=True)
+    print_height = models.CharField('Print Height', max_length=100, blank=True, null=True)
+    usable_width =  models.CharField('Usable Width', max_length=100, blank=True, null=True)
+    print_w_margin = models.CharField('W Margin', max_length=100, blank=True, null=True)
+    print_h_margin = models.CharField('H Margin', max_length=100, blank=True, null=True)
+    prints_per_row = models.CharField('Prints / Row', max_length=100, blank=True, null=True)
+    number_of_rows = models.CharField('Number of rows', max_length=100, blank=True, null=True)
+    media_length = models.CharField('Media Length', max_length=100, blank=True, null=True)
+    kiss_cut_time = models.CharField('Kiss Cut Time', max_length=100, blank=True, null=True)
+    flex_cut_time = models.CharField('Flex Cut Time', max_length=100, blank=True, null=True) 
+    weeding_time = models.CharField('Weeding Time', max_length=100, blank=True, null=True)
+    masking_time =  models.CharField('Masking Time', max_length=100, blank=True, null=True)
+    machine_rate =  models.CharField('Machine Rate', max_length=100, blank=True, null=True)
+    labor_rate =  models.CharField('Labor Rate', max_length=100, blank=True, null=True)
+    total_sq_ft =  models.CharField('Total Sq Ft', max_length=100, blank=True, null=True)
+    inkcost_sq_ft = models.CharField('Inkcost Sq Ft', max_length=100, blank=True, null=True)
+    price_per_sqft = models.CharField('Paper Stock Price per Sqft', max_length=100, blank=True, null=True)
+    step_workorder_price = models.CharField('Create Workorder', max_length=12, blank=True, null=True)
+    step_reclaim_artwork_price = models.CharField('Reclaim Artwork', max_length=12, blank=True, null=True)
+    step_send_to_press_price = models.CharField('Send to Press', max_length=12, blank=True, null=True)
+    material_cost = models.CharField('Material Cost', max_length=12, blank=True, null=True)
+    material_markup_percentage = models.CharField('Material Markup Percent', max_length=12, blank=True, null=True)
+    material_markup = models.CharField('Material Markup Amount', max_length=12, blank=True, null=True)
+    print_cost_sqft = models.CharField('Side 1 Price / SqFt', max_length=12, blank=True, null=True)
+    print_cost = models.CharField('Print Cost Side 1', max_length=12, blank=True, null=True)
+    misc1_description = models.CharField('Misc extra 1 description', max_length=50, blank=True, null=True)
+    misc1_price = models.CharField('Misc extra 1 price', max_length=50, blank=True, null=True)
+    misc2_description = models.CharField('Misc extra 2 description', max_length=50, blank=True, null=True)
+    misc2_price = models.CharField('Misc extra 2 price', max_length=50, blank=True, null=True)
+    misc3_description = models.CharField('Misc extra 3 description', max_length=50, blank=True, null=True)
+    misc3_price = models.CharField('Misc extra 3 price', max_length=50, blank=True, null=True)
+    misc4_description = models.CharField('Misc extra 4 description', max_length=50, blank=True, null=True)
+    misc4_price = models.CharField('Misc extra 4 price', max_length=50, blank=True, null=True)
+    #step_count_package = models.CharField('Count / Package', max_length=12, blank=True, null=True)
+    step_count_package_price = models.CharField('Count / Package', max_length=12, blank=True, null=True)
+    #step_delivery = models.CharField('Delivery', max_length=12, blank=True, null=True)
+    step_delivery_price = models.CharField('Delivery', max_length=12, blank=True, null=True)
+    #step_packing_slip = models.CharField('Packing Slip', max_length=12, blank=True, null=True)
+    step_packing_slip_price = models.CharField('Packing Slip', max_length=12, blank=True, null=True)
+    price_total = models.CharField('Total Price', max_length=10, blank=True, null=True)
+    price_total_per_sqft =models.CharField('Price / M', max_length=10, blank=True, null=True)
+    dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    edited = models.BooleanField('Edited', blank=False, null=False, default=False)
+
+    def get_absolute_url(self):
+        return reverse("pricesheet:wideformat_template", kwargs={"id": self.id})
+
+
+    def __str__(self):
+        return self.internal_company
 

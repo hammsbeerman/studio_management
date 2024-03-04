@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import PriceSheet
+from .models import PriceSheet, WideFormatPriceSheet
 
 class PriceSheetAdmin(admin.ModelAdmin):
         list_display = ('category', 'subcategory', 'name', 'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent',
@@ -17,6 +17,16 @@ class PriceSheetAdmin(admin.ModelAdmin):
             'misc3_price', 'misc4_description', 'misc4_price')
         
 admin.site.register(PriceSheet,PriceSheetAdmin)
+
+class WideFormatAdmin(admin.ModelAdmin):
+        list_display = ('category', 'subcategory', 'internal_company', 'description', 'quantity', 'media_width', 
+            'print_width', 'print_height', 'usable_width', 'print_w_margin', 'print_h_margin', 'prints_per_row', 'number_of_rows', 'media_length', 'kiss_cut_time', 'flex_cut_time', 
+            'weeding_time', 'masking_time', 'machine_rate', 'labor_rate', 'total_sq_ft', 'inkcost_sq_ft', 'price_per_sqft', 
+            'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'material_cost', 'material_markup_percentage', 'material_markup', 'print_cost_sqft', 
+            'print_cost', 'misc1_description', 'misc1_price', 'misc2_description', 'misc2_price', 'misc3_description', 'misc3_price', 'misc4_description', 'misc4_price', 
+            'step_count_package_price', 'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_sqft')
+        
+admin.site.register(WideFormatPriceSheet, WideFormatAdmin)
 
 
 

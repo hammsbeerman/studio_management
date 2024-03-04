@@ -18,9 +18,7 @@
       </div>
   </div>
   <div class="col-md-3">
-      <div id="workorder-info-card" class="card" hx-trigger="WorkorderInfoChanged from:body" hx-get="{% url 'workorders:workorder_info'  %}?workorder={{workorder.id}}" hx-target="this">
-        {% include 'workorders/partials/workorder_info.html' %}
-      </div>
+      
   </div>
   <div class="col-md-3">
       <div class="card">
@@ -32,59 +30,12 @@
           </div>
           <div class="card-footer"></div>
       </div>
-      {% if workorder.quote == '1' %}
-        <a href="{% url 'workorders:quote_to_workorder'  %}?quote={{workorder.quote_number}}" class="btn btn-primary btn-sm" role="button">Convert to Workorder</a>
-      {% else %}
-        <a href="{% url 'workorders:copy_workorder' id=workid %}" class="btn btn-primary btn-sm" role="button">Duplicate Workorder</a>
-        {% if workorder.completed == 0 %}
-          <a href="{% url 'workorders:complete_status'  %}?workorder={{workorder.id}}" class="btn btn-primary btn-sm" role="button">Complete Workorder</a>
-        {% else %}
-          <a href="{% url 'workorders:complete_status'  %}?workorder={{workorder.id}}" class="btn btn-primary btn-sm" role="button">Un-Complete Workorder</a>
-        {% endif %}
-      {% endif %}
   </div>
 </div>
 
 <hr>
 
-<!-- Modal Area -->
-<div class="container">
-  <div class="px-5 my-5 text-center">
-    <h1>Workorder Items</h1>
-    <p>Add Items below</p>
-  </div>
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col" class="">Category</th>
-        <th scope="col" class="">SubCategory</th>
-        <th scope="col" class="">Description</th>
-        <th scope="col" class="">Qty</th>
-        <th scope="col" class="">Price / Unit</th>
-        <th scope="col" class="">Total Price</th>
-        <th scope="col" class=""></th>
-        <th scope="col" class=""></th>
-        <th scope="col" class="">Notes</th>
-        <th scope="col" class="">Billable</th>
-        <th scope="col" class="">Tax Exempt</th>
-        <th scope="col" class="">Last Order</th>
-        <th scope="col" class="">Last Price</th>
-      </tr>
-    </thead>
-    <tbody hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_item_list' id=workid %}" hx-target="this">
-      <tr>
-        <td class="spinner-border" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 
-  {% if workorder.completed == 0 %}
-         <button hx-get="{% url 'workorders:add_item' parent_id=workid %}" hx-target="#dialog" class="btn btn-primary">Add an item</button>
-  {% else %}
-          <a href="{% url 'pdf:export_pdf' id=workid %}" class="btn btn-primary">Create PDF Invoice</a>
-  {% endif %}
 
 
 

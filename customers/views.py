@@ -360,3 +360,13 @@ def customer_notes(request, pk=None):
         'pk': pk,
     }
     return render(request, 'customers/modals/notes.html', context) 
+
+@login_required
+def detail(request, id=None):
+    customer = Customer.objects.get(id=id)
+    history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).order_by("-workorder")[:5]
+    context = {
+            'customer': customer,
+            'history': history,
+        }
+    return render(request, "customers/detail.html", context)

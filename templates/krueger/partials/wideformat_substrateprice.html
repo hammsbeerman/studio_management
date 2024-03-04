@@ -1,0 +1,5 @@
+{% for paperprice in paperprices %}
+<input label="Price / M" type="text" class="no-outline" id="id_price_per_m" name="price_per_m" value={{ paperprice.unit_cost }}> per {{paperprice.measurement}}<br>
+
+{% if paperprice.width %} <input label="Width" type="text" class="no-outline" id="id_width" name="width" value={{ paperprice.width }}>{{paperprice.width}}{% endif %}
+  {% endfor %}

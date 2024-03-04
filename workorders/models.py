@@ -1,15 +1,15 @@
 from django.db import models
 from django.urls import reverse
 from customers.models import Customer, Contact
-from controls.models import Category, SubCategory, DesignType, SetPriceItem, SetPriceItemPrice
+from controls.models import Category, SubCategory, DesignType, SetPriceItem, SetPriceItemPrice, PostageType
 
 
 class Workorder(models.Model):
-    customer = models.ForeignKey(Customer, blank=False, null=False, on_delete=models.CASCADE, related_name='workorders')
+    customer = models.ForeignKey(Customer, blank=False, null=True, on_delete=models.SET_NULL, related_name='workorders')
     contact = models.ForeignKey(Contact, blank=True, null=True, on_delete=models.SET_NULL)
     hr_customer = models.CharField('Customer Name', max_length=100, blank=True, null=True,)
     hr_contact = models.CharField('Contact Name', max_length=100, blank=True, null=True,)
-    ##company = models.OneToOneField(Customer, on_delete=models.CASCADE, blank=True, null=True)
+    ##company = models.OneToOneField(Customer, on_delete=models.SET_NULL, blank=True, null=True)
     workorder = models.CharField('Workorder', max_length=100, blank=False, null=False, unique=True)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
     quote = models.CharField('Quote', choices=[('1', 'Quote'), ('0', 'Workorder')], max_length=100, blank=False, null=False)
@@ -21,6 +21,7 @@ class Workorder(models.Model):
     quoted_price = models.CharField('Quoted Price', max_length=100, blank=True, null=True)
     original_order = models.PositiveSmallIntegerField('Original Order', blank=True, null=True)
     notes = models.TextField('Notes:', blank=True, null=False)
+    show_notes = models.BooleanField(default=False)
     lk_workorder = models.CharField('LK Workorder', max_length=100, blank=True, null=True)
     printleader_workorder = models.CharField('Printleader', max_length=100, blank=True, null=True)
     #total_price = models.IntegerField('Total Price', blank=True, default=True)
@@ -49,15 +50,16 @@ class Workorder(models.Model):
 
 
 class WorkorderItem(models.Model):
-    workorder = models.ForeignKey(Workorder, blank=False, null=True, on_delete=models.CASCADE)
+    workorder = models.ForeignKey(Workorder, blank=False, null=True, on_delete=models.SET_NULL)
     workorder_hr = models.CharField('Workorder Human Readable', max_length=100, blank=False, null=False)
-    item_category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.CASCADE)
+    item_category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.SET_NULL)
     item_subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)
     setprice_category = models.ForeignKey(SetPriceItem, blank=True, null=True, on_delete=models.SET_NULL)
     setprice_item = models.ForeignKey(SetPriceItemPrice, blank=True, null=True, on_delete=models.SET_NULL) 
     #item_subcategory = models.CharField('Subcategory', max_length=100, blank=True, null=True)
     pricesheet_modified = models.BooleanField('Pricesheet Modified', blank=True, null=True, default=False)
-    design_type = models.ForeignKey(DesignType, blank=True, null=True, on_delete=models.CASCADE)
+    design_type = models.ForeignKey(DesignType, blank=True, null=True, on_delete=models.SET_NULL)
+    postage_type = models.ForeignKey(PostageType, blank=True, null=True, on_delete=models.SET_NULL)
     description = models.CharField('Description', max_length=100, blank=False, null=False)
     item_order = models.PositiveSmallIntegerField('Display Order', blank=True, null=True)
     quantity = models.DecimalField('Quantity', max_digits=6, decimal_places=2, blank=True, null=True)
@@ -69,6 +71,7 @@ class WorkorderItem(models.Model):
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
     billable = models.BooleanField(default=True)
     notes = models.TextField('Notes:', blank=True, null=False)
+    show_notes = models.BooleanField(default=False)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
     tax_exempt = models.BooleanField(default=False)
     tax_amount = models.DecimalField('Tax Amount', max_digits=8, decimal_places=2, blank=True, null=True)

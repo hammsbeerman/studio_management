@@ -19,10 +19,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-from .views import home_view
+from .views import home_view, search
 
 urlpatterns = [
     path('', home_view, name='home'),
+    path('search/', search, name='search'),
     path('admin/', admin.site.urls),
     path('controls/', include('controls.urls')),
     path('accounts/', include('accounts.urls')),

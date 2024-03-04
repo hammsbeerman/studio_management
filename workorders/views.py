@@ -9,11 +9,12 @@ from django.contrib import messages
 from customers.models import Customer, Contact
 from controls.models import Numbering, Category, SubCategory, SetPriceItem, SetPriceItemPrice
 from .models import Workorder, DesignType, WorkorderItem
-from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm, ParentItemForm
-from krueger.forms import KruegerJobDetailForm
-from krueger.models import KruegerJobDetail
+from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm, ParentItemForm, PostageItemForm
+from krueger.forms import KruegerJobDetailForm, WideFormatDetailForm
+from krueger.models import KruegerJobDetail, WideFormat
 from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
 from inventory.models import OrderOut, SetPrice, Photography
+from pricesheet.forms import WideFormatForm
 
 @login_required
 def create_base(request):
@@ -281,7 +282,7 @@ def add_item(request, parent_id):
                 #loadform = Category.objects.get(id=category)
                 modelname = globals()[loadform.modelname]
                 formname = globals()[loadform.formname]
-                if formname == DesignItemForm or formname == CustomItemForm or formname == ParentItemForm:
+                if formname == DesignItemForm or formname == CustomItemForm or formname == ParentItemForm or formname == PostageItemForm:
                     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
                 #form = formname(request.POST, instance=item)
                 print(modelname)
@@ -316,6 +317,9 @@ def workorder_item_list(request, id=None):
         print(id)
         completed = Workorder.objects.get(id=id)
         obj = WorkorderItem.objects.filter(workorder_id=id)
+        #category = Category.objects.filter(id=obj.item_category.id)
+        #print(category.name)
+        #print(obj.item_category_id.name)
         subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
         tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
         total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
@@ -536,6 +540,59 @@ def edit_design_item(request, pk, cat):
         'price_ea': price_ea,
     }
     return render(request, 'workorders/modals/design_item_form.html', context)
+
+@login_required
+def edit_postage_item(request, pk, cat):
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    #line = request.POST.get('item')
+    category = cat
+    if request.method == "POST":
+        form = PostageItemForm(request.POST, instance=item)
+        obj = form.save(commit=False)
+        if form.is_valid():
+            form.save()
+        else:
+            print(form.errors)
+        qty = obj.quantity
+        unit_price=obj.unit_price
+        total=0
+        if qty and unit_price:
+            total = qty * unit_price
+        lineitem = WorkorderItem.objects.get(id=pk)
+        lineitem.quantity = qty
+        lineitem.unit_price = unit_price
+        lineitem.total_price = total
+        lineitem.pricesheet_modified = 1
+        lineitem.absolute_price = total
+        tax_percent = Decimal.from_float(.055)
+        tax = Decimal.from_float(1.055)
+        if lineitem.tax_exempt == 1:
+            lineitem.tax_amount = 0
+            lineitem.total_with_tax = lineitem.absolute_price
+        else:
+            lineitem.tax_amount = lineitem.absolute_price * tax_percent
+            lineitem.total_with_tax = lineitem.absolute_price * tax
+        lineitem.save()
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    print(category)
+    obj = Category.objects.get(id=category)  
+    print('object name')      
+    print(obj.name)
+    #formname == DesignItemForm:
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    price_ea = item.unit_price
+    form = PostageItemForm(instance=item)
+    ####
+    #form = DesignItemForm(instance=item)
+    context = {
+        'pk':pk,
+        'form': form,
+        'item': item,
+        'obj': obj,
+        'cat': category,
+        'price_ea': price_ea,
+    }
+    return render(request, 'workorders/modals/postage_item_form.html', context)
 
 @login_required
 def edit_custom_item(request, pk, cat):

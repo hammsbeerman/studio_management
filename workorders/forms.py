@@ -60,6 +60,15 @@ class DesignItemForm(forms.ModelForm):
 
         }
        
+class PostageItemForm(forms.ModelForm):
+   class Meta:
+       model = WorkorderItem
+       fields = ['internal_company', 'description', 'quantity', 'unit_price']
+       labels = {
+            'unit_price':'Price each',
+
+        }
+       
 class CustomItemForm(forms.ModelForm):
    class Meta:
        model = WorkorderItem
@@ -72,12 +81,20 @@ class CustomItemForm(forms.ModelForm):
 class NoteForm(forms.ModelForm):
     class Meta:
         model = WorkorderItem
-        fields = ['notes']
+        fields = ['notes', 'show_notes']
+        labels = {
+            'show_notes':'Show notes on pdf invoice',
+
+        }
 
 class WorkorderNoteForm(forms.ModelForm):
     class Meta:
         model = Workorder
-        fields = ['notes']
+        fields = ['notes', 'show_notes']
+        labels = {
+            'show_notes':'Show notes on pdf invoice',
+
+        }
 
 class ParentItemForm(forms.ModelForm):
     class Meta:

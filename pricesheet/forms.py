@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 from django.urls import reverse_lazy
-from .models import PriceSheet
+from .models import PriceSheet, WideFormatPriceSheet
 from controls.models import SubCategory, Category
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
@@ -28,6 +28,12 @@ class CreateTemplateForm(forms.ModelForm):
 
     class Meta:
         model = PriceSheet
+        fields = ['category', 'subcategory', 'name', 'description']
+
+class CreateWideFormatTemplateForm(forms.ModelForm):
+
+    class Meta:
+        model = WideFormatPriceSheet
         fields = ['category', 'subcategory', 'name', 'description']
 
 class NCRForm(forms.ModelForm):
@@ -117,3 +123,26 @@ class NewTemplateForm(forms.ModelForm):
             raise forms.ValidationError('This field is required')
         return qty"""
 ################### NEW TEMPLATE FORM ENDS HERE #####################################
+    
+class WideFormatForm(forms.ModelForm):
+
+    class Meta:
+        model = WideFormatPriceSheet
+        fields = [
+            'internal_company', 'description', 'quantity', 'media_width', 
+            'print_width', 'print_height', 'usable_width', 'print_w_margin', 'print_h_margin', 'prints_per_row', 'number_of_rows', 'media_length', 'kiss_cut_time', 'flex_cut_time', 
+            'weeding_time', 'masking_time', 'machine_rate', 'labor_rate', 'total_sq_ft', 'inkcost_sq_ft', 'price_per_sqft', 
+            'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'material_cost', 'material_markup_percentage', 'material_markup', 'print_cost_sqft', 
+            'print_cost', 'misc1_description', 'misc1_price', 'misc2_description', 'misc2_price', 'misc3_description', 'misc3_price', 'misc4_description', 'misc4_price', 
+            'step_count_package_price', 'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_sqft'
+        ]
+
+        widgets = {
+            'quantity': forms.NumberInput(attrs={}),
+            'usable_width': forms.TextInput(attrs={'readonly':'readonly'}),
+            'prints_per_row': forms.TextInput(attrs={'readonly':'readonly'}),
+            'number_of_rows': forms.TextInput(attrs={'readonly':'readonly'}),
+            'total_sq_ft': forms.TextInput(attrs={'readonly':'readonly'}),
+            'inkcost_sq_ft': forms.TextInput(attrs={'readonly':'readonly'}),
+            'material_markup': forms.TextInput(attrs={'title': 'BW: .1, Color .15'}),
+        }

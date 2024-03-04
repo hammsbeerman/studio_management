@@ -1,21 +1,24 @@
 {% load widget_tweaks %}
 {% load crispy_forms_tags %}
+{% load static %}
+<script src="{% static 'js/order_out_form.js' %}"></script>
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
 <form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
   <div class="modal-header">
-    <h5 class="modal-title">Notes:</h5>
+    <h5 class="modal-title">Edit Postage Item</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
-  <div class="modal-body">
+  <div id="modal-body" class="modal-body">
     {{ form|crispy }}
 
     <input type="hidden" id="cat" name="cat" value="{{ cat }}">
-    <input type="hidden" id="id" name="id" value="{{ pk }}">
+    <input type="hidden" id="item" name="item" value="{{ pk }}">
   </div>
   <div class="modal-footer">
-    
+    {% if item %}
+    <button type="button" class="btn btn-danger" hx-post="{% url 'workorders:remove_item' pk=item.pk %}">Remove</button>
     <span class="flex-grow-1"></span>
-    
+    {% endif %}
     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
       Cancel
     </button>

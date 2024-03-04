@@ -186,6 +186,11 @@ table.ordert-first {margin-bottom: 11px;}
                 <td></td>
                 <td>{% if item.tax_exempt %}--{% else %}T{%endif%}</td>          
               </tr>
+              {% if item.show_notes %}
+              <tr>
+                <td colspan='5'>{{item.notes}}</td>
+              </tr>
+              {% endif %}
               {% endif %}
             {% endfor %}
             {% autoescape off %}
@@ -201,7 +206,9 @@ table.ordert-first {margin-bottom: 11px;}
         </table>
       </div>
 
-
+{% if workorder.show_notes %}
+    <span style ='color:red'>{{ workorder.notes }}</span>
+    {% endif %}
 <!-- Total table -->
 <div class="last-table-area fix">
 	<table class="last-table">
@@ -221,7 +228,7 @@ table.ordert-first {margin-bottom: 11px;}
 
 	        <tr>
               <td rowspan="2">
-			  <div style="width:148px;">We offer vehicle lettering, signs, and large format printing. Inquire today!</div></td>
+			        <div style="width:148px;">We offer vehicle lettering, signs, and large format printing. Inquire today!</div></td>
               <td  rowspan="2"><div style="width:126px;">WeAsk us about Wedding and Portrait Photography!</div></td>
               <td width="113" style="font-weight:bold;">SALES TAX (5.5%)</td>
               <td width="113" style="font-weight:bold;">${{ tax.tax_amount__sum|floatformat:2 }}</td>
