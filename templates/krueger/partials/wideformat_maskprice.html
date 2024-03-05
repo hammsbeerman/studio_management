@@ -1,3 +1,6 @@
+{% load static %}
+
+
 {% for paperprice in paperprices %}
 <input label="Mask Price" type="text" class="no-outline" id="id_mask_price_per" name="mask_price_per" value={{ paperprice.unit_cost }}> per {{paperprice.measurement}}<br>
 <input type="hidden" id="mask_measurement" name="mask_measurement" value="{{paperprice.measurement}}">

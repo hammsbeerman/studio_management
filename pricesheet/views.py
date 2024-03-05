@@ -438,9 +438,12 @@ def edit_wideformat_item(request, pk, cat,):
             obj.workorder.id = workorder
             obj.edited = edited
             obj.material_id = material
-            obj.mask_id = mask
-            obj.laminate_id = laminate
-            obj.substrate_id = substrate
+            if mask.isnumeric():
+                obj.mask_id = mask
+            if laminate.isnumeric():
+                obj.laminate_id = laminate
+            if substrate.isnumeric():
+                obj.substrate_id = substrate
             obj.save()
             #update workorderitem table
             lineitem = WorkorderItem.objects.get(id=pk)
@@ -578,6 +581,8 @@ def edit_wideformat_item(request, pk, cat,):
             mask = Inventory.objects.get(id=mask)
         except: 
             mask = ''
+        print('mask')
+        print(mask)
         laminate = form.instance.laminate_id
         try:
             laminate = Inventory.objects.get(id=laminate)

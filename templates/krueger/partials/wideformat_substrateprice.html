@@ -1,3 +1,6 @@
+{% load static %}
+
+
 {% for paperprice in paperprices %}
 <input label="Substrate Price" type="text" class="no-outline" id="id_substrate_price_per" name="substrate_price_per" value={{ paperprice.unit_cost }}> per {{paperprice.measurement}}<br>
 <input type="hidden" id="substrate_measurement" name="substrate_measurement" value="{{paperprice.measurement}}">

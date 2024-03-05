@@ -1,0 +1,284 @@
+$(document).ready(function(){
+
+    //Hide job steps until needed
+      $('#perf-row').hide()
+
+      $('#show-perf').click(function(){
+      $('#perf-row').slideToggle(200)
+      });
+
+      $('#numbering-row').hide()
+
+      $('#show-numbering').click(function(){
+      $('#numbering-row').slideToggle(200)
+      });
+
+      $('#wrap-row').hide()
+
+      $('#show-wraparound').click(function(){
+      $('#wrap-row').slideToggle(200)
+      });
+
+      $('#mailmerge-row').hide()
+
+      $('#show-mailmerge').click(function(){
+      $('#mailmerge-row').slideToggle(200)
+      });
+
+      $('#padding-row').hide()
+
+      $('#show-padding').click(function(){
+      $('#padding-row').slideToggle(200)
+      });
+
+      $('#drill-row').hide()
+
+      $('#show-drill').click(function(){
+      $('#drill-row').slideToggle(200)
+      });
+
+      $('#staple-row').hide()
+
+      $('#show-staple').click(function(){
+      $('#staple-row').slideToggle(200)
+      });
+
+      $('#fold-row').hide()
+
+      $('#show-fold').click(function(){
+      $('#fold-row').slideToggle(200)
+      });
+
+      $('#tab-row').hide()
+
+      $('#show-tab').click(function(){
+      $('#tab-row').slideToggle(200)
+      });
+
+      $('#bulkmail-row').hide()
+
+      $('#show-bulkmail').click(function(){
+      $('#bulkmail-row').slideToggle(200)
+      });
+
+      $('#misc1-row').hide()
+
+      $('#show-misc1').click(function(){
+      $('#misc1-row').slideToggle(200)
+      });
+
+      $('#misc2-row').hide()
+
+      $('#show-misc2').click(function(){
+      $('#misc2-row').slideToggle(200)
+      });
+
+      $('#misc3-row').hide()
+
+      $('#show-misc3').click(function(){
+      $('#misc3-row').slideToggle(200)
+      });
+
+      $('#misc4-row').hide()
+
+      $('#show-misc4').click(function(){
+      $('#misc4-row').slideToggle(200)
+      });
+
+
+      $('#id_container').on("click change load",function(){
+
+        var test1 = $('#test1').val();
+        var test2 = $('#test2').val();
+        var price = $('#id_price_per').val();
+        var hid = $('#hid_material_price').val();
+
+        //$('#first_test').val(test1);
+        //$('#second_test').val(test1);
+
+        document.getElementById("first_test").innerHTML = price;
+        document.getElementById("second_test").innerHTML = hid;
+
+
+        $('#hid_material_price').val(price);
+
+
+      });
+
+
+      $('#id_container').on("click change load",function(){
+
+        ///////////////////////////////////////// Admin Costs
+        
+        var workorder_price = $('#id_step_workorder_price').val();
+        var reclaim_artwork_price = $('#id_step_reclaim_artwork_price').val();
+        var send_to_press_price = $('#id_step_send_to_press_price').val();
+        var count_package_price = $('#id_step_count_package_price').val();
+        var delivery_price = $('#id_step_delivery_price').val();
+        var packing_slip_price = $('#id_step_packing_slip_price').val();
+        send_to_press_price = Number(send_to_press_price);
+        workorder_price = Number(workorder_price);
+        reclaim_artwork_price = Number(reclaim_artwork_price);
+        count_package_price = Number(count_package_price);
+        delivery_price = Number(delivery_price);
+        packing_slip_price = Number(packing_slip_price);
+  
+        var admin_cost = send_to_press_price + workorder_price + reclaim_artwork_price + count_package_price + delivery_price + packing_slip_price
+
+        admin_cost = Number(admin_cost);
+  
+  
+        document.getElementById("admin_cost").innerHTML = admin_cost;
+
+        ///////////////////////////////////////// Misc Costs
+
+        var misc1_price = $('#id_misc1_price').val();
+        var misc2_price = $('#id_misc2_price').val();
+        var misc3_price = $('#id_misc3_price').val();
+        var misc4_price = $('#id_misc4_price').val();
+
+        misc1_price = Number(misc1_price);
+        misc2_price = Number(misc2_price);
+        misc3_price = Number(misc3_price);
+        misc4_price = Number(misc4_price);
+
+        var misc = misc1_price + misc2_price + misc3_price + misc4_price
+
+        misc = Number(misc);
+
+        ///////////////////////////////////////// Machine and Labor Time
+
+        var mask_time = $('#id_masking_time').val();
+        var kiss_time = $('#id_kiss_cut_time').val();
+        var flex_time = $('#id_flex_cut_time').val();
+        var weed_time = $('#id_weeding_time').val();
+        kiss_time = Number(kiss_time);
+        flex_time = Number(flex_time);
+        mask_time = Number(mask_time);
+        weed_time = Number(weed_time);
+        
+        var machine_rate = $('#id_machine_rate').val();
+        var labor_rate = $('#id_labor_rate').val();
+  
+        var machine_cost = (kiss_time + flex_time) * machine_rate
+        var labor_cost = (mask_time + weed_time) * labor_rate
+
+        machine_cost = Number(machine_cost);
+        labor_cost = Number(labor_cost);
+  
+  
+        document.getElementById("machine_cost").innerHTML = machine_cost;
+        document.getElementById("labor_cost").innerHTML = labor_cost;
+
+                
+        ///////////////////////////////////////// Measurements and calculations
+
+        //Get width from selected inventory item. If no width, allow width to be entered
+        if ($("#id_width").length){
+            var width = $('#id_width').val();
+            $('#id_media_width').val(width);
+          } else {
+          }
+  
+          var quantity = $('#id_quantity').val();
+          quantity = Number(quantity);
+  
+          var media_width = $('#id_media_width').val();
+          var usable_width = media_width - 2
+          $('#id_usable_width').val(usable_width);
+  
+          var height = $('#id_print_height').val();
+          height = Number(height);
+          var width = $('#id_print_width').val();
+          width = Number(width);
+          var size = height * width
+          size = Number(size);
+  
+          var w_marg = $('#id_print_w_margin').val();
+          w_marg = Number(w_marg);
+          var h_marg = $('#id_print_h_margin').val();
+          h_marg = Number(h_marg);
+  
+          var print_width = width + w_marg + w_marg
+          var print_height = height + h_marg + h_marg
+          var ovarall_print = print_width * print_height
+  
+          var prints_per_row = usable_width / print_width
+          prints_per_row = Math.floor(prints_per_row);
+          $('#id_prints_per_row').val(prints_per_row);
+  
+          var number_of_rows = quantity / prints_per_row
+          number_of_rows = Math.ceil(number_of_rows);
+          $('#id_number_of_rows').val(number_of_rows);
+  
+          var media_length = number_of_rows * print_height
+          $('#id_media_length').val(media_length);
+  
+          var total_sq_ft = media_length * media_width / 144
+          $('#id_total_sq_ft').val(total_sq_ft);
+
+          ///////////////////////////////////////// Material Cost
+
+          
+            var price = $('#id_price_per').val();
+            var material_measurement = $('#material_measurement').val();
+            if (material_measurement === 'SqFt') {
+              var test = 1
+              var material_cost = price * total_sq_ft
+              //var material_cost = 1
+            } else if (material_measurement === 'Yd'){
+              var test = 2
+              var material_cost = media_length / 36 * price
+              //var material_cost = 2
+            } else {
+              var test = 3
+            }
+
+          $('#id_step_delivery_price').val(price);
+          $('#id_step_packing_slip_price').val(test);
+
+          material_cost = Number(material_cost);
+
+
+          var total_price = admin_cost + misc + machine_cost + labor_cost + material_cost
+
+
+        $('#id_price_total').val(total_price);
+
+
+      });
+
+      $('#id_container').on("click change load",function(){
+
+
+
+
+      });
+
+
+      $('#id_container').on("click change load",function(){
+
+
+
+        
+      });
+
+
+
+      $('#id_container').on("click change load",function(){
+
+
+
+        
+      });
+
+
+
+      $('#id_container').on("click change load",function(){
+
+
+
+        
+      });
+
+});

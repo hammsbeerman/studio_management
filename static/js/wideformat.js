@@ -85,6 +85,25 @@ $(document).ready(function(){
       $('#misc4-row').slideToggle(200)
       });
 
+
+      $('#id_container').on("click change load",function(){
+
+        var test1 = $('#test1').val();
+        var test2 = $('#test2').val();
+        var price = $('#id_price_per').val();
+
+        //$('#first_test').val(test1);
+        //$('#second_test').val(test1);
+
+        document.getElementById("first_test").innerHTML = price;
+        document.getElementById("second_test").innerHTML = test2;
+
+
+        //$('#id_price_total').val(price);
+
+
+      });
+
       $('#id_container').on("click change load",function(){
 
         var workorder_price = $('#id_step_workorder_price').val();
@@ -201,7 +220,7 @@ $(document).ready(function(){
         } else {
           var material_cost = 0;
         }
-        $('#id_step_delivery_price').val(material_cost);
+        
 
         if ($("#id_mask_price_per").length){
           var mask_price = $('#id_mask_price_per').val();
@@ -216,6 +235,7 @@ $(document).ready(function(){
         } else {
           var mask_cost = 0;
         }
+        
 
         if ($("#id_laminate_price_per").length){
           var laminate_price = $('#id_laminate_price_per').val();
@@ -230,6 +250,7 @@ $(document).ready(function(){
         } else {
           var laminate_cost = 0;
         }
+        //$('#id_step_delivery_price').val(mask_cost);
 
         if ($("#id_substrate_price_per").length){
           var substrate_price = $('#id_substrate_price_per').val();
@@ -275,6 +296,8 @@ $(document).ready(function(){
           ink_cost = 0
         }
         var total_material_cost = material_cost + mask_cost + laminate_cost + substrate_cost + ink_cost
+
+        //var total_material_cost = material_cost + mask_cost + laminate_cost
 
         total_material_cost = Number(total_material_cost)
 
