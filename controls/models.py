@@ -99,8 +99,16 @@ class SetPriceItemPrice(models.Model):
         return self.description
     
 class Measurement(models.Model):
-    name = name = models.CharField('Name', max_length=100, blank=False, null=True)
+    name = models.CharField('Name', max_length=100, blank=False, null=True)
 
     def __str__(self):
         return self.name
+    
+class JobStatus(models.Model):
+    name = models.CharField('Name', max_length=100, blank=False, null=True)
+    icon = models.ImageField(null=True, blank=True, upload_to="jobstatus/")
+
+    def __str__(self):
+        return self.name
+
     

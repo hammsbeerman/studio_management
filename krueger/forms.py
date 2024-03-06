@@ -21,7 +21,7 @@ class KruegerJobDetailForm(forms.ModelForm):
             'step_staple_price', 'step_insert_wrap_around_price', 'step_insert_chip_divider_price', 'step_set_folder_price', 'fold_price_per_fold', 'fold_number_to_fold', 'step_fold_price', 
             'tabs_price_per_tab', 'tabs_per_piece', 'tabs_number_of_pieces', 'step_tab_price', 'step_bulk_mail_tray_sort_paperwork_price', 'step_id_count_price', 'step_count_package_price', 
             'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_m', 'misc1_description', 'misc1_price', 'misc2_description', 'misc2_price', 'misc3_description',
-            'misc3_price', 'misc4_description', 'misc4_price'
+            'misc3_price', 'misc4_description', 'misc4_price', 'override_price'
         ]
         widgets = {
             'set_per_book': forms.NumberInput(attrs={}),
@@ -90,7 +90,7 @@ class WideFormatDetailForm(forms.ModelForm):
             'weeding_time', 'masking_time', 'machine_rate', 'labor_rate', 'total_sq_ft', 'inkcost_sq_ft', 'material', 'substrate', 'laminate', 'mask', 'price_per_sqft', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'material_cost', 'material_markup_percentage', 'material_markup', 'print_cost_sqft', 
             'print_cost', 'misc1_description', 'misc1_price', 'misc2_description', 'misc2_price', 'misc3_description', 'misc3_price', 'misc4_description', 'misc4_price', 
-            'step_count_package_price', 'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_sqft'
+            'step_count_package_price', 'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_sqft', 'override_price'
         ]
 
         widgets = {

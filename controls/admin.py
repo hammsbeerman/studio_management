@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Measurement, SetPriceItem, SetPriceItemPrice, InventoryCategory
+from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Measurement, SetPriceItem, SetPriceItemPrice, InventoryCategory, JobStatus
 
 
 
@@ -44,4 +44,6 @@ admin.site.register(Measurement)
 admin.site.register(SetPriceItem)
 
 admin.site.register(SetPriceItemPrice)
+
+admin.site.register(JobStatus)
 

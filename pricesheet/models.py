@@ -121,6 +121,7 @@ class PriceSheet(models.Model):
     step_packing_slip_price = models.CharField('Packing Slip', max_length=12, blank=True, null=True)
     price_total = models.CharField('Total Price', max_length=10, blank=True, null=True)
     price_total_per_m =models.CharField('Price / M', max_length=10, blank=True, null=True)
+    override_price = models.CharField('Override Price', max_length=10, blank=True, null=True)
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     edited = models.BooleanField('Edited', blank=False, null=False, default=False)
 
@@ -185,6 +186,7 @@ class WideFormatPriceSheet(models.Model):
     step_packing_slip_price = models.CharField('Packing Slip', max_length=12, blank=True, null=True)
     price_total = models.CharField('Total Price', max_length=10, blank=True, null=True)
     price_total_per_sqft =models.CharField('Price / M', max_length=10, blank=True, null=True)
+    override_price = models.CharField('Override Price', max_length=10, blank=True, null=True)
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     edited = models.BooleanField('Edited', blank=False, null=False, default=False)
 

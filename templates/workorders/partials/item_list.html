@@ -75,7 +75,9 @@
             <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=object.tax_exempt id=object.pk %}" hx-target="#taxexempt_{{object.pk}}">NonTax</button>
             {% endif %}
         </td>
-        
+
+
+        <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_status' pk=object.pk%}" hx-target="#dialog">{% if object.job_status %}<img src="{{ object.job_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</button>
         
         
         

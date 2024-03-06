@@ -1,7 +1,8 @@
 from django.db import models
+from django.contrib.auth.models import User, Group
 from django.urls import reverse
 from customers.models import Customer, Contact
-from controls.models import Category, SubCategory, DesignType, SetPriceItem, SetPriceItemPrice, PostageType
+from controls.models import Category, SubCategory, DesignType, SetPriceItem, SetPriceItemPrice, PostageType, JobStatus
 
 
 class Workorder(models.Model):
@@ -80,6 +81,10 @@ class WorkorderItem(models.Model):
     added_to_parent = models.BooleanField(blank=False, null=False, default=False)
     parent = models.BooleanField(blank=False, null=False, default=False)
     child = models.BooleanField(blank=False, null=False, default=False)
+    job_status = models.ForeignKey(JobStatus, blank=True, null=True, on_delete=models.SET_NULL)
+    completed = models.BooleanField(blank=False, null=False, default=False)
+    assigned_user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
+    assigned_group = models.ForeignKey(Group, blank=True, null=True, on_delete=models.SET_NULL)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
 

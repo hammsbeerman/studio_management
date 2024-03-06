@@ -31,6 +31,7 @@ from .views import (
     billable_status,
     edit_parent_item,
     edit_postage_item,
+    item_status,
     # removed,
 )
 
@@ -63,6 +64,7 @@ urlpatterns = [
     path('categories/', subcategory, name='subcategory'),
     path('tax/<str:tax>/<int:id>/', tax, name='tax'),
     path('notes/<int:pk>/', notes, name='notes'),
+    path('item_status/<int:pk>/', item_status, name='item_status'),
     path('notes/', notes, name='notes'),
     path('readnotes/<int:pk>/', readnotes, name='readnotes'),
     path('workordernotes/<int:pk>/', workorder_notes, name='workorder_notes'),

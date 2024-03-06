@@ -254,6 +254,12 @@ def edititem(request, id, pk, cat,):
             obj = form.save(commit=False)
             obj.workorder.id = workorder
             obj.edited = edited
+            total = obj.price_total
+            override = obj.override_price
+            if override:
+                temp_total = override
+            else:
+                temp_total = total
             obj.save()
             #update workorderitem table
             lineitem = WorkorderItem.objects.get(id=pk)
@@ -263,8 +269,32 @@ def edititem(request, id, pk, cat,):
             lineitem.quantity = obj.set_per_book
             lineitem.unit_price = price_ea
             lineitem.total_price = obj.price_total
-            #lineitem.unit_price = 
-            #lineitem.total_price = obj.price_total
+            lineitem.override_price = override
+            lineitem.pricesheet_modified = 1
+            lineitem.absolute_price = temp_total
+            tax_percent = .055
+            tax = 1.055
+            lineitem.absolute_price = (float(lineitem.absolute_price))
+            if lineitem.tax_exempt == 1:
+                lineitem.tax_amount = 0
+                lineitem.total_with_tax = lineitem.absolute_price
+            else:
+                print('absolute price')
+                print(type(lineitem.absolute_price))
+                lineitem.tax_amount = lineitem.absolute_price * tax_percent
+                lineitem.total_with_tax = lineitem.absolute_price * tax
+            if lineitem.notes:
+                notes = lineitem.notes
+            else:
+                notes = ''
+            if lineitem.last_item_order:
+                last_order = lineitem.last_item_order
+            else:
+                last_order = ''
+            if lineitem.last_item_price:
+                last_price = lineitem.last_item_order
+            else:
+                last_price = ''
             lineitem.save() 
         else:
             print(form.errors)
@@ -438,6 +468,12 @@ def edit_wideformat_item(request, pk, cat,):
             obj.workorder.id = workorder
             obj.edited = edited
             obj.material_id = material
+            total = obj.price_total
+            override = obj.override_price
+            if override:
+                temp_total = override
+            else:
+                temp_total = total
             if mask.isnumeric():
                 obj.mask_id = mask
             if laminate.isnumeric():
@@ -448,13 +484,33 @@ def edit_wideformat_item(request, pk, cat,):
             #update workorderitem table
             lineitem = WorkorderItem.objects.get(id=pk)
             lineitem.internal_company = internal_company
-            lineitem.pricesheet_modified = edited
             lineitem.description = obj.description
             lineitem.quantity = obj.quantity
             lineitem.unit_price = price_ea
             lineitem.total_price = obj.price_total
-            #lineitem.unit_price = 
-            #lineitem.total_price = obj.price_total
+            lineitem.override_price = override
+            lineitem.pricesheet_modified = 1
+            lineitem.absolute_price = temp_total
+            tax_percent = Decimal.from_float(.055)
+            tax = Decimal.from_float(1.055)
+            if lineitem.tax_exempt == 1:
+                lineitem.tax_amount = 0
+                lineitem.total_with_tax = lineitem.absolute_price
+            else:
+                lineitem.tax_amount = lineitem.absolute_price * tax_percent
+                lineitem.total_with_tax = lineitem.absolute_price * tax
+            if lineitem.notes:
+                notes = lineitem.notes
+            else:
+                notes = ''
+            if lineitem.last_item_order:
+                last_order = lineitem.last_item_order
+            else:
+                last_order = ''
+            if lineitem.last_item_price:
+                last_price = lineitem.last_item_order
+            else:
+                last_price = ''
             lineitem.save() 
         else:
             print(form.errors)

@@ -19,11 +19,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
-from .views import home_view, search
+from .views import home_view, search, assigned_item_list, design_item_list
 
 urlpatterns = [
     path('', home_view, name='home'),
     path('search/', search, name='search'),
+    path('assigned_item_list/', assigned_item_list, name='assigned_item_list'),
+    path('design_item_list/', design_item_list, name='design_item_list'),
     path('admin/', admin.site.urls),
     path('controls/', include('controls.urls')),
     path('accounts/', include('accounts.urls')),
@@ -37,7 +39,7 @@ urlpatterns = [
     path('workorders/', include('workorders.urls')),
 
     
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

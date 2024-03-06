@@ -9,7 +9,7 @@ from django.contrib import messages
 from customers.models import Customer, Contact
 from controls.models import Numbering, Category, SubCategory, SetPriceItem, SetPriceItemPrice
 from .models import Workorder, DesignType, WorkorderItem
-from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm, ParentItemForm, PostageItemForm
+from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm, ParentItemForm, PostageItemForm, JobStatusForm
 from krueger.forms import KruegerJobDetailForm, WideFormatDetailForm
 from krueger.models import KruegerJobDetail, WideFormat
 from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
@@ -259,6 +259,8 @@ def add_item(request, parent_id):
             print('up')
             #obj.last_item_price = '78964'
             obj.workorder_hr = parent.workorder
+            obj.assigned_user_id = request.user.id
+            obj.job_status_id = 1
             #obj.item_subcategory = subcategory
             obj.save()
             print('objpk')
@@ -1425,70 +1427,21 @@ def billable_status(request, id):
     }
     return render(request, 'workorders/partials/billable.html', context)
 
-
-
-
-
-
-
-
-
-
-
-
-
-# @login_required
-# def edit_parent_item(request, pk, cat, workorder):
-#     wo = workorder
-#     pass
-#     print('pk')
-#     print(pk)
-#     item = WorkorderItem.objects.filter(workorder = wo)
-
-#     if request.method == "POST":
-#         item.update(child=0)
-#         childs = request.POST.getlist('child')
-#         print(childs)
-#         ap = 0
-#         ta = 0
-#         twt = 0
-#         for c in childs:
-#             x = WorkorderItem.objects.get(pk=c)
-#             x.child = 1
-#             x.save()
-#             try:
-#                 ap = ap + x.absolute_price
-#             except:
-#                 pass
-#             try:
-#                 ta = ta + x.tax_amount
-#             except:
-#                 pass
-#             try:
-#                 twt = twt + x.total_with_tax
-#             except:
-#                 pass
-#             print(twt)
-#         print(twt)
-#         parent = WorkorderItem.objects.get(pk=pk)
-#         parent.absolute_price = ap
-#         parent.tax_amount = ta
-#         parent.total_with_tax = twt
-#         parent.parent = 1
-#         parent.save()
-#         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
-        
-#     form = ParentItemForm
-#     context = {
-#         'pk':pk,
-#         'form': form,
-#         'item': item,
-#         # 'obj': obj_item,
-#         # 'selected':selected,
-#         # 'cat': category,
-#         # 'price_ea': price_ea,
-#         # 'setprice_category':setprice_category,
-#         #'setprice_item': setprice_item,
-#         #'setprice_selected':setprice_selected,
-#     }
-#     return render(request, 'workorders/modals/parent_item_form.html', context)
+@login_required
+def item_status(request, pk=None):
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    if request.method == "POST":
+        id = request.POST.get('id')
+        print(id)
+        item = get_object_or_404(WorkorderItem, pk=id)
+        form = JobStatusForm(request.POST, instance=item)
+        if form.is_valid():
+                form.save()
+                return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    form = JobStatusForm(instance=item)
+    context = {
+        #'notes':notes,
+        'form':form,
+        'pk': pk,
+    }
+    return render(request, 'workorders/modals/item_status.html', context) 
