@@ -1,7 +1,9 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.shortcuts import render, redirect
+from .decorators import unauthenticated_user, allowed_users
 
+@unauthenticated_user
 def login_view(request):
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
@@ -23,6 +25,7 @@ def logout_view(request):
         return redirect("/accounts/login")
     return render(request, "accounts/logout.html", {})
 
+@unauthenticated_user
 def register_view(request):
     form = UserCreationForm(request.POST or None)
     if form.is_valid():

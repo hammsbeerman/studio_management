@@ -3,7 +3,7 @@ from django.urls import path
 #from . import views
 
 from .views import (
-    home,
+    #home,
     add_category,
     add_subcategory,
 )
@@ -11,7 +11,7 @@ from .views import (
 app_name='controls'
 
 urlpatterns = [
-    path('', home, name='home'),
+    #path('', home, name='home'),
     path('add_category/', add_category, name='add_category'),
     path('add_subcategory/', add_subcategory, name='add_subcategory'),
         

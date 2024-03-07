@@ -31,8 +31,7 @@ class Customer(models.Model):
     customer_number = models.CharField('Customer Number', max_length=100, blank=True, null=False)
     tax_exempt = models.BooleanField('Tax Exempt', default=False, choices=Tax_Exempt)
     tax_exempt_number = models.CharField('Tax ID Number', max_length=100, blank=True, null=True)
-    #Need to modify paperwork settings
-    tax_exempt_paperwork = models.ImageField(upload_to=None, height_field=None, width_field=None, max_length=100, null=True)
+    tax_exempt_paperwork = models.ImageField(upload_to="tax_exempt_form/", blank=True, null=True)
     
     def get_absolute_url(self):
         return reverse("customers:detail", kwargs={"id": self.id})

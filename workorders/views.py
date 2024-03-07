@@ -260,6 +260,7 @@ def add_item(request, parent_id):
             #obj.last_item_price = '78964'
             obj.workorder_hr = parent.workorder
             obj.assigned_user_id = request.user.id
+            obj.test_user_id = request.user.profile.id
             obj.job_status_id = 1
             #obj.item_subcategory = subcategory
             obj.save()

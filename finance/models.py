@@ -1,6 +1,7 @@
 from django.db import models
 from inventory.models import Vendor
 from workorders.models import Workorder
+from controls.models import PaymentType
 
 
 class AccountsPayable(models.Model):
@@ -32,3 +33,12 @@ class DailySales(models.Model):
     def __str__(self):
         #Formatted this way to convert datetime to string
         return str(self.date)
+    
+class Payments(models.Model):
+    date= models.DateField(auto_now=False, auto_now_add=False, blank=False, null=False)
+    workorder = models.ForeignKey(Workorder, blank=False, null=False, on_delete=models.DO_NOTHING)
+    payment_type = models.ForeignKey(PaymentType, blank=False, null=False, on_delete=models.DO_NOTHING)
+    amount = models.DecimalField('Amount', max_digits=10, decimal_places=2, blank=True, null=True)
+
+    def __str__(self):
+        return self.workorder

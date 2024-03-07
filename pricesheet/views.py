@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+from accounts.decorators import allowed_users
 from decimal import Decimal
 from .forms import EnvelopeForm, CreateTemplateForm, NewTemplateForm, NCRForm, CreateWideFormatTemplateForm, WideFormatForm
 from .models import PriceSheet, WideFormatPriceSheet
@@ -178,6 +179,7 @@ def copy_template(request):
     return render (request, "pricesheet/modals/copy_template.html", context)
 
 @login_required
+@allowed_users(allowed_roles=['admin'])
 def template_list(request, id=None):
     catid = id
     print(catid)

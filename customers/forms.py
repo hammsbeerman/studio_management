@@ -8,7 +8,7 @@ class CustomerForm(forms.ModelForm):
     #company_name = forms.CharField(required=True)
     class Meta:
         model = Customer
-        fields = ['company_name', 'first_name', 'last_name', 'address1', 'address2', 'city', 'state', 'zipcode', 'tax_exempt', 'phone1', 'phone2', 'email', 'website', 'po_number']
+        fields = ['company_name', 'first_name', 'last_name', 'address1', 'address2', 'city', 'state', 'zipcode', 'tax_exempt', 'phone1', 'phone2', 'email', 'website', 'po_number', 'tax_exempt_paperwork']
         # widgets = {
         #     'tax_exempt': forms.RadioSelect(attrs={'class':'form-control'})
         # }

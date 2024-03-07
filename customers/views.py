@@ -189,7 +189,7 @@ def edit_customer(request):
         print(company_num)
         obj = get_object_or_404(Customer, pk=company_num)
         print('hello')
-        form = CustomerForm(request.POST, instance=obj)
+        form = CustomerForm(request.POST, request.FILES, instance=obj)
         if form.is_valid():
             c = request.POST.get('customer')
             cn = request.POST.get('company_name')

@@ -2,7 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 from django.urls import reverse
 from customers.models import Customer, Contact
-from controls.models import Category, SubCategory, DesignType, SetPriceItem, SetPriceItemPrice, PostageType, JobStatus
+from controls.models import Category, SubCategory, DesignType, SetPriceItem, SetPriceItemPrice, PostageType, JobStatus, UserGroup
+from accounts.models import Profile
 
 
 class Workorder(models.Model):
@@ -26,7 +27,6 @@ class Workorder(models.Model):
     lk_workorder = models.CharField('LK Workorder', max_length=100, blank=True, null=True)
     printleader_workorder = models.CharField('Printleader', max_length=100, blank=True, null=True)
     #total_price = models.IntegerField('Total Price', blank=True, default=True)
-    billed = models.BooleanField('Billed', blank=False, null=False, default=False)
     tax_exempt = models.BooleanField(default=False)
     percent_discount = models.CharField('Discount %', max_length=100, blank=True, null=True)
     dollar_discount = models.CharField('Discount $', max_length=100, blank=True, null=True)
@@ -36,6 +36,12 @@ class Workorder(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     completed = models.BooleanField(blank=False, null=False, default=False)
+    billed = models.BooleanField('Billed', blank=False, null=False, default=False)
+    date_billed = models.DateTimeField(auto_now = False, blank=True, null=True)
+    total_balance = models.CharField('Total Balance', max_length=100, blank=True, null=True)
+    amount_paid = models.CharField('Amount Paid', max_length=100, blank=True, null=True)
+    open_balance = models.CharField('Open Balance', max_length=100, blank=True, null=True)
+    date_paid = models.DateTimeField(auto_now = False, blank=True, null=True)
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})
@@ -84,7 +90,8 @@ class WorkorderItem(models.Model):
     job_status = models.ForeignKey(JobStatus, blank=True, null=True, on_delete=models.SET_NULL)
     completed = models.BooleanField(blank=False, null=False, default=False)
     assigned_user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
-    assigned_group = models.ForeignKey(Group, blank=True, null=True, on_delete=models.SET_NULL)
+    test_user = models.ForeignKey(Profile, blank=True, null=True, on_delete=models.SET_NULL)
+    assigned_group = models.ForeignKey(UserGroup, blank=True, null=True, on_delete=models.SET_NULL)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
 

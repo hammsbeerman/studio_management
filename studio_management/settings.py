@@ -65,6 +65,7 @@ LOCAL_APPS = [
     'accounts',
     'controls',
     'customers',
+    'dashboard',
     'inventory',
     'finance',
     'krueger',
