@@ -1,17 +1,17 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
-<select class="custom-select mb-4" id="items" hx-trigger="change, itemListChanged from:body" name="items" hx-get="{% url 'dashboard:selected_item_list' %}" hx-target="#items">
+<select class="custom-select mb-4" id="customers" hx-trigger="change, itemListChanged from:body" name="customers" hx-get="{% url 'finance:ar_dashboard' %}" hx-target="#workorders">
 
     <option value="{{ item_status.id}}" selected>{{item_status}}</option>
-    {% for x in status %}
+    {% for x in  %}
       <option value="{{ x.id }}">{{ x.name }}</option>
     {% endfor %}
 </select>
 <table>
-{% for x in items %}
+{% for x in workorders %}
             <tr>
-                <td><a href="{% url 'workorders:overview' id=x.workorder_hr %}">{{ x.workorder_hr }} -- {{ x.description }} -- {{ x.workorder.hr_customer }} </a></td>
+                <td>{{ x.workorder_hr }} -- {{ x.description }} -- {{ x.workorder.hr_customer }} </a></td>
                 <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_status' pk=x.pk%}" hx-target="#dialog">{% if x.job_status %}<img src="{{ x.job_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</button></td>
                 <td>{% if x.notes %}
                     <button class="btn btn-primary-outline" hx-get="{% url 'workorders:notes' pk=x.pk%}" hx-target="#dialog">

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.db.models import Avg, Count, Min, Sum
 from django.http import HttpResponse
 from .models import Customer, Contact
 from .forms import CustomerForm, ContactForm, CustomerNoteForm
@@ -370,3 +371,32 @@ def detail(request, id=None):
             'history': history,
         }
     return render(request, "customers/detail.html", context)
+
+def dashboard(request):
+    customers = Customer.objects.all()
+    context = {
+        'customers':customers,
+    }
+    return render(request, "customers/dashboard.html", context)
+
+def expanded_detail(request):
+    customers = Customer.objects.all()
+    id = request.GET.get('customers')
+    print(id)
+    if id:
+        customer = Customer.objects.get(id=id)
+        history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).order_by("-workorder")[:5]
+        workorder = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(completed=1).exclude(quote=1).order_by("-workorder")[:25]
+        completed = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
+        quote = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
+        balance = Workorder.objects.filter(customer_id=customer).exclude(quote=1).aggregate(Sum('total_balance'))
+        context = {
+            'workorders': workorder,
+            'completed': completed,
+            'quote': quote,
+            'customers':customers,
+            'customer': customer,
+            'history': history,
+            'balance': balance,
+        }
+        return render(request, "customers/partials/details.html", context)

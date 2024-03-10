@@ -2,6 +2,7 @@ from django.db import models
 from inventory.models import Vendor
 from workorders.models import Workorder
 from controls.models import PaymentType
+from customers.models import Customer
 
 
 class AccountsPayable(models.Model):
@@ -36,9 +37,14 @@ class DailySales(models.Model):
     
 class Payments(models.Model):
     date= models.DateField(auto_now=False, auto_now_add=False, blank=False, null=False)
-    workorder = models.ForeignKey(Workorder, blank=False, null=False, on_delete=models.DO_NOTHING)
+    customer = models.ForeignKey(Customer, blank=False, null=False, on_delete=models.DO_NOTHING)
+    workorder = models.ForeignKey(Workorder, blank=True, null=True, on_delete=models.DO_NOTHING)
     payment_type = models.ForeignKey(PaymentType, blank=False, null=False, on_delete=models.DO_NOTHING)
+    check_number = models.CharField('Check Number', max_length=100, blank=True, null=True)
+    giftcard_number = models.CharField('GiftCard Number', max_length=100, blank=True, null=True)
+    refunded_invoice_number = models.CharField('Refund Invoice Number', max_length=100, blank=True, null=True)
     amount = models.DecimalField('Amount', max_digits=10, decimal_places=2, blank=True, null=True)
 
+
     def __str__(self):
-        return self.workorder
+        return self.customer.company_name

@@ -4,8 +4,8 @@ from .models import Workorder, WorkorderItem#ItemCategory,
 
 
 class WorkorderAdmin(admin.ModelAdmin):
-    fields = ['customer', 'workorder', 'internal_company', 'description', 'deadline', 'budget', 'quoted_price', 'original_order', 'billed', 'notes', 'completed']
-    list_display = ('customer', 'workorder', 'internal_company', 'description', 'deadline', 'budget', 'quoted_price', 'original_order', 'billed')
+    fields = ['customer', 'workorder', 'internal_company', 'description', 'deadline', 'budget', 'quoted_price', 'original_order', 'billed', 'notes', 'completed', 'total_balance', 'amount_paid', 'open_balance', 'paid_in_full']
+    list_display = ('customer', 'workorder', 'internal_company', 'description', 'deadline', 'budget', 'quoted_price', 'original_order', 'billed', 'total_balance', 'amount_paid', 'open_balance')
 
 admin.site.register(Workorder, WorkorderAdmin)
 

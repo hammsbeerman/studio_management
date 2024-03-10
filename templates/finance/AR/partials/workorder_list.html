@@ -1,0 +1,54 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+<select class="custom-select mb-4" id="customers" hx-trigger="change, itemListChanged from:body" name="customers" hx-get="{% url 'finance:open_workorders' %}" hx-target="#workorders">
+
+    <option value="{{ customer.id}}" selected>{{customer}}</option>
+    {% for x in customers %}
+      <option value="{{ x.id }}">{{ x.company_name }}</option>
+    {% endfor %}
+</select>
+  <div class="col-sm-8">
+  Available credit: {{ customer.credit }}
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-10">
+<table>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col" class="">Workorder</th>
+                  <th scope="col" class="">Description</th>
+                  <th scope="col" class="">Total Bill</th>
+                  <th scope="col" class="">Amount Paid</th>
+                  <th scope="col" class="">Amount Outstanding</th>
+                  <th scope="col" class="">Partial Payment</th>
+                </tr>
+              </thead>
+              <tbody>
+                
+                {% for x in workorders %}
+                <tr>
+                <form hx-post="{% url 'finance:apply_payment' %}">
+                  {% csrf_token %}
+                  <td>{{ x.workorder }}</td>
+                  <td>{{ x.description }}</td>
+                  <td>{{ x.total_balance }}</td>
+                  <td>{{ x.amount_paid }}</td>
+                  <td>{{ x.open_balance }}</td>
+                  <td><input type="text" name="partial_payment" class="text form-control" id="partial_payment" size="50"><td>
+                  <td>
+                    <input type="hidden" id="pk" name="pk" value="{{x.id}}">
+                    <input type="hidden" id="customer" name="customer" value="{{customer.id}}">
+                    <button type="submit">Save</button></td>
+
+                  </tr>
+                </form>
+                {% endfor %}
+              </tbody>
+            </table>
+            <button hx-trigger="click" hx-get="{% url 'finance:closed_workorders' cust=customer.id %}" hx-target="#workorders" class="btn btn-danger">Reverse Payment</button>
+          </div>
+            

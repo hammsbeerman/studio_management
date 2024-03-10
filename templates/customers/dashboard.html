@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+<script src="{% static 'js/order_out_form.js' %}"></script>
+<script src="{% static 'js/setprice_form.js' %}"></script>
+<div class="row">
+  <div id="customers" class="col-sm-12">
+    <select class="custom-select mb-4" id="customers" hx-trigger="change, itemListChanged from:body" name="customers" hx-get="{% url 'customers:expanded_detail' %}" hx-target="#customers">
+    <option selected>Select Customer</option>
+        {% for x in customers %}
+          <option value="{{ x.id }}">{{ x.company_name }}</option>
+        {% endfor %}
+    </select>
+  </div>
+</div>
+
+{% endblock %}

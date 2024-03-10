@@ -1,0 +1,6 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% if method %}
+<label>{{method}}</label>
+<input type="text" name="{{method}}" class="text form-control" id="{{method}}">{% endif %}

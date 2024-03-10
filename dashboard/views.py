@@ -87,10 +87,11 @@ def selected_item_list(request, id=None):
 def group_item_list(request, id=None):
     user = request.user.profile.id
     group = Profile.objects.get(user=user)
-    test = group.group.all()[0]
+    test = group.group.all()
     print(test)
+    items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user)
     #for x in test:
-    items = WorkorderItem.objects.filter(assigned_group_id__exact = test).exclude(completed=1).order_by("-workorder")
+    ##items = WorkorderItem.objects.filter(assigned_group_id__exact = test).exclude(completed=1).order_by("-workorder")
     # groups = UserGroup.group_set.all()
     # print(groups)
     # #group = Profile.objects.filter(user=user)
@@ -105,4 +106,4 @@ def group_item_list(request, id=None):
     context = {
         'items':items,
     }
-    return render(request, "dashboard/partials/design_item_list.html", context)
+    return render(request, "dashboard/partials/group_item_list.html", context)

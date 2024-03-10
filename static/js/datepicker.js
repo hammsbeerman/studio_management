@@ -14,6 +14,6 @@ $( function() {
     $( "#id_date" ).datepicker();
   } );
 
-  $( function() {
-    $( "#id_deadline" ).datepicker();
-  } );
+$( function() {
+  $( "#id_deadline" ).datepicker();
+} );
