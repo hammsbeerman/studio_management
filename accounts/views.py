@@ -25,7 +25,7 @@ def logout_view(request):
         return redirect("/accounts/login")
     return render(request, "accounts/logout.html", {})
 
-@unauthenticated_user
+@login_required
 def register_view(request):
     form = UserCreationForm(request.POST or None)
     if form.is_valid():
