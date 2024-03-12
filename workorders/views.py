@@ -1449,8 +1449,11 @@ def complete_status(request):
     cust = item.customer_id
     open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
     open_balance = list(open_balance.values())[0]
-    open_balance = round(open_balance, 2)
-    print(open_balance)
+    if open_balance:
+        open_balance = round(open_balance, 2)
+    else:
+        open_balance = 0
+    #print(open_balance)
     new_high = Customer.objects.get(id=cust)
     if new_high.high_balance:
         if open_balance > new_high.high_balance:
