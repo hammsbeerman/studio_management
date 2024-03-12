@@ -1452,7 +1452,7 @@ def complete_status(request):
     if open_balance:
         open_balance = round(open_balance, 2)
     else:
-        open_balance = 0
+        open_balance = total
     #print(open_balance)
     new_high = Customer.objects.get(id=cust)
     if new_high.high_balance:
@@ -1460,6 +1460,9 @@ def complete_status(request):
             high_balance = open_balance
         else:
             high_balance = new_high.high_balance
+    else: 
+        print(total)
+        high_balance = total
     Customer.objects.filter(pk=cust).update(open_balance = open_balance, high_balance = high_balance)
     return redirect("workorders:overview", id=item.workorder)
 
