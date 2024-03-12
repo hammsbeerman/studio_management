@@ -36,7 +36,7 @@
     "pk": 1,
     "fields": {
         "name": "Envelope",
-        "create_workorder": "10.00",
+        "create_workorder": "5.00",
         "reclaim_artwork": "5.00",
         "send_to_press": "5.00",
         "send_mailmerge_to_press": null,
@@ -127,25 +127,6 @@
     }
 },
 {
-    "model": "controls.fixedcost",
-    "pk": 6,
-    "fields": {
-        "name": "Wide Format",
-        "create_workorder": "5.00",
-        "reclaim_artwork": "5.00",
-        "send_to_press": "5.00",
-        "send_mailmerge_to_press": null,
-        "material_markup": "100.00",
-        "wear_and_tear": null,
-        "trim_to_size": null,
-        "duplo_1": null,
-        "duplo_2": null,
-        "duplo_3": null,
-        "ncr_compound": null,
-        "pad_compound": null
-    }
-},
-{
     "model": "controls.inventorycategory",
     "pk": 1,
     "fields": {
@@ -217,7 +198,6 @@
         "customform": true,
         "pricesheet_type": 2,
         "inventory_category": null,
-        "wideformat": false,
         "active": true
     }
 },
@@ -237,7 +217,6 @@
         "customform": false,
         "pricesheet_type": 5,
         "inventory_category": 1,
-        "wideformat": false,
         "active": true
     }
 },
@@ -257,7 +236,6 @@
         "customform": true,
         "pricesheet_type": null,
         "inventory_category": null,
-        "wideformat": false,
         "active": true
     }
 },
@@ -277,8 +255,26 @@
         "customform": true,
         "pricesheet_type": null,
         "inventory_category": null,
-        "wideformat": false,
         "active": true
+    }
+},
+{
+    "model": "controls.category",
+    "pk": 5,
+    "fields": {
+        "name": "Postage",
+        "description": "Postage",
+        "design_type": false,
+        "formname": null,
+        "modelname": null,
+        "modal": null,
+        "setprice": false,
+        "material_type": null,
+        "template": false,
+        "customform": false,
+        "pricesheet_type": null,
+        "inventory_category": null,
+        "active": false
     }
 },
 {
@@ -293,11 +289,10 @@
         "modal": false,
         "setprice": false,
         "material_type": null,
-        "template": true,
+        "template": false,
         "customform": false,
         "pricesheet_type": 1,
         "inventory_category": 6,
-        "wideformat": false,
         "active": true
     }
 },
@@ -317,7 +312,6 @@
         "customform": false,
         "pricesheet_type": null,
         "inventory_category": null,
-        "wideformat": false,
         "active": false
     }
 },
@@ -337,7 +331,6 @@
         "customform": false,
         "pricesheet_type": null,
         "inventory_category": 5,
-        "wideformat": false,
         "active": false
     }
 },
@@ -348,17 +341,16 @@
         "name": "Wide format printing",
         "description": "Wide format printing",
         "design_type": false,
-        "formname": "WideFormatForm",
-        "modelname": "WideFormat",
-        "modal": false,
+        "formname": null,
+        "modelname": null,
+        "modal": null,
         "setprice": false,
         "material_type": null,
         "template": false,
-        "customform": true,
-        "pricesheet_type": 6,
+        "customform": false,
+        "pricesheet_type": null,
         "inventory_category": 2,
-        "wideformat": true,
-        "active": true
+        "active": false
     }
 },
 {
@@ -377,7 +369,6 @@
         "customform": false,
         "pricesheet_type": 4,
         "inventory_category": 4,
-        "wideformat": false,
         "active": true
     }
 },
@@ -397,7 +388,6 @@
         "customform": false,
         "pricesheet_type": null,
         "inventory_category": null,
-        "wideformat": false,
         "active": false
     }
 },
@@ -417,7 +407,6 @@
         "customform": true,
         "pricesheet_type": null,
         "inventory_category": null,
-        "wideformat": false,
         "active": true
     }
 },
@@ -437,7 +426,6 @@
         "customform": true,
         "pricesheet_type": null,
         "inventory_category": null,
-        "wideformat": false,
         "active": true
     }
 },
@@ -455,7 +443,7 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 11,
+    "pk": 2,
     "fields": {
         "category": 6,
         "name": "Generic Envelope",
@@ -467,23 +455,11 @@
 },
 {
     "model": "controls.subcategory",
-    "pk": 12,
+    "pk": 3,
     "fields": {
         "category": 2,
         "name": "General Printed Item",
         "description": null,
-        "template": true,
-        "set_price": false,
-        "setprice_name": null
-    }
-},
-{
-    "model": "controls.subcategory",
-    "pk": 15,
-    "fields": {
-        "category": 9,
-        "name": "Banner",
-        "description": "Generic Banner",
         "template": true,
         "set_price": false,
         "setprice_name": null
@@ -511,14 +487,6 @@
     "fields": {
         "category": 3,
         "name": "Grede"
-    }
-},
-{
-    "model": "controls.setpriceitem",
-    "pk": 4,
-    "fields": {
-        "category": null,
-        "name": "Postage"
     }
 },
 {
@@ -576,16 +544,6 @@
     }
 },
 {
-    "model": "controls.setpriceitemprice",
-    "pk": 4,
-    "fields": {
-        "name": 4,
-        "description": "1oz Stamp",
-        "set_quantity": "1.00",
-        "price": "0.68"
-    }
-},
-{
     "model": "controls.measurement",
     "pk": 1,
     "fields": {
@@ -617,7 +575,7 @@
     "model": "controls.measurement",
     "pk": 5,
     "fields": {
-        "name": "SqFt"
+        "name": "Sq Ft"
     }
 },
 {
@@ -625,185 +583,6 @@
     "pk": 6,
     "fields": {
         "name": "Yd"
-    }
-},
-{
-    "model": "controls.measurement",
-    "pk": 7,
-    "fields": {
-        "name": "In"
-    }
-},
-{
-    "model": "controls.jobstatus",
-    "pk": 1,
-    "fields": {
-        "name": "In Progress",
-        "icon": "jobstatus/inprogress_48.png",
-        "workorder_type": false,
-        "workorder_item_type": false
-    }
-},
-{
-    "model": "controls.jobstatus",
-    "pk": 2,
-    "fields": {
-        "name": "Design",
-        "icon": "jobstatus/design_50.png",
-        "workorder_type": false,
-        "workorder_item_type": false
-    }
-},
-{
-    "model": "controls.jobstatus",
-    "pk": 3,
-    "fields": {
-        "name": "To Be Printed",
-        "icon": "jobstatus/print_50.png",
-        "workorder_type": false,
-        "workorder_item_type": false
-    }
-},
-{
-    "model": "controls.jobstatus",
-    "pk": 4,
-    "fields": {
-        "name": "Waiting for customer",
-        "icon": "jobstatus/waiting_50.png",
-        "workorder_type": false,
-        "workorder_item_type": false
-    }
-},
-{
-    "model": "controls.jobstatus",
-    "pk": 5,
-    "fields": {
-        "name": "Waiting for product",
-        "icon": "jobstatus/product_delivery_58.png",
-        "workorder_type": false,
-        "workorder_item_type": false
-    }
-},
-{
-    "model": "controls.jobstatus",
-    "pk": 6,
-    "fields": {
-        "name": "Completed",
-        "icon": "jobstatus/complete_48.png",
-        "workorder_type": false,
-        "workorder_item_type": false
-    }
-},
-{
-    "model": "controls.jobstatus",
-    "pk": 7,
-    "fields": {
-        "name": "Ready for Delivery",
-        "icon": "jobstatus/delivery_48.png",
-        "workorder_type": false,
-        "workorder_item_type": false
-    }
-},
-{
-    "model": "controls.jobstatus",
-    "pk": 8,
-    "fields": {
-        "name": "Ready for Pickup",
-        "icon": "jobstatus/pickup_50.png",
-        "workorder_type": false,
-        "workorder_item_type": false
-    }
-},
-{
-    "model": "controls.jobstatus",
-    "pk": 9,
-    "fields": {
-        "name": "Quote Needed",
-        "icon": "jobstatus/estimate-50.png",
-        "workorder_type": false,
-        "workorder_item_type": false
-    }
-},
-{
-    "model": "controls.usergroup",
-    "pk": 1,
-    "fields": {
-        "name": "Design"
-    }
-},
-{
-    "model": "controls.usergroup",
-    "pk": 2,
-    "fields": {
-        "name": "PrePress"
-    }
-},
-{
-    "model": "controls.usergroup",
-    "pk": 3,
-    "fields": {
-        "name": "Signshop"
-    }
-},
-{
-    "model": "controls.usergroup",
-    "pk": 4,
-    "fields": {
-        "name": "Production"
-    }
-},
-{
-    "model": "controls.usergroup",
-    "pk": 5,
-    "fields": {
-        "name": "Delivery"
-    }
-},
-{
-    "model": "controls.usergroup",
-    "pk": 6,
-    "fields": {
-        "name": "Billing"
-    }
-},
-{
-    "model": "controls.paymenttype",
-    "pk": 1,
-    "fields": {
-        "name": "Cash",
-        "detail_field": null
-    }
-},
-{
-    "model": "controls.paymenttype",
-    "pk": 2,
-    "fields": {
-        "name": "Credit Card",
-        "detail_field": null
-    }
-},
-{
-    "model": "controls.paymenttype",
-    "pk": 3,
-    "fields": {
-        "name": "Check",
-        "detail_field": "check_number"
-    }
-},
-{
-    "model": "controls.paymenttype",
-    "pk": 4,
-    "fields": {
-        "name": "Gift Certificate",
-        "detail_field": "giftcard_number"
-    }
-},
-{
-    "model": "controls.paymenttype",
-    "pk": 5,
-    "fields": {
-        "name": "Refund",
-        "detail_field": "refunded_invoice_number"
     }
 }
 ]
