@@ -18,7 +18,8 @@ from .views import (
     customer_notes,
     detail,
     dashboard,
-    expanded_detail
+    expanded_detail,
+    details_contact_info
 )
 
 app_name='customers'
@@ -37,6 +38,7 @@ urlpatterns = [
     path("cust_info/", cust_info, name='cust_info'),
     path("edit_contact/", edit_contact, name='edit_contact'),
     path("contact_info/", contact_info, name='contact_info'),
+    path("details_contact_info/", details_contact_info, name='details_contact_info'),
     path("customer_notes/<int:pk>/", customer_notes, name='customer_notes'),
     path("detail/<int:id>/", detail, name='detail'),
     path("dashboard/", dashboard, name='customer_dashboard'),

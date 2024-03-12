@@ -32,6 +32,7 @@ from .views import (
     edit_parent_item,
     edit_postage_item,
     item_status,
+    stale,
     # removed,
 )
 
@@ -66,6 +67,7 @@ urlpatterns = [
     path('notes/<int:pk>/', notes, name='notes'),
     path('item_status/<int:pk>/', item_status, name='item_status'),
     path('notes/', notes, name='notes'),
+    path('stale/<int:pk>/', stale, name='stale'),
     path('readnotes/<int:pk>/', readnotes, name='readnotes'),
     path('workordernotes/<int:pk>/', workorder_notes, name='workorder_notes'),
     path('quote_to_workorder/', quote_to_workorder, name='quote_to_workorder'),

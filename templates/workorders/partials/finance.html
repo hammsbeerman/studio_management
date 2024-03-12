@@ -1,0 +1,17 @@
+<h5 class="card-title"></h5>
+<p class="card-text">
+<b>Open Balance: </b>{{ customer.open_balance }}<br/>
+<b>Credits: </b>{{ customer.credit }}<br/>
+<b>Average Days to Pay: </b>{{ customer.avg_days_to_pay }}<br/>
+<b>Aging: </b><br/>
+Current: {{ current.open_balance__sum|floatformat:2 }}<br/>
+30-60: {{ thirty.open_balance__sum|floatformat:2 }}<br/>
+60-90: {{ sixty.open_balance__sum|floatformat:2 }}<br/>
+90-120: {{ ninety.open_balance__sum|floatformat:2 }}<br/>
+120+: {{ onetwenty.open_balance__sum|floatformat:2 }}<br/>
+<b>High Balance: </b>{{ customer.high_balance }}<br/>
+
+
+
+
+    

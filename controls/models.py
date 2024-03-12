@@ -107,6 +107,8 @@ class Measurement(models.Model):
 class JobStatus(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=True)
     icon = models.ImageField(null=True, blank=True, upload_to="jobstatus/")
+    workorder_type = models.BooleanField('Workorder Type', blank=True, null=True, default=False)
+    workorder_item_type = models.BooleanField('Workorder Item Type', blank=True, null=True, default=False)
 
     def __str__(self):
         return self.name

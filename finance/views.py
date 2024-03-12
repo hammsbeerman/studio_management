@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
+from django.db.models import Avg, Count, Min, Sum
 from django.db.models import Q
 from django.utils import timezone
 from customers.models import Customer
@@ -26,7 +27,6 @@ def open_workorders(request):
     customers = Customer.objects.all()
     if request.method == "GET":
         customer = request.GET.get('customers')
-        print(customer)
         selected_customer = Customer.objects.get(id=customer)
         try:
             workorders = Workorder.objects.filter(customer_id = customer).exclude(total_balance=0).exclude(paid_in_full=1).order_by("-workorder")
@@ -78,7 +78,23 @@ def recieve_payment(request):
                 print(customer)
                 cust = Customer.objects.get(id=customer)
                 credit = cust.credit + obj.amount
-                Customer.objects.filter(pk=customer).update(credit=credit)
+                open_balance = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).aggregate(sum=Sum('open_balance'))
+                open_balance = list(open_balance.values())[0]
+                print(open_balance)
+                balance = open_balance
+                if not balance:
+                    balance = 0
+                high_balance = cust.high_balance
+                if not high_balance:
+                    high_balance = 0
+                high_balance = open_balance - credit
+                print(high_balance)
+                if high_balance > balance:
+                    high_balance = high_balance
+                else:
+                    high_balance = balance
+                print(high_balance)
+                Customer.objects.filter(pk=customer).update(credit=credit, open_balance=open_balance, high_balance=high_balance)
                 return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     form = PaymentForm
     context = {
@@ -131,7 +147,18 @@ def apply_payment(request):
             workorder = Workorder.objects.get(id=pk)
             partial = request.POST.get('partial_payment')
             total = workorder.total_balance
+            date_billed = workorder.date_billed
+            if not date_billed:
+                date_billed = timezone.now()
             date = timezone.now()
+            days_to_pay = date - date_billed
+            days_to_pay = abs((days_to_pay).days)
+            avg_days = Workorder.objects.filter(customer_id=cust).exclude(days_to_pay=0).aggregate(avg=Avg('days_to_pay'))
+            avg_days = list(avg_days.values())[0]
+            print(avg_days)
+            print(days_to_pay)
+            if not avg_days:
+                avg_days = 0
             credit = customer.credit
             if partial:
                 print('partial')
@@ -153,16 +180,24 @@ def apply_payment(request):
                     credit = credit - partial
                     print(full_payment)
                     Workorder.objects.filter(pk=pk).update(open_balance = open, amount_paid = paid, paid_in_full = full_payment, date_paid = date)
-                    Customer.objects.filter(pk=cust).update(credit = credit)
+                    open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+                    open_balance = list(open_balance.values())[0]
+                    open_balance = round(open_balance, 2)
+                    print(open_balance)
+                    Customer.objects.filter(pk=cust).update(credit = credit, open_balance = open_balance)
                     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
                 else:
                     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
             else:
                 open = workorder.open_balance   
             if credit > open:
-                Workorder.objects.filter(pk=pk).update(open_balance = 0, amount_paid = total, paid_in_full = 1, date_paid = date)
+                Workorder.objects.filter(pk=pk).update(open_balance = 0, amount_paid = total, paid_in_full = 1, date_paid = date, days_to_pay = days_to_pay)
                 credit = credit - open
-                Customer.objects.filter(pk=cust).update(credit = credit)
+                open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+                open_balance = list(open_balance.values())[0]
+                open_balance = round(open_balance, 2)
+                print(open_balance)
+                Customer.objects.filter(pk=cust).update(credit = credit, avg_days_to_pay = avg_days, open_balance = open_balance)
     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
 
 def unapply_payment(request):
@@ -201,7 +236,11 @@ def unapply_payment(request):
         paid = workorder.amount_paid
         credit = customer.credit + paid
         Workorder.objects.filter(pk=pk).update(open_balance = total, amount_paid = 0, paid_in_full = 0)
-        Customer.objects.filter(pk=cust).update(credit = credit)
+        open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+        open_balance = list(open_balance.values())[0]
+        open_balance = round(open_balance, 2)
+        print(open_balance)
+        Customer.objects.filter(pk=cust).update(credit = credit, open_balance = open_balance)
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
                 
 

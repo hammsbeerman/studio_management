@@ -3,6 +3,7 @@ from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
 from django.db.models import Avg, Count, Min, Sum
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from decimal import Decimal
 from datetime import datetime
 from django.contrib import messages
@@ -87,19 +88,22 @@ def create_base(request):
             print(quote)
             if quote == '1':
                 print('quote')
+                print('test')
                 n = Numbering.objects.get(name='Quote Number')
                 form.instance.quote_number = n.value
                 form.instance.workorder = n.value
+                form.instance.workorder_status_id = 9
+                print(form.instance.workorder_status) 
                 print(n.value)
             else: 
                 print('workorder')
                 n = Numbering.objects.get(name='Workorder Number')
                 form.instance.workorder = n.value
+                form.instance.workorder_status_id = 1
             workorder = n.value
             inc = int('1')
             n.value = n.value + inc
             print(n.value)
-            
             ## End of numbering
             print('hello')
             form.save()
@@ -1375,8 +1379,11 @@ def complete_status(request):
     parent = WorkorderItem.objects.filter(workorder=workorder, parent=1)
     parent.update(absolute_price = 0, tax_amount = 0, total_with_tax = 0)
     for p in parent:
+        #absolute price
         ap = 0
+        #tax amount
         ta = 0
+        #total with tax
         twt = 0
         childs = WorkorderItem.objects.filter(parent_item=p.id)
         for c in childs:
@@ -1402,12 +1409,55 @@ def complete_status(request):
         parent.total_with_tax = twt
         parent.save()
     item = Workorder.objects.get(id = workorder)
+    total_invoice = WorkorderItem.objects.filter(workorder_id=workorder).exclude(billable=0).aggregate(
+            sum=Sum('total_with_tax'),
+            tax=Sum('tax_amount'),
+            )
+    #total_invoice = list(WorkorderItem.objects.aggregate(Sum('total_with_tax')).values())[0]
+    total = list(total_invoice.values())[0]
+    total = round(total, 2)
+    tax = list(total_invoice.values())[1]
+    tax = round(tax, 2)
+    base = total - tax
+    print(total)
+    print(tax)
+    print(base)
     if item.completed == 0:
+        item.total_balance = total
+        item.open_balance = total
+        item.updated = timezone.now()
+        item.workorder_total = total
+        item.subtotal = base
+        item.tax = tax
+        if not item.amount_paid:
+            item.amount_paid = 0
         item.completed = 1
+        #item.total_balance = 
         item.save()
     else:
+        if not item.amount_paid:
+            item.amount_paid = 0
         item.completed = 0
+        item.total_balance = 0
+        item.open_balance = 0
+        item.completed = 0
+        item.updated = timezone.now()
+        item.workorder_total = 0
+        item.subtotal = 0
+        item.tax = 0
         item.save()
+    cust = item.customer_id
+    open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+    open_balance = list(open_balance.values())[0]
+    open_balance = round(open_balance, 2)
+    print(open_balance)
+    new_high = Customer.objects.get(id=cust)
+    if new_high.high_balance:
+        if open_balance > new_high.high_balance:
+            high_balance = open_balance
+        else:
+            high_balance = new_high.high_balance
+    Customer.objects.filter(pk=cust).update(open_balance = open_balance, high_balance = high_balance)
     return redirect("workorders:overview", id=item.workorder)
 
 @login_required
@@ -1446,3 +1496,10 @@ def item_status(request, pk=None):
         'pk': pk,
     }
     return render(request, 'workorders/modals/item_status.html', context) 
+
+@login_required
+def stale(request, pk=None):
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    if item:
+        WorkorderItem.objects.filter(pk=pk).update(updated = timezone.now())
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'}) 

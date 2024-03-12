@@ -3,6 +3,8 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.db.models import Q
+from datetime import timedelta
+from django.utils import timezone
 from django.template.loader import render_to_string
 from workorders.models import Workorder, WorkorderItem
 from customers.models import Customer, Contact
@@ -35,8 +37,6 @@ def dashboard(request, id=None):
         #'quote': quote,
         'status':status,
     }
-    #HTML_STRING = render_to_string("home.html", context)
-    #return HttpResponse(HTML_STRING)
     return render(request, "dashboard/employee_dashboard.html", context)
 
 
@@ -107,3 +107,31 @@ def group_item_list(request, id=None):
         'items':items,
     }
     return render(request, "dashboard/partials/group_item_list.html", context)
+
+@login_required
+def stale_item_list(request, id=None):
+    user = request.user.profile.id
+    group = Profile.objects.get(user=user)
+    test = group.group.all()
+    print(test)
+    stale_date = timezone.now() - timedelta(days=4)
+    print(stale_date)
+    items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_date)
+    #items = WorkorderItem.objects.filter(updated__lt=stale_date)
+    #for x in test:
+    ##items = WorkorderItem.objects.filter(assigned_group_id__exact = test).exclude(completed=1).order_by("-workorder")
+    # groups = UserGroup.group_set.all()
+    # print(groups)
+    # #group = Profile.objects.filter(user=user)
+    # group = Profile.objects.get(user_id=user).UserGroup
+    # print(group)
+    # for x in group:
+    #     print(group)
+    # print('Group user')
+    print(user)
+    #items = WorkorderItem.objects.filter(job_status_id = 2).exclude(completed=1).order_by("-workorder")
+
+    context = {
+        'items':items,
+    }
+    return render(request, "dashboard/partials/stale_item_list.html", context)

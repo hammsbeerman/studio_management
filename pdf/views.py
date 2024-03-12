@@ -4,6 +4,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 ###The following for weasyprint
 from django.template.loader import get_template, render_to_string
 from weasyprint import HTML, CSS
@@ -67,6 +68,10 @@ def export_pdf(request, id):
 
     items = WorkorderItem.objects.filter(workorder=id)
     workorder = Workorder.objects.get(id=id)
+    if not workorder.date_billed:
+        workorder.date_billed = timezone.now()
+        workorder.billed = 1
+        workorder.save()
     customer = Customer.objects.get(id=workorder.customer.id)
     try:
         contact = Contact.objects.get(id = workorder.contact)

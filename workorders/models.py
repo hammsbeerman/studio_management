@@ -43,7 +43,9 @@ class Workorder(models.Model):
     open_balance = models.DecimalField('Open Balance', max_digits=8, decimal_places=2, blank=True, null=True)
     paid_in_full = models.BooleanField('Paid in Full', blank=False, null=False, default=False)
     date_paid = models.DateTimeField(auto_now = False, blank=True, null=True)
+    aging = models.PositiveSmallIntegerField('Aging', blank=True, null=True)
     days_to_pay = models.CharField('Days to pay', max_length=100, blank=True, null=True)
+    workorder_status = models.ForeignKey(JobStatus, blank=True, null=True, on_delete=models.SET_NULL)
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})

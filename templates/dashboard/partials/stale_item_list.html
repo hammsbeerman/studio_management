@@ -1,0 +1,27 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% if items %}
+Stale Items: (unchanged for 7 days)
+<table>
+{% for x in items %}
+            <tr>
+                <td><a href="{% url 'workorders:overview' id=x.workorder_hr %}">{{ x.workorder_hr }} -- {{ x.description }} -- {{ x.workorder.hr_customer }} </a></td>
+                <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_status' pk=x.pk%}" hx-target="#dialog">{% if x.job_status %}<img src="{{ x.job_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</button></td>
+                <td>{% if x.notes %}
+                    <button class="btn btn-primary-outline" hx-get="{% url 'workorders:notes' pk=x.pk%}" hx-target="#dialog">
+                        <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+                    </button>
+                {% else %}
+                    <button class="btn btn-primary-outline" hx-get="{% url 'workorders:notes' pk=x.pk%}" hx-target="#dialog">
+                        <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
+                    </button>
+                {% endif %}</td>
+                <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:stale' pk=x.pk%}" hx-target="#dialog">
+                    <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+                </button></td>
+                </tr>
+            {% endfor %}
+            </table>
+
+{% endif %}

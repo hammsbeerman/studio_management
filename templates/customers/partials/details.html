@@ -3,15 +3,27 @@
 
 
 {% block content %}
+<script>
+
+
+  $(document).ready(function () {
+    $("#customer").select2();
+    $('#customer').on('select2:select', (e) => {
+      htmx.trigger("#customer", "change")
+    });
+  })
+
+
+
+</script>
 <script src="{% static 'js/order_out_form.js' %}"></script>
 <script src="{% static 'js/setprice_form.js' %}"></script>
-<select class="custom-select mb-4" id="customers" hx-trigger="change, itemListChanged from:body" name="customers" hx-get="{% url 'customers:expanded_detail' %}" hx-target="#customers">
+<select class="custom-select mb-4" id="customer" hx-trigger="change, itemListChanged from:body" name="customers" hx-get="{% url 'customers:expanded_detail' %}" hx-target="#customers">
     <option value="{{ customer.id}}" selected>{{customer}}</option>
         {% for x in customers %}
           <option value="{{ x.id }}">{{ x.company_name }}</option>
         {% endfor %}
     </select>
-Open Balance: {{ balance.total_balance__sum|floatformat:2 }}
 <div class="row">
   <div class="col-md-3 mb-sm-0">
     <div id="customer-info-card" class="card" hx-trigger="CustomerAdded from:body" hx-get="{% url 'customers:cust_info'  %}?customer={{ customer.id }}" hx-target="this">
@@ -19,12 +31,20 @@ Open Balance: {{ balance.total_balance__sum|floatformat:2 }}
       </div>
   </div>
   <div class="col-md-3">
-    <div id="contact-card" class="card" hx-trigger="ContactChanged from:body" hx-get="{% url 'customers:contact_info'  %}?contact={{ contact.id }}&workorder={{changeworkorder}}&customer={{changecustomer}}" hx-target="this">
-      {% include 'customers/partials/contact_info.html' %}
+    <div id="contact-card" class="card" hx-trigger="ContactChanged from:body" hx-get="{% url 'customers:details_contact_info'  %}?contact={{ contact.id }}&customer={{customer.id}}" hx-target="this">
+      {% include 'customers/partials/details_contact_info.html' %}
       </div>
   </div>
   <div class="col-md-3">
-      
+    <div class="card">
+      <div class="card-header">
+      Financial Details
+      </div>
+      <div class="card-body">
+        {% include 'workorders/partials/finance.html' %}
+      </div>
+      <div class="card-footer"></div>
+  </div>
   </div>
   <div class="col-md-3">
       <div class="card">
@@ -42,27 +62,53 @@ Open Balance: {{ balance.total_balance__sum|floatformat:2 }}
 <div class="row">
     <div class="col-sm-4">
         Active Workorders
-        <p><ul>
+        <p><table>
             {% for x in  workorders %}
-            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a></li>
+            <tr>
+              <td>
+              <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a></td>
+              <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
+              </tr>
             {% endfor %}
-            </ul></p>
+            </p>
     </div>
     <div class="col-sm-4">
         Recently Completed
-        <p><ul>
+        <p><table>
             {% for x in  completed %}
-            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a></li>
+            <tr>
+              <td>
+                <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a>
+              </td>
+              <td>
+              {% if x.billed %}
+                  {% if x.paid_in_full %}
+                    <img src="{% static 'img/site/paidbill-50.png' %}" style="width:20px;height:20px;">
+                  {% elif x.aging > 30 %}
+                  {{ x.aging }}
+                    <img src="{% static 'img/site/overduebill-50.png' %}" style="width:20px;height:20px;">
+                  {% else %}
+                  <img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;">
+                  {% endif %}
+              {% endif %}
+              </td>
+              <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
+            </tr>
             {% endfor %}
-            </ul></p>
+          </table></p>
     </div>
     <div class="col-sm-4">
         Quotes
-        <p><ul>
+        <p><table>
             {% for x in  quote %}
-            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a></li>
+            <tr>
+              <td>
+                <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a>
+              </td>
+              <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
+            </tr>
             {% endfor %}
-            </ul></p>
+          </table></p>
     </div>
     {% if voided %}
     <div class="col-sm-3">
