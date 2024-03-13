@@ -757,13 +757,28 @@ def wideformat_template(request, id=None):
         mask = request.POST.get('mask')
         laminate = request.POST.get('laminate')
         substrate = request.POST.get('substrate')
+        print(mask)
+        print(laminate)
+        print(substrate)
         print('posted')
         form = WideFormatForm(request.POST, instance=item)
         if form.is_valid():
             obj = form.save(commit=False)
-            obj.mask_id = mask
-            obj.laminate_id = laminate
-            obj.substrate_id = substrate
+            try:
+                int(mask)
+                obj.mask_id = mask
+            except:
+                pass
+            try:
+                int(laminate)
+                obj.laminate_id = laminate
+            except:
+                pass
+            try:
+                int(substrate)
+                obj.substrate_id = substrate
+            except:
+                pass
             obj.save()
         else:
             print(form.errors)

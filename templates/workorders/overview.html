@@ -84,7 +84,7 @@
   {% if workorder.completed == 0 %}
          <button hx-get="{% url 'workorders:add_item' parent_id=workid %}" hx-target="#dialog" class="btn btn-primary">Add an item</button>
   {% else %}
-          <a href="{% url 'pdf:export_pdf' id=workid %}" class="btn btn-primary">Create PDF Invoice</a>
+          <a href="{% url 'pdf:export_pdf' id=workid %}" class="btn btn-primary" target="_blank">Create PDF Invoice</a>
   {% endif %}
 
 
