@@ -87,7 +87,7 @@ class InventoryDetail(models.Model):
 
 
 class OrderOut(models.Model):
-    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.SET_NULL)
+    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.CASCADE)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=True, null=True)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
@@ -115,7 +115,7 @@ class OrderOut(models.Model):
     
 class SetPrice(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
-    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.SET_NULL)
+    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.CASCADE)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=True, null=True)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
@@ -146,7 +146,7 @@ class SetPrice(models.Model):
         return self.workorder.workorder
 
 class Photography(models.Model):
-    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.SET_NULL)
+    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.CASCADE)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=True, null=True)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
