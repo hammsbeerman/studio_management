@@ -1030,7 +1030,10 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail.pk = None
             objdetail.workorder_item = obj.pk
             objdetail.last_item_order = obj.workorder_hr
-            objdetail.last_item_price = objdetail.price_total
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.price_total
             objdetail.save()
         except Exception as e:
             print("The error is:", e)
@@ -1039,7 +1042,10 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail.pk = None
             objdetail.workorder_item = obj.pk
             objdetail.last_item_order = obj.workorder_hr
-            objdetail.last_item_price = objdetail.total_price
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.total_price
             objdetail.save()
         except Exception as e:
             print("The error is:", e)
@@ -1048,7 +1054,10 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail.pk = None
             objdetail.workorder_item = obj.pk
             objdetail.last_item_order = obj.workorder_hr
-            objdetail.last_item_price = objdetail.total_price
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.total_price
             objdetail.save()
         except Exception as e:
             print("The error is:", e)
@@ -1072,7 +1081,10 @@ def copy_workorder_item(request, pk, workorder=None):
         obj.workorder_id = new.pk
         #Fill in missing data in new line item
         obj.last_item_order = last_workorder
-        obj.last_item_price = obj.total_price
+        if obj.absolute_price:
+            obj.last_item_price = obj.absolute_price
+        else:
+            obj.last_item_price = obj.total_price
         # print(obj.last_item_order)
         obj.save()
         #Copy corresponding kruegerjobdetail to new object
@@ -1083,7 +1095,10 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail.workorder = new.pk
             objdetail.hr_workorder = new.workorder
             objdetail.last_item_order = last_workorder
-            objdetail.last_item_price = objdetail.price_total
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.price_total
             objdetail.save()
         except Exception as e:
             print("The error is:", e)
@@ -1093,7 +1108,10 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail.pk = None
             objdetail.workorder_item = obj.pk
             objdetail.last_item_order = obj.workorder_hr
-            objdetail.last_item_price = objdetail.total_price
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.total_price
             objdetail.save()
         except Exception as e:
             print("The error is:", e)
@@ -1103,7 +1121,10 @@ def copy_workorder_item(request, pk, workorder=None):
             print(objdetail.description)
             objdetail.workorder_item = obj.pk
             objdetail.last_item_order = obj.workorder_hr
-            objdetail.last_item_price = objdetail.total_price
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.total_price
             objdetail.save()
         except Exception as e:
             print("The error is:", e)
@@ -1156,7 +1177,10 @@ def copy_workorder(request, id=None):
         item.pk=None
         item.workorder_hr=newworkorder
         item.last_item_order=workorder
-        item.last_item_price=price            
+        if item.absolute_price:
+            item.last_item_price = item.absolute_price
+        else:
+            item.last_item_price=price            
         item.save()
         #Copy kruegerjobdetail for each item
         print(item.pk)
@@ -1169,7 +1193,10 @@ def copy_workorder(request, id=None):
             objdetail.workorder_id = new_workorder_id
             objdetail.hr_workorder = newworkorder
             objdetail.last_item_order = lastworkorder
-            objdetail.last_item_price = objdetail.price_total
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.price_total
             objdetail.save()
         except Exception as e:
             print("The error is:", e)
@@ -1181,7 +1208,10 @@ def copy_workorder(request, id=None):
             objdetail.pk = None
             objdetail.hr_workorder = newworkorder
             objdetail.last_item_order = lastworkorder
-            objdetail.last_item_price = objdetail.total_price
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.total_price
             objdetail.save()
         except Exception as e:
             print("The error is:", e)
@@ -1193,7 +1223,10 @@ def copy_workorder(request, id=None):
             print(objdetail.description)
             objdetail.hr_workorder = newworkorder
             objdetail.last_item_order = lastworkorder
-            objdetail.last_item_price = objdetail.total_price
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.total_price
             objdetail.save()
         except Exception as e:
             print("The error is:", e)
