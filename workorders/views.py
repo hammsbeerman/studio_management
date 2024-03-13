@@ -676,7 +676,12 @@ def edit_orderout_item(request, pk, cat):
         total = obj.total_price
         override = obj.override_price
         if override:
-            temp_total = override
+                print(type(override))
+                override = (float(override))
+                override = Decimal.from_float(override)
+                temp_total = override
+                #print(type(obj.quantity))
+                price_ea = temp_total / qty
         else:
             temp_total = total
         unit_price = temp_total / qty
@@ -777,7 +782,10 @@ def edit_set_price_item(request, pk, cat):
         else:
             print(form.errors)
         #setpric = request.POST.get('unit_price')
-        qty = obj.quantity
+        qty = obj.total_pieces
+        print(qty)
+        qty = (float(qty))
+        qty = Decimal.from_float(qty)
         total = obj.total_price
         override = obj.override_price
         #setprice_category = obj.setprice_item
@@ -794,7 +802,12 @@ def edit_set_price_item(request, pk, cat):
         #print(setprice_item.name)
         #print(setprice_item.description)
         if override:
-            temp_total = override
+                print(type(override))
+                override = (float(override))
+                override = Decimal.from_float(override)
+                temp_total = override
+                #print(type(obj.quantity))
+                price_ea = temp_total / qty
         else:
             temp_total = total
         unit_price = temp_total / qty
