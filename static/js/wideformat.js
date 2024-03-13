@@ -86,7 +86,7 @@ $(document).ready(function(){
       });
 
 
-      $('#id_container').on("click change load",function(){
+      /*$('#id_container').on("click change load",function(){
 
         var test1 = $('#test1').val();
         var test2 = $('#test2').val();
@@ -102,7 +102,7 @@ $(document).ready(function(){
         //$('#id_price_total').val(price);
 
 
-      });
+      });*/
 
       $('#id_container').on("click change load",function(){
 

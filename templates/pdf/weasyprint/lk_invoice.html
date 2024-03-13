@@ -180,11 +180,11 @@ table.ordert-first {margin-bottom: 11px;}
             {% for item in items %}
               {% if item.child == 0 %}
               <tr>
-                <td>{{item.quantity}}</td>
-                <td>{{item.description}}</td>
-                <td>{{item.absolute_price}}</td>
-                <td></td>
-                <td>{% if item.tax_exempt %}--{% else %}T{%endif%}</td>          
+                <td>{% if item.quantity%}{{item.quantity}}{% endif %}</td>
+                <td>{% if item.description%}{{item.description}}{% endif %}</td>
+                <td>{% if item.unit_price %}{{item.unit_price}}{% endif %}</td>
+                <td>{% if item.absolute_price %}{% if item.billable %}{% if item.absolute_price %}{{item.absolute_price}}{% else %}{{item.total}}{% endif %}{% else %} -- {% endif %}{% endif %}</td>
+                <td>{% if item.absolute_price %}{% if item.tax_exempt %}--{% else %}T{%endif%}{% endif %}</td>          
               </tr>
               {% if item.show_notes %}
               <tr>
@@ -229,7 +229,7 @@ table.ordert-first {margin-bottom: 11px;}
 	        <tr>
               <td rowspan="2">
 			        <div style="width:148px;">We offer vehicle lettering, signs, and large format printing. Inquire today!</div></td>
-              <td  rowspan="2"><div style="width:126px;">WeAsk us about Wedding and Portrait Photography!</div></td>
+              <td  rowspan="2"><div style="width:126px;">Ask us about Wedding and Portrait Photography!</div></td>
               <td width="113" style="font-weight:bold;">SALES TAX (5.5%)</td>
               <td width="113" style="font-weight:bold;">${{ tax.tax_amount__sum|floatformat:2 }}</td>
             </tr>

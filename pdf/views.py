@@ -67,6 +67,7 @@ def export_pdf(request, id):
     response['Content-Transfer-Encoding'] = 'binary'
 
     items = WorkorderItem.objects.filter(workorder=id)
+    
     workorder = Workorder.objects.get(id=id)
     if not workorder.date_billed:
         workorder.date_billed = timezone.now()

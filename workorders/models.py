@@ -61,7 +61,7 @@ class Workorder(models.Model):
 
 
 class WorkorderItem(models.Model):
-    workorder = models.ForeignKey(Workorder, blank=False, null=True, on_delete=models.SET_NULL)
+    workorder = models.ForeignKey(Workorder, blank=False, null=True, on_delete=models.CASCADE)
     workorder_hr = models.CharField('Workorder Human Readable', max_length=100, blank=False, null=False)
     item_category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.SET_NULL)
     item_subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)

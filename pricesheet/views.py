@@ -473,7 +473,11 @@ def edit_wideformat_item(request, pk, cat,):
             total = obj.price_total
             override = obj.override_price
             if override:
+                print(type(override))
+                override = (float(override))
                 temp_total = override
+                print(type(obj.quantity))
+                price_ea = temp_total / obj.quantity
             else:
                 temp_total = total
             if mask.isnumeric():
@@ -484,6 +488,8 @@ def edit_wideformat_item(request, pk, cat,):
                 obj.substrate_id = substrate
             obj.save()
             #update workorderitem table
+            print('temptotal')
+            print(temp_total)
             lineitem = WorkorderItem.objects.get(id=pk)
             lineitem.internal_company = internal_company
             lineitem.description = obj.description
@@ -499,8 +505,21 @@ def edit_wideformat_item(request, pk, cat,):
                 lineitem.tax_amount = 0
                 lineitem.total_with_tax = lineitem.absolute_price
             else:
-                lineitem.tax_amount = lineitem.absolute_price * tax_percent
-                lineitem.total_with_tax = lineitem.absolute_price * tax
+                # print(type(tax_percent))
+                # print(tax_percent)
+                # print(type(lineitem.absolute_price))
+                # print(lineitem.absolute_price)
+                #tax_percent = (float(tax_percent))
+                #print(tax_percent)
+                absolute_price = (float(lineitem.absolute_price))
+                #print(type(absolute_price))
+                absolute_price = Decimal.from_float(absolute_price)
+                #print(type(absolute_price))
+                #print(absolute_price)
+                lineitem.tax_amount = absolute_price * tax_percent
+                print('tax_amount')
+                print(lineitem.tax_amount)
+                lineitem.total_with_tax = absolute_price * tax
             if lineitem.notes:
                 notes = lineitem.notes
             else:
