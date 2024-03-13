@@ -114,7 +114,7 @@ def stale_item_list(request, id=None):
     group = Profile.objects.get(user=user)
     test = group.group.all()
     print(test)
-    stale_date = timezone.now() - timedelta(days=4)
+    stale_date = timezone.now() - timedelta(days=-7)
     print(stale_date)
     items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_date).exclude(completed=1)
     #items = WorkorderItem.objects.filter(updated__lt=stale_date)

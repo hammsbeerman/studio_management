@@ -22,7 +22,7 @@ admin.site.register(Workorder, WorkorderAdmin)
 
 
 class WorkorderItemAdmin(admin.ModelAdmin):
-    list_display = ('workorder', 'item_category', 'design_type', 'description', 'quantity', 'unit_price', 'total_price')
+    list_display = ('workorder', 'item_category', 'design_type', 'description', 'quantity', 'unit_price', 'total_price', 'created', 'updated')
 
 admin.site.register(WorkorderItem, WorkorderItemAdmin)
     
