@@ -259,7 +259,11 @@ def edititem(request, id, pk, cat,):
             total = obj.price_total
             override = obj.override_price
             if override:
+                print(type(override))
+                override = (float(override))
                 temp_total = override
+                #print(type(obj.quantity))
+                price_ea = temp_total / obj.set_per_book
             else:
                 temp_total = total
             obj.save()
