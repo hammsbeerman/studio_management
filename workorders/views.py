@@ -1526,7 +1526,16 @@ def item_status(request, pk=None):
         item = get_object_or_404(WorkorderItem, pk=id)
         form = JobStatusForm(request.POST, instance=item)
         if form.is_valid():
-                form.save()
+                obj = form.save(commit=False)
+                completed = obj.completed
+                if obj.job_status == '6':
+                    obj.completed = 1
+                else:
+                    obj.completed = 0
+                if completed == 1:
+                    obj.job_status_id = 6
+                    obj.completed = 1
+                obj.save()
                 return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     form = JobStatusForm(instance=item)
     context = {

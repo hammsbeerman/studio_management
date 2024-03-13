@@ -90,7 +90,7 @@ class NoteForm(forms.ModelForm):
 class JobStatusForm(forms.ModelForm):
     class Meta:
         model = WorkorderItem
-        fields = ['job_status', 'assigned_user', 'assigned_group']
+        fields = ['job_status', 'assigned_user', 'assigned_group', 'completed']
         labels = {
 
         }

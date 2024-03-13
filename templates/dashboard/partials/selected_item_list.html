@@ -10,6 +10,7 @@
 </select>
 <table>
     {% for x in items %}
+    {% if x.workorder.completed is False %}
     <tr>
         <td><a href="{% url 'workorders:overview' id=x.workorder_hr %}">{{ x.workorder_hr }} -- {{ x.description }} -- {{ x.workorder.hr_customer }} </a></td>
         <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_status' pk=x.pk%}" hx-target="#dialog">{% if x.job_status %}<img src="{{ x.job_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</button></td>
@@ -23,5 +24,6 @@
             </button>
         {% endif %}</td>
         </tr>
+    {% endif %}
     {% endfor %}
     </table>
