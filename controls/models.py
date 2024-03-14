@@ -69,6 +69,8 @@ class SubCategory(models.Model):
 class SetPriceItem(models.Model):
     category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.SET_NULL)
     name = models.CharField('Name', max_length=100, blank=False, null=False)
+    created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = False, blank=False, null=False)
 
     def __str__(self):
         return self.name
