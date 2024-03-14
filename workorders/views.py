@@ -922,7 +922,16 @@ def edit_parent_item(request, pk, cat, workorder):
         print(twt)
         parent = WorkorderItem.objects.get(pk=pk)
         if qty:
-            parent.quantity = qty
+            #parent.quantity = qty
+            print(ap)
+            print(qty)
+            dec_ap = (float(ap))
+            dec_ap = Decimal.from_float(dec_ap)
+            dec_qty = (float(qty))
+            dec_qty = Decimal.from_float(dec_qty)
+            print(dec_ap)
+            print(dec_qty)
+            parent.unit_price = dec_ap / dec_qty
         parent.description = desc
         parent.absolute_price = ap
         parent.tax_amount = ta

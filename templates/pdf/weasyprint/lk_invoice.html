@@ -182,7 +182,7 @@ table.ordert-first {margin-bottom: 11px;}
               <tr>
                 <td>{% if item.quantity%}{{item.quantity}}{% endif %}</td>
                 <td>{% if item.description%}{{item.description}}{% endif %}</td>
-                <td>{% if item.unit_price %}{{item.unit_price}}{% endif %}</td>
+                <td>{% if item.unit_price %}{{item.unit_price|floatformat:4}}{% endif %}</td>
                 <td>{% if item.absolute_price %}{% if item.billable %}{% if item.absolute_price %}{{item.absolute_price}}{% else %}{{item.total}}{% endif %}{% else %} -- {% endif %}{% endif %}</td>
                 <td>{% if item.absolute_price %}{% if item.tax_exempt %}--{% else %}T{%endif%}{% endif %}</td>          
               </tr>
