@@ -409,6 +409,7 @@ def detail(request, id=None):
         }
     return render(request, "customers/detail.html", context)
 
+@login_required
 def dashboard(request):
     customers = Customer.objects.all()
     context = {
@@ -416,6 +417,7 @@ def dashboard(request):
     }
     return render(request, "customers/dashboard.html", context)
 
+@login_required
 def expanded_detail(request):
     customers = Customer.objects.all()
     id = request.GET.get('customers')

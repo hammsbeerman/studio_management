@@ -7,12 +7,18 @@ from .decorators import unauthenticated_user, allowed_users
 @unauthenticated_user
 def login_view(request):
     if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
+        # form = AuthenticationForm(request, data=request.POST)
+        # if form.is_valid():
+        #     user = form.get_user()
+        #     login(request, user)
+        #     return redirect('/')
+        # #print(user)
+        username = request.POST["username"]
+        password = request.POST["password"]
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
             login(request, user)
             return redirect('/')
-        #print(user)
     else:
         form = AuthenticationForm(request)
     context = {

@@ -16,12 +16,12 @@ from accounts.models import Profile
 
 @login_required
 def dashboard(request, id=None):
-    user = request.user.id
-    items = WorkorderItem.objects.filter(assigned_user_id = user).exclude(completed=1).order_by("-workorder")
+    visitor = request.user.id
+    items = WorkorderItem.objects.filter(assigned_user_id = visitor).exclude(completed=1).order_by("-workorder")
     #completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
     #quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
     status = JobStatus.objects.all()
-    print(user)
+    print(visitor)
 
     #article_obj = Article.objects.get(id=1)
     #Get all articles
@@ -31,7 +31,7 @@ def dashboard(request, id=None):
 
     context = {
         'items':items,
-        'user':user,
+        #'user':user,
         #'workorders': workorder,
         #'completed': completed,
         #'quote': quote,

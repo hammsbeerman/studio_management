@@ -382,13 +382,15 @@ def edititem(request, id, pk, cat,):
             print('here')
             #If there is a subcategory, load the pricing template for subcategory
             if modified.item_subcategory:
-                description = WorkorderItem.objects.get(pk=pk)
-                description = description.description
+                details = WorkorderItem.objects.get(pk=pk)
+                description = details.description
                 print('here')
                 print(description)
                 item = get_object_or_404(PriceSheet, subcategory=modified.item_subcategory)
                 print('here')
                 formdata = PriceSheet.objects.get(subcategory_id = modified.item_subcategory)
+                formdata.description = description
+                formdata.internal_company = details.internal_company
             #Otherwise load category template
             else:
                 item = get_object_or_404(PriceSheet, category=cat)
@@ -617,13 +619,17 @@ def edit_wideformat_item(request, pk, cat,):
             print('here1')
             #If there is a subcategory, load the pricing template for subcategory
             if modified.item_subcategory:
-                description = WorkorderItem.objects.get(pk=pk)
-                description = description.description
+                details = WorkorderItem.objects.get(pk=pk)
+                description = details.description
                 print('here2')
                 print(description)
                 item = get_object_or_404(WideFormatPriceSheet, subcategory=modified.item_subcategory)
                 print('here3')
                 formdata = WideFormatPriceSheet.objects.get(subcategory_id = modified.item_subcategory)
+                #('desc')
+                #print(formdata.description)
+                formdata.description = description
+                formdata.internal_company = details.internal_company
             #Otherwise load category template
             else:
                 item = get_object_or_404(WideFormatPriceSheet, category=cat)
@@ -634,6 +640,7 @@ def edit_wideformat_item(request, pk, cat,):
             item = get_object_or_404(WideFormat, workorder_item=pk)
             #formdata loads static data to template
             formdata = WideFormat.objects.get(workorder_item=pk)
+            print(formdata.description)
             print('pk')
             print(pk)
             print(formdata.internal_company)

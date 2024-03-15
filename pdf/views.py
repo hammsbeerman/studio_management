@@ -20,43 +20,7 @@ from workorders.models import WorkorderItem, Workorder
 from krueger.models import KruegerJobDetail
 
 @login_required
-def management(request):
-    return render(request, 'pdf/management.html')
-
-@login_required
-def export_batch_statement_pdf(request):
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; attachment; filename=Expenses' + \
-        str(datetime.datetime.now())+'.pdf'
-    #remove inline to allow direct download
-    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
-    #    str(datetime.datetime.now())+'.pdf'
-    response['Content-Transfer-Encoding'] = 'binary'
-
-    workorders = Workorder.objects.all()
-
-    for x in workorders:
-        print(x.id)
-        items = WorkorderItem.objects.filter(workorder = x.id)
-        #print(items.workorder_hr)
-
-        html_string=render_to_string('pdf/weasyprint/pdf-output.html', {'items':items})
-        html = HTML(string=html_string)
-
-        result = html.write_pdf()
-
-    with tempfile.NamedTemporaryFile(delete=True) as output:
-        
-        output.write(result)
-        output.flush()
-        #rb stands for read binary
-        output=open(output.name,'rb')
-        response.write(output.read())
-
-    return response
-
-@login_required
-def export_pdf(request, id):
+def invoice_pdf(request, id):
 
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'inline; attachment; filename=Expenses' + \
@@ -108,7 +72,7 @@ def export_pdf(request, id):
     }
 
 
-    html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
+    html_string=render_to_string('pdf/lk_invoice.html', context)
     html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
 
     result = html.write_pdf()
@@ -121,6 +85,76 @@ def export_pdf(request, id):
         response.write(output.read())
 
     return response
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@login_required
+def management(request):
+    return render(request, 'pdf/management.html')
+
+@login_required
+def export_batch_statement_pdf(request):
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; attachment; filename=Expenses' + \
+        str(datetime.datetime.now())+'.pdf'
+    #remove inline to allow direct download
+    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
+    #    str(datetime.datetime.now())+'.pdf'
+    response['Content-Transfer-Encoding'] = 'binary'
+
+    workorders = Workorder.objects.all()
+
+    for x in workorders:
+        print(x.id)
+        items = WorkorderItem.objects.filter(workorder = x.id)
+        #print(items.workorder_hr)
+
+        html_string=render_to_string('pdf/weasyprint/pdf-output.html', {'items':items})
+        html = HTML(string=html_string)
+
+        result = html.write_pdf()
+
+    with tempfile.NamedTemporaryFile(delete=True) as output:
+        
+        output.write(result)
+        output.flush()
+        #rb stands for read binary
+        output=open(output.name,'rb')
+        response.write(output.read())
+
+    return response
+
+
 
 @login_required
 def lineitem_pdf(request, id):
