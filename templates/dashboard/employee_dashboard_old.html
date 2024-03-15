@@ -10,27 +10,15 @@
 List of workorders
 
 <a href="{% url 'workorders:createbase' %}">Add Workorder</a>
-
-<nav>
-    <div class="nav nav-tabs" id="nav-tab" role="tablist">
-      <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">Items assigned to {{ user }}</button>
-      <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Group Items</button>
-      <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Stale Items</button>
-      <button class="nav-link" id="nav-type-tab" data-bs-toggle="tab" data-bs-target="#nav-type" type="button" role="tab" aria-controls="nav-type" aria-selected="false">Items by Type</button>
-    </div>
-  </nav>
-  <div class="tab-content" id="nav-tabContent">
-        <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:assigned_item_list' %}" hx-target="this"></div>
-        <div class="tab-pane fade show active" id="nav-profile" role="tabpanel" aria-labelledby="nav-home-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:group_item_list' %}" hx-target="this"></div>
-        <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:stale_item_list' %}" hx-target="this"></div>
-        <div class="tab-pane fade" id="nav-type" role="tabpanel" aria-labelledby="nav-type-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:stale_item_list' %}" hx-target="this"></div>
-  </div>
-  
-
-
-
 <p>
-
+<div class="row">
+        
+    <div class="col-sm-4" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:assigned_item_list' %}" hx-target="this"></div>
+    <!-- <div class="col-sm-4" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:design_item_list' %}" hx-target="this"></div> 
+    <div id="items" class="col-sm-4" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:selected_item_list' %}" hx-target="this"></div>-->
+    <div class="col-sm-4" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:group_item_list' %}" hx-target="this"></div> 
+    <div class="col-sm-4" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:stale_item_list' %}" hx-target="this"></div> 
+</div>
 <hr>
 <div class="row">    
     <div id="items" class="col-sm-4">
@@ -42,6 +30,15 @@ List of workorders
       </select>
     </div>
 </div>
+{% autoescape off %}
+{{ rows }}
+{% endautoescape %} 
+
+
+
+
+
+
 
 
 <div id="modal" class="modal fade">

@@ -39,31 +39,6 @@ def dashboard(request, id=None):
     }
     return render(request, "dashboard/employee_dashboard.html", context)
 
-@login_required
-def dashboard2(request, id=None):
-    visitor = request.user.id
-    items = WorkorderItem.objects.filter(assigned_user_id = visitor).exclude(completed=1).order_by("-workorder")
-    #completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
-    #quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
-    status = JobStatus.objects.all()
-    print(visitor)
-
-    #article_obj = Article.objects.get(id=1)
-    #Get all articles
-    #article_list = Article.objects.all()
-    #Get articles with a slug field
-    #article_list = Article.objects.exclude(slug__isnull=True)
-
-    context = {
-        'items':items,
-        #'user':user,
-        #'workorders': workorder,
-        #'completed': completed,
-        #'quote': quote,
-        'status':status,
-    }
-    return render(request, "dashboard/employee_dashboard_2.html", context)
-
 
 @login_required
 def assigned_item_list(request, id=None):
@@ -91,17 +66,25 @@ def design_item_list(request, id=None):
 def selected_item_list(request, id=None):
     item_status = ''
     status = JobStatus.objects.all()
+    #test = 'hello'
     if request.method == "GET":
         item = request.GET.get('items')
         print(item)
         try:
             item_status = JobStatus.objects.get(id=item)
-            items = WorkorderItem.objects.filter(job_status_id = item).exclude(completed=1).order_by("-workorder")
+            print(item_status)
+            print(item_status.name)
+            items = WorkorderItem.objects.filter(job_status_id = item).order_by("-workorder")
+            print(items)
         except:
             item_status = 'Select Job Status'
             items = ''
             pass
+        print(items)
+    #print(item_status)
+    #print(status)
     context = {
+        #'test':test,
         'item_status':item_status,
         'items':items,
         'status':status,

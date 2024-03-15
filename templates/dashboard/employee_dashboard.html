@@ -10,34 +10,40 @@
 List of workorders
 
 <a href="{% url 'workorders:createbase' %}">Add Workorder</a>
-<p>
-<div class="row">
-        
-    <div class="col-sm-4" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:assigned_item_list' %}" hx-target="this"></div>
-    <!-- <div class="col-sm-4" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:design_item_list' %}" hx-target="this"></div> 
-    <div id="items" class="col-sm-4" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:selected_item_list' %}" hx-target="this"></div>-->
-    <div class="col-sm-4" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:group_item_list' %}" hx-target="this"></div> 
-    <div class="col-sm-4" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:stale_item_list' %}" hx-target="this"></div> 
-</div>
-<hr>
-<div class="row">    
-    <div id="items" class="col-sm-4">
-      <select class="custom-select mb-4" id="items" hx-trigger="change, itemListChanged from:body" name="items" hx-get="{% url 'dashboard:selected_item_list' %}" hx-target="#items">
-      <option selected>Select Job Status</option>
-          {% for x in status %}
-            <option value="{{ x.id }}">{{ x.name }}</option>
-          {% endfor %}
-      </select>
+
+<nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+      <button class="nav-link active" id="nav-assigned-tab" data-bs-toggle="tab" data-bs-target="#nav-assigned" type="button" role="tab" aria-controls="nav-assigned" aria-selected="true">Items assigned to {{ user }}</button>
+      <button class="nav-link" id="nav-group-tab" data-bs-toggle="tab" data-bs-target="#nav-group" type="button" role="tab" aria-controls="nav-group" aria-selected="false">Group Items</button>
+      <button class="nav-link" id="nav-stale-tab" data-bs-toggle="tab" data-bs-target="#nav-stale" type="button" role="tab" aria-controls="nav-stale" aria-selected="false">Stale Items</button>
+      <button class="nav-link" id="nav-type-tab" data-bs-toggle="tab" data-bs-target="#nav-type" type="button" role="tab" aria-controls="nav-type" aria-selected="false">Items by Type</button>
     </div>
-</div>
-{% autoescape off %}
-{{ rows }}
-{% endautoescape %} 
+  </nav>
+  <div class="tab-content" id="nav-tabContent">
+        <div class="tab-pane fade show active" id="nav-assigned" role="tabpanel" aria-labelledby="nav-assigned-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:assigned_item_list' %}" hx-target="this"></div>
+        <div class="tab-pane fade" id="nav-group" role="tabpanel" aria-labelledby="nav-group-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:group_item_list' %}" hx-target="this"></div>
+        <div class="tab-pane fade" id="nav-stale" role="tabpanel" aria-labelledby="nav-stale-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:stale_item_list' %}" hx-target="this"></div>
+        <div class="tab-pane fade" id="nav-stale" role="tabpanel" aria-labelledby="nav-stale-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'dashboard:stale_item_list' %}" hx-target="this"></div>
+        
+        <div class="tab-pane fade" id="nav-type" role="tabpanel" aria-labelledby="nav-type-tab">
+          <div class="row">    
+          <div id="items" class="col-sm-4">
+            <select class="custom-select mb-4" id="items" hx-trigger="change, itemListChanged from:body" name="items" hx-get="{% url 'dashboard:selected_item_list' %}" hx-target="#items">
+            <option selected>Select Job Status</option>
+                {% for x in status %}
+                  <option value="{{ x.id }}">{{ x.name }}</option>
+                {% endfor %}
+            </select>
+          </div>
+      </div></div>
+  </div>
+  
 
 
 
+<p>
 
-
+<hr>
 
 
 

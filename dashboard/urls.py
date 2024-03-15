@@ -4,7 +4,6 @@ from django.urls import path
 
 from .views import (
     dashboard,
-    dashboard2,
     assigned_item_list, 
     design_item_list, 
     selected_item_list,
@@ -16,7 +15,6 @@ app_name='dashboard'
 
 urlpatterns = [
     path('', dashboard, name='dashboard'),
-    path('2/', dashboard2, name='dashboard2'),
     path('assigned_item_list/', assigned_item_list, name='assigned_item_list'),
     path('design_item_list/', design_item_list, name='design_item_list'),
     path('selected_item_list/', selected_item_list, name='selected_item_list'),

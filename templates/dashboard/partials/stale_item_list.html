@@ -1,8 +1,9 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
+
+(unchanged for 7+ days)
 {% if items %}
-Stale Items: (unchanged for 7 days)
 <table>
 {% for x in items %}
         {% if x.workorder.completed is False %}
