@@ -418,9 +418,13 @@ def dashboard(request):
     return render(request, "customers/dashboard.html", context)
 
 @login_required
-def expanded_detail(request):
+def expanded_detail(request, id=None):
+    if not id:
+        id = request.GET.get('customers')
+        search = 0
+    else:
+        search = 1
     customers = Customer.objects.all()
-    id = request.GET.get('customers')
     print(id)
     if id:
         aging = Workorder.objects.all().exclude(billed=0).exclude(paid_in_full=1)
@@ -462,4 +466,7 @@ def expanded_detail(request):
             'ninety':ninety,
             'onetwenty':onetwenty,
         }
-        return render(request, "customers/partials/details.html", context)
+        if search:
+            return render(request, "customers/search_detail.html", context)
+        else:
+            return render(request, "customers/partials/details.html", context)

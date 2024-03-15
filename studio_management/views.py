@@ -47,18 +47,22 @@ def home_view(request, id=None):
 def search(request):
     q = request.GET.get('q')
     workorders = Workorder.objects.filter(
-        Q(hr_customer__icontains=q) | Q(workorder__icontains=q) | Q(description__icontains=q)
+        Q(hr_customer__icontains=q) | Q(workorder__icontains=q) | Q(description__icontains=q) |
+        Q(lk_workorder__icontains=q) | Q(printleader_workorder__icontains=q)
           ).distinct()
     workorder_item = WorkorderItem.objects.filter(description__icontains=q).distinct()
     customer = Customer.objects.filter(
         Q(company_name__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q)
-        )
+        ).distinct()
+    contact = Contact.objects.filter(
+        Q(fname__icontains=q) | Q(lname__icontains=q)
+    ).distinct()
     #contact = Contact.objects.filter(fname__icontains=q)
     context = {
         'workorders':workorders,
         'workorder_item':workorder_item,
         'customer':customer,
-        #'contact':contact,
+        'contact':contact,
     }
     return render(request, 'search.html', context)
 

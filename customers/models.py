@@ -38,7 +38,7 @@ class Customer(models.Model):
     avg_days_to_pay = models.CharField('Avg Days to Pay', max_length=100, blank=True, null=False)
     
     def get_absolute_url(self):
-        return reverse("customers:detail", kwargs={"id": self.id})
+        return reverse("customers:expanded_details", kwargs={"id": self.id})
 
     def __str__(self):
         return self.company_name
@@ -65,6 +65,10 @@ class Contact(models.Model):
 
     def get_absolute_url(self):
         return self.customer.get_absolute_url()
+    
+    # def edit_print_item_url(self):
+    #     #return reverse("krueger:bigform", kwargs={"id": self.workorder})
+    #     return reverse("krueger:bigform", kwargs={"id": self.workorder, "pk":self.pk})
     
     # def get_hx_edit_url(self):
     #     kwargs = {

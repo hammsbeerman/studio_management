@@ -4,29 +4,38 @@
 
 <center><h4>Search results</h4></center>
 
-Workorders:
+{% if workorders %}
+    Workorders:
+    <br>
+    {% for x in workorders %}
+        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+    {% endfor %}
+{% endif %}
 <p>
-{% for x in workorders %}
-    <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
-{% endfor %}
-<p>
+{% if workorder_item %}
 Workorders Items:
 <p>
 {% for x in workorder_item %}
     <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
 {% endfor %}
+{% endif %}
 <p>
+{% if customer %}
 Customers:
 <p>
 {% for x in customer %}
 <li><a href='{{ x.get_absolute_url }}'>{{ x.company_name }}</a></li>
 {% endfor %}
 <p>
-Contact:
+{% endif %}
+{% if contact %}
 <p>
-{% for x in contact %}
-<li><a href='{{ x.get_absolute_url }}'>{{ x.fname }}</a></li>
-{% endfor %}
+    Contact:
+    <br>
+    {% for x in contact %}
+    <li><a href='{{ x.get_absolute_url }}'>{{ x.fname }} {{x.lname}} -- {{ x.customer.company_name }}</a></li>
+    {% endfor %}
+{% endif %}
 
 
 

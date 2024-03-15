@@ -16,7 +16,7 @@ from .views import (
     new_cust_contact,
     customer_list,
     customer_notes,
-    detail,
+    #detail,
     dashboard,
     expanded_detail,
     details_contact_info
@@ -40,8 +40,11 @@ urlpatterns = [
     path("contact_info/", contact_info, name='contact_info'),
     path("details_contact_info/", details_contact_info, name='details_contact_info'),
     path("customer_notes/<int:pk>/", customer_notes, name='customer_notes'),
-    path("detail/<int:id>/", detail, name='detail'),
+    #path("detail/<int:id>/", detail, name='detail'),
     path("dashboard/", dashboard, name='customer_dashboard'),
-    path("dashboard/details", expanded_detail, name='expanded_detail'),
+    path("dashboard/details/<int:id>/", expanded_detail, name='expanded_details'),
+    path("dashboard/details/", expanded_detail, name='expanded_detail'),
+    
+    
     #path("customer_notes/", customer_notes, name='customer_notes'),
 ]
