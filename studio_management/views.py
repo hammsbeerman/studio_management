@@ -66,6 +66,15 @@ def search(request):
     }
     return render(request, 'search.html', context)
 
+def username(request):
+    # user = request.user.logged_in
+    # logged = Profile.objects.get(user=user)
+    test = 'test123'
+    context = {
+        'test':test
+    }
+    return render(request, 'navbar.html', context)
+
 # @login_required
 # def assigned_item_list(request, id=None):
 #     user = request.user.id

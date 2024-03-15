@@ -6,132 +6,92 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          {% if user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
-          </li>
-          {% endif %}
-          
-          {% if user.is_authenticated %}
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-          </li>
-          {% endif %}
-          
-          
           
           {% if not user.is_authenticated %}
           
             <li class="nav-item">
               <a class="nav-link" href="{% url 'login' %}">Login</a>
             </li>
-            {% endif %}
-            
             <!-- <li class="nav-item">
               <a class="nav-link" href="{% url 'register' %}">Register</a>
             </li> -->
+          {% endif %}
+
+
           
-            
-           
-
-
-
-
-
-            
-          <!-- <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Customers
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-              <li><a class="dropdown-item" href="{% url 'customers:customer_list' %}">Customer List</a></li>
-              <li><a class="dropdown-item" href="#">Add Customer</a></li>
-              <li><a class="dropdown-item" href="">Add Customer Contact</a></li>
-            </ul> 
-          </li> -->
           {% if user.is_authenticated %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Workorders
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-              <li><a class="dropdown-item" href="{% url 'workorders:workorder_list' %}">Workorder List</a></li>
-              <li><a class="dropdown-item" href="{% url 'workorders:createbase' %}">Add Workorder</a></li>
-              <li><a class="dropdown-item" href="{% url 'workorders:quote_list' %}">Quote List</a></li>
-              <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
-            </ul> 
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Finance
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-              <li><a class="dropdown-item" href="{% url 'finance:ar_dashboard' %}">A/R Dashboard</a></li>
-              
-              
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Workorders
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'workorders:workorder_list' %}">Workorder List</a></li>
+                <li><a class="dropdown-item" href="{% url 'workorders:createbase' %}">Add Workorder</a></li>
+                <li><a class="dropdown-item" href="{% url 'workorders:quote_list' %}">Quote List</a></li>
+              </ul> 
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Finance
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'finance:ar_dashboard' %}">A/R Dashboard</a></li>
+              </ul> 
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Vendors
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'inventory:add_vendor' %}">Add Vendor</a></li>
+                <li><a class="dropdown-item" href="{% url 'inventory:vendor_list' %}">Vendor List</a></li>
+              </ul> 
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Customers
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'customers:customer_dashboard' %}">Customer Detail</a></li>
+              </ul> 
+            </li>
+            {% if request.user.is_staff %}
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Administration
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                  <li><a class="dropdown-item" href="{% url 'pricesheet:template_list' %}">Price Templates</a></li>
+                  <li><a class="dropdown-item" href="{% url 'pdf:management' %}">PDF Options</a></li>
+                  <li><a class="dropdown-item" href="/admin">Admin</a></li>
+                </ul> 
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  PDF Tests
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                  <li><a class="dropdown-item" href="{% url 'pdf:showitems' %}">Item list w/ xhtml2pdf</a></li>
+                </ul> 
+              </li>
+            {% endif %}
           
-              
-              <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
-            </ul> 
-          </li>
-
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Customers
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-              <li><a class="dropdown-item" href="{% url 'customers:customer_dashboard' %}">Customer Detail</a></li>
-              
-              
-          
-              
-              <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
-            </ul> 
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Administration
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-              <li><a class="dropdown-item" href="{% url 'pricesheet:template_list' %}">Price Templates</a></li>
-              
-              <li><a class="dropdown-item" href="{% url 'pdf:management' %}">PDF Options</a></li>
-          
-                <li><a class="dropdown-item" href="/admin">Admin</a></li>
-              
-              <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
-            </ul> 
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Vendors
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-              <li><a class="dropdown-item" href="{% url 'inventory:add_vendor' %}">Add Vendor</a></li>
-              <li><a class="dropdown-item" href="{% url 'inventory:vendor_list' %}">Vendor List</a></li>
-              <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
-            </ul> 
-          </li>
-          
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              PDF Tests
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-              <li><a class="dropdown-item" href="{% url 'pdf:showitems' %}">Item list w/ xhtml2pdf</a></li>
-              <!-- <li><a class="dropdown-item" href="">Add Customer Contact</a></li> -->
-            </ul> 
-          </li>
-          
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            </li>
+          {% endif %}
       
         </ul>
-        {% endif %}
-        {% if user.is_authenticated %}
-        <form action="{% url 'search' %}" method="GET" class="d-flex" role="search">
-          <input class="form-control me-2" name="q" type="search" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success" type="submit">Search</button>
-        </form>
-        {% endif %}
+
+          {% if user.is_authenticated %}
+          <form action="{% url 'search' %}" method="GET" class="d-flex" role="search">
+            <input class="form-control me-2" name="q" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success" type="submit">Search</button>
+          </form>
+          {% endif %}
      
       </div>
     </div>
