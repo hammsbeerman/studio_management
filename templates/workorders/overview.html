@@ -70,6 +70,7 @@
         <th scope="col" class="">Status</th>
         <th scope="col" class="">Last Order</th>
         <th scope="col" class="">Last Price</th>
+        <th scope="col" class=""></th>
       </tr>
     </thead>
     <tbody hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_item_list' id=workid %}" hx-target="this">

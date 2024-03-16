@@ -10,8 +10,8 @@ class KruegerJobDetailForm(forms.ModelForm):
     class Meta:
         model = KruegerJobDetail
         fields = [
-            'workorder', 'internal_company', 'customer', 'category', 'subcategory', 'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent',
-            'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 'side_1_inktype', 'side_2_inktype', 'paper_stock', 'price_per_m', 
+            'workorder', 'internal_company', 'customer', 'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent',
+            'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 'side_1_inktype', 'side_2_inktype', 'price_per_m', 
             #'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'step_send_mailmerge_to_press_price', 'mailmerge_qty', 'mailmerge_price_per_piece', 
             'step_print_mailmerge_price', 'material_cost', 'material_markup_percentage', 'material_markup', 'step_wear_and_tear_price', 'step_print_cost_side_1', 
@@ -68,11 +68,7 @@ class KruegerJobDetailForm(forms.ModelForm):
         return company
         """
     
-    """def clean_description(self):
-        paper_stock = self.cleaned_data.get('paper_stock')
-        if not paper_stock:
-            raise forms.ValidationError('This field is required')
-        return paper_stock"""
+    
     
     """def clean_qty(self):
         qty = self.cleaned_data.get('qty')
@@ -85,7 +81,7 @@ class WideFormatDetailForm(forms.ModelForm):
     class Meta:
         model = WideFormat
         fields = [
-            'workorder', 'hr_workorder', 'workorder_item', 'category', 'subcategory', 'internal_company', 'customer', 'hr_customer', 'description', 'quantity', 'media_width', 
+            'workorder', 'hr_workorder', 'workorder_item', 'internal_company', 'customer', 'hr_customer', 'description', 'quantity', 'media_width', 
             'print_width', 'print_height', 'usable_width', 'print_w_margin', 'print_h_margin', 'prints_per_row', 'number_of_rows', 'media_length', 'kiss_cut_time', 'flex_cut_time', 
             'weeding_time', 'masking_time', 'machine_rate', 'labor_rate', 'total_sq_ft', 'inkcost_sq_ft', 'material', 'substrate', 'laminate', 'mask', 'price_per_sqft', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'material_cost', 'material_markup_percentage', 'material_markup', 'print_cost_sqft', 

@@ -250,6 +250,18 @@ def edititem(request, id, pk, cat,):
         form = KruegerJobDetailForm(request.POST, instance=obj)
         workorder = request.POST.get('workorder')
         price_ea = request.POST.get('price_ea')
+        paperstock = request.POST.get('paper_stock')
+        print('pk')
+        print(pk)
+        try:
+            print(paperstock)
+            KruegerJobDetail.objects.filter(workorder_item=pk).update(paper_stock_id = paperstock, billed=1)
+            print('up')
+        except:
+            test = KruegerJobDetail.objects.filter(workorder_item=pk)
+            print('test')
+            print(test)
+        print(paperstock)
         internal_company = request.POST.get('internal_company')
         edited = 1
         if form.is_valid():
@@ -267,7 +279,12 @@ def edititem(request, id, pk, cat,):
             else:
                 temp_total = total
             obj.save()
+            #print(pk)
+            #KruegerJobDetail.objects.filter(pk=pk).update(paper_stock_id = paperstock)
             #update workorderitem table
+            lineitem = KruegerJobDetail.objects.get(workorder_item=pk)
+            lineitem.paper_stock_id = paperstock
+            lineitem.save()
             lineitem = WorkorderItem.objects.get(id=pk)
             lineitem.internal_company = internal_company
             lineitem.pricesheet_modified = edited
@@ -400,6 +417,7 @@ def edititem(request, id, pk, cat,):
             print('not here')
             item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
             #formdata loads static data to template
+            print()
             formdata = KruegerJobDetail.objects.get(workorder_item=pk)
             print('pk')
             print(pk)

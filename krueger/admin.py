@@ -1,10 +1,11 @@
 from django.contrib import admin
-from .models import PaperStock, KruegerJobDetail
+from .models import KruegerJobDetail, WideFormat
 
-class PaperStockAdmin(admin.ModelAdmin):
-    list_display = ('description', 'manufacturer', 'brand', 'weight', 'size', 'price_per_m')
 
-admin.site.register(PaperStock, PaperStockAdmin)
+# class PaperStockAdmin(admin.ModelAdmin):
+#     list_display = ('description', 'manufacturer', 'brand', 'weight', 'size', 'price_per_m')
+
+# admin.site.register(PaperStock, PaperStockAdmin)
 
 class KruegerJobDetailAdmin(admin.ModelAdmin):
     ## Disable modifications from admin
@@ -30,3 +31,5 @@ class KruegerJobDetailAdmin(admin.ModelAdmin):
             'misc3_price', 'misc4_description', 'misc4_price', 'billed')
     
 admin.site.register(KruegerJobDetail,KruegerJobDetailAdmin)
+
+admin.site.register(WideFormat)

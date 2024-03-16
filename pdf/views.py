@@ -72,8 +72,35 @@ def invoice_pdf(request, id):
     }
 
 
-    html_string=render_to_string('pdf/lk_invoice.html', context)
+    html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
     html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
+
+    result = html.write_pdf()
+
+    with tempfile.NamedTemporaryFile(delete=True) as output:
+        output.write(result)
+        output.flush()
+        #rb stands for read binary
+        output=open(output.name,'rb')
+        response.write(output.read())
+
+    return response
+
+
+@login_required
+def lineitem_pdf(request, id):
+    items = KruegerJobDetail.objects.filter(workorder_item=id)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; attachment; filename=items.hr_workorder' + 'items.description.pdf'
+    #remove inline to allow direct download
+    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
+        
+    response['Content-Transfer-Encoding'] = 'binary'
+
+
+    html_string=render_to_string('pdf/weasyprint/lineitem_pricing.html', {'items':items})
+    html = HTML(string=html_string)
 
     result = html.write_pdf()
 
@@ -110,10 +137,7 @@ def invoice_pdf(request, id):
 
 
 
-
-
-
-
+#######################################   These aren't currently used
 
 
 
@@ -156,31 +180,7 @@ def export_batch_statement_pdf(request):
 
 
 
-@login_required
-def lineitem_pdf(request, id):
-    items = KruegerJobDetail.objects.filter(workorder_item=id)
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; attachment; filename=items.hr_workorder' + 'items.description.pdf'
-    #remove inline to allow direct download
-    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
-        
-    response['Content-Transfer-Encoding'] = 'binary'
-
-
-    html_string=render_to_string('pdf/weasyprint/pdf-output.html', {'items':items})
-    html = HTML(string=html_string)
-
-    result = html.write_pdf()
-
-    with tempfile.NamedTemporaryFile(delete=True) as output:
-        output.write(result)
-        output.flush()
-        #rb stands for read binary
-        output=open(output.name,'rb')
-        response.write(output.read())
-
-    return response
 
 
 
