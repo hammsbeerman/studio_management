@@ -16,7 +16,7 @@
 Workorders Items:
 <p>
 {% for x in workorder_item %}
-    <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+    <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.workorder.hr_customer }}</a></li>
 {% endfor %}
 {% endif %}
 <p>

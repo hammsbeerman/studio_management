@@ -36,8 +36,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 #Allow SSL Change if domain name changes
-CSRF_TRUSTED_ORIGINS = ["https://staging.lkdesignstudios.com", "http://staging.lkdesignstudios.com", "staging.lkdesignstudios.com", 
-                        "https://studiomanagement.lkdesignstudios.com", "http://studiomanagement.lkdesignstudios.com", "studiomanagement.lkdesignstudios.com"]
+CSRF_TRUSTED_ORIGINS = ["https://staging.lkdesignstudios.com", "http://staging.lkdesignstudios.com", 
+                        "https://studiomanagement.lkdesignstudios.com", "http://studiomanagement.lkdesignstudios.com"]
 #CSRF_TRUSTED_ORIGINS = []
 
 

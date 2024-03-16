@@ -53,7 +53,7 @@ def add_vendor(request):
 
 @login_required
 def vendor_list(request):
-    vendor = Vendor.objects.all()
+    vendor = Vendor.objects.all().order_by("name")
     print('vendors')
     context = {
         'vendors': vendor,
