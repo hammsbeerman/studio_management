@@ -35,6 +35,11 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+#Allow SSL Change if domain name changes
+CSRF_TRUSTED_ORIGINS = ["https://staging.lkdesignstudios.com", "http://staging.lkdesignstudios.com", "staging.lkdesignstudios.com", 
+                        "https://studiomanagement.lkdesignstudios.com", "http://studiomanagement.lkdesignstudios.com", "studiomanagement.lkdesignstudios.com"]
+#CSRF_TRUSTED_ORIGINS = []
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
