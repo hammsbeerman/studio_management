@@ -61,10 +61,23 @@ class SubCategory(models.Model):
     template = models.BooleanField('Template', blank=True, null=True, default=False)
     set_price = models.BooleanField('Is setprice category', blank=False, null=True, default=False)
     setprice_name = models.CharField('Name', max_length=100, blank=True, null=True)
+    inventory_category = models.ForeignKey(InventoryCategory, blank=True, null=True, on_delete=models.DO_NOTHING)
     
 
     def __str__(self):
         return self.name
+    
+# class SubSubCategory(models.Model):
+#     subcategory = models.ForeignKey(SubCategory, blank=False, null=True, on_delete=models.SET_NULL, related_name="SubCategory")
+#     name = models.CharField('Name', max_length=100, blank=True, null=True)
+#     description = models.CharField('Description', max_length=100, blank=True, null=True)
+#     template = models.BooleanField('Template', blank=True, null=True, default=False)
+#     set_price = models.BooleanField('Is setprice category', blank=False, null=True, default=False)
+#     setprice_name = models.CharField('Name', max_length=100, blank=True, null=True)
+    
+
+#     def __str__(self):
+#         return self.name
     
 class SetPriceItem(models.Model):
     category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.SET_NULL)

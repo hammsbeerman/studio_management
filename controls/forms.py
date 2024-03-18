@@ -9,7 +9,7 @@ class SubCategoryForm(forms.ModelForm):
 
     class Meta:
         model = SubCategory
-        fields = ['category', 'name', 'description']
+        fields = ['category', 'name', 'description', 'inventory_category']
 
 class CategoryForm(forms.ModelForm):
 

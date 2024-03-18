@@ -59,6 +59,7 @@ def template(request, id=None):
     print('modified')
     print(obj.edited)
     print(obj.category.pricesheet_type.id)
+    print(obj.subcategory.inventory_category.id)
     item = get_object_or_404(PriceSheet, id=id)
     print(item.name)
     print(obj.category_id)
@@ -81,7 +82,16 @@ def template(request, id=None):
         print(selected_paper)
     except: 
         selected_paper = ''
-    papers = Inventory.objects.all()
+    test = Inventory.objects.filter(inventory_category = 4)
+    print(test)
+    try:
+        papers = Inventory.objects.filter(inventory_category = obj.subcategory.inventory_category.id)
+        #papers = Inventory.objecs.get(inventory_category=obj.subcategory.inventory_category.id)
+        print(papers)
+        print(1)
+    except:
+        papers = Inventory.objects.all()
+        print(2)
     formdata = PriceSheet.objects.get(id=id)
     if request.method =="POST":
         print('posted')

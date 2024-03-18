@@ -46,7 +46,7 @@
         <td>{% if object.last_item_order %}{{object.last_item_order}}{% endif %}</td>
         <td>{% if object.last_item_order %}{{object.last_item_price}}{% endif %}</td>
         <td></td>
-        <td>{% if object.item_category.id == 9 or object.item_category.id == 2 %}<a href="{% url 'pdf:lineitem_pdf' id=object.pk %}" class="btn btn-primary">Create PDF Invoice</a>{% endif %}</td>
+        <td>{% if object.item_category.id == 2 or object.item_category.id == 6 or object.item_category.id == 9 or object.item_category.id == 10 %}<a href="{% url 'pdf:lineitem_pdf' id=object.pk %}" class="btn btn-primary">Create PDF Invoice</a>{% endif %}</td>
         
         
     </tr>

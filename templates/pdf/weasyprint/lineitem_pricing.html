@@ -6,21 +6,48 @@
         <title>PDF Test</title>
 
         <style>
-    
+            
+
             @page{
                 size: "A4"
                 margin: 2.5cm 1.5cm 3.5cm 1.5cm;
 
+                {% for item in items %}
                 @top-center{
-                    content: "COMPANY NAME";
-                }
+                    content: "{{item.hr_customer}} | {{item.hr_workorder}} | {{item.description}}";
+                }{% endfor %}
+
 
                 @bottom-right{
                     content: "Page " counter(page) " of " counter(pages);
                 }
+
+
             }
+        </style>
 
+        <style type="text/css">
+                div.break {
+                    	page-break-before:always;
+                }
 
+                .tg  {
+                    border-collapse:collapse;border-spacing:0;
+                }
+                .tg td{
+                    border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+                    overflow:hidden;padding:2px 5px;word-break:normal;
+                }
+                .tg th{
+                    border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+                    font-weight:normal;overflow:hidden;padding:2px 5px;word-break:normal;
+                }
+                .tg .tg-cly1{
+                    text-align:left;vertical-align:middle
+                }
+                .tg .tg-0lax{
+                    text-align:left;vertical-align:top
+                }
         </style>
 
 
@@ -29,48 +56,473 @@
 
     <body>
         <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <hr>
-                    <table class="table">
-                        <thead>
-                          <tr>
-                            <th scope="col">Description</th>
-                            <th scope="col">Qty</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Tax</th>
-                          </tr>
-                        </thead>
+
+           
+            <table class="tg">
+                  
+                  <tr>
+                    <td class="tg-cly1">Original Paper Size</td>
+                    <td class="tg-cly1">0</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Finished Size</td>
+                    <td class="tg-cly1">0</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Workorder</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Reclaim Artwork</td>
+                    <td class="tg-cly1"> </td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Send to Press</td>
+                    <td class="tg-cly1"> </td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Send Mail Merge to Press</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Print Mail Merge</td>
+                    <td class="tg-cly1">$0.00</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Material Cost</td>
+                    <td class="tg-0lax">#DIV/0!</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Material Markup</td>
+                    <td class="tg-cly1">#DIV/0!</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Wear and Tear</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Printing cost side 1</td>
+                    <td class="tg-cly1">#DIV/0!</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Printing cost side 2</td>
+                    <td class="tg-cly1">#DIV/0!</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Trim to size</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Run through DC618</td>
+                    <td class="tg-cly1">#DIV/0!</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">NCR Compound (Trim, pad, fan apart)</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">White Compound (Trim, pad)</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Set to Perf</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Perf</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Set to Number</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Number</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Insert Front and Back Cover</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Set to Drill</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Drill</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Set to Staple</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Insert Wrap Around</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Staple</td>
+                    <td class="tg-cly1">#DIV/0!</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Insert Chip Divider</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Set Folder</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Fold</td>
+                    <td class="tg-cly1">#DIV/0!</td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Set to Tab</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Tab Set</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Bulk mail tray, sort, paperwork</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">I.D. / Label</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Count / Package</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Delivery</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Packing Slip / Invoice</td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Total</td>
+                    <td class="tg-cly1">#DIV/0!</td>
+                  </tr>
+                </tbody>
+                </table>
+
+                <div class="break">
+
+                    <table class="tg">
+                        
                         <tbody>
-                            {% for item in items %}
                           <tr>
-                            <td>{{item.description}}</td>
-                            <td>{{item.quantity}}</td>
-                            <td>{{item.absolute_price}}</td>
-                            <td>{% if item.tax_exempt %}T{% else %}-{%endif%}</td>
-    
-    
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Job #</td>
+                            <td class="tg-cly1">0</td>
                           </tr>
-                            {% endfor %}
-                          
+                          <tr>
+                            <td class="tg-cly1">Number of Set / Books</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Pages per Set / Book</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Output per sheet</td>
+                            <td class="tg-cly1">0</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Qty</td>
+                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Parent Sheets Required</td>
+                            <td class="tg-cly1">#DIV/0!</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Original Size</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Press Size</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Side 1 Clicks</td>
+                            <td class="tg-cly1">#DIV/0!</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Press Sheets / Parent Sheet</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Side 2 Clicks</td>
+                            <td class="tg-cly1">#DIV/0!</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Flat Size</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Finished Size</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Gangup</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Paper Stock</td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Overage</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Price / M</td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Markup %</td>
+                            <td class="tg-cly1">100</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Side one Click Charge</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Side Two Click Charge</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Box Price</td>
+                            <td class="tg-cly1">0.7</td>
+                            <td class="tg-cly1">[.7]</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Box Qty</td>
+                            <td class="tg-cly1">1</td>
+                            <td class="tg-cly1">[1]</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Paper Cost</td>
+                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Box</td>
+                            <td class="tg-cly1">0.7</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Qty Mail Merged</td>
+                            <td class="tg-cly1">0</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Misc</td>
+                            <td class="tg-cly1">1.1</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Cost to Mail Merge</td>
+                            <td class="tg-cly1">0.15</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Padding Compound</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Chip</td>
+                            <td class="tg-cly1">3</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Sheets Run through DC 618</td>
+                            <td class="tg-cly1">#DIV/0!</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Cost / Sheet</td>
+                            <td class="tg-cly1">0.15</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Total</td>
+                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Number of tasks</td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Fold Charge</td>
+                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Sheets to fold</td>
+                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Staple Charge</td>
+                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Number of staples per sheet</td>
+                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Sheets to staple</td>
+                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Sets to Tab</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Number of Tabs</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Cost per tab</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-cly1">Price / M</td>
+                            <td class="tg-cly1">#DIV/0!</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-cly1">Total</td>
+                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax"></td>
+                          </tr>
                         </tbody>
-                      </table>
-    
-    
-    
-    
-    
-    
+                        </table>
                 </div>
-            </div>
-    
-            
-    
-    
-    
-        </div>
-
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    </body>
-
-</html>
+                    
+                    

@@ -8,6 +8,7 @@ from django.utils import timezone
 ###The following for weasyprint
 from django.template.loader import get_template, render_to_string
 from weasyprint import HTML, CSS
+from weasyprint.text.fonts import FontConfiguration
 import tempfile
 import datetime
 from django.db.models import Sum
@@ -17,7 +18,7 @@ from django.views.generic import ListView
 #from django.contrib.staticfiles import finders
 from customers.models import Customer, Contact
 from workorders.models import WorkorderItem, Workorder
-from krueger.models import KruegerJobDetail
+from krueger.models import KruegerJobDetail, WideFormat
 
 @login_required
 def invoice_pdf(request, id):
@@ -89,7 +90,10 @@ def invoice_pdf(request, id):
 
 @login_required
 def lineitem_pdf(request, id):
+    print(id)
     items = KruegerJobDetail.objects.filter(workorder_item=id)
+    if not items:
+        items = WideFormat.objects.filter(workorder_item=id)
 
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'inline; attachment; filename=items.hr_workorder' + 'items.description.pdf'
@@ -98,7 +102,7 @@ def lineitem_pdf(request, id):
         
     response['Content-Transfer-Encoding'] = 'binary'
 
-
+    print(items)
     html_string=render_to_string('pdf/weasyprint/lineitem_pricing.html', {'items':items})
     html = HTML(string=html_string)
 
