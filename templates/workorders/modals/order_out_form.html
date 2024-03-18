@@ -17,7 +17,7 @@
   </div>
   <div class="modal-footer">
     {% if item %}
-    <button type="button" class="btn btn-danger" hx-post="{% url 'workorders:remove_item' pk=item.pk %}">Remove</button>
+    <button type="button" class="btn btn-danger" hx-post="{% url 'workorders:remove_item' pk=pk %}">Remove</button>
     <span class="flex-grow-1"></span>
     {% endif %}
     <button type="button" class="btn btn-info" hx-get="{% url 'inventory:add_vendor' %}?item={{pk}}&cat={{cat}}" hx-target="#dialog">

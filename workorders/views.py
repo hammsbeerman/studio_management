@@ -490,9 +490,9 @@ def edit_modal_item(request, pk, cat):
     return render(request, 'workorders/modals/design_item_form.html', context)
 
 
-@login_required
-def edit_order_out_item(request, pk, cat):
-    pass
+# @login_required
+# def edit_order_out_item(request, pk, cat):
+#     pass
 
 
 @login_required
