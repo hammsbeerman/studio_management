@@ -59,7 +59,7 @@ def template(request, id=None):
     print('modified')
     print(obj.edited)
     print(obj.category.pricesheet_type.id)
-    print(obj.subcategory.inventory_category.id)
+    #print(obj.subcategory.inventory_category.id)
     item = get_object_or_404(PriceSheet, id=id)
     print(item.name)
     print(obj.category_id)
