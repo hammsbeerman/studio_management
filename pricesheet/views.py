@@ -122,7 +122,7 @@ def template(request, id=None):
 @login_required
 def add_template(request):
     form = CreateTemplateForm()
-    categories = Category.objects.all().distinct().order_by('name')
+    categories = Category.objects.all().exclude(active=0).distinct().order_by('name')
     if request.method =="POST":
         category = request.POST.get('category')
         subcategory = request.POST.get('subcategory')

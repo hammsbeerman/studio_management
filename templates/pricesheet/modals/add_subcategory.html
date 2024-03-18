@@ -7,7 +7,16 @@
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
   <div class="modal-body">
-    {{ form|crispy }}
+    Category:
+    <select id="category" name="category" >      
+        {% for x in categories %}
+            <option value="{{x.id}}">{{ x.name }}</option>
+        {% endfor %}
+    </select><br/>
+    <p>
+    {{form.name|as_crispy_field}}
+    {{form.description|as_crispy_field}}
+    {{form.inventory_category|as_crispy_field}}
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
