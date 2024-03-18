@@ -386,7 +386,13 @@ def edititem(request, id, pk, cat,):
             print(inventory_cat)
             papers = Inventory.objects.filter(inventory_category = inventory_cat)
         else:
-            papers = Inventory.objects.all()
+                try:
+                    papers = Inventory.objects.filter(inventory_category = modified.item_subcategory.inventory_category.id)
+                    #papers = Inventory.objecs.get(inventory_category=obj.subcategory.inventory_category.id)
+                    print(papers)
+                    print(1)
+                except:
+                    papers = Inventory.objects.all()
         context = {
             'form':form,
             'formdata':formdata,
@@ -455,9 +461,18 @@ def edititem(request, id, pk, cat,):
         print('inventory cat')
         if loadform.inventory_category is not None:
             inventory_cat = loadform.inventory_category.id
-            papers = Inventory.objects.filter(inventory_category = inventory_cat)
-        else:
-            papers = Inventory.objects.all()
+            #papers = Inventory.objects.filter(inventory_category = inventory_cat)
+        try:
+            papers = Inventory.objects.filter(inventory_category = modified.item_subcategory.inventory_category.id)
+            #papers = Inventory.objecs.get(inventory_category=obj.subcategory.inventory_category.id)
+            print(papers)
+            print('1')
+        except:
+            try:
+                papers = Inventory.objects.filter(inventory_category = inventory_cat)
+            except:
+                papers = Inventory.objects.all()
+                print('2')
         context = {
             'form':form,
             'formdata':formdata,
