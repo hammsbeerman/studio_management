@@ -77,6 +77,15 @@ class CustomItemForm(forms.ModelForm):
             'unit_price':'Price per piece',
 
         }
+       
+class AddSetPriceItemForm(forms.ModelForm):
+   class Meta:
+       model = WorkorderItem
+       fields = ['internal_company', 'description', 'quantity', 'unit_price', 'last_item_order', 'last_item_price']
+       labels = {
+            'unit_price':'Price per piece',
+
+        }
 
 class NoteForm(forms.ModelForm):
     class Meta:

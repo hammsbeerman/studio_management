@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .forms import SubCategoryForm, CategoryForm
+from django.utils import timezone
+from .forms import SubCategoryForm, CategoryForm, AddItemSetPriceItemForm, AddSetPriceItemForm
 from .models import SetPriceItem, SubCategory, Category
 from django.contrib.auth.decorators import login_required
 
@@ -53,3 +54,23 @@ def add_subcategory(request):
         'form': form,
     }
     return render (request, "pricesheet/modals/add_subcategory.html", context)
+
+@login_required
+def add_setprice_category(request):
+    form = AddSetPriceItemForm()
+    category = 3
+    updated = timezone.now()
+    if request.method =="POST":
+        form = AddSetPriceItemForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.updated = updated
+            obj.save()
+            return HttpResponse(status=204, headers={'HX-Trigger': 'CategoryAdded'})
+        else:
+            print(form.errors)
+    context = {
+        'form': form,
+        'category':category,
+    }
+    return render (request, "pricesheet/modals/add_setprice_category.html", context)

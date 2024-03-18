@@ -83,7 +83,7 @@ class SetPriceItem(models.Model):
     category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.SET_NULL)
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    updated = models.DateTimeField(auto_now = False, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = False, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -109,6 +109,8 @@ class SetPriceItemPrice(models.Model):
     description = models.CharField('Description', max_length=100, blank=False, null=False)
     set_quantity = models.DecimalField('Quantity / Order', max_digits=10, decimal_places=2, blank=False, null=False)
     price = models.DecimalField('Price', max_digits=10, decimal_places=2, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = False, blank=True, null=True)
 
     def __str__(self):
         return self.description

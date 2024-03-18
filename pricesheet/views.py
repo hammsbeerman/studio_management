@@ -11,6 +11,7 @@ from controls.forms import SubCategoryForm, CategoryForm
 from workorders.models import WorkorderItem, Category
 from krueger.models import KruegerJobDetail, PaperStock, WideFormat
 from inventory.models import Inventory
+from inventory.forms import SetPriceForm
 from krueger.forms import KruegerJobDetailForm, WideFormatDetailForm
 from workorders.forms import DesignItemForm
 
@@ -58,7 +59,7 @@ def template(request, id=None):
     obj = PriceSheet.objects.get(id=id)
     print('modified')
     print(obj.edited)
-    print(obj.category.pricesheet_type.id)
+    #print(obj.category.pricesheet_type.id)
     #print(obj.subcategory.inventory_category.id)
     item = get_object_or_404(PriceSheet, id=id)
     print(item.name)
@@ -197,8 +198,12 @@ def template_list(request, id=None):
         catid = request.GET.get('category')
     print(catid)
     category = Category.objects.all().exclude(active=0).distinct().order_by('name')
-    subcategory = SubCategory.objects.filter(category_id=catid)
-    template = PriceSheet.objects.filter(category_id=catid)
+    if catid == '3':
+        subcategory = SetPriceItem.objects.all
+        template = ''
+    else:
+        subcategory = SubCategory.objects.filter(category_id=catid)
+        template = PriceSheet.objects.filter(category_id=catid)
     wftemplate = WideFormatPriceSheet.objects.filter(category_id=catid)
     #template = PriceSheet.objects.all().order_by('-category', '-name')
     context = {
