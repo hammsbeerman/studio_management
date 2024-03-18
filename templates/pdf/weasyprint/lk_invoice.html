@@ -133,9 +133,9 @@ table.ordert-first {margin-bottom: 11px;}
       <div class="order-info fix">
         <div class="order-left">
           {{customer.company_name}}<br/>
-          {{customer.address1}}<br/>
+          {% if customer.address1 %}{{customer.address1}}<br/>{% endif %}
           {% if customer.address2 is not None %}{{customer.address2}}<br/>{% endif %}
-          {{customer.city}}, {{customer.state}} {{customer.zipcode}}<br/>
+          {% if customer.city %}{{customer.city}}, {{customer.state}} {{customer.zipcode}}{% endif %}<br/>
         </div>
         <div class="order-right">
           <table class="ordert-first">

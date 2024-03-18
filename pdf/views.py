@@ -39,10 +39,12 @@ def invoice_pdf(request, id):
         workorder.billed = 1
         workorder.save()
     customer = Customer.objects.get(id=workorder.customer.id)
+    print(workorder.contact)
     try:
-        contact = Contact.objects.get(id = workorder.contact)
+        contact = Contact.objects.get(id = workorder.contact.id)
     except:
         contact = ''
+    print(contact)
     #print(customer.company_name)
     date = datetime.date.today()
     subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
