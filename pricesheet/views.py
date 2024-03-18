@@ -196,7 +196,7 @@ def template_list(request, id=None):
     if not catid:
         catid = request.GET.get('category')
     print(catid)
-    category = Category.objects.all().distinct().order_by('name')
+    category = Category.objects.all().exclude(active=0).distinct().order_by('name')
     subcategory = SubCategory.objects.filter(category_id=catid)
     template = PriceSheet.objects.filter(category_id=catid)
     wftemplate = WideFormatPriceSheet.objects.filter(category_id=catid)
