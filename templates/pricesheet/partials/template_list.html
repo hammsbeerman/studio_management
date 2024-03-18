@@ -8,14 +8,36 @@ Templates
             
             <h5 class="card-title"></h5>
                 <p class="card-text">
-                    {% for x in wftemplate %}
-                        <li><a href='{{ x.get_absolute_url }}'>{{ x.name }}</a> 
-                            <button class="btn btn-primary-outline" hx-get="{% url 'pricesheet:copy_template' %}?category={{ catid }}&template={{ x.id }}" hx-target="#dialog"><img src="{% static 'img/site/copy-50.png' %}" style="width:20px;height:20px;"></button></li>
-                    {% endfor %}
-                    {% for x in template %}
-                        <li><a href='{{ x.get_absolute_url }}'>{{ x.name }}</a> 
-                            <button class="btn btn-primary-outline" hx-get="{% url 'pricesheet:copy_template' %}?category={{ catid }}&template={{ x.id }}" hx-target="#dialog"><img src="{% static 'img/site/copy-50.png' %}" style="width:20px;height:20px;"></button></li>
-                    {% endfor %}
+                    {% if catid == '3' %}
+                        <table class="table table-bordered">
+                            {% if item %}
+                                <tr>
+                                    <td>Description</td>
+                                    <td>Set Quantity</td>
+                                    <td>Price / Set</td>
+                                </tr>
+                            {% endif %}
+                        {% for x in item %}
+                        <tr>
+                            <td>{{ x.description }}</td>
+                            <td>{{ x.set_quantity }}</td>
+                            <td>{{ x.price }}</td>
+                        </tr>
+                        {% endfor %}
+                        </table>
+                        <button hx-get="{% url 'controls:add_setprice_item' %}" hx-target="#dialog" class="btn btn-primary">
+                            Add SetPrice Item
+                            </button>
+                    {% else %}
+                        {% for x in wftemplate %}
+                            <li><a href='{{ x.get_absolute_url }}'>{{ x.name }}</a> 
+                                <button class="btn btn-primary-outline" hx-get="{% url 'pricesheet:copy_template' %}?category={{ catid }}&template={{ x.id }}" hx-target="#dialog"><img src="{% static 'img/site/copy-50.png' %}" style="width:20px;height:20px;"></button></li>
+                        {% endfor %}
+                        {% for x in template %}
+                                <li><a href='{{ x.get_absolute_url }}'>{{ x.name }}</a> 
+                                    <button class="btn btn-primary-outline" hx-get="{% url 'pricesheet:copy_template' %}?category={{ catid }}&template={{ x.id }}" hx-target="#dialog"><img src="{% static 'img/site/copy-50.png' %}" style="width:20px;height:20px;"></button></li>
+                        {% endfor %}
+                    {% endif %}
 
                     
     </div>

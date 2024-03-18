@@ -490,7 +490,7 @@
     }
 },
 {
-    "model": "controls.setpriceitem",
+    "model": "controls.setpricecategory",
     "pk": 1,
     "fields": {
         "category": 3,
@@ -498,7 +498,7 @@
     }
 },
 {
-    "model": "controls.setpriceitem",
+    "model": "controls.setpricecategory",
     "pk": 2,
     "fields": {
         "category": 3,
@@ -506,7 +506,7 @@
     }
 },
 {
-    "model": "controls.setpriceitem",
+    "model": "controls.setpricecategory",
     "pk": 3,
     "fields": {
         "category": 3,
@@ -514,7 +514,7 @@
     }
 },
 {
-    "model": "controls.setpriceitem",
+    "model": "controls.setpricecategory",
     "pk": 4,
     "fields": {
         "category": null,

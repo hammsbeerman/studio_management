@@ -8,7 +8,7 @@ from decimal import Decimal
 from datetime import datetime
 from django.contrib import messages
 from customers.models import Customer, Contact
-from controls.models import Numbering, Category, SubCategory, SetPriceItem, SetPriceItemPrice
+from controls.models import Numbering, Category, SubCategory, SetPriceCategory, SetPriceItemPrice
 from .models import Workorder, DesignType, WorkorderItem
 from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm, ParentItemForm, PostageItemForm, JobStatusForm
 from krueger.forms import KruegerJobDetailForm, WideFormatDetailForm
@@ -752,7 +752,7 @@ def edit_set_price_item(request, pk, cat):
     print(item.setprice_item)
     print('above')
     try:
-        setprice = SetPriceItem.objects.get(id=item.setprice_category)
+        setprice = SetPriceCategory.objects.get(id=item.setprice_category)
         setprice_selected = setprice.name
         print(setprice_selected)
         try:
@@ -772,7 +772,7 @@ def edit_set_price_item(request, pk, cat):
         selected = ''
         obj_item = ''
         setprice_selected = ''
-    setprice_category = SetPriceItem.objects.all()
+    setprice_category = SetPriceCategory.objects.all()
     category = cat
     if request.method == "POST":
         form = SetPriceForm(request.POST, instance=item)
@@ -793,8 +793,8 @@ def edit_set_price_item(request, pk, cat):
         setprice_item = request.POST.get('setprice_item')
 
        # print(setprice)
-        #setprice_category = get_object_or_404(SetPriceItem, id=setprice)
-        # setprice_item = SetPriceItem.objects.get(id=setprice)
+        #setprice_category = get_object_or_404(SetPriceCategory, id=setprice)
+        # setprice_item = SetPriceCategory.objects.get(id=setprice)
         # print('name')
         # print(setprice_item.name)
         
@@ -843,13 +843,13 @@ def edit_set_price_item(request, pk, cat):
         else:
             last_price = ''
         lineitem.save()
-        setpriceitem = SetPrice.objects.get(workorder_item=pk)
-        setpriceitem.last_item_order = last_order
-        setpriceitem.last_item_price = last_price
-        setpriceitem.notes = notes
-        setpriceitem.unit_price = unit_price
-        setpriceitem.edited = 1
-        setpriceitem.save()
+        setpricecategory = SetPrice.objects.get(workorder_item=pk)
+        setpricecategory.last_item_order = last_order
+        setpricecategory.last_item_price = last_price
+        setpricecategory.notes = notes
+        setpricecategory.unit_price = unit_price
+        setpricecategory.edited = 1
+        setpricecategory.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     print(category)
     #obj = Category.objects.get(id=category)  

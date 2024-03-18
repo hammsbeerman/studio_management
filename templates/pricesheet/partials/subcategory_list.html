@@ -8,9 +8,18 @@ Subcategories
             
             <h5 class="card-title"></h5>
                 <p class="card-text">
-                    {% for obj in subcategory %}
-                        {{ obj.name }}<br/>
-                    {% endfor %}
+                    {% if catid == '3' %}
+                        {% for obj in subcategory %}
+                        <li><a class="" href="{% url 'pricesheet:template_list' %}?category=3&subcat={{ obj.id }}">{{ obj.name }}</a></li>
+                        {% endfor %}
+                        <button hx-get="{% url 'controls:add_setprice_category' %}" hx-target="#dialog" class="btn btn-primary">
+                            Add SetPrice Category
+                            </button>
+                    {% else %}
+                        {% for obj in subcategory %}
+                            {{ obj.name }}<br/>
+                        {% endfor %}
+                    {% endif %}
     </div>
     <div class="card-footer">
             

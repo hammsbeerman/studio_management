@@ -1,6 +1,6 @@
 [
 {
-    "model": "controls.setpriceitem",
+    "model": "controls.setpricecategory",
     "pk": 1,
     "fields": {
         "name": "Business Cards"

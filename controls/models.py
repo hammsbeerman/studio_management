@@ -79,7 +79,7 @@ class SubCategory(models.Model):
 #     def __str__(self):
 #         return self.name
     
-class SetPriceItem(models.Model):
+class SetPriceCategory(models.Model):
     category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.SET_NULL)
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
@@ -105,7 +105,7 @@ class PostageType(models.Model):
     
 
 class SetPriceItemPrice(models.Model):
-    name = models.ForeignKey(SetPriceItem, max_length=100, blank=True, null=True, on_delete=models.DO_NOTHING)
+    name = models.ForeignKey(SetPriceCategory, max_length=100, blank=True, null=True, on_delete=models.DO_NOTHING)
     description = models.CharField('Description', max_length=100, blank=False, null=False)
     set_quantity = models.DecimalField('Quantity / Order', max_digits=10, decimal_places=2, blank=False, null=False)
     price = models.DecimalField('Price', max_digits=10, decimal_places=2, blank=True, null=True)

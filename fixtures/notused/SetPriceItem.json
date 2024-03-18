@@ -1,6 +1,6 @@
 [
 {
-    "model": "controls.setpriceitem",
+    "model": "controls.setpricecategory",
     "pk": 4,
     "fields": {
         "category": 3,
@@ -8,7 +8,7 @@
     }
 },
 {
-    "model": "controls.setpriceitem",
+    "model": "controls.setpricecategory",
     "pk": 5,
     "fields": {
         "category": 3,
@@ -16,7 +16,7 @@
     }
 },
 {
-    "model": "controls.setpriceitem",
+    "model": "controls.setpricecategory",
     "pk": 6,
     "fields": {
         "category": 3,

@@ -6,7 +6,7 @@ from accounts.decorators import allowed_users
 from decimal import Decimal
 from .forms import EnvelopeForm, CreateTemplateForm, NewTemplateForm, NCRForm, CreateWideFormatTemplateForm, WideFormatForm
 from .models import PriceSheet, WideFormatPriceSheet
-from controls.models import SubCategory, FixedCost, SetPriceItem, SetPriceItemPrice
+from controls.models import SubCategory, FixedCost, SetPriceCategory, SetPriceItemPrice
 from controls.forms import SubCategoryForm, CategoryForm
 from workorders.models import WorkorderItem, Category
 from krueger.models import KruegerJobDetail, PaperStock, WideFormat
@@ -193,20 +193,28 @@ def copy_template(request):
 @allowed_users(allowed_roles=['admin'])
 def template_list(request, id=None):
     catid = id
+    subcat = request.GET.get('subcat')
+    item = ''
+    print(subcat)
     print(catid)
     if not catid:
         catid = request.GET.get('category')
     print(catid)
     category = Category.objects.all().exclude(active=0).distinct().order_by('name')
     if catid == '3':
-        subcategory = SetPriceItem.objects.all
-        template = ''
+        subcategory = SetPriceCategory.objects.all().order_by('name')
+        try:
+            item = SetPriceItemPrice.objects.filter(name_id = subcat)
+            template = ''
+        except:
+            template = ''
     else:
         subcategory = SubCategory.objects.filter(category_id=catid)
         template = PriceSheet.objects.filter(category_id=catid)
     wftemplate = WideFormatPriceSheet.objects.filter(category_id=catid)
     #template = PriceSheet.objects.all().order_by('-category', '-name')
     context = {
+        'item':item,
         'template': template,
         'wftemplate': wftemplate,
         'category': category,

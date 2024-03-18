@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User, Group
 from django.urls import reverse
 from customers.models import Customer, Contact
-from controls.models import Category, SubCategory, DesignType, SetPriceItem, SetPriceItemPrice, PostageType, JobStatus, UserGroup
+from controls.models import Category, SubCategory, DesignType, SetPriceCategory, SetPriceItemPrice, PostageType, JobStatus, UserGroup
 from accounts.models import Profile
 
 
@@ -65,7 +65,7 @@ class WorkorderItem(models.Model):
     workorder_hr = models.CharField('Workorder Human Readable', max_length=100, blank=False, null=False)
     item_category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.SET_NULL)
     item_subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)
-    setprice_category = models.ForeignKey(SetPriceItem, blank=True, null=True, on_delete=models.SET_NULL)
+    setprice_category = models.ForeignKey(SetPriceCategory, blank=True, null=True, on_delete=models.SET_NULL)
     setprice_item = models.ForeignKey(SetPriceItemPrice, blank=True, null=True, on_delete=models.SET_NULL) 
     #item_subcategory = models.CharField('Subcategory', max_length=100, blank=True, null=True)
     pricesheet_modified = models.BooleanField('Pricesheet Modified', blank=True, null=True, default=False)

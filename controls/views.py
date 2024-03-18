@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.utils import timezone
-from .forms import SubCategoryForm, CategoryForm, AddItemSetPriceItemForm, AddSetPriceItemForm
-from .models import SetPriceItem, SubCategory, Category
+from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPriceCategoryForm
+from .models import SetPriceCategory, SubCategory, Category, SetPriceItemPrice
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -41,7 +41,7 @@ def add_subcategory(request):
                 subcat.save()
                 print(obj.category)
                 print(obj.category.id)
-                lineitem = SetPriceItem(category=obj.category, name=obj.name)
+                lineitem = SetPriceCategory(category=obj.category, name=obj.name)
                 lineitem.save()
                 return HttpResponse(status=204, headers={'HX-Trigger': 'ListChanged'})
             else:
@@ -57,11 +57,11 @@ def add_subcategory(request):
 
 @login_required
 def add_setprice_category(request):
-    form = AddSetPriceItemForm()
+    form = AddSetPriceCategoryForm()
     category = 3
     updated = timezone.now()
     if request.method =="POST":
-        form = AddSetPriceItemForm(request.POST)
+        form = AddSetPriceCategoryForm(request.POST)
         if form.is_valid():
             obj = form.save(commit=False)
             obj.updated = updated
@@ -74,3 +74,40 @@ def add_setprice_category(request):
         'category':category,
     }
     return render (request, "pricesheet/modals/add_setprice_category.html", context)
+
+
+@login_required
+def add_setprice_item(request):
+    form = AddSetPriceItemForm()
+    updated = timezone.now()
+    if request.method =="POST":
+        form = AddSetPriceItemForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.updated = updated
+            obj.save()
+            return HttpResponse(status=204, headers={'HX-Trigger': 'ItemAdded'})
+        else:
+            print(form.errors)
+    context = {
+        'form': form,
+    }
+    return render (request, "pricesheet/modals/add_setprice_item.html", context)
+
+# @login_required
+# def setprice_list(request):
+#     subcat = request.GET.get('subcat')
+#     items = SetPriceItemPrice.objects.filter(name_id = subcat)
+#     print(items)
+#     context = {
+#         'items':items
+#     }
+#     return render (request, "pricesheet/partials/setprice_list.html", context)
+
+
+
+
+
+
+
+

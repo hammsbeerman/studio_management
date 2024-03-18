@@ -13,9 +13,7 @@ Categories
                             <li><a class="" href="{% url 'pricesheet:template_list' %}?category={{ obj.id }}">{{ obj.name }}</a></li>
                         {% endfor %}
                         </ul>
-                        <button hx-get="{% url 'controls:add_setprice_category' %}" hx-target="#dialog" class="btn btn-primary">
-                            Add SetPrice Category
-                            </button>
+                        
     </div>
     <div class="card-footer">
             
