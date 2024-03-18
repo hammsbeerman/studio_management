@@ -85,12 +85,12 @@ def template(request, id=None):
     test = Inventory.objects.filter(inventory_category = 4)
     print(test)
     try:
-        papers = Inventory.objects.filter(inventory_category = obj.subcategory.inventory_category.id)
+        papers = Inventory.objects.filter(inventory_category = obj.subcategory.inventory_category.id).order_by('name')
         #papers = Inventory.objecs.get(inventory_category=obj.subcategory.inventory_category.id)
         print(papers)
         print(1)
     except:
-        papers = Inventory.objects.all()
+        papers = Inventory.objects.all().order_by('name')
         print(2)
     formdata = PriceSheet.objects.get(id=id)
     if request.method =="POST":
@@ -384,15 +384,15 @@ def edititem(request, id, pk, cat,):
         if loadform.inventory_category is not None:
             inventory_cat = loadform.inventory_category.id
             print(inventory_cat)
-            papers = Inventory.objects.filter(inventory_category = inventory_cat)
+            papers = Inventory.objects.filter(inventory_category = inventory_cat).order_by('name')
         else:
                 try:
-                    papers = Inventory.objects.filter(inventory_category = modified.item_subcategory.inventory_category.id)
+                    papers = Inventory.objects.filter(inventory_category = modified.item_subcategory.inventory_category.id).order_by('name')
                     #papers = Inventory.objecs.get(inventory_category=obj.subcategory.inventory_category.id)
                     print(papers)
                     print(1)
                 except:
-                    papers = Inventory.objects.all()
+                    papers = Inventory.objects.all().order_by('name')
         context = {
             'form':form,
             'formdata':formdata,
@@ -463,15 +463,15 @@ def edititem(request, id, pk, cat,):
             inventory_cat = loadform.inventory_category.id
             #papers = Inventory.objects.filter(inventory_category = inventory_cat)
         try:
-            papers = Inventory.objects.filter(inventory_category = modified.item_subcategory.inventory_category.id)
+            papers = Inventory.objects.filter(inventory_category = modified.item_subcategory.inventory_category.id).order_by('name')
             #papers = Inventory.objecs.get(inventory_category=obj.subcategory.inventory_category.id)
             print(papers)
             print('1')
         except:
             try:
-                papers = Inventory.objects.filter(inventory_category = inventory_cat)
+                papers = Inventory.objects.filter(inventory_category = inventory_cat).order_by('name')
             except:
-                papers = Inventory.objects.all()
+                papers = Inventory.objects.all().order_by('name')
                 print('2')
         context = {
             'form':form,
