@@ -684,7 +684,10 @@ def edit_orderout_item(request, pk, cat):
                 price_ea = temp_total / qty
         else:
             temp_total = total
-        unit_price = temp_total / qty
+        try: 
+            unit_price = temp_total / qty
+        except:
+            unit_price = 0
         lineitem = WorkorderItem.objects.get(id=pk)
         lineitem.description = obj.description
         lineitem.quantity = qty
