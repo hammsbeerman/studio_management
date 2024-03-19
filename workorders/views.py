@@ -1516,8 +1516,11 @@ def complete_status(request):
         item.tax = 0
         item.save()
     cust = item.customer_id
-    open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+    #open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+    open_balance = Workorder.objects.filter(customer_id=cust).exclude(completed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
     open_balance = list(open_balance.values())[0]
+    print('open balance')
+    print(open_balance)
     if open_balance:
         open_balance = round(open_balance, 2)
     else:

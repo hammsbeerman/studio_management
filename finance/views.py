@@ -81,7 +81,7 @@ def recieve_payment(request):
                     credit = cust.credit + obj.amount
                 except: 
                     credit = obj.amount
-                open_balance = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).aggregate(sum=Sum('open_balance'))
+                open_balance = Workorder.objects.filter(customer_id=customer).exclude(completed=0).exclude(paid_in_full=1).aggregate(sum=Sum('open_balance'))
                 open_balance = list(open_balance.values())[0]
                 print(open_balance)
                 balance = open_balance
@@ -185,7 +185,8 @@ def apply_payment(request):
                     credit = credit - partial
                     print(full_payment)
                     Workorder.objects.filter(pk=pk).update(open_balance = open, amount_paid = paid, paid_in_full = full_payment, date_paid = date)
-                    open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+                    #open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+                    open_balance = Workorder.objects.filter(customer_id=cust).exclude(completed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
                     open_balance = list(open_balance.values())[0]
                     open_balance = round(open_balance, 2)
                     print(open_balance)
@@ -198,10 +199,15 @@ def apply_payment(request):
             if credit > open:
                 Workorder.objects.filter(pk=pk).update(open_balance = 0, amount_paid = total, paid_in_full = 1, date_paid = date, days_to_pay = days_to_pay)
                 credit = credit - open
-                open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+                open_balance = Workorder.objects.filter(customer_id=cust).exclude(completed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
                 open_balance = list(open_balance.values())[0]
-                open_balance = round(open_balance, 2)
-                print(open_balance)
+                if open_balance:
+                    print('open balance')
+                    print(open_balance)
+                    open_balance = round(open_balance, 2)
+                    print(open_balance)
+                else:
+                    open_balance = 0
                 Customer.objects.filter(pk=cust).update(credit = credit, avg_days_to_pay = avg_days, open_balance = open_balance)
     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
 
@@ -241,7 +247,8 @@ def unapply_payment(request):
         paid = workorder.amount_paid
         credit = customer.credit + paid
         Workorder.objects.filter(pk=pk).update(open_balance = total, amount_paid = 0, paid_in_full = 0)
-        open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+        #open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
+        open_balance = Workorder.objects.filter(customer_id=cust).exclude(completed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
         open_balance = list(open_balance.values())[0]
         open_balance = round(open_balance, 2)
         print(open_balance)
