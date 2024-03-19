@@ -34,6 +34,7 @@
       </div>
       {% if workorder.quote == '1' %}
         <a href="{% url 'workorders:quote_to_workorder'  %}?quote={{workorder.quote_number}}" class="btn btn-primary btn-sm" role="button">Convert to Workorder</a>
+        <a href="{% url 'workorders:abandon_quote'  %}?quote={{workorder.quote_number}}" class="btn btn-primary btn-sm" role="button">Reject Quote</a>
       {% else %}
         <a href="{% url 'workorders:copy_workorder' id=workid %}" class="btn btn-primary btn-sm" role="button">Duplicate Workorder</a>
         {% if workorder.completed == 0 %}

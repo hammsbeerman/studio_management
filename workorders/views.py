@@ -681,7 +681,10 @@ def edit_orderout_item(request, pk, cat):
                 override = Decimal.from_float(override)
                 temp_total = override
                 #print(type(obj.quantity))
-                price_ea = temp_total / qty
+                try:
+                    price_ea = temp_total / qty
+                except:
+                    price_ea = 0
         else:
             temp_total = total
         try: 
@@ -1440,6 +1443,18 @@ def quote_to_workorder(request):
     print(n.value)
     n.save()
     return redirect("workorders:overview", id=workorder_number)
+
+@login_required
+def abandon_quote(request):
+    quote = request.GET.get('quote')
+    print(quote)
+    try:
+        Workorder.objects.filter(workorder = quote).update(abandon_quote=1)
+    except:
+        pass
+    return redirect("dashboard:dashboard")
+
+
 
 @login_required
 def complete_status(request):

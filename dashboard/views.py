@@ -44,9 +44,11 @@ def dashboard(request, id=None):
 def assigned_item_list(request, id=None):
     user = request.user.id
     items = WorkorderItem.objects.filter(assigned_user_id = user).exclude(completed=1).order_by("-workorder")
+    quotes = WorkorderItem.objects.filter(assigned_user_id = user).exclude(completed=1).order_by("-workorder")
 
     context = {
         'items':items,
+        'quotes':quotes,
 
     }
 
@@ -123,8 +125,11 @@ def stale_item_list(request, id=None):
     test = group.group.all()
     print(test)
     stale_date = timezone.now() - timedelta(days=-7)
+    stale_quote_date = timezone.now() - timedelta(days=-14)
     print(stale_date)
     items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_date).exclude(completed=1)
+    quotes = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_quote_date).exclude(completed=1)
+    
     #items = WorkorderItem.objects.filter(updated__lt=stale_date)
     #for x in test:
     ##items = WorkorderItem.objects.filter(assigned_group_id__exact = test).exclude(completed=1).order_by("-workorder")
@@ -141,5 +146,6 @@ def stale_item_list(request, id=None):
 
     context = {
         'items':items,
+        'quotes':quotes,
     }
     return render(request, "dashboard/partials/stale_item_list.html", context)

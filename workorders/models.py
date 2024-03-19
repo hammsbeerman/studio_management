@@ -16,6 +16,7 @@ class Workorder(models.Model):
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
     quote = models.CharField('Quote', choices=[('1', 'Quote'), ('0', 'Workorder')], max_length=100, blank=False, null=False)
     quote_number = models.CharField('Quote Number', max_length=100, blank=True, null=True)
+    abandon_quote = models.BooleanField('Abandon Quote', blank=False, null=False, default=False)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     deadline = models.DateField('Deadline', blank=True, null=True)
     po_number = models.CharField('PO Number', max_length=100, blank=True, null=True)
