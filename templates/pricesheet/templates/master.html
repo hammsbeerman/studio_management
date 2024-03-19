@@ -421,13 +421,9 @@ Form for entering line item details
                                 <form action="{% url 'workorders:remove_item' pk=pk %}" method="post">
                                     {% csrf_token %}
                                     <input type="hidden" id="pk" name="pk" value="{{ pk }}">
-                                    <input type="submit" class="btn btn-danger" value="DELETE" name="submit" />
+                                    <input type="submit" class="btn btn-danger" value="Remove" name="submit" />
                                 </form> 
-                            
-                            </div>
-                            <div class='col-auto'>
-                                <button type="button" class="btn btn-danger" hx-post="{% url 'workorders:remove_item' pk=pk %}">Remove</button>
-                            </div>
+
 
                             
                            

@@ -7,11 +7,11 @@
                     <div class="card-body" id="custinfo" hx-trigger="CustomerEdit from:body" hx-target="this" >
                         <h5 class="card-title">{% if customer.company_name %}{{ customer.company_name }}</h5>
             <p class="card-text">
-                Address: {{ customer.address1 }} <br/>
+                {% if customer.address1 %} Address: {{ customer.address1 }} <br/>
                 {% if customer.address2 %}{{customer.address2}}{% endif %}<br/>
-                {{ customer.city }}, {{customer.state}} {{customer.zipcode }}<br/>
-                Phone: {{ customer.phone1 }}<br/>
-                Email: {{ customer.email }}<br/>
+                {{ customer.city }}, {{customer.state}} {{customer.zipcode }}<br/>{% endif %}
+                {% if customer.phone1 %} Phone: {{ customer.phone1 }}<br/>{% endif %}
+                {% if customer.email %}Email: {{ customer.email }}<br/>{% endif %}
                 {% endif %}
                     </div>
                     <div class="card-footer">

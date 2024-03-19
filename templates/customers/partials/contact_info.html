@@ -6,11 +6,11 @@
                         <div class="card-body" id="contactinfo">
                             <h5 class="card-title">{% if contact %}{{ contact.fname}} {% if contact.lname %}{{contact.lname }}{% endif %}</h5>
                             <p class="card-text">
-                                Address: {{ contact.address1 }} <br/>
+                                {% if contact.address1 %}Address: {{ contact.address1 }} <br/>
                                 {% if contact.address2 %}{{contact.address2}}{% endif %}<br/>
-                                {{ contact.city }}, {{contact.state}} {{contact.zipcode }}<br/>
-                                Phone: {{ contact.phone1 }}<br/>
-                                Email: {{ contact.email }}<br/>
+                                {{ contact.city }}, {{contact.state}} {{contact.zipcode }}<br/>{% endif %}
+                                {% if contact.phone1 %}Phone: {{ contact.phone1 }}<br/>{% endif %}
+                                {% if contact.email %}Email: {{ contact.email }}<br/>{% endif %}
                                 {% endif %}
                             
                         </div>
