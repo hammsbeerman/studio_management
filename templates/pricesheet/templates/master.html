@@ -418,13 +418,15 @@ Form for entering line item details
                                 </form>
                             </div>
                             <div class='col-auto'>
-                                {% if jobid %}
-                                <form action="{% url 'krueger:remove_item' %}" method="post">
+                                <form action="{% url 'workorders:remove_item' pk=pk %}" method="post">
                                     {% csrf_token %}
-                                    <input type="hidden" id="jobid" name="jobid" value="{{ jobid }}">
+                                    <input type="hidden" id="pk" name="pk" value="{{ pk }}">
                                     <input type="submit" class="btn btn-danger" value="DELETE" name="submit" />
                                 </form> 
-                                {% endif %}
+                            
+                            </div>
+                            <div class='col-auto'>
+                                <button type="button" class="btn btn-danger" hx-post="{% url 'workorders:remove_item' pk=pk %}">Remove</button>
                             </div>
 
                             

@@ -494,6 +494,7 @@ def edititem(request, id, pk, cat,):
             'selected_paper':selected_paper,
             'workorder_id':id,
             'internal_company':internal_company,
+            'pk':pk
 
         }
         return render(request, 'pricesheet/templates/master.html', context)

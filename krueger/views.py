@@ -148,31 +148,31 @@ def wideformat_substrateprice(request):
     context = {'paperprices': paperprices}
     return render(request, 'krueger/partials/wideformat_substrateprice.html', context)
 
-@ require_POST
-@login_required
-def remove_workorder_item(request):
-    jobid = request.POST.get('jobid')
-    print(jobid)
-    #print(pk)
-    jobitem = KruegerJobDetail.objects.get(id=jobid)
-    print(jobitem.id)#8
-    lineitem = jobitem.workorder_item
-    workorder = jobitem.hr_workorder
-    print(workorder)#5090
-    print(lineitem)#174
-    job = get_object_or_404(KruegerJobDetail, pk=jobid)
-    print('jobdetail')
-    print(job)
-    job.delete()
-    line = get_object_or_404(WorkorderItem, pk=lineitem)
-    print('lineitem')
-    print(lineitem)
-    line.delete()
-    print(workorder)
-    #return redirect("workorders:overview", id=workorder)
-    #return render(request, 'workorders/overview.html')
-    url = reverse('workorders:overview', kwargs={'id': workorder})
-    return HttpResponseRedirect(url)
+# @ require_POST
+# @login_required
+# def remove_workorder_item(request):
+#     jobid = request.POST.get('jobid')
+#     print(jobid)
+#     #print(pk)
+#     jobitem = KruegerJobDetail.objects.get(id=jobid)
+#     print(jobitem.id)#8
+#     lineitem = jobitem.workorder_item
+#     workorder = jobitem.hr_workorder
+#     print(workorder)#5090
+#     print(lineitem)#174
+#     job = get_object_or_404(KruegerJobDetail, pk=jobid)
+#     print('jobdetail')
+#     print(job)
+#     job.delete()
+#     line = get_object_or_404(WorkorderItem, pk=lineitem)
+#     print('lineitem')
+#     print(lineitem)
+#     line.delete()
+#     print(workorder)
+#     #return redirect("workorders:overview", id=workorder)
+#     #return render(request, 'workorders/overview.html')
+#     url = reverse('workorders:overview', kwargs={'id': workorder})
+#     return HttpResponseRedirect(url)
 
 @login_required
 def newjob(request, id, pk):

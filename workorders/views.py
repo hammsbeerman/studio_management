@@ -1029,6 +1029,17 @@ def edit_parent_item(request, pk, cat, workorder):
 @ require_POST
 @login_required
 def remove_workorder_item(request, pk):
+    if request.method == "POST":
+        item = get_object_or_404(WorkorderItem, pk=pk)
+        print(item.workorder_hr)
+        workorder = item.workorder_hr
+        groupitem = WorkorderItem.objects.filter(parent_item=pk)
+        try:
+            groupitem.update(parent_item=None, child=0)
+        except:
+            pass
+        item.delete()
+        return redirect("workorders:overview", id=workorder)
     item = get_object_or_404(WorkorderItem, pk=pk)
     if item.setprice_category:
         subitem = get_object_or_404(SetPrice, workorder_item=pk)
