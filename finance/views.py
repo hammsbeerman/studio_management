@@ -77,7 +77,10 @@ def recieve_payment(request):
                 obj.save()
                 print(customer)
                 cust = Customer.objects.get(id=customer)
-                credit = cust.credit + obj.amount
+                try:
+                    credit = cust.credit + obj.amount
+                except: 
+                    credit = obj.amount
                 open_balance = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).aggregate(sum=Sum('open_balance'))
                 open_balance = list(open_balance.values())[0]
                 print(open_balance)
@@ -87,7 +90,9 @@ def recieve_payment(request):
                 high_balance = cust.high_balance
                 if not high_balance:
                     high_balance = 0
-                high_balance = open_balance - credit
+                 #   high_balance = open_balance - credit
+                
+
                 print(high_balance)
                 if high_balance > balance:
                     high_balance = high_balance

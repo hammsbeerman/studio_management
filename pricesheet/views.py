@@ -749,6 +749,7 @@ def edit_wideformat_item(request, pk, cat,):
         else:
             papers = Inventory.objects.all().order_by('name')
         context = {
+            'pk':pk,
             'form':form,
             'formdata':formdata,
             'description':description,
