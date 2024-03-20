@@ -123,6 +123,8 @@ def create_base(request):
 
 @login_required
 def overview(request, id=None):
+    print('id')
+    print(id)
     workorder = Workorder.objects.get(workorder=id)
     #if not workorder:
     #    workorder = request.GET.get('workorder')
@@ -1417,6 +1419,22 @@ def quote_to_workorder(request):
     except:
         print('pass')
         pass
+    try:
+        items = KruegerJobDetail.objects.filter(workorder_hr = quote)
+        for item in items:
+            item.workorder_hr = workorder_number
+            item.save()
+    except:
+            print('pass')
+            pass
+    try:
+        items = WideFormat.objects.filter(workorder_hr = quote)
+        for item in items:
+            item.workorder_hr = workorder_number
+            item.save()
+    except:
+            print('pass')
+            pass
     try:
         items = OrderOut.objects.filter(workorder_hr = quote)
         for item in items:
