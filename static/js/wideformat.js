@@ -172,7 +172,7 @@ $(document).ready(function(){
         quantity = Number(quantity);
 
         var media_width = $('#id_media_width').val();
-        var usable_width = media_width - 2
+        var usable_width = media_width - 1
         $('#id_usable_width').val(usable_width);
 
         var height = $('#id_print_height').val();
