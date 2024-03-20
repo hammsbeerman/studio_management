@@ -1029,10 +1029,11 @@ def edit_parent_item(request, pk, cat, workorder):
 #    
 
 
-@ require_POST
+#@ require_POST
 @login_required
 def remove_workorder_item(request, pk):
     if request.method == "POST":
+        nonmodal = request.POST.get('nonmodal')
         item = get_object_or_404(WorkorderItem, pk=pk)
         print(item.workorder_hr)
         workorder = item.workorder_hr
@@ -1042,7 +1043,10 @@ def remove_workorder_item(request, pk):
         except:
             pass
         item.delete()
-        return redirect("workorders:overview", id=workorder)
+        if nonmodal == '1':
+            return redirect("workorders:overview", id=workorder)
+        else:
+            return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     item = get_object_or_404(WorkorderItem, pk=pk)
     if item.setprice_category:
         subitem = get_object_or_404(SetPrice, workorder_item=pk)

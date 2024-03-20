@@ -192,6 +192,13 @@ def copy_template(request):
 @login_required
 @allowed_users(allowed_roles=['admin'])
 def template_list(request, id=None):
+    ##This isn't working
+    # try:
+    #     catid = request.GET.get('category')
+    #     print(catid)
+    #     print('tried')
+    # except:
+    #     pass
     catid = id
     subcat = request.GET.get('subcat')
     item = ''

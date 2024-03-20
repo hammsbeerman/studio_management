@@ -343,6 +343,7 @@ Form for editing wide format item details
                                 <form action="{% url 'workorders:remove_item' pk=pk %}" method="post">
                                     {% csrf_token %}
                                     <input type="hidden" id="pk" name="pk" value="{{ pk }}">
+                                    <input type="hidden" id="nonmodal" name="nonmodal" value="1">
                                     <input type="submit" class="btn btn-danger" value="Remove" name="submit" />
                                 </form> 
                             </div>

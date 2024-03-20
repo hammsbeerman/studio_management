@@ -82,11 +82,12 @@ def add_setprice_item(request):
     updated = timezone.now()
     if request.method =="POST":
         form = AddSetPriceItemForm(request.POST)
+        cat = 3
         if form.is_valid():
             obj = form.save(commit=False)
             obj.updated = updated
             obj.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'ItemAdded'})
+            return HttpResponse(status=204, headers={'HX-Trigger': 'TemplateListChanged', 'category':'3'})
         else:
             print(form.errors)
     context = {
