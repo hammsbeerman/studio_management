@@ -159,6 +159,7 @@ Form for entering line item details
                         <hr>
                         <div class='row'>
                             <div class='col'>Standard Pricing:<br/> B/W = .1<br/> Color = .15<br/> Vivid = .25 </div>
+                            <div class='col'>Envelope Pricing:<br/> B/W = .065<br/> Color = .10<br/> Vivid = .2 </div>
                             <div class='col'>
                                 {{ form.side_1_inktype|as_crispy_field }}
                             </div>
@@ -216,10 +217,10 @@ Form for entering line item details
                             </tr>
                             {% endif %}
                             <tr>    
-                                <td>Misc 1: <input type="checkbox" id="show-misc1"></td>
-                                <td>Misc 2: <input type="checkbox" id="show-misc2"></td>
-                                <td>Misc 3: <input type="checkbox" id="show-misc3"></td>
-                                <td>Misc 4: <input type="checkbox" id="show-misc4"></td>
+                                {% if formdata.misc1_price is not None %}<td style="color:red;">Misc 1: <input type="checkbox" id="show-misc1"></td>{% else %}<td>Misc 1: <input type="checkbox" id="show-misc1"></td>{% endif %}
+                                {% if formdata.misc2_price is not None %}<td style="color:red;">Misc 2: <input type="checkbox" id="show-misc2"></td>{% else %}<td>Misc 2: <input type="checkbox" id="show-misc1"></td>{% endif %}
+                                {% if formdata.misc3_price is not None %}<td style="color:red;">Misc 3: <input type="checkbox" id="show-misc3"></td>{% else %}<td>Misc 3: <input type="checkbox" id="show-misc1"></td>{% endif %}
+                                {% if formdata.misc4_price is not None %}<td style="color:red;">Misc 4: <input type="checkbox" id="show-misc4"></td>{% else %}<td>Misc 4: <input type="checkbox" id="show-misc1"></td>{% endif %}
                             </tr>
                         </table>
                         <!--<div id="show-numbering"><u>Add Numbering</u></div> -->

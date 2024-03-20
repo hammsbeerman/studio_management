@@ -4,10 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Min, Sum
 from django.db.models import Q
 from django.utils import timezone
+import logging
 from customers.models import Customer
 from workorders.models import Workorder
 from .forms import PaymentForm
 from controls.models import PaymentType
+
+logger = logging.getLogger(__file__)
 
 # Create your views here.
 
