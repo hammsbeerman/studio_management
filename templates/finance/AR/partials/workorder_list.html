@@ -53,3 +53,18 @@
           </div>
           Negative partial payments will reverse payment
             
+
+         
+
+
+          <script>
+          
+          
+              $(document).ready(function () {
+                $("#customers").select2();
+                $('#customers').on('select2:select', (e) => {
+                  htmx.trigger("#customers", "change")
+                });
+              })
+
+            </script>

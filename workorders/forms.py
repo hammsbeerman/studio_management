@@ -22,6 +22,8 @@ class WorkorderForm(DynamicFormMixin, forms.ModelForm):
         widgets = {
             'workorder': forms.TextInput(attrs={'class':'form-control'})
         }
+        #The following makes a field required, but there is no error message if field is not filled in
+        #description = forms.CharField(required=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
