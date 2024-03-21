@@ -61,25 +61,49 @@ $(document).ready(function(){
       $('#bulkmail-row').slideToggle(200)
       });
 
-      $('#misc1-row').hide()
+      if ($("#id_misc1_price").val() > .01){
+        $('#misc1-row').show()
+        
+      } else {
+        $('#misc1-row').hide()
+        //alert( "Handler for `keyup` called." );
+      }
+
+      if ($("#id_misc2_price").val() > .01){
+        $('#misc2-row').show()
+      } else {
+        $('#misc2-row').hide()
+      }
+
+      //$('#misc1-row').hide()
 
       $('#show-misc1').click(function(){
       $('#misc1-row').slideToggle(200)
       });
 
-      $('#misc2-row').hide()
+      //$('#misc2-row').hide()
 
       $('#show-misc2').click(function(){
       $('#misc2-row').slideToggle(200)
       });
 
-      $('#misc3-row').hide()
+      //$('#misc3-row').hide()
+      if ($("#id_misc3_price").val() > .01){
+        $('#misc3-row').show()
+      } else {
+        $('#misc3-row').hide()
+      }
 
       $('#show-misc3').click(function(){
       $('#misc3-row').slideToggle(200)
       });
 
-      $('#misc4-row').hide()
+      //$('#misc4-row').hide()
+      if ($("#id_misc4_price").val() > .01){
+        $('#misc4-row').show()
+      } else {
+        $('#misc4-row').hide()
+      }
 
       $('#show-misc4').click(function(){
       $('#misc4-row').slideToggle(200)

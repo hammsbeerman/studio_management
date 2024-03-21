@@ -1,85 +1,159 @@
 $(document).ready(function(){
 
     //Hide job steps until needed
-      $('#perf-row').hide()
+      //$('#perf-row').hide()
+      if ($("#id_step_perf_price").val() > .01){
+        $('#perf-row').show()
+      } else {
+        $('#perf-row').hide()
+      }
 
       $('#show-perf').click(function(){
       $('#perf-row').slideToggle(200)
       });
 
-      $('#numbering-row').hide()
+      //$('#numbering-row').hide()
+      if ($("#id_step_number_price").val() > .01){
+        $('#numbering-row').show()
+      } else {
+        $('#numbering-row').hide()
+      }
 
       $('#show-numbering').click(function(){
       $('#numbering-row').slideToggle(200)
       });
 
-      $('#wrap-row').hide()
+      //$('#wrap-row').hide()
+      if ($("#id_step_insert_frontback_cover_price").val() > .01 || $("#id_step_insert_wrap_around_price").val() > .01 || $("#id_step_insert_chip_divider_price").val() > .01){
+        $('#wrap-row').show()
+      } else {
+        $('#wrap-row').hide()
+      }
 
       $('#show-wraparound').click(function(){
       $('#wrap-row').slideToggle(200)
       });
 
-      $('#mailmerge-row').hide()
+      //$('#mailmerge-row').hide()
+      if ($("#id_step_print_mailmerge_price").val() > .01){
+        $('#mailmerge-row').show()
+      } else {
+        $('#mailmerge-row').hide()
+      }
 
       $('#show-mailmerge').click(function(){
       $('#mailmerge-row').slideToggle(200)
       });
 
-      $('#padding-row').hide()
+      //$('#padding-row').hide()
+      if ($("#id_step_NCR_compound_price").val() > .01 || $("#id_step_white_compound_price").val() > .01){
+        $('#padding-row').show()
+      } else {
+        $('#padding-row').hide()
+      }
 
       $('#show-padding').click(function(){
       $('#padding-row').slideToggle(200)
       });
 
-      $('#drill-row').hide()
+      //$('#drill-row').hide()
+      if ($("#id_step_set_to_drill_price").val() > .01 || $("#id_step_drill_price").val() > .01){
+        $('#drill-row').show()
+      } else {
+        $('#drill-row').hide()
+      }
 
       $('#show-drill').click(function(){
       $('#drill-row').slideToggle(200)
       });
 
       $('#staple-row').hide()
+      if ($("#id_step_staple_price").val() > .01){
+        $('#staple-row').show()
+      } else {
+        $('#staple-row').hide()
+      }
 
       $('#show-staple').click(function(){
       $('#staple-row').slideToggle(200)
       });
 
-      $('#fold-row').hide()
+      //$('#fold-row').hide()
+      if ($("#id_step_fold_price").val() > .01){
+        $('#fold-row').show()
+      } else {
+        $('#fold-row').hide()
+      }
 
       $('#show-fold').click(function(){
       $('#fold-row').slideToggle(200)
       });
 
-      $('#tab-row').hide()
+      //$('#tab-row').hide()
+      if ($("#id_step_tab_price").val() > .01){
+        $('#tab-row').show()
+      } else {
+        $('#tab-row').hide()
+      }
 
       $('#show-tab').click(function(){
       $('#tab-row').slideToggle(200)
       });
 
-      $('#bulkmail-row').hide()
+      //$('#bulkmail-row').hide()
+      if ($("#id_step_bulk_mail_tray_sort_paperwork_price").val() > .01){
+        $('#bulkmail-row').show()
+      } else {
+        $('#bulkmail-row').hide()
+      }
 
       $('#show-bulkmail').click(function(){
       $('#bulkmail-row').slideToggle(200)
       });
 
-      $('#misc1-row').hide()
+      if ($("#id_misc1_price").val() > .01){
+        $('#misc1-row').show()
+        
+      } else {
+        $('#misc1-row').hide()
+        //alert( "Handler for `keyup` called." );
+      }
+
+      if ($("#id_misc2_price").val() > .01){
+        $('#misc2-row').show()
+      } else {
+        $('#misc2-row').hide()
+      }
+
+      //$('#misc1-row').hide()
 
       $('#show-misc1').click(function(){
       $('#misc1-row').slideToggle(200)
       });
 
-      $('#misc2-row').hide()
+      //$('#misc2-row').hide()
 
       $('#show-misc2').click(function(){
       $('#misc2-row').slideToggle(200)
       });
 
-      $('#misc3-row').hide()
+      //$('#misc3-row').hide()
+      if ($("#id_misc3_price").val() > .01){
+        $('#misc3-row').show()
+      } else {
+        $('#misc3-row').hide()
+      }
 
       $('#show-misc3').click(function(){
       $('#misc3-row').slideToggle(200)
       });
 
-      $('#misc4-row').hide()
+      //$('#misc4-row').hide()
+      if ($("#id_misc4_price").val() > .01){
+        $('#misc4-row').show()
+      } else {
+        $('#misc4-row').hide()
+      }
 
       $('#show-misc4').click(function(){
       $('#misc4-row').slideToggle(200)
@@ -157,7 +231,7 @@ $(document).ready(function(){
 
         //$('#id_mailmerge_qty').val(sheet_qty)
         $('#id_perf_number_of_pieces').val(sheet_qty)
-        $('#id_fold_number_to_fold').val(sheet_qty)
+        //$('#id_fold_number_to_fold').val(sheet_qty)
         $('#id_number_number_of_pieces').val(sheet_qty)
         //Insert number to drill after it gets added to form
         $('#id_staple_number_of_pieces').val(set_per_book)
