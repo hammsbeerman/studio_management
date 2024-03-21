@@ -1082,6 +1082,18 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail.save()
         except Exception as e:
             print("The error is:", e)
+        try: 
+            objdetail = WideFormat.objects.get(workorder_item=pk)
+            objdetail.pk = None
+            objdetail.workorder_item = obj.pk
+            objdetail.last_item_order = obj.workorder_hr
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.price_total
+            objdetail.save()
+        except Exception as e:
+            print("The error is:", e)
         try:
             objdetail = OrderOut.objects.get(workorder_item=pk)
             objdetail.pk = None
