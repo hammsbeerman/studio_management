@@ -30,6 +30,19 @@
     {{ form.description|as_crispy_field }}
   </div>
 
+  <div class="mb-3"> 
+    <div id="div_id_show" class="mb-3 form-check"> 
+      {% if show_on_wo.show_qty_on_wo %}
+        <input type="checkbox" name="showonwo" class="checkboxinput form-check-input" id="id_show" value="1" checked> 
+      {% else %}
+        <input type="checkbox" name="showonwo" class="checkboxinput form-check-input" id="id_show">
+      {% endif %}
+      <label for="id_show" class="form-check-label">
+                      Show on workorder {{ show_on_wo.show_qty_on_wo }}
+      </label> 
+    </div> 
+  </div>
+
 
         <input type="hidden" id="cat" name="cat" value="{{ cat }}">
     <input type="hidden" id="item" name="item" value="{{ pk }}">

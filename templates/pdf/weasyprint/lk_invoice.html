@@ -180,7 +180,7 @@ table.ordert-first {margin-bottom: 11px;}
             {% for item in items %}
               {% if item.child == 0 %}
               <tr>
-                <td>{% if item.quantity%}{{item.quantity}}{% endif %}</td>
+                <td>{% if item.quantity%}{% if item.show_qty_on_wo %}{{item.quantity}}{% endif %}{% endif %}</td>
                 <td>{% if item.description%}{{item.description}}{% endif %}</td>
                 <td>{% if item.unit_price %}{{item.unit_price|floatformat:4}}{% endif %}</td>
                 <td>{% if item.absolute_price %}{% if item.billable %}{% if item.absolute_price %}{{item.absolute_price}}{% else %}{{item.total}}{% endif %}{% else %} -- {% endif %}{% endif %}</td>

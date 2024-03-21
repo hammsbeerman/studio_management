@@ -33,6 +33,8 @@
   <div class="col-md-3">
     <div id="contact-card" class="card" hx-trigger="ContactChanged from:body" hx-get="{% url 'customers:details_contact_info'  %}?contact={{ contact.id }}&customer={{customer.id}}" hx-target="this">
       {% include 'customers/partials/details_contact_info.html' %}
+      <p>
+      {% include 'customers/partials/icon_legend.html' %}
       </div>
   </div>
   <div class="col-md-3">
@@ -93,7 +95,8 @@
                   {% endif %}
               {% endif %}
               </td>
-              <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
+              <!-- Temporarily disabled -->
+              <!-- <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td> -->
             </tr>
             {% endfor %}
           </table></p>

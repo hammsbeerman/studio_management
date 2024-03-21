@@ -203,8 +203,8 @@ def apply_payment(request):
                 else:
                     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
             else:
-                open = workorder.open_balance   
-            if credit > open:
+                open = workorder.open_balance 
+            if credit >= open:
                 Workorder.objects.filter(pk=pk).update(open_balance = 0, amount_paid = total, paid_in_full = 1, date_paid = date, days_to_pay = days_to_pay)
                 credit = credit - open
                 open_balance = Workorder.objects.filter(customer_id=cust).exclude(completed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))

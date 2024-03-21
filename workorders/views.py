@@ -894,7 +894,7 @@ def edit_parent_item(request, pk, cat, workorder):
     print('pk')
     print(pk)
     item = WorkorderItem.objects.filter(workorder = wo, parent_item__isnull=True).exclude(item_category=13) | WorkorderItem.objects.filter(parent_item = pk).exclude(item_category=13)
-
+    show_on_wo = WorkorderItem.objects.get(pk=pk)
     if request.method == "POST":
         formerchildren = WorkorderItem.objects.filter(workorder = wo, parent_item = pk)
         formerchildren.update(child=0)
@@ -903,6 +903,11 @@ def edit_parent_item(request, pk, cat, workorder):
         childs = request.POST.getlist('child')
         qty = request.POST.get('quantity')
         desc = request.POST.get('description')
+        show = request.POST.get('showonwo')
+        if show:
+            show = 1
+        else:
+            show = 0
         print(childs)
         ap = 0
         ta = 0
@@ -940,6 +945,8 @@ def edit_parent_item(request, pk, cat, workorder):
             print(dec_ap)
             print(dec_qty)
             parent.unit_price = dec_ap / dec_qty
+        parent.show_qty_on_wo = show
+        parent.quantity = dec_qty
         parent.description = desc
         parent.absolute_price = ap
         parent.tax_amount = ta
@@ -954,6 +961,7 @@ def edit_parent_item(request, pk, cat, workorder):
         'pk':pk,
         'form': form,
         'item': item,
+        'show_on_wo': show_on_wo,
         # 'obj': obj_item,
         # 'selected':selected,
         # 'cat': category,
@@ -1270,7 +1278,7 @@ def copy_workorder(request, id=None):
         except Exception as e:
             print("The error is:", e)
         try: 
-            objdetail = WideFormat.objects.get(workorder_item=pk)
+            objdetail = WideFormat.objects.get(workorder_item=oldid)
             objdetail.pk = None
             objdetail.workorder_item = obj.pk
             objdetail.last_item_order = obj.workorder_hr
