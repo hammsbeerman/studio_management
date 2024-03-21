@@ -235,7 +235,7 @@ $(document).ready(function(){
         $('#id_number_number_of_pieces').val(sheet_qty)
         //Insert number to drill after it gets added to form
         $('#id_staple_number_of_pieces').val(set_per_book)
-        $('#id_tabs_number_of_pieces').val(set_per_book)
+        //$('#id_tabs_number_of_pieces').val(set_per_book)
         
 
         //Fill in pricing sheet on side
