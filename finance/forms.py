@@ -9,4 +9,4 @@ class PaymentForm(forms.ModelForm):
 
     class Meta:
         model = Payments
-        fields = ['date', 'customer', 'payment_type', 'amount']
+        fields = ['date', 'customer', 'payment_type', 'amount', 'memo']

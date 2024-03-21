@@ -29,8 +29,13 @@ def ar_dashboard(request):
 def open_workorders(request):
     customers = Customer.objects.all()
     if request.method == "GET":
+        test = request.GET.get('test')
+        print(test)
         customer = request.GET.get('customers')
-        selected_customer = Customer.objects.get(id=customer)
+        try:
+            selected_customer = Customer.objects.get(id=customer)
+        except:
+            return HttpResponse(status=204, headers={'HX-Trigger': 'Payment Recieved'})
         try:
             workorders = Workorder.objects.filter(customer_id = customer).exclude(total_balance=0).exclude(paid_in_full=1).order_by("-workorder")
         except:

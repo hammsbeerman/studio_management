@@ -12,8 +12,10 @@
   </div>
   <div class="modal-body">
     {{form.date|as_crispy_field}}<br/>
-    {{form.customer|as_crispy_field}}
+    
     Add Customer:<button  class="btn btn-primary-outline" hx-get="{% url 'customers:new_customer' %}" hx-target="#dialog"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
+    {{form.customer|as_crispy_field}}
+    <br/>
     <select class="custom-select mb-4" id="payment_type" hx-trigger="change" name="payment_type" hx-get="{% url 'finance:payment_detail' %}" hx-target="#payment_detail">
       <option selected>Payment Type</option>
           {% for x in paymenttype %}
@@ -24,10 +26,13 @@
         
       </div>
 
-    {{form.amount|as_crispy_field}}<br/>
+    {{form.amount|as_crispy_field}}
 
-    <input type="hidden" id="cat" name="cat" value="{{ cat }}">
+    {{form.memo|as_crispy_field}}
+
+    <input type="hidden" id="cat" name="cat" value="{{ cat}}">
     <input type="hidden" id="id" name="id" value="{{ pk }}">
+    <input type="hidden" id="test" name="test" value="1">
   </div>
   <div class="modal-footer">
     
