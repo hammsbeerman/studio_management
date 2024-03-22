@@ -74,8 +74,11 @@ def invoice_pdf(request, id):
         'rows': rows
     }
 
+    if workorder.internal_company == 'LK Design':
+        html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
+    else:
+        html_string=render_to_string('pdf/weasyprint/krueger_invoice.html', context)
 
-    html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
     html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
 
     result = html.write_pdf()
