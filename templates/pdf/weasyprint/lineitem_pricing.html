@@ -109,7 +109,7 @@ table{border-collapse: collapse;}
 	<article>
 	<!-- Header -->
 	<div class="topheader" spellcheck="false" contenteditable="false">
-		{{ item.hr_customer }} | {{item.hr_workorder }} <div class="tophead_desc">{% if item.description %}{{ item.description}}{% endif %}</div>
+		{{ item.hr_customer }} | {{item.hr_workorder }} - {% if workorder.printleader_workorder %}PL:{{ workorder.printleader_workorder }}{% endif%} <div class="tophead_desc">{% if item.description %}{{ item.description}}{% endif %}</div>
 	</div>
 	
 <!-- main table -->

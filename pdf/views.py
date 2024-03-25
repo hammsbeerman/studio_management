@@ -107,6 +107,14 @@ def lineitem_pdf(request, id):
     if item.override_price:
         item.price_total = item.override_price
 
+    print('id')
+    print(item.workorder.id)
+
+    workorder = Workorder.objects.get(pk=item.workorder.id)
+    print(workorder)
+    #workorder = 1
+
+
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'inline; attachment; filename=items.hr_workorder' + 'items.description.pdf'
     #remove inline to allow direct download
@@ -115,7 +123,7 @@ def lineitem_pdf(request, id):
     response['Content-Transfer-Encoding'] = 'binary'
 
     print(item)
-    html_string=render_to_string('pdf/weasyprint/lineitem_pricing.html', {'item':item})
+    html_string=render_to_string('pdf/weasyprint/lineitem_pricing.html', {'item':item, 'workorder':workorder})
     html = HTML(string=html_string)
 
     result = html.write_pdf()

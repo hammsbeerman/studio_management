@@ -1676,5 +1676,6 @@ def billed(request, id):
     workorder = get_object_or_404(Workorder, pk=id)
     print(workorder.workorder)
     workorder.date_billed = timezone.now()
+    workorder.billed = 1
     workorder.save()
     return redirect('workorders:overview', id=workorder.workorder)
