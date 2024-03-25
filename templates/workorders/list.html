@@ -11,7 +11,7 @@ List of workorders
     <div class="col-sm-4">
         Active Workorders
         <p><ul>
-            {% for x in  workorders %}
+            {% for x in  workorders %} 
             <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.customer.company_name }}</a></li>
             {% endfor %}
             </ul></p>

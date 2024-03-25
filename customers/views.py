@@ -210,7 +210,7 @@ def edit_customer(request):
                 }
                 return render(request, 'customers/modals/edit_customer.html', context)
             if not cn:
-                print('Empty string')
+                print('Empty string') 
                 print(fn)
                 print(ln)
                 form.instance.company_name = fn + ' ' + ln
