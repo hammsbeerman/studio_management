@@ -430,6 +430,8 @@ def expanded_detail(request, id=None):
         aging = Workorder.objects.all().exclude(billed=0).exclude(paid_in_full=1)
         today = timezone.now()
         for x in aging:
+            if not x.date_billed:
+                x.date_billed = today
             age = x.date_billed - today
             age = abs((age).days)
             print(type(age))

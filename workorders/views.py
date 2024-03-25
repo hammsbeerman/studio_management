@@ -1671,3 +1671,10 @@ def stale(request, pk=None):
     if item:
         WorkorderItem.objects.filter(pk=pk).update(updated = timezone.now())
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'}) 
+    
+def billed(request, id):
+    workorder = get_object_or_404(Workorder, pk=id)
+    print(workorder.workorder)
+    workorder.date_billed = timezone.now()
+    workorder.save()
+    return redirect('workorders:overview', id=workorder.workorder)

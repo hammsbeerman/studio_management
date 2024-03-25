@@ -1,201 +1,138 @@
 {% load crispy_forms_tags %}
 {% load static %}
 
+<script>
+    $(document).ready(function () {
+        $("#customer").select2();
+        $('#customer').on('select2:select', (e) => {
+          htmx.trigger("#customer", "change")
+        });
+      })
+    </script>
 
 {% block content %}
-<script>
 
-
-  $(document).ready(function () {
-    $("#customer").select2();
-    $('#customer').on('select2:select', (e) => {
-      htmx.trigger("#customer", "change")
-    });
-  })
-
-
-
-</script>
-<script src="{% static 'js/order_out_form.js' %}"></script>
-<script src="{% static 'js/setprice_form.js' %}"></script>
 <select class="custom-select mb-4" id="customer" hx-trigger="change, itemListChanged from:body" name="customers" hx-get="{% url 'customers:expanded_detail' %}" hx-target="#customers">
     <option value="{{ customer.id}}" selected>{{customer}}</option>
         {% for x in customers %}
           <option value="{{ x.id }}">{{ x.company_name }}</option>
         {% endfor %}
     </select>
-<div class="row">
-  <div class="col-md-3 mb-sm-0">
-    <div id="customer-info-card" class="card" hx-trigger="CustomerAdded from:body" hx-get="{% url 'customers:cust_info'  %}?customer={{ customer.id }}" hx-target="this">
-      {% include 'customers/partials/customer_info.html' %}
+
+    <div class="row">
+        <div class="col-md-3 mb-sm-0">
+          <div id="customer-info-card" class="card" hx-trigger="CustomerAdded from:body" hx-get="{% url 'customers:cust_info'  %}?customer={{ customer.id }}" hx-target="this">
+            {% include 'customers/partials/customer_info.html' %}
+            </div>
+        </div>
+        <div class="col-md-3">
+          <div id="contact-card" class="card" hx-trigger="ContactChanged from:body" hx-get="{% url 'customers:details_contact_info'  %}?contact={{ contact.id }}&customer={{customer.id}}" hx-target="this">
+            {% include 'customers/partials/details_contact_info.html' %}
+            <p>
+            </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card">
+            <div class="card-header">
+            Financial Details
+            </div>
+            <div class="card-body">
+              {% include 'workorders/partials/finance.html' %}
+            </div>
+            <div class="card-footer"></div>
+        </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                Customer Order History
+                </div>
+                <div class="card-body">
+                  {% include 'workorders/partials/workorder_history.html' %}
+                </div>
+                <div class="card-footer"></div>
+            </div>
+        </div>
       </div>
-  </div>
-  <div class="col-md-3">
-    <div id="contact-card" class="card" hx-trigger="ContactChanged from:body" hx-get="{% url 'customers:details_contact_info'  %}?contact={{ contact.id }}&customer={{customer.id}}" hx-target="this">
-      {% include 'customers/partials/details_contact_info.html' %}
-      <p>
+
       {% include 'customers/partials/icon_legend.html' %}
-      </div>
-  </div>
-  <div class="col-md-3">
-    <div class="card">
-      <div class="card-header">
-      Financial Details
-      </div>
-      <div class="card-body">
-        {% include 'workorders/partials/finance.html' %}
-      </div>
-      <div class="card-footer"></div>
-  </div>
-  </div>
-  <div class="col-md-3">
-      <div class="card">
-          <div class="card-header">
-          Customer Order History
+      <hr>
+      <div class="row">
+          <div class="col-sm-4">
+              Active Workorders
+              <p><table>
+                  {% for x in  workorders %}
+                  <tr>
+                    <td>
+                    <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a></td>
+                    <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
+                    </tr>
+                  {% endfor %}
+                  </table>
+                  </p>
           </div>
-          <div class="card-body">
-            {% include 'workorders/partials/workorder_history.html' %}
+          <div class="col-sm-4">
+              Recently Completed
+              <p><table>
+                  {% for x in  completed %}
+                  <tr>
+                    <td>
+                      <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a>
+                    </td>
+                    <td>
+                    {% if x.billed %}
+                        {% if x.paid_in_full %}
+                          <img src="{% static 'img/site/paidbill-50.png' %}" style="width:20px;height:20px;">
+                        {% elif x.aging > 30 %}
+                        {{ x.aging }}
+                          <img src="{% static 'img/site/overduebill-50.png' %}" style="width:20px;height:20px;">
+                        {% else %}
+                        <img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;">
+                        {% endif %}
+                    {% endif %}
+                    </td>
+                    <!-- Temporarily disabled -->
+                    <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
+                  </tr>
+                  {% endfor %}
+                </table></p>
           </div>
-          <div class="card-footer"></div>
+          <div class="col-sm-4">
+              Quotes
+              <p><table>
+                  {% for x in  quote %}
+                  <tr>
+                    <td>
+                      <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a>
+                    </td>
+                    <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
+                  </tr>
+                  {% endfor %}
+                </table></p>
+          
+          {% if voided %}
+          
+              Voided / Refunded Workorders
+              <p><ul>
+                  {% for x in  quote %}
+                  <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+                  {% endfor %}
+                  </ul></p>
+          </div>
+          {% endif %}
       </div>
-  </div>
-</div>
-<hr>
-<div class="row">
-    <div class="col-sm-4">
-        Active Workorders
-        <p><table>
-            {% for x in  workorders %}
-            <tr>
-              <td>
-              <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a></td>
-              <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
-              </tr>
-            {% endfor %}
-            </table>
-            </p>
-    </div>
-    <div class="col-sm-4">
-        Recently Completed
-        <p><table>
-            {% for x in  completed %}
-            <tr>
-              <td>
-                <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a>
-              </td>
-              <td>
-              {% if x.billed %}
-                  {% if x.paid_in_full %}
-                    <img src="{% static 'img/site/paidbill-50.png' %}" style="width:20px;height:20px;">
-                  {% elif x.aging > 30 %}
-                  {{ x.aging }}
-                    <img src="{% static 'img/site/overduebill-50.png' %}" style="width:20px;height:20px;">
-                  {% else %}
-                  <img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;">
-                  {% endif %}
-              {% endif %}
-              </td>
-              <!-- Temporarily disabled -->
-              <!-- <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td> -->
-            </tr>
-            {% endfor %}
-          </table></p>
-    </div>
-    <div class="col-sm-4">
-        Quotes
-        <p><table>
-            {% for x in  quote %}
-            <tr>
-              <td>
-                <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a>
-              </td>
-              <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
-            </tr>
-            {% endfor %}
-          </table></p>
-    
-    {% if voided %}
-    
-        Voided / Refunded Workorders
-        <p><ul>
-            {% for x in  quote %}
-            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
-            {% endfor %}
-            </ul></p>
-    </div>
-    {% endif %}
-</div>
-</div>
-
-<hr>
+      </div>
+      
+      <hr>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="modal" class="modal fade">
-  <div id="dialog" class="modal-dialog" hx-target="this"></div>
-</div>
-
-<div id="modal2" class="modal fade">
-  <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      <!-- <div id="modal" class="modal fade">
+        <div id="dialog" class="modal-dialog" hx-target="this"></div>
+      </div> -->
+      
+      <div id="modal2" class="modal fade">
+        <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
+      </div>
 
 
 
@@ -206,18 +143,11 @@
 
 {% block scripts %}
 
-<script src="{% static 'js/order_out_form.js' %}"></script>
-
 <script>
 
   
 
-    $(document).ready(function () {
-      $("#id_customer").select2();
-      $('#id_customer').on('select2:select', (e) => {
-        htmx.trigger("#id_customer", "change")
-      });
-    })
+    
 
     const modal = new bootstrap.Modal(document.getElementById("modal"))
 

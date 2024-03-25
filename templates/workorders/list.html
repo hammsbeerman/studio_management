@@ -12,7 +12,7 @@ List of workorders
         Active Workorders
         <p><ul>
             {% for x in  workorders %}
-            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.customer.company_name }}</a></li>
             {% endfor %}
             </ul></p>
     </div>
@@ -20,7 +20,7 @@ List of workorders
         Recently Completed
         <p><ul>
             {% for x in  completed %}
-            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.customer.company_name }}</a></li>
             {% endfor %}
             </ul></p>
     </div>
@@ -28,7 +28,7 @@ List of workorders
         Quotes
         <p><ul>
             {% for x in  quote %}
-            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.customer.company_name }}</a></li>
             {% endfor %}
             </ul></p>
     </div>
