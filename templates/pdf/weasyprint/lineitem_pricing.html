@@ -93,6 +93,9 @@ table{border-collapse: collapse;}
 .workorder_table  table{width:80%;margin:10px auto;}
 .workorder_table table td {border:1px solid #000;padding:2px;}
 
+.tg .tg-0lax {border-color:inherit;text-align:center;vertical-align:top}
+
+
 
 
 
@@ -106,7 +109,7 @@ table{border-collapse: collapse;}
 	<article>
 	<!-- Header -->
 	<div class="topheader" spellcheck="false" contenteditable="false">
-		Customer Name | Workorder <div class="tophead_desc">Description</div>
+		{{ item.hr_customer }} | {{item.hr_workorder }} <div class="tophead_desc">{% if item.description %}{{ item.description}}{% endif %}</div>
 	</div>
 	
 <!-- main table -->
@@ -115,147 +118,143 @@ table{border-collapse: collapse;}
           <tbody>
                   <tr>
                     <td class="tg-cly1">Original Paper Size</td>
-                    <td class="tg-cly1">0</td>
+                    <td class="tg-cly1"><center>{{ item.original_size}}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Finished Size</td>
-                    <td class="tg-cly1">0</td>
+                    <td class="tg-cly1"><center>{{ item.finished_size }}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Workorder</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_workorder_price %}{{ item.step_workorder_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Reclaim Artwork</td>
-                    <td class="tg-cly1"> </td>
+                    <td class="tg-cly1"><center>{% if item.step_reclaim_artwork_price %}{{ item.step_reclaim_artwork_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Send to Press</td>
-                    <td class="tg-cly1"> </td>
+                    <td class="tg-cly1"><center>{% if item.step_send_to_press_price %}{{ item.step_send_to_press_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Send Mail Merge to Press</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_send_mailmerge_to_press_price %}{{ item.step_send_mailmerge_to_press_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Print Mail Merge</td>
-                    <td class="tg-cly1">$0.00</td>
+                    <td class="tg-cly1"><center>{% if item.step_print_mailmerge_price %}{{ item.step_print_mailmerge_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Material Cost</td>
-                    <td class="tg-0lax">#DIV/0!</td>
+                    <td class="tg-0lax"><center>{% if item.material_cost %}{{ item.material_cost }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Material Markup</td>
-                    <td class="tg-cly1">#DIV/0!</td>
+                    <td class="tg-cly1"><center>{% if item.material_markup %}{{ item.material_markup }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Wear and Tear</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_wear_and_tear_price %}{{ item.step_wear_and_tear_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Printing cost side 1</td>
-                    <td class="tg-cly1">#DIV/0!</td>
+                    <td class="tg-cly1"><center>{% if item.step_print_cost_side_1_price %}{{ item.step_print_cost_side_1_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Printing cost side 2</td>
-                    <td class="tg-cly1">#DIV/0!</td>
+                    <td class="tg-cly1"><center>{% if item.step_print_cost_side_2_price %}{{ item.step_print_cost_side_2_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Trim to size</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_trim_to_size_price %}{{ item.step_trim_to_size_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Run through DC618</td>
-                    <td class="tg-cly1">#DIV/0!</td>
+                    <td class="tg-cly1"><center>--</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">NCR Compound (Trim, pad, fan apart)</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_NCR_compound_price %}{{ item.step_NCR_compound_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">White Compound (Trim, pad)</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_white_compound_price %}{{ item.step_white_compound_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Set to Perf</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_set_to_perf_price %}{{ item.step_set_to_perf_price}} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Perf</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_perf_price %}{{ item.step_perf_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Set to Number</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_set_to_number_price %}{{ item.step_set_to_number_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Number</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_number_price %}{{ item.step_number_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Insert Front and Back Cover</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_insert_frontback_cover_price %}{{ item.step_insert_frontback_cover_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Set to Drill</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_set_to_drill_price %}{{ item.step_set_to_drill_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Drill</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_drill_price %}{{ item.step_drill_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Set to Staple</td>
-                    <td class="tg-0lax"></td>
-                  </tr>
-                  <tr>
-                    <td class="tg-cly1">Insert Wrap Around</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_set_to_staple_price %}{{ item.step_set_to_staple_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Staple</td>
-                    <td class="tg-cly1">#DIV/0!</td>
+                    <td class="tg-cly1"><center>{% if item.step_staple_price %}{{ item.step_staple_price }} {% endif %}</center></td>
+                  </tr>
+                  <tr>
+                    <td class="tg-cly1">Insert Wrap Around</td>
+                    <td class="tg-0lax"><center>{% if item.step_insert_wrap_around_price %}{{ item.step_insert_wrap_around_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Insert Chip Divider</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_insert_chip_divider_price %}{{ item.step_insert_chip_divider_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Set Folder</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_set_folder_price %}{{ item.step_set_folder_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Fold</td>
-                    <td class="tg-cly1">#DIV/0!</td>
-                  </tr>
-                  <tr>
-                    <td class="tg-cly1">Set to Tab</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-cly1"><center>{% if item.step_fold_price %}{{ item.step_fold_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Tab Set</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_tab_price %}{{ item.step_tab_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Bulk mail tray, sort, paperwork</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_bulk_mail_tray_sort_paperwork_price %}{{ item.step_bulk_mail_tray_sort_paperwork_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">I.D. / Label</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_id_count_price %}{{ item.step_id_count_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Count / Package</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_count_package_price %}{{ item.step_count_package_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Delivery</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_delivery_price %}{{ item.step_delivery_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-cly1">Packing Slip / Invoice</td>
-                    <td class="tg-0lax"></td>
+                    <td class="tg-0lax"><center>{% if item.step_packing_slip_price %}{{ item.step_packing_slip_price }} {% endif %}</center></td>
                   </tr>
                   <tr>
                     <td class="tg-0lax"></td>
@@ -263,7 +262,7 @@ table{border-collapse: collapse;}
                   </tr>
                   <tr>
                     <td class="tg-cly1">Total</td>
-                    <td class="tg-cly1">#DIV/0!</td>
+                    <td class="tg-cly1"><center>{{ item.price_total }}</center></td>
                   </tr>
                 </tbody>
                 </table>
@@ -290,79 +289,79 @@ table{border-collapse: collapse;}
                           <tr>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
-                            <td class="tg-0lax"></td>
-                            <td class="tg-cly1">Job #</td>
-                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax">Job #</td>
+                            <td class="tg-0lax">{{ item.hr_workorder }}</td>
+                            <td class="tg-cly1"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Number of Set / Books</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.set_per_book }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Pages per Set / Book</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.pages_per_book }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Output per sheet</td>
-                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax">{{ item.output_per_sheet }}</td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Qty</td>
-                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax">{{ item.qty_of_sheets}}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Parent Sheets Required</td>
-                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax">{{ item.parent_sheets_required}}</td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Original Size</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.original_size }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Press Size</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.press_size }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Side 1 Clicks</td>
-                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax">{{ item.side_1_clicks }}</td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Press Sheets / Parent Sheet</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.press_sheet_per_parent }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Side 2 Clicks</td>
-                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax">{{ item.side_2_clicks }}</td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Flat Size</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.flat_size }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Finished Size</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.finished_size }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Gangup</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.gangup }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Paper Stock</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.paper_stock }}</td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Overage</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.overage }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Price / M</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.price_per_m }} </td>
                           </tr>
                           <tr>
                             <td class="tg-0lax"></td>
@@ -380,7 +379,7 @@ table{border-collapse: collapse;}
                           </tr>
                           <tr>
                             <td class="tg-cly1">Markup %</td>
-                            <td class="tg-cly1">100</td>
+                            <td class="tg-0lax">{{ item.material_markup_percentage }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
@@ -394,14 +393,14 @@ table{border-collapse: collapse;}
                           </tr>
                           <tr>
                             <td class="tg-cly1">Side one Click Charge</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.step_print_cost_side_1 }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Side Two Click Charge</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.step_print_cost_side_2 }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
@@ -415,15 +414,15 @@ table{border-collapse: collapse;}
                           </tr>
                           <tr>
                             <td class="tg-cly1">Box Price</td>
-                            <td class="tg-cly1">0.7</td>
-                            <td class="tg-cly1">[.7]</td>
+                            <td class="tg-0lax">0.7</td>
+                            <td class="tg-cly1"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Box Qty</td>
-                            <td class="tg-cly1">1</td>
-                            <td class="tg-cly1">[1]</td>
+                            <td class="tg-cly1">--</td>
+                            <td class="tg-cly1"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
@@ -443,35 +442,35 @@ table{border-collapse: collapse;}
                           </tr>
                           <tr>
                             <td class="tg-cly1">Paper Cost</td>
-                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax">--</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Box</td>
-                            <td class="tg-cly1">0.7</td>
+                            <td class="tg-cly1">--</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Qty Mail Merged</td>
-                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax">{{ item.mailmerge_qty }}</td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Misc</td>
-                            <td class="tg-cly1">1.1</td>
+                            <td class="tg-cly1">--</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Cost to Mail Merge</td>
-                            <td class="tg-cly1">0.15</td>
+                            <td class="tg-0lax">{{ item.mailmerge_price_per_piece}}</td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Padding Compound</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{item.step_NCR_compound_price }}{{ item.step_white_compound_price}}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Chip</td>
-                            <td class="tg-cly1">3</td>
+                            <td class="tg-0lax">--</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
@@ -481,21 +480,21 @@ table{border-collapse: collapse;}
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Sheets Run through DC 618</td>
-                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax">--</td>
                           </tr>
                           <tr>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Cost / Sheet</td>
-                            <td class="tg-cly1">0.15</td>
+                            <td class="tg-0lax">--</td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Total</td>
-                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax">--</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Number of tasks</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">--</td>
                           </tr>
                           <tr>
                             <td class="tg-0lax"></td>
@@ -513,14 +512,14 @@ table{border-collapse: collapse;}
                           </tr>
                           <tr>
                             <td class="tg-cly1">Fold Charge</td>
-                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax">{{item.fold_price_per_fold }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Sheets to fold</td>
-                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax">{{ item.fold_number_to_fold }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
@@ -534,21 +533,21 @@ table{border-collapse: collapse;}
                           </tr>
                           <tr>
                             <td class="tg-cly1">Staple Charge</td>
-                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax">{{ item.staple_price_per_staple }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Number of staples per sheet</td>
-                            <td class="tg-cly1">0</td>
+                            <td class="tg-0lax">{{ item.staple_staples_per_piece }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Sheets to staple</td>
-                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax">{{ item.staple_number_of_pieces }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
@@ -562,28 +561,28 @@ table{border-collapse: collapse;}
                           </tr>
                           <tr>
                             <td class="tg-cly1">Sets to Tab</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.tabs_number_of_pieces }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Number of Tabs</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.tabs_per_piece }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                           </tr>
                           <tr>
                             <td class="tg-cly1">Cost per tab</td>
-                            <td class="tg-0lax"></td>
+                            <td class="tg-0lax">{{ item.tabs_price_per_tab }}</td>
                             <td class="tg-0lax"></td>
                             <td class="tg-cly1">Price / M</td>
-                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-0lax">{{ item.price_total_per_m }}</td>
                           </tr>
                           <tr>
-                            <td class="tg-cly1">Total</td>
-                            <td class="tg-cly1">#DIV/0!</td>
+                            <td class="tg-cly1"></td>
+                            <td class="tg-cly1"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>
                             <td class="tg-0lax"></td>

@@ -96,9 +96,16 @@ def invoice_pdf(request, id):
 @login_required
 def lineitem_pdf(request, id):
     print(id)
-    items = KruegerJobDetail.objects.filter(workorder_item=id)
-    if not items:
-        items = WideFormat.objects.filter(workorder_item=id)
+    
+    item = KruegerJobDetail.objects.get(workorder_item=id)
+    if not item:
+        item = WideFormat.objects.get(workorder_item=id)
+
+    if item.description == 'None':
+        item.description = ''
+        
+    if item.override_price:
+        item.price_total = item.override_price
 
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'inline; attachment; filename=items.hr_workorder' + 'items.description.pdf'
@@ -107,8 +114,8 @@ def lineitem_pdf(request, id):
         
     response['Content-Transfer-Encoding'] = 'binary'
 
-    print(items)
-    html_string=render_to_string('pdf/weasyprint/lineitem_pricing.html', {'items':items})
+    print(item)
+    html_string=render_to_string('pdf/weasyprint/lineitem_pricing.html', {'item':item})
     html = HTML(string=html_string)
 
     result = html.write_pdf()

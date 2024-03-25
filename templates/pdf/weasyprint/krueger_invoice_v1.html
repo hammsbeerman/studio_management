@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>invoice 01</title>
+    <title>invoice 02</title>
     <!-- paper.css -->
     <style>
       * {
@@ -26,7 +26,6 @@ img {
   -moz-user-drag: none;
   -o-user-drag: none;
   user-drag: none;
-  max-width:100%;
 }	  
 	  
       .sheet {
@@ -76,11 +75,16 @@ table{border-collapse: collapse;}
 .tc{text-align:center;}
 .italic {font-style: italic;}
 
-.header{overflow: hidden; display: flex;width:100%;}
+.header{overflow: hidden;overflow: hidden;}
+.header {
+    display: flex;
+}
 
-.single_header { width: 33%;}
+.single_header {
+    width: 33.33%;
+}
 
-.header_right table {float: right;border: 1px solid #999;overflow: hidden;margin-top: 0;}
+.header_right table {float: right;border: 1px solid #999;overflow: hidden;}
 
 .header_right table td:last-child {
     text-align: right;
@@ -106,7 +110,7 @@ table{border-collapse: collapse;}
     font-weight: bold;
 }
 
-table{margin-top:0;}
+
 
 /*Order-Info*/
 .order-info {display: flex;justify-content: space-between;align-items: flex-start;margin-top:20px;margin-bottom:20px;overflow: hidden;}
@@ -164,10 +168,7 @@ table.ordert-first {margin-bottom: 11px;}
 
 
 /*page 2*/
-.header_bottom2{
-display: flex;
-    justify-content: space-between;
-margin-top: 25px;
+.header_bottom2{    margin-top: 25px;
     border: 1px solid #000;
     color: #000;
     padding: 7px;}
@@ -175,7 +176,11 @@ margin-top: 25px;
 .header_bottom2 .header_right table td:last-child{width:auto;}
 .header_bottom2 .header_right table{border:0;}
 
-.header_title {font-size: 10pt;padding-bottom: 5px;padding-left: 3px;}
+.header_title {
+    font-size: 10pt;
+    padding-bottom: 5px;
+    padding-left: 3px;
+}
 .items_area_second tr td:last-child{text-align:right;}
 .items_area_second tr th{border-left:1px solid #fff;}
 
@@ -209,27 +214,42 @@ margin-top: 25px;
     </style>
   </head>
   <body class="A4">
-  
     <section class="sheet padding-10mm">
 	<article>
 	<!-- Header -->
-	<div class="header fix" spellcheck="false" contenteditable="false">
-		<div class="single_header header_left"><img src="https://i.postimg.cc/Kvr3cT12/logo.png" alt="" /></div>
-		<div class="single_header header_mid">STATEMENT</div>
-		<div class="single_header header_right">
-			<table width="90%">
-				<tr><td>Page:</td><td>16</td></tr>
-				<tr><td>Statement Date:</td><td>03/14/2024</td></tr>
-				<tr><td>Customer#:</td><td>00316</td></tr>
-				<tr><td>Terms:</td><td>Net 30 Days</td></tr>
-				<tr><td>Range:</td><td>All Invoices</td></tr>
+	<div class="header" spellcheck="false" contenteditable="false">
+		<div class="single_header header_left"></div>
+		<div class="single_header header_mid">INVOICE</div>
+		<div class="single_header  invoice_header_r">
+			<table width="100%">
+			<tr>
+			<th colspan="2">Invoice#</th>
+			<th colspan="2">invoice Date</th>
+			</tr>
+			<tr>
+			<td colspan="2" class="tc border">28478</td>
+			<td colspan="2" class="tc border">01/11/2024</td>
+			</tr>
+			<tr>
+			<td colspan="2">Sales Rep:</td>
+			<td colspan="2">House Account</td>
+			</tr>
+			<tr>
+			<td colspan="2">Customer#:</td>
+			<td colspan="2">00615</td>
+			</tr>
+			<tr>
+			<td colspan="2">Page:</td>
+			<td colspan="2"></td>
+			</tr>
+			
 			</table>
 		</div>
 	</div>
 	
-	
-		<div class="header header_bottom2 fix" spellcheck="false" contenteditable="false">
+	<div class="header header_bottom2" spellcheck="false" contenteditable="false">
 		<div class="single_header header_left">
+		<div class="header_title">Bill TO:</div>
 		<table style="width:100%;">
 				<tr><td>Contact:</td><td>Demo Dest</td></tr>
 				<tr><td>Phone:</td><td>0123456789</td></tr>
@@ -241,6 +261,8 @@ margin-top: 25px;
 		</div>
 		<div class="single_header header_mid"></div>
 		<div class="single_header header_right">
+			
+			<div class="header_title">SHIP TO:</div>
 			<table style="width:100%;">
 			
 				<tr><td>Contact:</td><td>Demo Dest</td></tr>
@@ -253,51 +275,80 @@ margin-top: 25px;
 	
 	
 
+
+
+<!-- Total table -->
+<div class="last-table-area table_three fix">
+	<table class="last-table">
+		<tbody>
+			<tr>
+			  <th>Customer's Terms</th>
+			  <th>Customer's Phone</th>
+			  <th>Customer's Fax</th>
+			  <th>Customer Contact</th>
+			  <th>Purchase Order #</th>
+			  <th>Customer Service Rep.</th>
+			</tr>	
+			<tr>
+				<td>Net 30 Days</td>
+				<td>0123456789</td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td>E-Mail</td>
+			</tr>
+		</tbody>
+	</table>	
+
+</div>
+
 <!-- main table -->
-      <div class="items-area fix">
+      <div class="items-area items_area_second fix">
         <table>
           <thead>
 			<tr>
-			  <th>Invoice Date</th>
-              <th>Invoice#</th>
+			  <th>Quantity</th>
               <th>Description</th>
-              <th>Orig. Inv. Bal.</th>
-              <th>Open. Inv. Bal.</th>
-              <th>Credit</th>
-              <th>Total Pay Amt</th>
-              <th>Balance</th>
+              <th>Tax</th>
+              <th class="tr">Sub-Total</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>01/17/2024</td>
-              <td>1</td>
-              <td>Total Description goes here</td>
-              <td>633.00</td>
-              <td>633.00</td>
-              <td>C</td>
-              <td>T</td>
-              <td>633.00</td>
+              <td>500</td>
+              <td>Envelopes - #5022C <br>Dual Window Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
+              <td>N</td>
+              <td>192.12</td>
             </tr>
             <tr>
-              <td>01/17/2024</td>
-              <td>1</td>
-              <td>Total Description goes here</td>
-              <td>633.00</td>
-              <td>633.00</td>
-              <td>C</td>
-              <td>T</td>
-              <td>633.00</td>
+              <td>500</td>
+              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
+              <td>N</td>
+              <td>192.12</td>
             </tr>
             <tr>
-              <td>01/17/2024</td>
-              <td>1</td>
-              <td>Total Description goes here</td>
-              <td>633.00</td>
-              <td>633.00</td>
-              <td>C</td>
-              <td>T</td>
-              <td>633.00</td>
+              <td>500</td>
+              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
+              <td>N</td>
+              <td>192.12</td>
+            </tr>
+            <tr>
+              <td>500</td>
+              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
+              <td>N</td>
+              <td>192.12</td>
+            </tr>
+            <tr>
+              <td>500</td>
+              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
+              <td>N</td>
+              <td>192.12</td>
+            </tr>
+            <tr>
+              <td>500</td>
+              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
+              <td>N</td>
+              <td>192.12</td>
             </tr>
 
 
@@ -309,30 +360,37 @@ margin-top: 25px;
 
 <!-- Total table -->
 <div class=" fixed_table fix">
-<div class="thank tc italic">Please Include Invoice Number on Payment for Proper Credit.</div>
 <div class="last-table-area">
 	<table class="last-table">
 		<tbody>
 			<tr>
-			  <th>Current</th>
-			  <th>31 Days</th>
-			  <th>61 Days</th>
-			  <th>91 Days</th>
-			  <th>121 Days</th>
-			  <th>Balance Due</th>
+			  <th>Ship Via</th>
+			  <th>
+			  <span>Sub-Total</span>
+			  <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
+			  <span>Tax</span>
+			    </th>
+			  <th>Freight</th>
+			  <th></th>
+			  <th>Deposit</th>
+			  <th>Amount Due</th>
 			</tr>	
 			<tr>
-				<td>6098.84</td>
-				<td>7153.74</td>
-				<td>2979.32</td>
-				<td>0.00</td>
-				<td>1491.80</td>
-				<td>17723.43</td>
+				<td>123</td>
+				<td>
+			<span>Sub-Total</span>
+			  <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
+			  <span>Tax</span>
+				</td>
+				<td>123</td>
+				<td>123</td>
+				<td>123</td>
+				<td>123</td>
 			</tr>
 		</tbody>
-	</table>	
-
-</div>
+	</table>
+</div>	
+<div class="thank">Thank You</div>
 </div>
 
 

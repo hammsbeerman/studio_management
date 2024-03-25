@@ -26,7 +26,6 @@ img {
   -moz-user-drag: none;
   -o-user-drag: none;
   user-drag: none;
-  max-width:100%;
 }	  
 	  
       .sheet {
@@ -76,11 +75,16 @@ table{border-collapse: collapse;}
 .tc{text-align:center;}
 .italic {font-style: italic;}
 
-.header{overflow: hidden; display: flex;width:100%;}
+.header{overflow: hidden;overflow: hidden;}
+.header {
+    display: flex;
+}
 
-.single_header { width: 33%;}
+.single_header {
+    width: 33.33%;
+}
 
-.header_right table {float: right;border: 1px solid #999;overflow: hidden;margin-top: 0;}
+.header_right table {float: right;border: 1px solid #999;overflow: hidden;}
 
 .header_right table td:last-child {
     text-align: right;
@@ -106,7 +110,7 @@ table{border-collapse: collapse;}
     font-weight: bold;
 }
 
-table{margin-top:0;}
+
 
 /*Order-Info*/
 .order-info {display: flex;justify-content: space-between;align-items: flex-start;margin-top:20px;margin-bottom:20px;overflow: hidden;}
@@ -164,10 +168,7 @@ table.ordert-first {margin-bottom: 11px;}
 
 
 /*page 2*/
-.header_bottom2{
-display: flex;
-    justify-content: space-between;
-margin-top: 25px;
+.header_bottom2{    margin-top: 25px;
     border: 1px solid #000;
     color: #000;
     padding: 7px;}
@@ -175,7 +176,11 @@ margin-top: 25px;
 .header_bottom2 .header_right table td:last-child{width:auto;}
 .header_bottom2 .header_right table{border:0;}
 
-.header_title {font-size: 10pt;padding-bottom: 5px;padding-left: 3px;}
+.header_title {
+    font-size: 10pt;
+    padding-bottom: 5px;
+    padding-left: 3px;
+}
 .items_area_second tr td:last-child{text-align:right;}
 .items_area_second tr th{border-left:1px solid #fff;}
 
@@ -213,8 +218,8 @@ margin-top: 25px;
     <section class="sheet padding-10mm">
 	<article>
 	<!-- Header -->
-	<div class="header fix" spellcheck="false" contenteditable="false">
-		<div class="single_header header_left"><img src="https://i.postimg.cc/Kvr3cT12/logo.png" alt="" /></div>
+	<div class="header" spellcheck="false" contenteditable="false">
+		<div class="single_header header_left"></div>
 		<div class="single_header header_mid">STATEMENT</div>
 		<div class="single_header header_right">
 			<table width="90%">
@@ -227,31 +232,21 @@ margin-top: 25px;
 		</div>
 	</div>
 	
-	
-		<div class="header header_bottom2 fix" spellcheck="false" contenteditable="false">
-		<div class="single_header header_left">
-		<table style="width:100%;">
-				<tr><td>Contact:</td><td>Demo Dest</td></tr>
-				<tr><td>Phone:</td><td>0123456789</td></tr>
-				<tr><td>Fax:</td><td>0123456789</td></tr>
-				<tr><td>Sales Rep:</td><td>House Account</td></tr>
-			</table>
-		
-		
-		</div>
+	<div class="header header_bottom" spellcheck="false" contenteditable="false">
+		<div class="single_header header_left"></div>
 		<div class="single_header header_mid"></div>
 		<div class="single_header header_right">
 			<table style="width:100%;">
-			
-				<tr><td>Contact:</td><td>Demo Dest</td></tr>
-				<tr><td>Phone:</td><td>0123456789</td></tr>
-				<tr><td>Fax:</td><td>0123456789</td></tr>
-				<tr><td>Sales Rep:</td><td>House Account</td></tr>
+				<tr><td>Contact:</td><td colspan="3">Demo Dest</td></tr>
+				<tr><td>Phone:</td><td>0123456789</td><td>Ext: </td> <td>&nbsp;&nbsp;</td></tr>
+				<tr><td>Fax:</td><td colspan="3">0123456789</td></tr>
+				<tr><td>Sales Rep:</td><td colspan="3">House Account</td></tr>
 			</table>
 		</div>
 	</div>
 	
 	
+
 
 <!-- main table -->
       <div class="items-area fix">
