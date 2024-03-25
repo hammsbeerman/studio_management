@@ -6,7 +6,7 @@ $(document).ready(function(){
         var percent_markup = $('#id_percent_markup').val();
         var qty = $('#id_quantity').val();
 
-        var markup = (percent_markup / 100) + 1
+        var markup = (percent_markup / 100)
 
         markup = Number(markup)
         
