@@ -230,11 +230,11 @@ $(document).ready(function(){
         $('#id_step_print_cost_side_2_price').val(clickcost2);
 
         //$('#id_mailmerge_qty').val(sheet_qty)
-        $('#id_perf_number_of_pieces').val(sheet_qty)
+        //$('#id_perf_number_of_pieces').val(sheet_qty)
         //$('#id_fold_number_to_fold').val(sheet_qty)
-        $('#id_number_number_of_pieces').val(sheet_qty)
+        //$('#id_number_number_of_pieces').val(sheet_qty)
         //Insert number to drill after it gets added to form
-        $('#id_staple_number_of_pieces').val(set_per_book)
+        //$('#id_staple_number_of_pieces').val(set_per_book)
         //$('#id_tabs_number_of_pieces').val(set_per_book)
         
 
@@ -381,12 +381,21 @@ $(document).ready(function(){
     });
 
     $('#id_container').on("click change",function(){
+      var setup = $('#id_step_set_to_number_price').val();
+
       //alert( "Handler for `keyup` called." );
       var price = $('#id_number_price_to_number').val();
       var qty = $('#id_number_number_of_pieces').val();
 
-      var total = qty * price
-      total = total.toFixed(2);
+      var pcs = qty * price
+      pcs = pcs.toFixed(2);
+      pcs = Number(pcs)
+
+      setup = Number(setup)
+
+      total = pcs + setup
+      total = total.toFixed(2)
+
 
       $('#id_step_number_price').val(total);
   

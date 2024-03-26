@@ -172,7 +172,7 @@ def history_overview(request, id):
 @login_required
 def workorder_list(request):
     workorder = Workorder.objects.all().exclude(workorder=1111).exclude(completed=1).exclude(quote=1).order_by("-workorder")
-    completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
+    completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")[:20]
     quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
     context = {
         'workorders': workorder,
