@@ -10,7 +10,7 @@ class KruegerJobDetailForm(forms.ModelForm):
     class Meta:
         model = KruegerJobDetail
         fields = [
-            'workorder', 'internal_company', 'customer', 'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent',
+            'workorder', 'internal_company', 'customer', 'description', 'qty', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent',
             'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 'side_1_inktype', 'side_2_inktype', 'price_per_m', 
             #'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'step_send_mailmerge_to_press_price', 'mailmerge_qty', 'mailmerge_price_per_piece', 
@@ -24,7 +24,7 @@ class KruegerJobDetailForm(forms.ModelForm):
             'misc3_price', 'misc4_description', 'misc4_price', 'override_price'
         ]
         widgets = {
-            'set_per_book': forms.NumberInput(attrs={}),
+            'qty': forms.NumberInput(attrs={}),
             'pages_per_book': forms.NumberInput(attrs={}),
             'press_sheet_per_parent': forms.NumberInput(attrs={}),
             'output_per_sheet': forms.TextInput(attrs={'readonly':'readonly'}),

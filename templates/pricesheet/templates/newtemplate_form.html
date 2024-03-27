@@ -87,7 +87,7 @@ This form should only be used for setting up and editing templates for lineitems
                         <hr>
                         <div class="row">
                             <div class='col'>
-                                {% if form.set_per_book %}<span class="text-primary">{{ form.set_per_book|as_crispy_field }}</span>{% endif %}
+                                {% if form.qty %}<span class="text-primary">{{ form.qty|as_crispy_field }}</span>{% endif %}
                             </div>
                             <div class='col'>
                                 {% if form.pages_per_book %}<span class="text-primary"><span class="text-primary">{{ form.pages_per_book|as_crispy_field }}</span>{% endif %}

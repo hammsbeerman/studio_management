@@ -11,14 +11,14 @@ class EnvelopeForm(forms.ModelForm):
     class Meta:
         model = PriceSheet
         fields = [
-            'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'press_sheet_per_parent',
+            'description', 'qty', 'pages_per_book', 'qty_of_sheets', 'press_sheet_per_parent',
             'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 'side_1_inktype', 'side_2_inktype', 'paper_stock', 'price_per_m', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'material_cost', 'material_markup_percentage', 'material_markup', 'step_print_cost_side_1', 
             'step_print_cost_side_1_price', 'step_print_cost_side_2', 'step_print_cost_side_2_price', 'step_count_package_price', 'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_m', 'misc1_description', 'misc1_price', 'misc2_description', 'misc2_price', 'misc3_description',
             'misc3_price', 'misc4_description', 'misc4_price', 'override_price'
         ]
         labels = {
-            'set_per_book':'Qty',
+            'qty':'Qty',
 
         }
 
@@ -41,7 +41,7 @@ class NCRForm(forms.ModelForm):
     class Meta:
         model = PriceSheet
         fields = [
-            'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent', 'step_NCR_compound_price',
+            'description', 'qty', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent', 'step_NCR_compound_price',
             'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 'side_1_inktype', 'side_2_inktype', 'paper_stock', 'price_per_m', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'material_cost', 'material_markup_percentage', 'material_markup', 'step_print_cost_side_1', 'step_set_to_perf_price', 
             'perf_price_per_piece', 'perf_number_of_pieces', 'step_perf_price', 'step_set_to_number_price', 'number_price_to_number', 'number_number_of_pieces', 'step_number_price', 
@@ -49,7 +49,7 @@ class NCRForm(forms.ModelForm):
             'misc3_price', 'misc4_description', 'misc4_price', 'override_price'
         ]
         labels = {
-            'set_per_book':'Qty',
+            'qty':'Qty',
             'pages_per_book':'How many parts'
         }
 
@@ -58,7 +58,7 @@ class NewTemplateForm(forms.ModelForm):
     class Meta:
         model = PriceSheet
         fields = [
-            'description', 'set_per_book', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent',
+            'description', 'qty', 'pages_per_book', 'qty_of_sheets', 'original_size', 'press_size', 'press_sheet_per_parent',
             'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 'paper_stock', 'price_per_m', 
             #'flat_size', 'finished_size', 'gangup', 'overage', 'output_per_sheet', 'parent_sheets_required', 'side_1_clicks', 'side_2_clicks', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'step_send_mailmerge_to_press_price', 'mailmerge_qty', 'mailmerge_price_per_piece', 
@@ -72,7 +72,7 @@ class NewTemplateForm(forms.ModelForm):
             'misc3_price', 'misc4_description', 'misc4_price', 'override_price'
         ]
         widgets = {
-            'set_per_book': forms.NumberInput(attrs={}),
+            'qty': forms.NumberInput(attrs={}),
             'pages_per_book': forms.NumberInput(attrs={}),
             'press_sheet_per_parent': forms.NumberInput(attrs={}),
             'output_per_sheet': forms.TextInput(attrs={'readonly':'readonly'}),

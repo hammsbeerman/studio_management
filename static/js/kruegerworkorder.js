@@ -171,7 +171,7 @@ $(document).ready(function(){
           var pages_per_book = 1;
         }
 
-        var set_per_book = $('#id_set_per_book').val();
+        var qty = $('#id_qty').val();
         //var pages_per_book = $('#id_pages_per_book').val();
         var overage = $('#id_overage').val();
     
@@ -180,14 +180,14 @@ $(document).ready(function(){
 
 
         
-        var set_per_book = Number(set_per_book);
+        var qty = Number(qty);
         var pages_per_book = Number(pages_per_book);
         var overage = Number(overage);
         var press_sheet_per_parent = Number(press_sheet_per_parent);
         var gangup = Number(gangup);
         
         
-        var sheet_qty = set_per_book * pages_per_book;
+        var sheet_qty = qty * pages_per_book;
         
         var output = press_sheet_per_parent * gangup;
         
@@ -234,12 +234,12 @@ $(document).ready(function(){
         //$('#id_fold_number_to_fold').val(sheet_qty)
         //$('#id_number_number_of_pieces').val(sheet_qty)
         //Insert number to drill after it gets added to form
-        //$('#id_staple_number_of_pieces').val(set_per_book)
-        //$('#id_tabs_number_of_pieces').val(set_per_book)
+        //$('#id_staple_number_of_pieces').val(qty)
+        //$('#id_tabs_number_of_pieces').val(qty)
         
 
         //Fill in pricing sheet on side
-        document.getElementById("id_price_qty").innerHTML = set_per_book;
+        document.getElementById("id_price_qty").innerHTML = qty;
         document.getElementById("id_pages_qty").innerHTML = pages_per_book;
         document.getElementById("id_press_per_parent").innerHTML = press_sheet_per_parent;
         document.getElementById("id_gangup_cnt").innerHTML = gangup;
@@ -473,7 +473,7 @@ $(document).ready(function(){
     });
 //############################################################### Begining of total form
     $('#id_container').on("click change",function(){
-      var qty = $('#id_set_per_book').val();
+      var qty = $('#id_qty').val();
 
       if ($("#id_step_workorder_price").length){
         var workorder = $('#id_step_workorder_price').val();

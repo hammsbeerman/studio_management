@@ -305,7 +305,7 @@ def edititem(request, id, pk, cat,):
                 override = (float(override))
                 temp_total = override
                 #print(type(obj.quantity))
-                price_ea = temp_total / obj.set_per_book
+                price_ea = temp_total / obj.qty
             else:
                 temp_total = total
             obj.save()
@@ -319,7 +319,7 @@ def edititem(request, id, pk, cat,):
             lineitem.internal_company = internal_company
             lineitem.pricesheet_modified = edited
             lineitem.description = obj.description
-            lineitem.quantity = obj.set_per_book
+            lineitem.quantity = obj.qty
             lineitem.unit_price = price_ea
             lineitem.total_price = obj.price_total
             lineitem.override_price = override

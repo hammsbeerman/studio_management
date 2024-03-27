@@ -13,7 +13,7 @@ class PriceSheet(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing')], max_length=100, blank=False, null=False)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
-    set_per_book = models.PositiveIntegerField('# of sets / books/ pieces', blank=True, null=True)
+    qty = models.PositiveIntegerField('# of sets / books/ pieces', blank=True, null=True)
     pages_per_book = models.PositiveBigIntegerField('Pages per Book', blank=True, null=True)
     qty_of_sheets = models.CharField('Qty of Sheets', max_length=10, blank=True, null=True)
     original_size = models.CharField('Original Size', max_length=100, blank=True, null=True)
