@@ -86,6 +86,8 @@
         
         <td>{% if object.last_item_order %}{{object.last_item_order}}{% endif %}</td>
         <td>{% if object.last_item_order %}{{object.last_item_price}}{% endif %}</td>
+
+        <td><a href="{% url 'pdf:ticket_pdf' id=object.pk %}" class="btn btn-primary" target="_blank">Ticket</a></td>
         
         
     </tr>

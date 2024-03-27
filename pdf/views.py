@@ -138,7 +138,58 @@ def lineitem_pdf(request, id):
     return response
 
 
+@login_required
+def ticket_pdf(request, id):
+    print(id)
+    
+    item = KruegerJobDetail.objects.get(workorder_item=id)
+    if not item:
+        item = WideFormat.objects.get(workorder_item=id)
 
+    if item.description == 'None':
+        item.description = ''
+        
+    if item.override_price:
+        item.price_total = item.override_price
+
+    print('id')
+    print(item.workorder.id)
+    date = item.dateentered
+    print(date)
+
+    workorder = Workorder.objects.get(pk=item.workorder.id)
+    print(workorder)
+    #workorder = 1
+
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; attachment; filename=items.hr_workorder' + 'items.description.pdf'
+    #remove inline to allow direct download
+    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
+        
+    response['Content-Transfer-Encoding'] = 'binary'
+
+    print(item)
+    
+    html_string=render_to_string('pdf/weasyprint/jobticket.html', {'item':item, 'workorder':workorder, 'date':date})
+    
+    html = HTML(string=html_string)
+
+    result = html.write_pdf()
+
+    with tempfile.NamedTemporaryFile(delete=True) as output:
+        output.write(result)
+        output.flush()
+        #rb stands for read binary
+        output=open(output.name,'rb')
+        response.write(output.read())
+
+    return response
+
+
+# @login_required
+# def ticket_pdf(request, id):
+#     return render(request, 'pdf/weasyprint/krueger_statement.html')
 
 
 

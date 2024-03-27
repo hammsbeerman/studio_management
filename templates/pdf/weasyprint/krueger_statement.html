@@ -5,20 +5,33 @@
     <title>invoice 01</title>
     <!-- paper.css -->
     <style>
-      * {
+      /** {
         -webkit-print-color-adjust: exact !important;
         color-adjust: exact !important;
         print-color-adjust: exact !important;
 		box-sizing: border-box;
+      }
+      
+      body {
+        margin: 0;
+		color: #000;
+	font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+        font-size: 9pt;
+      }*/
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-sizing: border-box;
       }
       @page {
         margin: 0;
       }
       body {
         margin: 0;
-		color: #000;
-	font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-        font-size: 9pt;
+        color: #333;
+        font-family: 'mission_gothiclight';
+        font-size: 13px;
       }
 img {
   -webkit-user-drag: none;
@@ -28,6 +41,10 @@ img {
   user-drag: none;
   max-width:100%;
 }	  
+
+    @page {
+      margin: 0;
+    }
 	  
       .sheet {
         margin: 0;
@@ -64,9 +81,10 @@ img {
       }
 
       /*Main Style here*/
-      @page {size: A4;}
+      @page {size: 8.5in 11in;}
 
-.fix{overflow:hidden;}
+.fix{overflow:hidden;
+  margin-top:-25mm;}
 table{border-collapse: collapse;}
 /*header*/
 .tr{text-align:right;}

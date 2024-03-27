@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>invoice 02</title>
+    <title>invoice 03</title>
     <!-- paper.css -->
     <style>
       * {
@@ -39,8 +39,6 @@ img {
 
       /** Paper sizes **/
       body.A4 .sheet {
-       /* width: 210mm;
-        height: 296mm;*/
         width: 8.5in;
         height: 11in;
       }
@@ -69,7 +67,7 @@ img {
       @page {size: A4;}
 
 .fix{overflow:hidden;
-      margin-top:-25mm;}}
+      margin-top:-20mm;}}
 table{border-collapse: collapse;}
 /*header*/
 .tr{text-align:right;}
@@ -78,7 +76,7 @@ table{border-collapse: collapse;}
 .italic {font-style: italic;}
 
 .header{overflow: hidden; display: flex;width:100%;}
-.single_header {width: 33%;}
+.single_header { width: 33%;}
 
 .header_right table {border: 1px solid #999;overflow: hidden;}
 
@@ -92,6 +90,10 @@ table{border-collapse: collapse;}
 }
 
 .header_mid {
+    text-align: center;
+    font-size: 10pt;
+}
+.header_mid_bold {
     text-align: center;
     font-size: 14pt;
     font-weight: bold;
@@ -149,7 +151,7 @@ table.ordert-first {margin-bottom: 11px;}
     left: 0;
     right: 0;
     margin: auto;
-    bottom: -0px;
+    bottom: 18px;
 }
 .last-table-area {border-top: 1px solid #000;}
 .last-table{width:100%;text-align:center;}
@@ -167,7 +169,7 @@ table.ordert-first {margin-bottom: 11px;}
 .header_bottom2{
 display: flex;
     justify-content: space-between;
-margin-top: 25px;
+ margin-top: 25px;
     border: 1px solid #000;
     color: #000;
     padding: 7px;}
@@ -180,29 +182,47 @@ margin-top: 25px;
     padding-bottom: 5px;
     padding-left: 3px;
 }
+
+
+
+
+
+
+
+
+
 .items_area_second tr td:last-child{text-align:right;}
 .items_area_second tr th{border-left:1px solid #fff;}
 
 .border {
     border: 1px solid #000;
 }
+
 .single_header.invoice_header_r table {
-      border: 1px solid #000;
+    border: 1px solid #000;
     float: right;
     border: 1px solid #999;
     overflow: hidden;
     margin-top: 0;
 }
+
 .single_header.invoice_header_r th {
     background: #000;
     color: #fff;
     text-align: center;
 }
 
+
 .single_header.invoice_header_r td {
-    text-align: center;
-	  padding: 2px 6px;
+    padding: 2px 6px;
 }
+
+.single_header.invoice_header_r table td:last-child {
+    text-align: right;
+    width: 100px;
+}
+
+
 .table_three {
     margin-top: 15px;
 }
@@ -212,50 +232,41 @@ margin-top: 25px;
     font-size: 12pt;
     margin-top: 2px;
 }
- </style>
+
+.detail_table {
+    width: 100%;
+}
+
+
+    </style>
   </head>
   <body class="A4">
     <section class="sheet padding-10mm">
 	<article>
 	<!-- Header -->
 	<div class="header fix" spellcheck="false" contenteditable="false">
-		<div class="single_header header_left"><img src="https://i.postimg.cc/Kvr3cT12/logo.png" alt="210x50" /></div>
-		<div class="single_header header_mid">INVOICE</div>
+		<div class="single_header header_left"><img src="https://i.postimg.cc/Kvr3cT12/logo.png" alt="" /></div>
+		<div class="single_header header_mid">JobTicket: <b>{{item.hr_workorder}}</b>
+            <p>Item: x of x</div>
 		<div class="single_header  invoice_header_r">
-			<table width="100%">
-			<tr>
-			<th colspan="2">Invoice#</th>
-			<th colspan="2">invoice Date</th>
-			</tr>
-			<tr>
-			<td colspan="2" class="tc border">28478</td>
-			<td colspan="2" class="tc border">01/11/2024</td>
-			</tr>
-			<tr>
-			<td colspan="2">Sales Rep:</td>
-			<td colspan="2">House Account</td>
-			</tr>
-			<tr>
-			<td colspan="2">Customer#:</td>
-			<td colspan="2">00615</td>
-			</tr>
-			<tr>
-			<td colspan="2">Page:</td>
-			<td colspan="2"></td>
-			</tr>
-			
+			<table width="90%" style="float: right;">
+				<tr><td>Order #:</td><td>{{item.hr_workorder}}</td></tr>
+				<tr><td>Order Date:</td><td>{{date|date:"M d, Y"}}</td></tr>
+				<tr><td>Customer#:</td><td>{{item.customer.id}}</td></tr>
+                <tr><td>PO Number #:</td><td>{% if workorder.po_number %}{{workorder.po_number}}{% endif %}</td></tr>
 			</table>
 		</div>
 	</div>
 	
 	<div class="header header_bottom2 fix" spellcheck="false" contenteditable="false">
 		<div class="single_header header_left">
-		<div class="header_title">BILL TO:</div>
+		<div class="header_title">Bill TO:</div>
 		<table style="width:100%;">
-				<tr><td>Contact:</td><td>Demo Dest</td></tr>
-				<tr><td>Phone:</td><td>0123456789</td></tr>
-				<tr><td>Fax:</td><td>0123456789</td></tr>
-				<tr><td>Sales Rep:</td><td>House Account</td></tr>
+				<tr><td>{{workorder.customer.company_name}}</td><td></td></tr>
+				<tr><td>{{workorder.customer.address1}}</td><td></td></tr>
+				{% if workorder.customer.address2 %}<tr><td>{{workorder.customer.address2}}</td><td></td></tr>{% endif %}
+				<tr><td>{{workorder.customer.city}}, {{workorder.customer.state}} {{workorder.customer.zipcode}}</td><td></td></tr>
+                {% if workorder.customer.phone1 %}<tr><td>{{workorder.customer.phone1}}</td><td></td></tr>{% endif %}
 			</table>
 		
 		
@@ -266,10 +277,11 @@ margin-top: 25px;
 			<div class="header_title">SHIP TO:</div>
 			<table style="width:100%;">
 			
-				<tr><td>Contact:</td><td>Demo Dest</td></tr>
-				<tr><td>Phone:</td><td>0123456789</td></tr>
-				<tr><td>Fax:</td><td>0123456789</td></tr>
-				<tr><td>Sales Rep:</td><td>House Account</td></tr>
+				<tr><td>{{workorder.customer.company_name}}</td><td></td></tr>
+				<tr><td>{{workorder.customer.address1}}</td><td></td></tr>
+				{% if workorder.customer.address2 %}<tr><td>{{workorder.customer.address2}}</td><td></td></tr>{% endif %}
+				<tr><td>{{workorder.customer.city}}, {{workorder.customer.state}} {{workorder.customer.zipcode}}</td><td></td></tr>
+                {% if workorder.customer.phone1 %}<tr><td>{{workorder.customer.phone1}}</td><td></td></tr>{% endif %}
 			</table>
 		</div>
 	</div>
@@ -283,73 +295,131 @@ margin-top: 25px;
 	<table class="last-table">
 		<tbody>
 			<tr>
-			  <th>Customer's Terms</th>
-			  <th>Customer's Phone</th>
-			  <th>Customer's Fax</th>
-			  <th>Customer Contact</th>
-			  <th>Purchase Order #</th>
-			  <th>Customer Service Rep.</th>
+			  <th>Company Contact</th>
+			  <th>Contact Phone</th>
+			  <th>Contact Email</th>
+			  <th>Shipping Method</th>
+			  <th>Date Needed</th>
 			</tr>	
 			<tr>
-				<td>Net 30 Days</td>
-				<td>0123456789</td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td>E-Mail</td>
+				<td>{{ workorder.contact.fname}} {{ workorder.contact.lname }}</td>
+				<td>{{ workorder.contact.phone1 }}</td>
+				<td>{{ workorder.contact.email }}</td>
+				<td>--</td>
+				<td>--</td>
 			</tr>
 		</tbody>
 	</table>	
 
 </div>
-
+<p>
 <!-- main table -->
+    <table class="detail_table">
+    <tbody>
+        <tr>  
+            <td style="font-size:large;"><b>Paper</b></td>
+        </tr>
+        <tr>
+            <td>Parent Size:</td>
+            <td>{{item.original_size}}</td>
+            <td></td>
+            <td></td>
+            <td>Parent Sheets</td>
+            <td>{{ item.parent_sheets_required }}</td>
+            <td>--</td>
+            <td>--</td>
+        </tr>
+        <tr>
+            <td>Press Size:</td>
+            <td>{{item.press_size}}</td>
+            <td></td>
+            <td></td>
+            <td>Press Sheets</td>
+            <td>{{ item.side_1_clicks }}</td>
+            <td>--</td>
+            <td>--</td>
+        </tr>
+        <tr>
+            <td>Finished Size:</td>
+            <td>{{item.original_size}}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>--</td>
+            <td>--</td>
+        </tr>
+        <tr>
+            <td colspan="8"></td>
+        </tr>
+        <tr>
+            <td>Notes:</td>
+            <td colspan="7"></td>
+        </tr>
+    </tbody>
+</table>
+<hr>
+<table class="detail_table">
+    <tbody>
+        <tr>  
+            <td style="font-size:12px;"><b>Quantity:</b></td>
+            <td>{{ item.q}}
+        </tr>   
+          
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
       <div class="items-area items_area_second fix">
         <table>
           <thead>
 			<tr>
-			  <th>Quantity</th>
+			  <th>Item Number</th>
               <th>Description</th>
-              <th>Tax</th>
-              <th class="tr">Sub-Total</th>
+              <th>Qty Ordered</th>
+              <th class="tr">Qty Packed</th>
             </tr>
           </thead>
           <tbody>
             <tr>
+              <td>1</td>
+              <td>Envelopes - #5022C Dual Window</td>
               <td>500</td>
-              <td>Envelopes - #5022C <br>Dual Window Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
+              <td></td>
             </tr>
             <tr>
+              <td>1</td>
+              <td>Envelopes - #5022C Dual Window</td>
               <td>500</td>
-              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
+              <td></td>
             </tr>
             <tr>
+              <td>1</td>
+              <td>Envelopes - #5022C Dual Window</td>
               <td>500</td>
-              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
+              <td></td>
             </tr>
             <tr>
+              <td>1</td>
+              <td>Envelopes - #5022C Dual Window</td>
               <td>500</td>
-              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
+              <td></td>
             </tr>
             <tr>
+              <td>1</td>
+              <td>Envelopes - #5022C Dual Window</td>
               <td>500</td>
-              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
-            </tr>
-            <tr>
-              <td>500</td>
-              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
+              <td></td>
             </tr>
 
 
@@ -358,45 +428,7 @@ margin-top: 25px;
         </table>
       </div>
 
-
-<!-- Total table -->
-<div class=" fixed_table fix">
-<div class="last-table-area">
-	<table class="last-table">
-		<tbody>
-			<tr>
-			  <th>Ship Via</th>
-			  <th>
-			  <span>Sub-Total</span>
-			  <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
-			  <span>Tax</span>
-			    </th>
-			  <th>Freight</th>
-			  <th></th>
-			  <th>Deposit</th>
-			  <th>Amount Due</th>
-			</tr>	
-			<tr>
-				<td>123</td>
-				<td>
-			<span>Sub-Total</span>
-			  <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
-			  <span>Tax</span>
-				</td>
-				<td>123</td>
-				<td>123</td>
-				<td>123</td>
-				<td>123</td>
-			</tr>
-		</tbody>
-	</table>
-</div>	
-<div class="thank">Thank You</div>
-</div>
-
-
-
-	  
+ 
 	 </article> 
     </section>
   </body>

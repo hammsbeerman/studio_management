@@ -1565,8 +1565,12 @@ def complete_status(request):
             )
     #total_invoice = list(WorkorderItem.objects.aggregate(Sum('total_with_tax')).values())[0]
     total = list(total_invoice.values())[0]
+    if not total:
+        total = 0
     total = round(total, 2)
     tax = list(total_invoice.values())[1]
+    if not tax:
+        tax = 0
     tax = round(tax, 2)
     base = total - tax
     print(total)
