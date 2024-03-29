@@ -1,0 +1,60 @@
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+{% with WIDGET_ERROR_CLASS='is-invalid' %}
+<form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Notes:</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+
+
+     <label for="notes">Notes:</label>
+
+<textarea id="notes" name="notes" rows="8" cols="50">
+  {% if task == 'mailmerge_note' %}
+    {{item.mailmerge_note}}
+  {% elif task == 'pad_note' %}
+    {{ item.pad_note }}
+  {% elif task == 'perf_note' %}
+    {{ item.perf_note }}
+  {% elif task == 'numbering_note' %}
+    {{ item.numbering_note }}
+  {% elif task == 'wraparound_note' %}
+    {{ item.wraparound_note }}
+  {% elif task == 'drill_note' %}
+    {{ item.drill_note }}
+  {% elif task == 'staple_note' %}
+    {{ item.staple_note }}
+  {% elif task == 'fold_note' %}
+    {{ item.fold_note }}
+  {% elif task == 'tab_note' %}
+    {{ item.tab_note }}
+  {% elif task == 'bulkmail_note' %}
+    {{ item.bulkmail_note }}
+  {% elif task == 'misc1_note' %}
+    {{ item.misc1_note }}
+  {% elif task == 'misc2_note' %}
+    {{item.misc2_note}}
+  {% elif task == 'misc3_note' %}
+    {{ item.misc3_note }}
+  {% elif task == 'misc4_note' %}
+    {{ item.misc4_note }}
+
+  {% endif %}
+</textarea> 
+
+    <input type="hidden" id="task" name="task" value="{{ task }}">
+    <input type="hidden" id="id" name="id" value="{{ pk }}">
+  </div>
+  <div class="modal-footer">
+    
+    <span class="flex-grow-1"></span>
+    
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>
+{% endwith %}

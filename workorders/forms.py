@@ -1,6 +1,7 @@
 from django.utils.safestring import mark_safe
 from django import forms
 from .models import Workorder, WorkorderItem
+from krueger.models import KruegerJobDetail
 from controls.models import Numbering
 from customers.models import Customer, Contact
 from dynamic_forms import DynamicField, DynamicFormMixin
@@ -119,3 +120,12 @@ class ParentItemForm(forms.ModelForm):
     class Meta:
         model = WorkorderItem
         fields = ['description', 'quantity', 'parent_item', 'parent', 'added_to_parent']
+
+# class TaskNoteForm(forms.ModelForm):
+#     class Meta:
+#         model = KruegerJobDetail
+#         fields = ['notes', 'show_notes']
+#         labels = {
+#             'show_notes':'Show notes on pdf invoice',
+
+#         }

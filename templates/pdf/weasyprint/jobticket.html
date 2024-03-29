@@ -237,6 +237,56 @@ display: flex;
     width: 100%;
 }
 
+.press_table {
+    width: 25%;
+}
+
+.press_row {
+    margin-left:-5px;
+    margin-right:-5px;
+  }
+    
+.press_column {
+    float: left;
+    width: 50%;
+    padding: 5px;
+  }
+
+/* Clearfix (clear floats) */
+.press_row::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+
+.task_table {
+    width: 100%;
+}
+
+.task_table td{
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.task_row {
+    margin-left:-5px;
+    margin-right:-5px;
+  }
+    
+.task_column {
+    float: left;
+    width: 50%;
+    padding: 5px;
+  }
+
+/* Clearfix (clear floats) */
+.task_row::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
+  
+
 
     </style>
   </head>
@@ -359,74 +409,190 @@ display: flex;
     </tbody>
 </table>
 <hr>
-<table class="detail_table">
-    <tbody>
-        <tr>  
-            <td style="font-size:12px;"><b>Quantity:</b></td>
-            <td>{{ item.q}}
-        </tr>   
-          
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-      <div class="items-area items_area_second fix">
-        <table>
-          <thead>
-			<tr>
-			  <th>Item Number</th>
-              <th>Description</th>
-              <th>Qty Ordered</th>
-              <th class="tr">Qty Packed</th>
+<div class="press_row">
+    <div class="press_column">
+        <table class="press_table">
+            <tr>  
+                <td style="font-size:12px;"><b>Quantity:</b></td>
+                <td><b>{{ item.qty}}</b></td>
             </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Envelopes - #5022C Dual Window</td>
-              <td>500</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>Envelopes - #5022C Dual Window</td>
-              <td>500</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>Envelopes - #5022C Dual Window</td>
-              <td>500</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>Envelopes - #5022C Dual Window</td>
-              <td>500</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>Envelopes - #5022C Dual Window</td>
-              <td>500</td>
-              <td></td>
-            </tr>
-
-
-			
-          </tbody>
         </table>
-      </div>
+    </div>
+    <div class="column">
+        <table class="press_table">
+            <tr>
+                <td>Side 1:</td><td>xx</td>
+            </tr>
+            <tr>
+                <td>Side 2:</td><td>xx</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+{% if workorder.notes %}<table class="detail_table">
+    <tr>
+        <td>Workorder Notes:</td>
+        <td>{{ workorder.notes }}</td>
+    </tr>
+</table>
+{% endif %}
+<hr>
+<div class="task_row">
+    <div class="task_column">
+        <table class="task_table">
+            {% if item.mailmerge_qty %}
+            <tr>  
+                <td>Mailmerge:</td>
+                <td>Qty: {{ item.mailmerge_qty }}</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.mailmerge_note }}</td>
+            </tr>
+            {% endif %}
+                    
+            {% if item.step_white_compound_price %}
+            <tr>  
+                <td>White Pad:</td>
+                <td>Yes</td><td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.pad_note }}</td>
+            </tr>
+            {% endif %}
+            {% if item.step_NCR_compound_price %}
+            <tr>  
+                <td>NCR Padding:</td>
+                <td>Yes</td><td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.pad_note }}</td>
+            </tr>
+            {% endif %}
+            {% if item.perf_number_of_pieces %}
+            <tr>  
+                <td>Perf:{{item.perf_number_of_pieces}}</td>
+                <td>Qty: </td><td>{{ item.perf_number_of_pieces }}</td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.perf_note }}</td>
+            </tr>
+            {% endif %}
+            {% if item.number_number_of_pieces %}
+            <tr>  
+                <td>Add Numbering:</td>
+                <td>Qty: </td><td>{{ item.number_number_of_pieces }}</td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.numbering_note }}</td>
+            </tr>
+            {% endif %}
+            {% if item.step_insert_wrap_around_price %}
+            <tr>  
+                <td>Wraparound:</td>
+                <td>Yes</td><td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.wraparound_note }}</td>
+            </tr>
+            {% endif %}
+            {% if item.step_drill_price %}
+            <tr>  
+                <td>Drill:</td>
+                <td>Yes</td><td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.drill_note }}</td>
+            </tr>
+            {% endif %}
+            {% if item.staple_number_of_pieces %}
+            <tr>  
+                <td>Staple:</td>
+                <td>Qty: </td><td>{{ item.staple_number_of_pieces }}</td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.staple_note }}</td>
+            </tr>
+            {% endif %}
+            {% if item.fold_number_to_fold %}
+            <tr>  
+                <td>Fold:</td>
+                <td>Qty: </td><td>{{ item.fold_number_to_fold }}</td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.fold_note }}</td>
+            </tr>
+            {% endif %}
+            {% if item.tabs_number_of_pieces > 0 %}
+            <tr>  
+                <td>Tab: {{item.tabs_number_of_pieces }}</td>
+                <td>Qty: {{ item.tabs_number_of_pieces }}</td><td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.tab_note }}</td>
+            </tr>
+            {% endif %}
+            <tr>  
+                <td>{% if item.step_bulk_mail_tray_sort_paperwork_price %}Bulk Mail:</td>
+                <td>Yes</td><td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.bulkmail_note }}</td>
+            </tr>
+            {% endif %}
+            <tr>  
+                <td>{% if item.misc1_description %}Misc 1:</td>
+                <td>{{ item.misc1_description}}</td><td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.misc1_note }}</td>
+            </tr>
+            {% endif %}
+            <tr>  
+                <td>{% if item.misc2_description %}Misc 2:</td>
+                <td>{{ item.misc2_description}}</td><td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.misc2_note }}</td>
+            </tr>
+            {% endif %}
+            <tr>  
+                <td>{% if item.misc3_description %}Misc 3:</td>
+                <td>{{ item.misc3_description}}</td><td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.misc3_note }}</td>
+            </tr>
+            {% endif %}
+            <tr>  
+                <td>{% if item.misc4_description %}Misc 4:</td>
+                <td>{{ item.misc4_description}}</td><td></td>
+            </tr>
+            <tr>
+                <td>Notes:</td>
+                <td colspan = "2">{{ item.misc4_note }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+        
 
  
 	 </article> 

@@ -35,6 +35,7 @@ from .views import (
     stale,
     abandon_quote,
     billed,
+    task_notes,
     # removed,
 )
 
@@ -66,6 +67,7 @@ urlpatterns = [
     path("workorder_info/<int:workorder>/", workorder_info, name='workorder_info'),
     path('categories/', subcategory, name='subcategory'),
     path('tax/<str:tax>/<int:id>/', tax, name='tax'),
+    path('notes/<int:pk>/<str:task>/', task_notes, name='task_notes'),
     path('notes/<int:pk>/', notes, name='notes'),
     path('item_status/<int:pk>/', item_status, name='item_status'),
     path('notes/', notes, name='notes'),
@@ -77,6 +79,7 @@ urlpatterns = [
     path('billable_status/<int:id>/', billable_status, name='billable_status'),
     path('abandon_quote/', abandon_quote, name='abandon_quote'),
     path('billed/<int:id>/', billed, name='billed'),
+    
     # path('removed/', removed, name='removed')
     
 

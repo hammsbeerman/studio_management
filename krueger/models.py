@@ -149,6 +149,20 @@ class KruegerJobDetail(models.Model):
     edited = models.BooleanField('Edited', blank=False, null=False, default=False)
     last_item_order = models.CharField('Original Item Order', max_length=100, blank=True, null=True)
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
+    mailmerge_note = models.CharField('Mailmerge Note', max_length=100, blank=True, null=True)
+    pad_note = models.CharField('Padding Note', max_length=100, blank=True, null=True)
+    perf_note = models.CharField('Perf Note', max_length=100, blank=True, null=True)
+    numbering_note = models.CharField('Numbering Note', max_length=100, blank=True, null=True)
+    wraparound_note = models.CharField('Wraparound Note', max_length=100, blank=True, null=True)
+    drill_note = models.CharField('Drill Note', max_length=100, blank=True, null=True)
+    staple_note = models.CharField('Staple Note', max_length=100, blank=True, null=True)
+    fold_note = models.CharField('Fold Note', max_length=100, blank=True, null=True)
+    tab_note = models.CharField('Tab Note', max_length=100, blank=True, null=True)
+    bulkmail_note = models.CharField('Bulkmail Note', max_length=100, blank=True, null=True)
+    misc1_note = models.CharField('Misc1 Note', max_length=100, blank=True, null=True)
+    misc2_note = models.CharField('Misc2 Note', max_length=100, blank=True, null=True)
+    misc3_note = models.CharField('Misc3 Note', max_length=100, blank=True, null=True)
+    misc4_note = models.CharField('Misc4 Note', max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.internal_company

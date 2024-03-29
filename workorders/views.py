@@ -1683,3 +1683,60 @@ def billed(request, id):
     workorder.billed = 1
     workorder.save()
     return redirect('workorders:overview', id=workorder.workorder)
+
+@login_required
+def task_notes(request, pk=None, task=None):
+    item = get_object_or_404(KruegerJobDetail, workorder_item=pk)
+    #item = KruegerJobDetail.objects.get(workorder_item = id)
+    print(task)
+    if request.method == "POST":
+        id = request.POST.get('id')
+        print(id)
+        note = request.POST.get('notes')
+        if not note:
+            print('empty')
+            note = None
+        print(note)
+        print('note')
+        print(note)
+        #item = get_object_or_404(WorkorderItem, pk=id)
+        item = get_object_or_404(KruegerJobDetail, workorder_item = id)
+        if task == 'mailmerge_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(mailmerge_note = note)
+        if task == 'pad_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(pad_note = note)
+        if task == 'perf_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(perf_note = note)
+        if task == 'numbering_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(numbering_note = note)
+        if task == 'wraparound_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(wraparound_note = note)
+        if task == 'drill_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(drill_note = note)
+        if task == 'staple_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(staple_note = note)
+        if task == 'fold_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(fold_note = note)
+        if task == 'tab_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(tab_note = note)
+        if task == 'bulkmail_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(bulkmail_note = note)
+        if task == 'misc1_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(misc1_note = note)
+        if task == 'misc2_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(misc2_note = note)
+        if task == 'misc3_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(misc3_note = note)
+        if task == 'misc4_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(misc4_note = note)
+
+        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    #form = TaskNoteForm(instance=item)
+    context = {
+        #'notes':notes,
+        #'form':form,
+        'item': item,
+        'task': task,
+        'pk': pk,
+    }
+    return render(request, 'workorders/modals/task_notes.html', context) 
