@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -295,7 +296,7 @@ display: flex;
 	<article>
 	<!-- Header -->
 	<div class="header fix" spellcheck="false" contenteditable="false">
-		<div class="single_header header_left"><img src="https://i.postimg.cc/Kvr3cT12/logo.png" alt="" /></div>
+		<div class="single_header header_left"><img src="https://studiomanagement.lkdesignstudios.com/static/img/site/KruegerPrinting_Black_210x50.jpg" alt="" /></div>
 		<div class="single_header header_mid">JobTicket: <b>{{item.hr_workorder}}</b>
             <p>Item: x of x</div>
 		<div class="single_header  invoice_header_r">
@@ -483,7 +484,7 @@ display: flex;
                 <td colspan = "2">{{ item.perf_note }}</td>
             </tr>
             {% endif %}
-            {% if item.number_number_of_pieces %}
+            {% if item.number_price_to_number %}
             <tr>  
                 <td>Add Numbering:</td>
                 <td>Qty: </td><td>{{ item.number_number_of_pieces }}</td>
@@ -513,7 +514,7 @@ display: flex;
                 <td colspan = "2">{{ item.drill_note }}</td>
             </tr>
             {% endif %}
-            {% if item.staple_number_of_pieces %}
+            {% if item.staple_staples_per_piece %}
             <tr>  
                 <td>Staple:</td>
                 <td>Qty: </td><td>{{ item.staple_number_of_pieces }}</td>

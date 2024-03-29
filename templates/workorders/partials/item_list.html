@@ -87,8 +87,11 @@
         <td>{% if object.last_item_order %}{{object.last_item_order}}{% endif %}</td>
         <td>{% if object.last_item_order %}{{object.last_item_price}}{% endif %}</td>
 
-        <td><a href="{% url 'pdf:ticket_pdf' id=object.pk %}" class="btn btn-primary" target="_blank">Ticket</a></td>
+       
+        {% if object.item_category.id == 2 %}
         
+        <td><a href="{% url 'pdf:ticket_pdf' id=object.pk %}" target="_blank"><img src="{% static 'img/site/ticket-49.png' %}" style="width:20px;height:20px;"></a></td>
+        {% endif %}
         
     </tr>
 

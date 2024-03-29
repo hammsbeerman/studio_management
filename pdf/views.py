@@ -160,14 +160,14 @@ def ticket_pdf(request, id):
         item.step_NCR_compound_price = ''
     if item.perf_number_of_pieces == '0':
         item.perf_number_of_pieces = ''
-    if item.number_number_of_pieces == '0':
-        item.number_number_of_pieces = ''
+    if item.number_price_to_number == '0':
+        item.number_price_to_number = ''
     if item.step_insert_wrap_around_price == '0':
         item.step_insert_wrap_around_price = ''
     if item.step_drill_price == '0':
         item.step_drill_price = ''
-    if item.staple_number_of_pieces == '0':
-        item.staple_number_of_pieces = ''
+    if item.staple_staples_per_piece == '0':
+        item.staple_staples_per_piece = ''
     if item.fold_number_to_fold == '0':
         item.fold_number_to_fold = ''
     if item.tabs_number_of_pieces == '0':
