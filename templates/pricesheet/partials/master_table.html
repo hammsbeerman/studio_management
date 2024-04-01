@@ -11,11 +11,11 @@
         {% if form.mailmerge_qty %}
         <td>Mailmerge: <input type="checkbox" id="show-mailmerge">
             {% if formdata.mailmerge_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='mailmerge_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='mailmerge_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='mailmerge_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='mailmerge_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
@@ -23,11 +23,11 @@
         {% if form.step_NCR_compound_price or form.step_white_compound_price %}
         <td>Pad: <input type="checkbox" id="show-padding">
             {% if formdata.pad_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='pad_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='pad_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='pad_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='pad_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
@@ -35,11 +35,11 @@
         {% if form.step_set_to_perf_price %}
         <td>Add Perf: <input type="checkbox" id="show-perf">
             {% if formdata.perf_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='perf_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='perf_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='perf_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='perf_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
@@ -47,11 +47,11 @@
         {% if form.step_set_to_number_price %}
         <td>Add Numbering: <input type="checkbox" id="show-numbering">
             {% if formdata.numbering_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='numbering_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='numbering_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='numbering_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='numbering_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
@@ -59,11 +59,11 @@
         {% if form.step_insert_frontback_cover_price %}
         <td>Wraparound: <input type="checkbox" id="show-wraparound">
             {% if formdata.wraparound_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='wraparound_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='wraparound_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='wraparound_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='wraparound_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
@@ -75,11 +75,11 @@
         {% if form.step_set_to_drill_price %}
         <td>Set to Drill: <input type="checkbox" id="show-drill">
             {% if formdata.drill_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='drill_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='drill_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='drill_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='drill_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
@@ -87,11 +87,11 @@
         {% if form.step_set_to_staple_price %}
         <td>Staple: <input type="checkbox" id="show-staple">
             {% if formdata.staple_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='staple_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='staple_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='staple_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='staple_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
@@ -99,11 +99,11 @@
         {% if form.step_set_folder_price %}
         <td>Fold: <input type="checkbox" id="show-fold">
             {% if formdata.fold_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='fold_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='fold_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='fold_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='fold_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
@@ -111,11 +111,11 @@
         {% if form.tabs_price_per_tab %}
         <td>Tab: <input type="checkbox" id="show-tab">
             {% if formdata.tab_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='tab_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='tab_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='tab_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='tab_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
@@ -123,11 +123,11 @@
         {% if form.step_bulk_mail_tray_sort_paperwork_price %}
         <td>Bulk Mail: <input type="checkbox" id="show-bulkmail">
             {% if formdata.bulkmail_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='bulkmail_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='bulkmail_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='bulkmail_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='bulkmail_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
@@ -137,44 +137,44 @@
     <tr>    
         <td>Misc 1: <input type="checkbox" id="show-misc1">
             {% if formdata.misc1_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='misc1_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='misc1_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='misc1_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='misc1_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
         </td>
         <td>Misc 2: <input type="checkbox" id="show-misc2">
             {% if formdata.misc2_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='misc2_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='misc2_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='misc2_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='misc2_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
         </td>
         <td>Misc 3: <input type="checkbox" id="show-misc3">
             {% if formdata.misc3_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='misc3_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='misc3_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='misc3_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='misc3_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}
         </td>
         <td>Misc 4: <input type="checkbox" id="show-misc4">
             {% if formdata.misc4_note %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='misc4_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='misc4_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
             </button>
             {% else %}
-            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=formdata.workorder_item task='misc4_note' %}" hx-target="#dialog">
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='misc4_note' %}" hx-target="#dialog">
                 <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
             </button>
             {% endif %}

@@ -493,6 +493,7 @@ def edititem(request, id, pk, cat,):
             except:
                 papers = Inventory.objects.all().order_by('name')
                 print('2')
+        print(pk)
         context = {
             'form':form,
             'formdata':formdata,
