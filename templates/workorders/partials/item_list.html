@@ -88,7 +88,7 @@
         <td>{% if object.last_item_order %}{{object.last_item_price}}{% endif %}</td>
 
        
-        {% if object.item_category.id == 2 %}
+        {% if object.item_category.id == 2 or object.item_category.id == 6 %}
         
         <td><a href="{% url 'pdf:ticket_pdf' id=object.pk %}" target="_blank"><img src="{% static 'img/site/ticket-49.png' %}" style="width:20px;height:20px;"></a></td>
         {% endif %}
