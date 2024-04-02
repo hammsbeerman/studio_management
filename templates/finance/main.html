@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="col-md-6 offset-md-3">
+
+
+{% if user.is_authenticated %}
+
+<h1>Finance</h1>
+
+<a href="{% url 'finance:add_bill_payable' %}">Add Bill to be paid</a><br>
+<a href="{% url 'finance:view_bills_payable' %}">View Bills to be paid<br>
+<p>
+<a href="{% url 'finance:add_daily_sale' %}">Add Daily Sale Record</a><br>
+<a href="{% url 'finance:view_daily_sales' %}">View Daily Sales History</a><br>
+
+
+{% else %}
+
+<h1>Login</h1>
+<br/>
+<form method="POST" action="{% url 'home' %}">
+    {% csrf_token %}
+        <div class="mb-3">
+          <input type="text" class="form-control" name="username", placeholder="Username", required>
+        </div>
+        <div class="mb-3">
+          <input type="password" class="form-control" name="password", placeholder="Password" required>
+        </div>
+        <button type="submit" class="btn btn-secondary">Login</button>
+</form>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

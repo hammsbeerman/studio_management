@@ -17,7 +17,7 @@ class AccountsPayable(models.Model):
     date_paid = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
     amount_paid = models.DecimalField('Amount Paid', blank=True, null=True, max_digits=10, decimal_places=2)
     payment_method = models.CharField('Payment Method', choices=[('Cash', 'Cash'), ('Check', 'Check'), ('Credit Card', 'Credit Card'), ('Trade', 'Trade'), ('Other', 'Other')], max_length=100, blank=True, null=True)
-    workorder = models.ForeignKey(Workorder, blank=False, null=False, on_delete=models.DO_NOTHING)
+    #workorder = models.ForeignKey(Workorder, blank=False, null=False, on_delete=models.DO_NOTHING)
 
     def __str__(self):
         #Pulling from Foreign Key

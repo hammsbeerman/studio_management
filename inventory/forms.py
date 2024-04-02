@@ -2,7 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from django.urls import reverse_lazy
 from django.db.models.functions import Lower
-from .models import OrderOut, SetPrice, Photography, Vendor
+from .models import OrderOut, SetPrice, Photography, Vendor, InventoryDetail
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from localflavor.us.forms import USStateSelect
@@ -42,6 +42,14 @@ class PhotographyForm(forms.ModelForm):
        labels = {
             'total_price':'Item sell price',
 
+        }
+       
+class AddInventoryItemForm(forms.ModelForm):
+   #state = forms.CharField(widget=USStateSelect(), initial='WI')
+   class Meta:
+       model = InventoryDetail
+       fields = ['invoice_date', 'item', 'vendor', 'vendor_item_number', 'invoice_number', 'shipped_uom', 'shipped_qty', 'internal_uom', 'internal_qty', 'price_per_m', 'total_price']
+       labels = {
         }
        
 

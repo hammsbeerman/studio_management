@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Bills Payable</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date Recieved</th>
+            <th>Vendor</th>
+            <th>Description</th>
+            <th>Invoice Number</th>
+            <th>Amount</th>
+            <th>Discount</th>
+            <th>Discount Due Date</th>
+        </tr>
+    
+{% for bill in bill_list %}
+    <tr>
+        <td>{{ bill.date_recieved }}</td>
+        <td>{{ bill.vendor }}</td>
+        <td>{{ bill.description }}</td>
+        <td>{{ bill.invoice_number }}</td>
+        <td>{{ bill.amount }}</td>
+        <td>{{ bill.discount }}</td>
+        <td>{{ bill.discount_date_due }}</td>
+    </tr>
+
+    
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

@@ -17,3 +17,7 @@ $( function() {
 $( function() {
   $( "#id_deadline" ).datepicker();
 } );
+
+$( function() {
+  $( "#id_invoice_date" ).datepicker();
+} );

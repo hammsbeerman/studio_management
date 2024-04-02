@@ -1,10 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Min, Sum
 from django.db.models import Q
 from django.utils import timezone
 import logging
+from .models import AccountsPayable, DailySales
+from .forms import AccountsPayableForm, DailySalesForm
 from customers.models import Customer
 from workorders.models import Workorder
 from .forms import PaymentForm
@@ -12,7 +15,8 @@ from controls.models import PaymentType
 
 logger = logging.getLogger(__file__)
 
-# Create your views here.
+def finance_main(request):
+    return render(request, 'finance/main.html')
 
 def bill_list(request):
     pass
@@ -263,6 +267,51 @@ def unapply_payment(request):
         Customer.objects.filter(pk=cust).update(credit = credit, open_balance = open_balance)
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
                 
+
+
+
+def add_bill_payable(request):
+    form = AccountsPayableForm(request.POST or None)
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            if form.is_valid():
+                add_record = form.save()
+                messages.success(request, "Record Added...")
+                return redirect('finance:add_bill_payable')
+        return render(request, 'finance/AP/add_ap.html', {'form':form})
+    else:
+        messages.success(request, "You must be logged in")
+        return redirect('home')
+    
+def add_daily_sale(request):
+    form = DailySalesForm(request.POST or None)
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            if form.is_valid():
+                add_record = form.save()
+                messages.success(request, "Record Added...")
+                return redirect('finance:add_daily_sale')
+        return render(request, 'finance/reports/add_daily_sale.html', {'form':form})
+    else:
+        messages.success(request, "You must be logged in")
+        return redirect('home')
+    
+def view_daily_sales(request):
+    sales_list = DailySales.objects.all()
+    return render(request, 'finance/reports/view_sales.html',
+        {'sales_list': sales_list})
+
+def view_bills_payable(request):
+    bills_list = AccountsPayable.objects.all()
+    return render(request, 'finance/AP/view_bills.html',
+        {'bill_list': bills_list})
+
+
+
+
+
+
+
 
 
 

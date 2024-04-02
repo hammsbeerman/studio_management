@@ -39,6 +39,7 @@
                 Finance
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                {% if request.user.is_staff %}<li><a class="dropdown-item" href="{% url 'finance:finance' %}">Finance Home</a></li>{% endif %}
                 <li><a class="dropdown-item" href="{% url 'finance:ar_dashboard' %}">A/R Dashboard</a></li>
               </ul> 
             </li>
@@ -49,6 +50,7 @@
               <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                 <li><a class="dropdown-item" href="{% url 'inventory:add_vendor' %}">Add Vendor</a></li>
                 <li><a class="dropdown-item" href="{% url 'inventory:vendor_list' %}">Vendor List</a></li>
+                <li><a class="dropdown-item" href="{% url 'inventory:add_inventory_item' %}">Update Inventory Item</a></li>
               </ul> 
             </li>
             <li class="nav-item dropdown">

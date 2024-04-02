@@ -74,13 +74,23 @@ class Vendor(models.Model):
     
 
 class InventoryDetail(models.Model):
+    invoice_date = models.DateField('Invoice Date', blank=True, null=True)
     item = models.ForeignKey(Inventory, null=True, on_delete=models.SET_NULL)
     vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
     vendor_item_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
-    test = models.CharField('test', max_length=100, blank=True)
-
+    invoice_number = models.CharField('Invoice Number', max_length=100, blank=True, null=True)
+    shipped_uom = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='shipped_uom')
+    shipped_qty = models.CharField('Qty', max_length=100, blank=True, null=True)
+    internal_uom = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='internal_uom')
+    internal_qty = models.CharField('Qty', max_length=100, blank=True, null=True)
+    price_per_m = models.CharField('Paper Stock Price per M', max_length=100, blank=True, null=True)
+    total_price = models.CharField('Total Price', max_length=100, blank=True, null=True)
+    #test = models.CharField('test', max_length=100, blank=True)
+    
     # def __str__(self):
     #     return self.item
+
+    
 
 
 
