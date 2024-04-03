@@ -16,6 +16,7 @@ from krueger.models import KruegerJobDetail, WideFormat
 from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
 from inventory.models import OrderOut, SetPrice, Photography
 from pricesheet.forms import WideFormatForm
+from accounts.models import Profile
 
 @login_required
 def create_base(request):
@@ -170,6 +171,21 @@ def history_overview(request, id):
     return render(request, "workorders/partials/history_overview.html", context)
 
 @login_required
+def dashboard(request, id=None):
+    visitor = request.user.id
+    items = WorkorderItem.objects.filter(assigned_user_id = visitor).exclude(completed=1).order_by("-workorder")
+    company = Profile.objects.get(user_id = visitor)
+    company = company.primary_company
+    #print(company.primary_company)
+    #status = JobStatus.objects.all()
+    context = {
+        'company':company,
+        'items':items,
+        #'status':status,
+    }
+    return render(request, "workorders/list.html", context)
+
+@login_required
 def workorder_list(request):
     workorder = Workorder.objects.all().exclude(workorder=1111).exclude(completed=1).exclude(quote=1).order_by("-workorder")
     completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")[:20]
@@ -180,7 +196,33 @@ def workorder_list(request):
         'quote': quote,
 
     }
-    return render(request, 'workorders/list.html', context)
+    return render(request, 'workorders/partials/list_sm_order.html', context)
+
+@login_required
+def workorder_k_list(request):
+    workorder = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).order_by("-workorder")
+    completed = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")[:20]
+    quote = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
+    context = {
+        'workorders': workorder,
+        'completed': completed,
+        'quote': quote,
+
+    }
+    return render(request, 'workorders/partials/list_k_order.html', context)
+
+@login_required
+def workorder_lk_list(request):
+    workorder = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).order_by("-workorder")
+    completed = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")[:20]
+    quote = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
+    context = {
+        'workorders': workorder,
+        'completed': completed,
+        'quote': quote,
+
+    }
+    return render(request, 'workorders/partials/list_lk_order.html', context)
 
 @login_required
 def quote_list(request):

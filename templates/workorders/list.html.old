@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+List of workorders
+
+<a href="{% url 'workorders:createbase' %}">Add Workorder</a>
+<p>
+<div class="row">
+    <div class="col-sm-4">
+        Active Workorders
+        <p><ul>
+            {% for x in  workorders %} 
+            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.customer.company_name }}</a></li>
+            {% endfor %}
+            </ul></p>
+    </div>
+    <div class="col-sm-4">
+        Recently Completed
+        <p><ul>
+            {% for x in  completed %}
+            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.customer.company_name }}</a></li>
+            {% endfor %}
+            </ul></p>
+    </div>
+    <div class="col-sm-4">
+        Quotes
+        <p><ul>
+            {% for x in  quote %}
+            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.customer.company_name }}</a></li>
+            {% endfor %}
+            </ul></p>
+    </div>
+</div>
+{% autoescape off %}
+{{ rows }}
+{% endautoescape %} 
+{% endblock content %}
