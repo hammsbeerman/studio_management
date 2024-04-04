@@ -307,6 +307,13 @@ def view_bills_payable(request):
     return render(request, 'finance/AP/view_bills.html',
         {'bill_list': bills_list})
 
+def complete_not_billed(request):
+    listing = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).order_by('hr_customer')
+    print(listing)
+    context = {
+        'listing':listing,
+    }
+    return render(request, 'finance/reports/complete_not_billed.html', context)
 
 
 def ar_aging(request):
@@ -331,7 +338,7 @@ def ar_aging(request):
         sixty=Subquery(sixty.filter(hr_customer=models.OuterRef('hr_customer')).values('sixty')[:1]),
         ninety=Subquery(ninety.filter(hr_customer=models.OuterRef('hr_customer')).values('ninety')[:1]),
         onetwenty=Subquery(onetwenty.filter(hr_customer=models.OuterRef('hr_customer')).values('onetwenty')[:1]),
-        )
+        ).order_by('hr_customer')
     
     for x in individual_balances:
         print(x)
@@ -467,61 +474,61 @@ def ar_aging(request):
 
 
 
-@login_required
-def expanded_detail(request, id=None):
-    if not id:
-        id = request.GET.get('customers')
-        search = 0
-    else:
-        search = 1
-    customers = Customer.objects.all()
-    print(id)
-    if id:
-        aging = Workorder.objects.all().exclude(billed=0).exclude(paid_in_full=1)
-        today = timezone.now()
-        for x in aging:
-            if not x.date_billed:
-                x.date_billed = today
-            age = x.date_billed - today
-            age = abs((age).days)
-            print(type(age))
-            Workorder.objects.filter(pk=x.pk).update(aging = age)
+# @login_required
+# def expanded_detail(request, id=None):
+#     if not id:
+#         id = request.GET.get('customers')
+#         search = 0
+#     else:
+#         search = 1
+#     customers = Customer.objects.all()
+#     print(id)
+#     if id:
+#         aging = Workorder.objects.all().exclude(billed=0).exclude(paid_in_full=1)
+#         today = timezone.now()
+#         for x in aging:
+#             if not x.date_billed:
+#                 x.date_billed = today
+#             age = x.date_billed - today
+#             age = abs((age).days)
+#             print(type(age))
+#             Workorder.objects.filter(pk=x.pk).update(aging = age)
         
-        customer = Customer.objects.get(id=id)
-        cust = customer.id
-        history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).order_by("-workorder")[:5]
-        workorder = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(completed=1).exclude(quote=1).order_by("-workorder")[:25]
-        completed = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
-        quote = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
-        balance = Workorder.objects.filter(customer_id=customer).exclude(quote=1).aggregate(Sum('total_balance'))
-        current = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
-        thirty = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lte = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
-        sixty = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
-        ninety = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
-        onetwenty = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
-        #current = list(current.values())[0]
-        #current = round(current, 2)
+#         customer = Customer.objects.get(id=id)
+#         cust = customer.id
+#         history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).order_by("-workorder")[:5]
+#         workorder = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(completed=1).exclude(quote=1).order_by("-workorder")[:25]
+#         completed = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
+#         quote = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
+#         balance = Workorder.objects.filter(customer_id=customer).exclude(quote=1).aggregate(Sum('total_balance'))
+#         current = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
+#         thirty = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lte = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
+#         sixty = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
+#         ninety = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
+#         onetwenty = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
+#         #current = list(current.values())[0]
+#         #current = round(current, 2)
 
 
-        context = {
-            'workorders': workorder,
-            'completed': completed,
-            'quote': quote,
-            'cust': cust,
-            'customers':customers,
-            'customer': customer,
-            'history': history,
-            'balance': balance,
-            'current':current,
-            'thirty':thirty,
-            'sixty':sixty,
-            'ninety':ninety,
-            'onetwenty':onetwenty,
-        }
-        if search:
-            return render(request, "customers/search_detail.html", context)
-        else:
-            return render(request, "customers/partials/details.html", context)
+#         context = {
+#             'workorders': workorder,
+#             'completed': completed,
+#             'quote': quote,
+#             'cust': cust,
+#             'customers':customers,
+#             'customer': customer,
+#             'history': history,
+#             'balance': balance,
+#             'current':current,
+#             'thirty':thirty,
+#             'sixty':sixty,
+#             'ninety':ninety,
+#             'onetwenty':onetwenty,
+#         }
+#         if search:
+#             return render(request, "customers/search_detail.html", context)
+#         else:
+#             return render(request, "customers/partials/details.html", context)
 
 
 
