@@ -17,6 +17,7 @@ from .views import (
     view_bills_payable,
     add_daily_sale,
     view_daily_sales,
+    ar_aging
 )
 
 app_name='finance'
@@ -36,6 +37,7 @@ urlpatterns = [
     path('view_bills/', view_bills_payable, name='view_bills_payable'),
     path('daily_sale/', add_daily_sale, name='add_daily_sale'),
     path('view_sales/', view_daily_sales, name='view_daily_sales'),
+    path('ar_aging/', ar_aging, name='ar_aging'),
     
         
 

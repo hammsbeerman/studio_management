@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<center><h4>A/R Aging</h4></center>
+    
+    
+    
+
+      Total outstanding: {{ total_balance|floatformat:2 }}
+
+ 
+    
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col" class="">Customer</th>
+            <th scope="col" class="">Current</th>
+            <th scope="col" class="">1-30</th>
+            <th scope="col" class="">31-60</th>
+            <th scope="col" class="">61-90</th>
+            <th scope="col" class="">> 90</th>
+            <th scope="col" class="">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+          {% for x in individual_balances %}
+            {% if x.total_balance %}
+              <tr>
+                <td>{{ x.hr_customer }}</td>
+                <td>{{ x.current|floatformat:2 }}</td>
+                <td>{{ x.thirty|floatformat:2 }}</td>
+                <td>{{ x.sixty|floatformat:2 }}</td>
+                <td>{{ x.ninety|floatformat:2 }}</td>
+                <td>{{ x.onetwenty|floatformat:2 }}<td>
+                <td>{{ x.total_balance|floatformat:2 }}</td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        </tbody>
+      </table>
+
+              
+      
+
+
+
+
+
+
+
+
+<div id="modal" class="modal fade">
+    <div id="dialog" class="modal-dialog" hx-target="this"></div>
+  </div>
+  
+  <div id="modal2" class="modal fade">
+    <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
+  </div>
+
+
+
+
+
+{% endblock content %}
+
+
+
+
+{% block scripts %}
+
+
+<script>
+
+
+    $(document).ready(function () {
+      $("#customers").select2();
+      $('#customers').on('select2:select', (e) => {
+        htmx.trigger("#customers", "change")
+      });
+    })
+
+
+    $(document).ready(function() {
+      $(window).keydown(function(event){
+        if(event.keyCode == 13) {
+          event.preventDefault();
+          return false;
+        }
+      });
+    });
+
+
+    const modal = new bootstrap.Modal(document.getElementById("modal"))
+
+    htmx.on("htmx:afterSwap", (e) => {
+      // Response targeting #dialog => show the modal
+      if (e.detail.target.id == "dialog") {
+        modal.show()
+      }
+    })
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      // Empty response targeting #dialog => hide the modal
+      if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+        modal.hide()
+        e.detail.shouldSwap = false
+      }
+    })
+
+    htmx.on("hidden.bs.modal", () => {
+      document.getElementById("dialog").innerHTML = ""
+    })
+    
+
+    const modal2 = new bootstrap.Modal(document.getElementById("modal2"))
+
+    htmx.on("htmx:afterSwap", (e) => {
+      // Response targeting #dialog => show the modal
+      if (e.detail.target.id == "dialog2") {
+        modal2.show()
+      }
+    })
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      // Empty response targeting #dialog => hide the modal
+      if (e.detail.target.id == "dialog2" && !e.detail.xhr.response) {
+        modal2.hide()
+        e.detail.shouldSwap = false
+      }
+    })
+
+    htmx.on("hidden.bs.modal", () => {
+      document.getElementById("dialog2").innerHTML = ""
+    })
+
+
+</script>
+
+{% endblock %}
