@@ -1494,57 +1494,51 @@ def quote_to_workorder(request):
         item.workorder = workorder_number
         item.quote = 0
         item.save()
-    except:
-        pass
+    except Exception as e:
+        raise e
     print(quote)
     try:
         items = WorkorderItem.objects.filter(workorder_hr = quote)
         for item in items:
             item.workorder_hr = workorder_number
             item.save()
-    except:
-        print('pass')
-        pass
+    except Exception as e:
+        raise e
     try:
-        items = KruegerJobDetail.objects.filter(workorder_hr = quote)
+        items = KruegerJobDetail.objects.filter(hr_workorder = quote)
         for item in items:
-            item.workorder_hr = workorder_number
+            item.hr_workorder = workorder_number
             item.save()
-    except:
-            print('pass')
-            pass
+    except Exception as e:
+        raise e
     try:
-        items = WideFormat.objects.filter(workorder_hr = quote)
+        items = WideFormat.objects.filter(hr_workorder = quote)
         for item in items:
-            item.workorder_hr = workorder_number
+            item.hr_workorder = workorder_number
             item.save()
-    except:
-            print('pass')
-            pass
+    except Exception as e:
+        raise e
     try:
-        items = OrderOut.objects.filter(workorder_hr = quote)
+        items = OrderOut.objects.filter(hr_workorder = quote)
         for item in items:
-            item.workorder_hr = workorder_number
+            item.hr_workorder = workorder_number
             item.save()
-    except:
-        print('pass')
-        pass
+    except Exception as e:
+        raise e
     try:
-        items = SetPrice.objects.filter(workorder_hr = quote)
+        items = SetPrice.objects.filter(hr_workorder = quote)
         for item in items:
-            item.workorder_hr = workorder_number
+            item.hr_workorder = workorder_number
             item.save()
-    except:
-        print('pass')
-        pass
+    except Exception as e:
+        raise e
     try:
-        items = Photography.objects.filter(workorder_hr = quote)
+        items = Photography.objects.filter(hr_workorder = quote)
         for item in items:
-            item.workorder_hr = workorder_number
+            item.hr_workorder = workorder_number
             item.save()
-    except:
-        print('pass')
-        pass
+    except Exception as e:
+        raise e
     print(n.value)
     inc = int('1')
     n.value = n.value + inc

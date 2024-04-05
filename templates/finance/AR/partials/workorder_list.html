@@ -20,6 +20,8 @@
               <thead>
                 <tr>
                   <th scope="col" class="">Workorder</th>
+                  <th scope="col" class="">Printleader</th>
+                  <th scope="col" class="">LK #</th>
                   <th scope="col" class="">Description</th>
                   <th scope="col" class="">Total Bill</th>
                   <th scope="col" class="">Amount Paid</th>
@@ -34,11 +36,13 @@
                 <form hx-post="{% url 'finance:apply_payment' %}">
                   {% csrf_token %}
                   <td>{{ x.workorder }}</td>
+                  <td>{% if x.printleader_workorder %}{{x.printleader_workorder}}{% endif %}</td>
+                  <td>{% if x.lk_workorder %}{{x.lk_workorder}}{% endif %}</td>
                   <td>{{ x.description }}</td>
                   <td>{{ x.total_balance }}</td>
                   <td>{{ x.amount_paid }}</td>
                   <td>{{ x.open_balance }}</td>
-                  <td><input type="text" name="partial_payment" class="text form-control" id="partial_payment" size="50"><td>
+                  <td><input type="text" name="partial_payment" class="text form-control" id="partial_payment" size="10"><td>
                   <td>
                     <input type="hidden" id="pk" name="pk" value="{{x.id}}">
                     <input type="hidden" id="customer" name="customer" value="{{customer.id}}">
@@ -49,9 +53,12 @@
                 {% endfor %}
               </tbody>
             </table>
-            <button hx-trigger="click" hx-get="{% url 'finance:closed_workorders' cust=customer.id %}" hx-target="#workorders" class="btn btn-danger">Reverse Payment</button>
           </div>
-          Negative partial payments will reverse payment
+          <div class="row">
+            <div class="col-sm-6"><button hx-trigger="click" hx-get="{% url 'finance:closed_workorders' cust=customer.id %}" hx-target="#workorders" class="btn btn-danger">Reverse Payment</button></div>
+            <div class="col-sm-6"><button hx-get="{% url 'finance:apply_other' %}" hx-target="#dialog" class="btn btn-success">Apply Elsewhere</button></div>
+          </div>
+            Negative partial payments will reverse payment
             
 
          

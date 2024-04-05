@@ -42,7 +42,7 @@ def open_workorders(request):
         except:
             return HttpResponse(status=204, headers={'HX-Trigger': 'Payment Recieved'})
         try:
-            workorders = Workorder.objects.filter(customer_id = customer).exclude(total_balance=0).exclude(paid_in_full=1).order_by("-workorder")
+            workorders = Workorder.objects.filter(customer_id = customer).exclude(billed=0).exclude(total_balance=0).exclude(paid_in_full=1).order_by("-workorder")
         except:
             workorders = 'No Workorders Available'
     print(workorders)
@@ -268,7 +268,8 @@ def unapply_payment(request):
         Customer.objects.filter(pk=cust).update(credit = credit, open_balance = open_balance)
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
                 
-
+def apply_other(request):
+    pass
 
 
 def add_bill_payable(request):
