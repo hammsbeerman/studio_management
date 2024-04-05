@@ -49,3 +49,17 @@ class Payments(models.Model):
 
     def __str__(self):
         return self.customer.company_name
+    
+class Araging(models.Model):
+    customer = models.OneToOneField(Customer, blank=False, null=True, unique=True, on_delete=models.SET_NULL)
+    hr_customer = models.CharField('Customer', max_length=500, blank=True, null=True)
+    date = models.DateField(auto_now=False, auto_now_add=False, blank=False, null=False)
+    current = models.DecimalField('Current', max_digits=10, decimal_places=2, blank=True, null=True)
+    thirty = models.DecimalField('Thirty', max_digits=10, decimal_places=2, blank=True, null=True)
+    sixty = models.DecimalField('Sixty', max_digits=10, decimal_places=2, blank=True, null=True)
+    ninety = models.DecimalField('Ninety', max_digits=10, decimal_places=2, blank=True, null=True)
+    onetwenty = models.DecimalField('One Twenty', max_digits=10, decimal_places=2, blank=True, null=True)
+    total = models.DecimalField('Total', max_digits=10, decimal_places=2, blank=True, null=True)
+
+    def __str__(self):
+        return self.customer.company_name

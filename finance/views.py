@@ -7,7 +7,7 @@ from django.db.models import Avg, Count, Min, Sum, Subquery, Case, When, Value, 
 from django.db.models import Q
 from django.utils import timezone
 import logging
-from .models import AccountsPayable, DailySales
+from .models import AccountsPayable, DailySales, Araging
 from .forms import AccountsPayableForm, DailySalesForm
 from customers.models import Customer
 from workorders.models import Workorder
@@ -317,38 +317,142 @@ def complete_not_billed(request):
 
 
 def ar_aging(request):
-    customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
-    current = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).values('hr_customer').annotate(current_balance=Sum('open_balance'))
-    thirty = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lte = 30).exclude(aging__gt = 59).values('hr_customer').annotate(thirty=Sum('open_balance'))
-    sixty = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).values('hr_customer').annotate(sixty=Sum('open_balance'))
-    ninety = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).values('hr_customer').annotate(ninety=Sum('open_balance'))
-    onetwenty = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).values('hr_customer').annotate(onetwenty=Sum('open_balance'))
-    total = customers.all().values('hr_customer').annotate(total_balance=Sum('open_balance'))
-
-    #total_balance = Workorder.objects.aggregate(total_balance=Sum('open_balance'))['total_balance'] or 0
-    total_balance = customers.aggregate(total_balance=Sum('open_balance'))['total_balance'] or 0
-
-    # Aggregate individual balances for each customer
-    individual_balances = Workorder.objects.values('hr_customer').annotate(
-        #total_balance=Sum('open_balance'),
-        total_balance=Subquery(total.filter(hr_customer=models.OuterRef('hr_customer')).values('total_balance')[:1]),
-        current=Subquery(current.filter(hr_customer=models.OuterRef('hr_customer')).values('current_balance')[:1]),
-        #current=Subquery(current),
-        thirty=Subquery(thirty.filter(hr_customer=models.OuterRef('hr_customer')).values('thirty')[:1]),
-        sixty=Subquery(sixty.filter(hr_customer=models.OuterRef('hr_customer')).values('sixty')[:1]),
-        ninety=Subquery(ninety.filter(hr_customer=models.OuterRef('hr_customer')).values('ninety')[:1]),
-        onetwenty=Subquery(onetwenty.filter(hr_customer=models.OuterRef('hr_customer')).values('onetwenty')[:1]),
-        ).order_by('hr_customer')
-    
-    for x in individual_balances:
-        print(x)
-
+    #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
+    customers = Customer.objects.all()
+    workorders = Workorder.objects.all()
+    total_balance = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
+    for x in customers:
+        if Workorder.objects.filter(customer_id = x.id).exists():
+            print()
+            current = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
+            current = list(current.values())[0]
+            thirty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lte = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
+            try: 
+                thirty = list(thirty.values())[0]
+            except:
+                thirty = 0
+            sixty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
+            try:
+                sixty = list(sixty.values())[0]
+            except:
+                sixty = 0
+            ninety = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
+            try:
+                ninety = list(ninety.values())[0]
+            except:
+                ninety = 0
+            onetwenty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
+            try:
+                onetwenty = list(onetwenty.values())[0]
+            except:
+                onetwenty = 0
+            total = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
+            try:
+                total = list(total.values())[0]
+            except:
+                total = 0
+            today = timezone.now()
+            try: 
+                obj = Araging.objects.get(customer_id=x.id)
+                Araging.objects.filter(customer_id=x.id).update(hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
+            except:
+                obj = Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
+                obj.save()
+    ar = Araging.objects.all()
+    #print(ar)
     context = {
-            'customers':customers,
-            'total_balance':total_balance,
-            'individual_balances':individual_balances,
-        }
+        'total_balance':total_balance,
+        'ar': ar
+    }
     return render(request, 'finance/reports/ar_aging.html', context)
+            # obj, created = Araging.objects.update_or_create(
+            #     customer_id=x.id,
+            #     hr_customer=x.company_name,
+            #     date=today,
+            #     current=current
+            # )
+        #current = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).values('hr_customer', 'customer_id').annotate(current_balance=Sum('open_balance'))
+        #subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
+        
+        #current = customers.filter(customer_id = x.id).aggregate(Sum('open_balance'))
+        # current = list(current.values())[0]
+        # print(current)
+        #print(current.current_bal)
+        #print(current.sum)
+        #print(open_balance__sum)
+        #total.total_with_tax__sum
+        #print(current)
+
+    #     total_invoice = WorkorderItem.objects.filter(workorder_id=workorder).exclude(billable=0).aggregate(
+    #         sum=Sum('total_with_tax'),
+    #         tax=Sum('tax_amount'),
+    #         )
+    # #total_invoice = list(WorkorderItem.objects.aggregate(Sum('total_with_tax')).values())[0]
+    # total = list(total_invoice.values())[0]
+    # if not total:
+    #     total = 0
+    # total = round(total, 2)
+    # tax = list(total_invoice.values())[1]
+
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def ar_aging(request):
+#     customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
+#     current = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).values('hr_customer').annotate(current_balance=Sum('open_balance'))
+#     thirty = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lte = 30).exclude(aging__gt = 59).values('hr_customer').annotate(thirty=Sum('open_balance'))
+#     sixty = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).values('hr_customer').annotate(sixty=Sum('open_balance'))
+#     ninety = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).values('hr_customer').annotate(ninety=Sum('open_balance'))
+#     onetwenty = customers.all().exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).values('hr_customer').annotate(onetwenty=Sum('open_balance'))
+#     total = customers.all().values('hr_customer').annotate(total_balance=Sum('open_balance'))
+
+#     #total_balance = Workorder.objects.aggregate(total_balance=Sum('open_balance'))['total_balance'] or 0
+#     total_balance = customers.aggregate(total_balance=Sum('open_balance'))['total_balance'] or 0
+
+#     # Aggregate individual balances for each customer
+#     individual_balances = Workorder.objects.values('hr_customer').annotate(
+#         #total_balance=Sum('open_balance'),
+#         total_balance=Subquery(total.filter(hr_customer=models.OuterRef('hr_customer')).values('total_balance')[:1]),
+#         current=Subquery(current.filter(hr_customer=models.OuterRef('hr_customer')).values('current_balance')[:1]),
+#         #current=Subquery(current),
+#         thirty=Subquery(thirty.filter(hr_customer=models.OuterRef('hr_customer')).values('thirty')[:1]),
+#         sixty=Subquery(sixty.filter(hr_customer=models.OuterRef('hr_customer')).values('sixty')[:1]),
+#         ninety=Subquery(ninety.filter(hr_customer=models.OuterRef('hr_customer')).values('ninety')[:1]),
+#         onetwenty=Subquery(onetwenty.filter(hr_customer=models.OuterRef('hr_customer')).values('onetwenty')[:1]),
+#         ).order_by('hr_customer')
+    
+#     for x in individual_balances:
+#         print(x)
+
+#     context = {
+#             'customers':customers,
+#             'total_balance':total_balance,
+#             'individual_balances':individual_balances,
+#         }
+#     return render(request, 'finance/reports/ar_aging.html', context)
 
 
 

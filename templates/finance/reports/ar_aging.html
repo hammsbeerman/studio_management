@@ -9,7 +9,7 @@
     
     
 
-      Total outstanding: {{ total_balance|floatformat:2 }}
+      Total outstanding: {{ total_balance.open_balance__sum|floatformat:2 }}
 
  
     
@@ -22,13 +22,14 @@
             <th scope="col" class="">31-60</th>
             <th scope="col" class="">61-90</th>
             <th scope="col" class="">> 90</th>
+            <th scope="col" class=""></th>
             <th scope="col" class="">Total</th>
           </tr>
         </thead>
         <tbody>
           
-          {% for x in individual_balances %}
-            {% if x.total_balance %}
+          {% for x in ar %}
+            {% if x.total %}
               <tr>
                 <td>{{ x.hr_customer }}</td>
                 <td>{{ x.current|floatformat:2 }}</td>
@@ -36,7 +37,7 @@
                 <td>{{ x.sixty|floatformat:2 }}</td>
                 <td>{{ x.ninety|floatformat:2 }}</td>
                 <td>{{ x.onetwenty|floatformat:2 }}<td>
-                <td>{{ x.total_balance|floatformat:2 }}</td>
+                <td>{{ x.total|floatformat:2 }}</td>
               </tr>
             {% endif %}
           {% endfor %}
