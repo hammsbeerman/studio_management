@@ -316,10 +316,30 @@ def complete_not_billed(request):
     return render(request, 'finance/reports/complete_not_billed.html', context)
 
 
+aging = Workorder.objects.all().exclude(billed=0).exclude(paid_in_full=1)
+#         today = timezone.now()
+#         for x in aging:
+#             if not x.date_billed:
+#                 x.date_billed = today
+#             age = x.date_billed - today
+#             age = abs((age).days)
+#             print(type(age))
+#             Workorder.objects.filter(pk=x.pk).update(aging = age)
+
+
 def ar_aging(request):
     #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
+    today = timezone.now()
     customers = Customer.objects.all()
-    workorders = Workorder.objects.all()
+    workorders = Workorder.objects.filter().exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1)
+    for x in workorders:
+        #print(x.id)
+        if not x.date_billed:
+            x.date_billed = today
+        age = x.date_billed - today
+        age = abs((age).days)
+        #print(age)
+        Workorder.objects.filter(pk=x.pk).update(aging = age)
     total_balance = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
     for x in customers:
         if Workorder.objects.filter(customer_id = x.id).exists():
@@ -351,7 +371,6 @@ def ar_aging(request):
                 total = list(total.values())[0]
             except:
                 total = 0
-            today = timezone.now()
             try: 
                 obj = Araging.objects.get(customer_id=x.id)
                 Araging.objects.filter(customer_id=x.id).update(hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
