@@ -56,7 +56,7 @@
           </div>
           <div class="row">
             <div class="col-sm-6"><button hx-trigger="click" hx-get="{% url 'finance:closed_workorders' cust=customer.id %}" hx-target="#workorders" class="btn btn-danger">Reverse Payment</button></div>
-            <div class="col-sm-6"><button hx-get="{% url 'finance:apply_other' %}" hx-target="#dialog" class="btn btn-success">Apply Elsewhere</button></div>
+            <div class="col-sm-6"><button hx-get="{% url 'finance:apply_other' cust=customer.id %}" hx-target="#dialog" class="btn btn-success">Apply Elsewhere</button></div>
           </div>
             Negative partial payments will reverse payment
             

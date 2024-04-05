@@ -41,7 +41,7 @@ urlpatterns = [
     path('view_sales/', view_daily_sales, name='view_daily_sales'),
     path('ar_aging/', ar_aging, name='ar_aging'),
     path('complete_not_billed/', complete_not_billed, name='complete_not_billed'),
-    path('apply_other/', apply_other, name='apply_other'),
+    path('apply_other/<int:cust>/', apply_other, name='apply_other'),
 
     
         

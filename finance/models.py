@@ -63,3 +63,13 @@ class Araging(models.Model):
 
     def __str__(self):
         return self.customer.company_name
+    
+class Appliedother(models.Model):
+    date= models.DateField(auto_now=False, auto_now_add=False, blank=False, null=False)
+    customer = models.ForeignKey(Customer, blank=False, null=False, on_delete=models.DO_NOTHING)
+    amount = models.DecimalField('Amount', max_digits=10, decimal_places=2, blank=True, null=True)
+    memo = models.CharField('Memo', max_length=500, blank=True, null=True)
+
+
+    def __str__(self):
+        return self.customer.company_name

@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.utils import timezone
 import logging
 from .models import AccountsPayable, DailySales, Araging
-from .forms import AccountsPayableForm, DailySalesForm
+from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm
 from customers.models import Customer
 from workorders.models import Workorder
 from .forms import PaymentForm
@@ -268,8 +268,40 @@ def unapply_payment(request):
         Customer.objects.filter(pk=cust).update(credit = credit, open_balance = open_balance)
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
                 
-def apply_other(request):
-    pass
+
+@login_required
+def apply_other(request, cust=None):
+    if request.method == "GET":
+        customer = cust
+        print(customer)
+    if request.method == "POST":
+            print(1)
+            customer = request.POST.get('customer')
+            print(customer)
+            form = AppliedElsewhereForm(request.POST)
+            if form.is_valid():
+                obj = form.save(commit=False)
+                obj.customer_id = customer
+                obj.save()
+                print(customer)
+                cust = Customer.objects.get(id=customer)
+                try:
+                    credit = cust.credit - obj.amount
+                    print(1)
+                except: 
+                    credit = obj.amount
+                    print(2)
+                Customer.objects.filter(pk=customer).update(credit=credit)
+                print(3)
+                return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+            else:
+                print(form.errors)
+    form = AppliedElsewhereForm
+    context = {
+        'form': form,
+        'customer':customer,
+    }
+    return render(request, 'finance/AR/modals/apply_elsewhere.html', context)
 
 
 def add_bill_payable(request):
