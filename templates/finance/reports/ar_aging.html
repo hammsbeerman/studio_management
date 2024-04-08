@@ -31,7 +31,7 @@
           {% for x in ar %}
             {% if x.total %}
               <tr>
-                <td>{{ x.hr_customer }}</td>
+                <td><a href='{{ x.get_absolute_url }}'>{{ x.hr_customer }}</a></td>
                 <td>{{ x.current|floatformat:2 }}</td>
                 <td>{{ x.thirty|floatformat:2 }}</td>
                 <td>{{ x.sixty|floatformat:2 }}</td>
