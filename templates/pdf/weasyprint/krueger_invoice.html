@@ -187,9 +187,9 @@ margin-top: 25px;
     border: 1px solid #000;
 }
 .single_header.invoice_header_r table {
-      border: 1px solid #000;
+    border: 1px solid #000;
     float: right;
-    border: 1px solid #999;
+    border: 1px solid #000;
     overflow: hidden;
     margin-top: 0;
 }
@@ -228,8 +228,8 @@ margin-top: 25px;
 			<th colspan="2">invoice Date</th>
 			</tr>
 			<tr>
-			<td colspan="2" class="tc border">28478</td>
-			<td colspan="2" class="tc border">01/11/2024</td>
+			<td colspan="2">{{workorder.workorder}}</td>
+			<td colspan="2">{{date|date:"M d, Y"}}</td>
 			</tr>
 			<tr>
 			<td colspan="2">Sales Rep:</td>
@@ -237,7 +237,7 @@ margin-top: 25px;
 			</tr>
 			<tr>
 			<td colspan="2">Customer#:</td>
-			<td colspan="2">00615</td>
+			<td colspan="2">{{ customer.id }}</td>
 			</tr>
 			<tr>
 			<td colspan="2">Page:</td>
@@ -251,12 +251,10 @@ margin-top: 25px;
 	<div class="header header_bottom2 fix" spellcheck="false" contenteditable="false">
 		<div class="single_header header_left">
 		<div class="header_title">BILL TO:</div>
-		<table style="width:100%;">
-				<tr><td>Contact:</td><td>Demo Dest</td></tr>
-				<tr><td>Phone:</td><td>0123456789</td></tr>
-				<tr><td>Fax:</td><td>0123456789</td></tr>
-				<tr><td>Sales Rep:</td><td>House Account</td></tr>
-			</table>
+		{{customer.company_name}}<br/>
+          {% if customer.address1 %}{{customer.address1}}<br/>{% else %} <p>{% endif %}
+          {% if customer.address2 is not None %}{{customer.address2}}<br/>{% else %} <p>{% endif %}
+          {% if customer.city %}{{customer.city}}, {{customer.state}} {{customer.zipcode}}<br/>{% else %} <p>{% endif %}
 		
 		
 		</div>
@@ -264,13 +262,10 @@ margin-top: 25px;
 		<div class="single_header header_right">
 			
 			<div class="header_title">SHIP TO:</div>
-			<table style="width:100%;">
-			
-				<tr><td>Contact:</td><td>Demo Dest</td></tr>
-				<tr><td>Phone:</td><td>0123456789</td></tr>
-				<tr><td>Fax:</td><td>0123456789</td></tr>
-				<tr><td>Sales Rep:</td><td>House Account</td></tr>
-			</table>
+			{{customer.company_name}}<br/>
+          {% if customer.address1 %}{{customer.address1}}<br/>{% endif %}
+          {% if customer.address2 is not None %}{{customer.address2}}<br/>{% endif %}
+          {% if customer.city %}{{customer.city}}, {{customer.state}} {{customer.zipcode}}{% endif %}<br/>
 		</div>
 	</div>
 	
@@ -283,20 +278,18 @@ margin-top: 25px;
 	<table class="last-table">
 		<tbody>
 			<tr>
-			  <th>Customer's Terms</th>
-			  <th>Customer's Phone</th>
-			  <th>Customer's Fax</th>
+			  <th>Terms</th>
 			  <th>Customer Contact</th>
+        <th>Phone</th>
 			  <th>Purchase Order #</th>
-			  <th>Customer Service Rep.</th>
+			  <th>Email</th>
 			</tr>	
 			<tr>
-				<td>Net 30 Days</td>
-				<td>0123456789</td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td>E-Mail</td>
+				<td>Net 30</td>
+				<td>{{contact.fname}} {{contact.lname}}</td>
+				<td>{{contact.phone1}}</td>
+				<td>{{workorder.po_number}}</td>
+				<td>{{contact.email}}</td>
 			</tr>
 		</tbody>
 	</table>	
@@ -308,49 +301,30 @@ margin-top: 25px;
         <table>
           <thead>
 			<tr>
-			  <th>Quantity</th>
-              <th>Description</th>
-              <th>Tax</th>
-              <th class="tr">Sub-Total</th>
-            </tr>
+			    <th>Quantity</th>
+          <th>Description</th>
+          <th>Unit Price</th>
+          <th>Total Price</th>
+          <th>Tax</th>
+      </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>500</td>
-              <td>Envelopes - #5022C <br>Dual Window Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
-            </tr>
-            <tr>
-              <td>500</td>
-              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
-            </tr>
-            <tr>
-              <td>500</td>
-              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
-            </tr>
-            <tr>
-              <td>500</td>
-              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
-            </tr>
-            <tr>
-              <td>500</td>
-              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
-            </tr>
-            <tr>
-              <td>500</td>
-              <td>Envelopes - #5022C Dual Window <br>Self Sealing 24 lb. white wove finish(NOT PRINTED)</td>
-              <td>N</td>
-              <td>192.12</td>
-            </tr>
+            {% for item in items %}
+              {% if item.child == 0 %}
+              <tr>
+                <td>{% if item.quantity%}{% if item.show_qty_on_wo %}{{item.quantity}}{% endif %}{% endif %}</td>
+                <td>{% if item.description%}{{item.description}}{% endif %}</td>
+                <td>{% if item.unit_price %}{{item.unit_price|floatformat:4}}{% endif %}</td>
+                <td>{% if item.absolute_price %}{% if item.billable %}{% if item.absolute_price %}{{item.absolute_price}}{% else %}{{item.total}}{% endif %}{% else %} -- {% endif %}{% endif %}</td>
+                <td>{% if item.absolute_price %}{% if item.tax_exempt %}--{% else %}T{%endif%}{% endif %}</td>          
+              </tr>
+              {% if item.show_notes %}
+              <tr>
+                <td colspan='5'>{{item.notes}}</td>
+              </tr>
+              {% endif %}
+              {% endif %}
+            {% endfor %}
 
 
 			
