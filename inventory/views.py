@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from decimal import Decimal
 from .forms import AddVendorForm, AddInventoryItemForm
 from .models import Vendor
 from inventory.models import Inventory
@@ -76,20 +77,23 @@ def add_inventory_item(request):
     form = AddInventoryItemForm(request.POST or None)
     if request.user.is_authenticated:
         if request.method == "POST":
-            updated = timezone.now()
+            #updated = timezone.now()
             if form.is_valid():
                 item = request.POST.get('item')
                 obj = form.save(commit=False)
                 price_per_m = obj.price_per_m
                 price_per_m = float(price_per_m)
-                price_per_m = int(price_per_m)
+                price_per_m = Decimal.from_float(price_per_m)
+                price_per_m = round(price_per_m, 2)
+                print(obj.invoice_date)
+                #price_per_m = int(price_per_m)
                 price_ea = price_per_m / 1000
                 print(price_per_m)
                 print(price_ea)
                 #item = get_object_or_404(Inventory, pk=test)
                 #print (item.name)
-                obj.save()
-                Inventory.objects.filter(pk=item).update(price_per_m=price_per_m, unit_cost=price_ea, updated=updated)
+                #obj.save()
+                Inventory.objects.filter(pk=item).update(price_per_m=price_per_m, unit_cost=price_ea, updated=obj.invoice_date)
 
 
                 #messages.success(request, "Record Added...")

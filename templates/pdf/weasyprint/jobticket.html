@@ -487,7 +487,7 @@ display: flex;
             {% if item.perf_number_of_pieces %}
             <tr>  
                 <td>Perf:{{item.perf_number_of_pieces}}</td>
-                <td>Qty: </td><td>{{ item.perf_number_of_pieces }}</td>
+                <td>Qty: {{ item.perf_number_of_pieces }}</td><td></td>
             </tr>
             <tr>
                 {% if item.perf_note %}
@@ -499,7 +499,7 @@ display: flex;
             {% if item.number_price_to_number %}
             <tr>  
                 <td>Add Numbering:</td>
-                <td>Qty: </td><td>{{ item.number_number_of_pieces }}</td>
+                <td>Qty: {{ item.number_number_of_pieces }}</td><td></td>
             </tr>
             <tr>
                 {% if item.numbering_note %}
