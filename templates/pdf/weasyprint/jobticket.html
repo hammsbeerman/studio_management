@@ -269,6 +269,10 @@ display: flex;
     padding-bottom: 3px;
 }
 
+.task_table tr td{
+    padding: 15px;
+}
+
 .task_row {
     margin-left:-5px;
     margin-right:-5px;
@@ -422,10 +426,10 @@ display: flex;
     <div class="column">
         <table class="press_table">
             <tr>
-                <td>Side 1:</td><td>xx</td>
+                <td>Side 1:</td><td>{{ item.side_1_inktype}}</td>
             </tr>
             <tr>
-                <td>Side 2:</td><td>xx</td>
+                <td>Side 2:</td><td>{{ item.side_1_inktype}}</td>
             </tr>
         </table>
     </div>
@@ -449,8 +453,10 @@ display: flex;
                 <td></td>
             </tr>
             <tr>
+                {% if item.mailmerge_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.mailmerge_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
                     
@@ -460,8 +466,10 @@ display: flex;
                 <td>Yes</td><td></td>
             </tr>
             <tr>
+                {% if item.pad_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.pad_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             {% if item.step_NCR_compound_price %}
@@ -470,8 +478,10 @@ display: flex;
                 <td>Yes</td><td></td>
             </tr>
             <tr>
+                {% if item.pad_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.pad_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             {% if item.perf_number_of_pieces %}
@@ -480,8 +490,10 @@ display: flex;
                 <td>Qty: </td><td>{{ item.perf_number_of_pieces }}</td>
             </tr>
             <tr>
+                {% if item.perf_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.perf_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             {% if item.number_price_to_number %}
@@ -490,8 +502,10 @@ display: flex;
                 <td>Qty: </td><td>{{ item.number_number_of_pieces }}</td>
             </tr>
             <tr>
+                {% if item.numbering_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.numbering_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             {% if item.step_insert_wrap_around_price %}
@@ -500,8 +514,10 @@ display: flex;
                 <td>Yes</td><td></td>
             </tr>
             <tr>
+                {% if item.wraparound_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.wraparound_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             {% if item.step_drill_price %}
@@ -510,38 +526,46 @@ display: flex;
                 <td>Yes</td><td></td>
             </tr>
             <tr>
+                {% if item.drill_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.drill_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             {% if item.staple_staples_per_piece %}
             <tr>  
                 <td>Staple:</td>
-                <td>Qty: </td><td>{{ item.staple_number_of_pieces }}</td>
+                <td>Qty: {{ item.staple_number_of_pieces }}</td>
             </tr>
             <tr>
+                {% if item.staple_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.staple_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             {% if item.fold_number_to_fold %}
             <tr>  
                 <td>Fold:</td>
-                <td>Qty: </td><td>{{ item.fold_number_to_fold }}</td>
+                <td>Qty: {{ item.fold_number_to_fold }}</td><td></td>
             </tr>
             <tr>
+                {% if item.fold_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.fold_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             {% if item.tabs_number_of_pieces > 0 %}
             <tr>  
                 <td>Tab: {{item.tabs_number_of_pieces }}</td>
-                <td>Qty: {{ item.tabs_number_of_pieces }}</td><td></td>
+                <td>Qty: {{ item.tabs_number_of_pieces }}</td>
             </tr>
             <tr>
+                {% if item.tab_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.tab_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             <tr>  
@@ -549,8 +573,10 @@ display: flex;
                 <td>Yes</td><td></td>
             </tr>
             <tr>
+                {% if item.bulkmail_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.bulkmail_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             <tr>  
@@ -558,8 +584,10 @@ display: flex;
                 <td>{{ item.misc1_description}}</td><td></td>
             </tr>
             <tr>
+                {% if item.misc1_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.misc1_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             <tr>  
@@ -567,8 +595,10 @@ display: flex;
                 <td>{{ item.misc2_description}}</td><td></td>
             </tr>
             <tr>
+                {% if item.misc2_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.misc2_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             <tr>  
@@ -576,8 +606,10 @@ display: flex;
                 <td>{{ item.misc3_description}}</td><td></td>
             </tr>
             <tr>
+                {% if item.misc3_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.misc3_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
             <tr>  
@@ -585,8 +617,10 @@ display: flex;
                 <td>{{ item.misc4_description}}</td><td></td>
             </tr>
             <tr>
+                {% if item.misc4_note %}
                 <td>Notes:</td>
                 <td colspan = "2">{{ item.misc4_note }}</td>
+                {% endif %}
             </tr>
             {% endif %}
         </table>
