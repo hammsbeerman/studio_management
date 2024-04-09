@@ -92,7 +92,7 @@ def add_inventory_item(request):
                 print(price_ea)
                 #item = get_object_or_404(Inventory, pk=test)
                 #print (item.name)
-                #obj.save()
+                obj.save()
                 Inventory.objects.filter(pk=item).update(price_per_m=price_per_m, unit_cost=price_ea, updated=obj.invoice_date)
 
 
