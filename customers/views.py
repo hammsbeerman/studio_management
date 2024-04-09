@@ -36,12 +36,16 @@ def contacts(request):
     print('customer')
     print(customer)
     contact = Contact.objects.filter(customer=customer)
+    #history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:10].exclude(workorder=1111)
+    history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:10]
     context = {
         'customer': customer,
-        'contacts': contact
+        'contacts': contact,
+        'history': history,
         }
     #print(contacts)
     return render(request, 'customers/partials/contacts.html', context)
+
 
 @login_required
 def customers(request):

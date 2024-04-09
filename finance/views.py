@@ -431,9 +431,12 @@ def ar_aging(request):
                 except:
                     obj = Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
                     obj.save()
+    total_current = Araging.objects.filter().aggregate(Sum('current'))
+    print(total_current)
     ar = Araging.objects.all().order_by('hr_customer')
     #print(ar)
     context = {
+        'total_current':total_current,
         'total_balance':total_balance,
         'ar': ar
     }

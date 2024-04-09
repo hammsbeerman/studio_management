@@ -20,6 +20,19 @@
       <img src="{% static 'img/site/icons8-update-30.png' %}" style="width:20px;height:20px;">
       </div>
     </button>
-  {% endif %}
+{% endif %}
+
 
   </div>
+
+  {% if history%}
+  <b> Customer History:</b>
+  {% endif %}
+  <ul>
+    {% for x in  history %}
+    
+        <li><a href="{% url 'workorders:overview' id=x.workorder %}">{{ x.workorder }} 
+          {% if x.lk_workorder %} --{{ x.lk_workorder }} {% elif x.printleader_workorder %}  --{{x.printleader_workorder }} {% endif %} -- {{ x.description }}</a></li>
+    
+    {% endfor %}
+    </ul>
