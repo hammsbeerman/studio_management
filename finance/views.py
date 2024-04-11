@@ -400,7 +400,7 @@ def ar_aging(request):
                     current = list(current.values())[0]
                 except:
                     current = 0
-                thirty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lte = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
+                thirty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
                 try: 
                     thirty = list(thirty.values())[0]
                 except:
@@ -431,12 +431,22 @@ def ar_aging(request):
                 except:
                     obj = Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
                     obj.save()
-    total_current = Araging.objects.filter().aggregate(Sum('current'))
-    print(total_current)
     ar = Araging.objects.all().order_by('hr_customer')
+    #total_current = Araging.objects.filter().aggregate(Sum('current'))
+    total_current = ar.filter().aggregate(Sum('current'))
+    total_thirty = ar.filter().aggregate(Sum('thirty'))
+    total_sixty = ar.filter().aggregate(Sum('sixty'))
+    total_ninety = ar.filter().aggregate(Sum('ninety'))
+    total_onetwenty = ar.filter().aggregate(Sum('onetwenty'))
+    print(total_current)
+    
     #print(ar)
     context = {
         'total_current':total_current,
+        'total_thirty':total_thirty,
+        'total_sixty':total_sixty,
+        'total_ninety':total_ninety,
+        'total_onetwenty':total_onetwenty,
         'total_balance':total_balance,
         'ar': ar
     }

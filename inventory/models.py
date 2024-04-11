@@ -140,7 +140,7 @@ class SetPrice(models.Model):
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     paper_stock = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.SET_NULL)
     side_1_inktype = models.CharField('Side 1 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=True, null=True)
-    side_2_inktype = models.CharField('Side 1 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=True, null=True)
+    side_2_inktype = models.CharField('Side 2 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=True, null=True)
     quantity = models.PositiveIntegerField('Quantity', blank=True, null=True)
     unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)

@@ -1,4 +1,6 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 
@@ -9,7 +11,43 @@
 <form method="POST" action="{% url 'inventory:add_inventory_item' %}">
     {% csrf_token %}
 
-    {{ form.as_p }}
+    {{ form.invoice_date|as_crispy_field }}
+
+    
+
+    <select id="paper_stock"
+        name="paper_stock" 
+        hx-get="{% url 'krueger:paperprice' %}"
+        hx-trigger="change"
+        hx-target="#paperprices">
+
+        <option selected>Select Paper stock</option>
+        
+        
+        
+        {% for x in item %}
+            <option value="{{x.pk}}">{{ x.name }}</option>
+            {% endfor %}
+    </select>
+
+{{ form.vendor|as_crispy_field }}
+
+{{ form.vendor_item_number|as_crispy_field }}
+
+{{ form.invoice_number|as_crispy_field }}
+
+{{ form.shipped_uom|as_crispy_field }}
+
+{{ form.shipped_qty|as_crispy_field }}
+
+{{ form.internal_uom|as_crispy_field }}
+
+{{ form.internal_qty|as_crispy_field }}
+
+{{ form.price_per_m|as_crispy_field }}
+
+{{ form.total_price|as_crispy_field }}
+
 
 <br/>
     <button type="submit" class="btn btn-secondary">Add Inventory Item</button>
@@ -17,5 +55,24 @@
 </form>
 
 </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script src="{% static 'js/order_out_form.js' %}"></script>
+
+<script>
+
+  
+
+    $(document).ready(function () {
+      $("#paper_stock").select2();
+      $('#paper_stock').on('select2:select', (e) => {
+        htmx.trigger("#paper_stock", "change")
+      });
+    })
+
+</script>
 
 {% endblock %}

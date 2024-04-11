@@ -75,6 +75,7 @@ def detail(request, id):
 @login_required
 def add_inventory_item(request):
     form = AddInventoryItemForm(request.POST or None)
+    item = Inventory.objects.all().order_by('name')
     if request.user.is_authenticated:
         if request.method == "POST":
             #updated = timezone.now()
@@ -98,7 +99,11 @@ def add_inventory_item(request):
 
                 #messages.success(request, "Record Added...")
                 return redirect('inventory:add_inventory_item')
-        return render(request, 'inventory/items/add_inventory_item.html', {'form':form})
+        context = {
+            'form':form,
+            'item':item
+        }
+        return render(request, 'inventory/items/add_inventory_item.html', context)
     else:
         messages.success(request, "You must be logged in")
         return redirect('home')

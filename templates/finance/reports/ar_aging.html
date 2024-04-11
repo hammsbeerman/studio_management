@@ -22,7 +22,6 @@
             <th scope="col" class="">31-60</th>
             <th scope="col" class="">61-90</th>
             <th scope="col" class="">> 90</th>
-            <th scope="col" class=""></th>
             <th scope="col" class="">Total</th>
           </tr>
         </thead>
@@ -36,7 +35,7 @@
                 <td>{{ x.thirty|floatformat:2 }}</td>
                 <td>{{ x.sixty|floatformat:2 }}</td>
                 <td>{{ x.ninety|floatformat:2 }}</td>
-                <td>{{ x.onetwenty|floatformat:2 }}<td>
+                <td>{{ x.onetwenty|floatformat:2 }}</td>
                 <td>{{ x.total|floatformat:2 }}</td>
               </tr>
             {% endif %}
@@ -44,11 +43,11 @@
               <tr>
                 <td><b>Totals:</b></td>
                 <td>{{ total_current.current__sum|floatformat:2 }}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>{{ total_thirty.thirty__sum|floatformat:2 }}</td>
+                <td>{{ total_sixty.sixty__sum|floatformat:2 }}</td>
+                <td>{{ total_ninety.ninety__sum|floatformat:2 }}</td>
+                <td>{{ total_onetwenty.onetwenty__sum|floatformat:2 }}</td>
+                <td>{{ total_balance.open_balance__sum|floatformat:2 }}</td>
         </tbody>
       </table>
 
