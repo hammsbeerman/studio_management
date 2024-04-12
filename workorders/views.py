@@ -1520,7 +1520,7 @@ def quote_to_workorder(request):
         item.quoted_price = item.workorder_total
         item.workorder = workorder_number
         item.quote = 0
-        #item.save()
+        item.save()
     except Exception as e:
         raise e
     print(quote)
@@ -1570,7 +1570,7 @@ def quote_to_workorder(request):
     inc = int('1')
     n.value = n.value + inc
     print(n.value)
-    #n.save()
+    n.save()
     return redirect("workorders:overview", id=workorder_number)
 
 @login_required
