@@ -200,9 +200,9 @@ def workorder_list(request):
 
 @login_required
 def workorder_k_list(request):
-    workorder = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).order_by("-workorder")
-    completed = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")[:20]
-    quote = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
+    workorder = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    completed = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-workorder")[:20]
+    quote = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
     context = {
         'workorders': workorder,
         'completed': completed,
@@ -213,9 +213,9 @@ def workorder_k_list(request):
 
 @login_required
 def workorder_lk_list(request):
-    workorder = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).order_by("-workorder")
-    completed = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")[:20]
-    quote = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
+    workorder = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    completed = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-workorder")[:20]
+    quote = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
     context = {
         'workorders': workorder,
         'completed': completed,
@@ -244,12 +244,18 @@ def edit_workorder(request):
     #customer = request.GET.get('customer')
     if request.method == "POST":
         workorder_num = request.POST.get("workorder")
+        print(workorder_num)
+        customer = request.POST.get('customer')
+        customer = Customer.objects.get(pk=customer)
+        print(customer)
+        print(customer.company_name)
         obj = get_object_or_404(Workorder, pk=workorder_num)
         #obj = (Contact, pk=contact_num)
         form = WorkorderForm(request.POST, instance=obj)
         if form.is_valid():
                 print('valid')
                 form.save()
+                Workorder.objects.filter(pk=workorder_num).update(hr_customer = customer.company_name)
                 return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderInfoChanged'})
     else:
         obj = get_object_or_404(Workorder, id=workorder)
