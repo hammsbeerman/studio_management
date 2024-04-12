@@ -235,6 +235,12 @@ def quote_list(request):
 @login_required
 def edit_workorder(request):
     workorder = request.GET.get('workorder')
+    try:
+        void = Workorder.objects.get(id=workorder)
+    except:
+        void = ''
+    #void = void.void
+    print(workorder)
     #customer = request.GET.get('customer')
     if request.method == "POST":
         workorder_num = request.POST.get("workorder")
@@ -242,12 +248,14 @@ def edit_workorder(request):
         #obj = (Contact, pk=contact_num)
         form = WorkorderForm(request.POST, instance=obj)
         if form.is_valid():
+                print('valid')
                 form.save()
                 return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderInfoChanged'})
     else:
         obj = get_object_or_404(Workorder, id=workorder)
         form = WorkorderForm(instance=obj)
         context = {
+            'void': void,
             'form': form,
             'workorder': workorder
         }
@@ -1501,9 +1509,12 @@ def quote_to_workorder(request):
             return redirect("workorders:overview", id=item.workorder)
         print(item.workorder)
         print(item.quote)
+        print('total')
+        print(item.workorder_total)
+        item.quoted_price = item.workorder_total
         item.workorder = workorder_number
         item.quote = 0
-        item.save()
+        #item.save()
     except Exception as e:
         raise e
     print(quote)
@@ -1553,7 +1564,7 @@ def quote_to_workorder(request):
     inc = int('1')
     n.value = n.value + inc
     print(n.value)
-    n.save()
+    #n.save()
     return redirect("workorders:overview", id=workorder_number)
 
 @login_required
@@ -1786,3 +1797,56 @@ def task_notes(request, pk=None, task=None):
         'pk': pk,
     }
     return render(request, 'workorders/modals/task_notes.html', context) 
+
+@login_required
+def void_workorder(request, pk=None, void=None):
+    if request.method == "POST":
+        memo = request.POST.get('memo')
+        if not void:
+            void = request.POST.get('void') 
+            #if void is False:
+            #    void = 0
+        if pk is None: 
+            pk = request.POST.get('pk')
+        print('void')
+        print(void)
+        print('pk')
+        print(pk)       
+        #workorder = Workorder.objects.get(pk=pk)
+        if void == '0':
+            if not memo:
+                message = 'Memo is required'
+                context = {
+                    'message':message,
+                    'pk':pk,
+                }
+                return render (request, "workorders/modals/void_workorder_modal.html", context)
+                print('no memo')
+            Workorder.objects.filter(pk=pk).update(void = 1, billed = 0, void_memo=memo)
+            print(1)
+        if void == 1:
+            Workorder.objects.filter(pk=pk).update(void = 0, void_memo=memo)
+            print(2)
+        return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderVoid'})
+    #print('hello')
+    pk = request.GET.get('pk')
+    #print(pk)
+    context = {
+        'pk':pk,
+    }
+    return render (request, "workorders/modals/void_workorder_modal.html", context)
+
+@login_required
+def void_status(request):
+    pk = request.GET.get('workorder')
+    print('workorder')
+    print(pk)
+    workorder = Workorder.objects.get(pk=pk)
+    void = workorder.void
+    print('void')
+    print(void)
+    context = {
+        'void':void,
+    }
+    return render(request, 'workorders/partials/void_status.html', context)
+    

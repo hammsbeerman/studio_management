@@ -48,6 +48,8 @@ class Workorder(models.Model):
     aging = models.PositiveSmallIntegerField('Aging', blank=True, null=True)
     days_to_pay = models.CharField('Days to pay', max_length=100, blank=True, null=True)
     workorder_status = models.ForeignKey(JobStatus, blank=True, null=True, on_delete=models.SET_NULL)
+    void = models.BooleanField('Void Workorder', blank=False, null=False, default=False)
+    void_memo = models.CharField('Void Memo', max_length=100, blank=True, null=True)
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})

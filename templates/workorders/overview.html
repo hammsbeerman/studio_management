@@ -8,14 +8,17 @@
 <script src="{% static 'js/setprice_form.js' %}"></script>
 <div class="row">
   <div class="col-md-3 mb-sm-0">
-    <div id="customer-info-card" class="card" hx-trigger="CustomerAdded from:body" hx-get="{% url 'customers:cust_info'  %}?customer={{ customer.id }}" hx-target="this">
+    <div id="customer-info-card" class="card" hx-trigger="load, CustomerAdded from:body" hx-get="{% url 'customers:cust_info'  %}?customer={{ customer.id }}" hx-target="this">
       {% include 'customers/partials/customer_info.html' %}
       </div>
   </div>
   <div class="col-md-3">
-    <div id="contact-card" class="card" hx-trigger="ContactChanged from:body" hx-get="{% url 'customers:contact_info'  %}?contact={{ contact.id }}&workorder={{changeworkorder}}&customer={{changecustomer}}" hx-target="this">
+    <div id="contact-card" class="card" hx-trigger="load, ContactChanged from:body" hx-get="{% url 'customers:contact_info'  %}?contact={{ contact.id }}&workorder={{changeworkorder}}&customer={{changecustomer}}" hx-target="this">
       {% include 'customers/partials/contact_info.html' %}
       </div>
+      <div id="void-status" hx-trigger="load, WorkorderVoid from:body" hx-get="{% url 'workorders:void_status'  %}?workorder={{workorder.id}}" hx-target="this">
+        {% include 'workorders/partials/void_status.html' %}
+        </div>
   </div>
   <div class="col-md-3">
       <div id="workorder-info-card" class="card" hx-trigger="WorkorderInfoChanged from:body" hx-get="{% url 'workorders:workorder_info'  %}?workorder={{workorder.id}}" hx-target="this">
