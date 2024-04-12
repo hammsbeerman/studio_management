@@ -365,7 +365,7 @@ def ar_aging(request):
     today = timezone.now()
     customers = Customer.objects.all()
     ar = Araging.objects.all()
-    workorders = Workorder.objects.filter().exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1)
+    workorders = Workorder.objects.filter().exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1)
     for x in workorders:
         #print(x.id)
         if not x.date_billed:
@@ -451,6 +451,35 @@ def ar_aging(request):
         'ar': ar
     }
     return render(request, 'finance/reports/ar_aging.html', context)
+
+
+def krueger_ar(request):
+    workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('printleader_workorder')
+    context = {
+        'workorders':workorders,
+    }
+    return render(request, 'finance/reports/krueger_ar.html', context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             # obj, created = Araging.objects.update_or_create(
             #     customer_id=x.id,
             #     hr_customer=x.company_name,

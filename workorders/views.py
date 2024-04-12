@@ -1795,6 +1795,7 @@ def task_notes(request, pk=None, task=None):
 
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     #form = TaskNoteForm(instance=item)
+    print(item.perf_note)
     context = {
         #'notes':notes,
         #'form':form,

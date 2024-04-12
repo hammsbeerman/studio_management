@@ -16,39 +16,20 @@
       <table class="table">
         <thead>
           <tr>
+            <th scope="col" class="">Printleader Workorder</th>
             <th scope="col" class="">Customer</th>
-            <th scope="col" class="">Current</th>
-            <th scope="col" class="">1-30</th>
-            <th scope="col" class="">31-60</th>
-            <th scope="col" class="">61-90</th>
-            <th scope="col" class="">> 90</th>
-            <th scope="col" class="">Total</th>
+            <th scope="col" class="">Open Balance</th>
           </tr>
         </thead>
         <tbody>
           
-          {% for x in ar %}
-            {% if x.total %}
+          {% for x in workorders %}
               <tr>
-                <td><a href='{{ x.get_absolute_url }}'>{{ x.hr_customer }}</a></td>
-                <td>{{ x.current|floatformat:2 }}</td>
-                <td>{{ x.thirty|floatformat:2 }}</td>
-                <td>{{ x.sixty|floatformat:2 }}</td>
-                <td>{{ x.ninety|floatformat:2 }}</td>
-                <td>{{ x.onetwenty|floatformat:2 }}</td>
-                <td>{{ x.total|floatformat:2 }}</td>
+                <td><a href='{{ x.get_absolute_url }}'>{{ x.printleader_workorder }}</a></td>
+                <td>{{ x.hr_customer }}</td>
+                <td>{{ x.open_balance }}</td>
               </tr>
-            {% endif %}
           {% endfor %}
-              <tr>
-                <td><b>Totals:</b></td>
-                <td>{{ total_current.current__sum|floatformat:2 }}</td>
-                <td>{{ total_thirty.thirty__sum|floatformat:2 }}</td>
-                <td>{{ total_sixty.sixty__sum|floatformat:2 }}</td>
-                <td>{{ total_ninety.ninety__sum|floatformat:2 }}</td>
-                <td>{{ total_onetwenty.onetwenty__sum|floatformat:2 }}</td>
-                <td>{{ total_balance.open_balance__sum|floatformat:2 }}</td>
-              </tr>
         </tbody>
       </table>
 
