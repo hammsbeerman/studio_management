@@ -20,7 +20,8 @@ from .views import (
     ar_aging,
     complete_not_billed,
     apply_other,
-    krueger_ar
+    krueger_ar,
+    lk_ar,
 )
 
 app_name='finance'
@@ -44,6 +45,7 @@ urlpatterns = [
     path('complete_not_billed/', complete_not_billed, name='complete_not_billed'),
     path('apply_other/<int:cust>/', apply_other, name='apply_other'),
     path('krueger_ar/', krueger_ar, name='krueger_ar'),
+    path('lk_ar/', lk_ar, name='lk_ar'),
 
     
         
