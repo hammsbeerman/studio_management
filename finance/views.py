@@ -455,14 +455,18 @@ def ar_aging(request):
 
 def krueger_ar(request):
     workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('printleader_workorder')
+    total_balance = workorders.filter().aggregate(Sum('open_balance'))
     context = {
+        'total_balance':total_balance,
         'workorders':workorders,
     }
     return render(request, 'finance/reports/krueger_ar.html', context)
 
 def lk_ar(request):
     workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('lk_workorder')
+    total_balance = workorders.filter().aggregate(Sum('open_balance'))
     context = {
+        'total_balance':total_balance,
         'workorders':workorders,
     }
     return render(request, 'finance/reports/lk_ar.html', context)
