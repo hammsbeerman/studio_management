@@ -361,6 +361,9 @@ aging = Workorder.objects.all().exclude(billed=0).exclude(paid_in_full=1)
 
 
 def ar_aging(request):
+    update_ar = request.GET.get('up')
+    print('update')
+    print(update_ar)
     #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
     today = timezone.now()
     customers = Customer.objects.all()
@@ -388,6 +391,8 @@ def ar_aging(request):
             if day == date:
                 #Don't update, as its been done today
                 update = 0
+                if update_ar == 1:
+                    update = 1
             else:
                 update = 1
         except:

@@ -1622,7 +1622,7 @@ def complete_status(request):
         parent.total_with_tax = twt
         parent.save()
     item = Workorder.objects.get(id = workorder)
-    total_invoice = WorkorderItem.objects.filter(workorder_id=workorder).exclude(billable=0).aggregate(
+    total_invoice = WorkorderItem.objects.filter(workorder_id=workorder).exclude(billable=0).exclude(parent=1).aggregate(
             sum=Sum('total_with_tax'),
             tax=Sum('tax_amount'),
             )
