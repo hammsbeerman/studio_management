@@ -65,9 +65,9 @@
   
 
     $(document).ready(function () {
-      $("#paper_stock").select2();
-      $('#paper_stock').on('select2:select', (e) => {
-        htmx.trigger("#paper_stock", "change")
+      $("#item").select2();
+      $('#item').on('select2:select', (e) => {
+        htmx.trigger("#item", "change")
       });
     })
 
