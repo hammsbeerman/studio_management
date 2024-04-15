@@ -100,7 +100,15 @@ def add_inventory_item(request):
 
 
                 #messages.success(request, "Record Added...")
-                return redirect('inventory:add_inventory_item')
+            form = AddInventoryItemForm()
+            item = Inventory.objects.all().order_by('name')
+            context = {
+                'form':form,
+                'item':item
+            }
+            #return redirect('inventory:add_inventory_item', context)
+            return render(request, 'inventory/items/add_inventory_item.html', context)
+
         context = {
             'form':form,
             'item':item
