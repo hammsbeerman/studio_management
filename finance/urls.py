@@ -22,6 +22,8 @@ from .views import (
     apply_other,
     krueger_ar,
     lk_ar,
+    all_printleader,
+    all_lk
 )
 
 app_name='finance'
@@ -46,6 +48,8 @@ urlpatterns = [
     path('apply_other/<int:cust>/', apply_other, name='apply_other'),
     path('krueger_ar/', krueger_ar, name='krueger_ar'),
     path('lk_ar/', lk_ar, name='lk_ar'),
+    path('all_printleader/', all_printleader, name='all_printleader'),
+    path('all_lk/', all_lk, name='all_lk'),
 
     
         

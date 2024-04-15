@@ -480,6 +480,24 @@ def lk_ar(request):
     }
     return render(request, 'finance/reports/lk_ar.html', context)
 
+def all_printleader(request):
+    workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(quote=1).exclude(void=1).order_by('printleader_workorder')
+    total_balance = workorders.filter().aggregate(Sum('open_balance'))
+    context = {
+        'total_balance':total_balance,
+        'workorders':workorders,
+    }
+    return render(request, 'finance/reports/all_printleader.html', context)
+
+def all_lk(request):
+    workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(quote=1).exclude(void=1).order_by('lk_workorder')
+    total_balance = workorders.filter().aggregate(Sum('open_balance'))
+    context = {
+        'total_balance':total_balance,
+        'workorders':workorders,
+    }
+    return render(request, 'finance/reports/all_lk.html', context)
+
 
 
 

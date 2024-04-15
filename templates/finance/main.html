@@ -9,15 +9,29 @@
 
 <h1>Finance</h1>
 
-<a href="{% url 'finance:add_bill_payable' %}">Add Bill to be paid</a><br>
-<a href="{% url 'finance:view_bills_payable' %}">View Bills to be paid<br>
+<table>
+<tr>
+  <td><a href="{% url 'finance:add_bill_payable' %}">Add Bill to be paid</a></td>
+  <td><a href="{% url 'finance:view_bills_payable' %}">View Bills to be paid</a></td>
+  </tr>
+</table>
+
+<br>
+
+
 <p>
 <a href="{% url 'finance:add_daily_sale' %}">Add Daily Sale Record</a><br>
 <a href="{% url 'finance:view_daily_sales' %}">View Daily Sales History</a><br>
+
+<p>
 <a href="{% url 'finance:ar_aging' %}">A/R Aging</a><br>
 <a href="{% url 'finance:complete_not_billed' %}">Complete Not Billed</a><br>
 <a href="{% url 'finance:krueger_ar' %}">Krueger Outstanding Invoices</a><br>
 <a href="{% url 'finance:lk_ar' %}">LK Outstanding Invoices</a><br>
+
+<p>
+  <a href="{% url 'finance:all_printleader' %}">All Printleader Invoices</a><br>
+  <a href="{% url 'finance:all_lk' %}">All LK Invoices</a><br>
 
 
 
