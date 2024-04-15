@@ -1136,6 +1136,7 @@ def copy_workorder_item(request, pk, workorder=None):
         #Copy coresponding kruegerjobdetail item
         try: 
             objdetail = KruegerJobDetail.objects.get(workorder_item=pk)
+            print(objdetail)
             objdetail.pk = None
             objdetail.workorder_item = obj.pk
             objdetail.last_item_order = obj.workorder_hr
@@ -1145,6 +1146,7 @@ def copy_workorder_item(request, pk, workorder=None):
                 objdetail.last_item_price = objdetail.price_total
             objdetail.save()
         except Exception as e:
+            print(1)
             print("The error is:", e)
         try: 
             objdetail = WideFormat.objects.get(workorder_item=pk)
@@ -1157,6 +1159,7 @@ def copy_workorder_item(request, pk, workorder=None):
                 objdetail.last_item_price = objdetail.price_total
             objdetail.save()
         except Exception as e:
+            print(2)
             print("The error is:", e)
         try:
             objdetail = OrderOut.objects.get(workorder_item=pk)
@@ -1169,6 +1172,7 @@ def copy_workorder_item(request, pk, workorder=None):
                 objdetail.last_item_price = objdetail.total_price
             objdetail.save()
         except Exception as e:
+            print(3)
             print("The error is:", e)
         try:
             objdetail = SetPrice.objects.get(workorder_item=pk)
@@ -1181,6 +1185,7 @@ def copy_workorder_item(request, pk, workorder=None):
                 objdetail.last_item_price = objdetail.total_price
             objdetail.save()
         except Exception as e:
+            print(4)
             print("The error is:", e)
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     #Copy line item to different workorder
@@ -1213,7 +1218,7 @@ def copy_workorder_item(request, pk, workorder=None):
             objdetail = KruegerJobDetail.objects.get(workorder_item=pk)
             objdetail.pk = None
             objdetail.workorder_item = obj.pk
-            objdetail.workorder = new.pk
+            objdetail.workorder_id = new.pk
             objdetail.hr_workorder = new.workorder
             objdetail.last_item_order = last_workorder
             if objdetail.override_price:

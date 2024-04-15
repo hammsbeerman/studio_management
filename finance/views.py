@@ -74,6 +74,7 @@ def closed_workorders(request, cust):
 @login_required
 def recieve_payment(request):
     paymenttype = PaymentType.objects.all()
+    customers = Customer.objects.all().order_by('company_name')
     if request.method == "POST":
             customer = request.POST.get('customer')
             print(customer)
@@ -117,6 +118,7 @@ def recieve_payment(request):
     form = PaymentForm
     context = {
         'paymenttype':paymenttype,
+        'customers':customers,
         'form': form,
     }
     return render(request, 'finance/AR/modals/recieve_payment.html', context)
