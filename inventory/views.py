@@ -95,6 +95,8 @@ def add_inventory_item(request):
                 #print (item.name)
                 obj.save()
                 Inventory.objects.filter(pk=item).update(price_per_m=price_per_m, unit_cost=price_ea, updated=obj.invoice_date)
+            else:
+                print(form.errors)
 
 
                 #messages.success(request, "Record Added...")
