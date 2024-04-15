@@ -107,9 +107,9 @@ class OrderOut(models.Model):
     description = models.CharField('Description', max_length=100, blank=True, null=True)
 
     vendor = models.ForeignKey(Vendor, blank=True, null=True, on_delete=models.DO_NOTHING)
-    purchase_price = models.DecimalField('Purchase Price', max_digits=6, decimal_places=2, blank=True, null=True)
-    percent_markup = models.DecimalField('Percent Markup', max_digits=6, decimal_places=2, blank=True, null=True)
-    quantity = models.DecimalField('Quantity', max_digits=6, decimal_places=2, blank=True, null=True)
+    purchase_price = models.DecimalField('Purchase Price', max_digits=8, decimal_places=2, blank=True, null=True)
+    percent_markup = models.DecimalField('Percent Markup', max_digits=8, decimal_places=2, blank=True, null=True)
+    quantity = models.DecimalField('Quantity', max_digits=8, decimal_places=2, blank=True, null=True)
     unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)
     override_price = models.DecimalField('Override Price', max_digits=8, decimal_places=2, blank=True, null=True)
