@@ -392,8 +392,10 @@ def ar_aging(request):
             print(date)
             if day == date:
                 #Don't update, as its been done today
+                print('today')
                 update = 0
-                if update_ar == 1:
+                if update_ar == '1':
+                    print('update')
                     update = 1
             else:
                 update = 1
