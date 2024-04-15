@@ -8,6 +8,7 @@ Workorder Info
         
         <h5 class="card-title">Invoice #: {{ workorder.workorder }}</h5>
               <p class="card-text">
+                        Date: {{ workorder.created|date:"M d, Y" }}<br/>
                       Internal Company: {{ workorder.internal_company }}<br/>
                       Description: {{ workorder.description }}<br/>
                       Deadline: {{ workorder.deadline }}<br/>
