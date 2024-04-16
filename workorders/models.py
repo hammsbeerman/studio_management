@@ -77,7 +77,7 @@ class WorkorderItem(models.Model):
     postage_type = models.ForeignKey(PostageType, blank=True, null=True, on_delete=models.SET_NULL)
     description = models.CharField('Description', max_length=100, blank=False, null=False)
     item_order = models.PositiveSmallIntegerField('Display Order', blank=True, null=True)
-    quantity = models.DecimalField('Quantity', max_digits=6, decimal_places=2, blank=True, null=True)
+    quantity = models.DecimalField('Quantity', max_digits=10, decimal_places=2, blank=True, null=True)
     show_qty_on_wo = models.BooleanField(default=True)
     unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)
