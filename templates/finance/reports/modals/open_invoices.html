@@ -1,0 +1,58 @@
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+{% with WIDGET_ERROR_CLASS='is-invalid' %}
+{% load static %}
+<script src="{% static 'js/datepicker.js' %}"></script>
+
+
+<form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Open Invoices</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+
+    Total outstanding: {{ total_balance.open_balance__sum|floatformat:2 }}
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col" class="">Workorder</th>
+            <th scope="col" class="">Description</th>
+            <th scope="col" class=""></th>
+            <th scope="col" class="">Amount</th>
+            <th scope="col" class="">Date Billed</th>
+          </tr>
+        </thead>
+        <tbody>
+
+    {% for x in workorders %}
+        <tr>
+            <td>{{ x.workorder }}</td>
+            <td>{{ x.description }}</td>
+            <td>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}}{% endif %}</td>
+            <td>{{ x.open_balance }}</td>
+            <td>{{ x.date_billed }}</td>
+        </tr>
+    {% endfor %}
+
+
+
+        </table>
+    
+
+    <input type="hidden" id="customer" name="customer" value="{{ customer }}">
+    <input type="hidden" id="id" name="id" value="{{ pk }}">
+    <input type="hidden" id="test" name="test" value="1">
+  </div>
+  <div class="modal-footer">
+    <button hx-get="{% url 'finance:open_invoices_recieve_payment' pk=customer %}" hx-target="#dialog2" class="btn btn-success">Recieve Payment</button>
+    <span class="flex-grow-1"></span>
+    
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+      Cancel
+    </button>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>
+{% endwith %}

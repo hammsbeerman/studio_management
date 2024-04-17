@@ -76,6 +76,7 @@ def recieve_payment(request):
     paymenttype = PaymentType.objects.all()
     customers = Customer.objects.all().order_by('company_name')
     if request.method == "POST":
+            print('testing')
             customer = request.POST.get('customer')
             print(customer)
             check = request.POST.get('check_number')
@@ -104,9 +105,7 @@ def recieve_payment(request):
                 high_balance = cust.high_balance
                 if not high_balance:
                     high_balance = 0
-                 #   high_balance = open_balance - credit
-                
-
+                 #   high_balance = open_balance - credit             
                 print(high_balance)
                 if high_balance > balance:
                     high_balance = high_balance
@@ -497,6 +496,34 @@ def all_lk(request):
         'workorders':workorders,
     }
     return render(request, 'finance/reports/all_lk.html', context)
+
+def open_invoices(request, pk):
+   workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+   total_balance = workorders.filter().aggregate(Sum('open_balance'))
+   customer = pk
+   context = {
+       'customer':customer,
+       'total_balance':total_balance,
+       'workorders':workorders,
+   }
+   return render(request, 'finance/reports/modals/open_invoices.html', context)
+
+def open_invoices_recieve_payment(request, pk):
+   workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+   total_balance = workorders.filter().aggregate(Sum('open_balance'))
+   customer = Customer.objects.get(id=pk)
+   #customer = 
+   paymenttype = PaymentType.objects.all()
+   form = PaymentForm
+   context = {
+       'total_balance':total_balance,
+       'workorders':workorders,
+       'paymenttype':paymenttype,
+        'customer':customer,
+        'form': form,
+
+   }
+   return render(request, 'finance/reports/modals/open_invoice_recieve_payment.html', context)
 
 
 
