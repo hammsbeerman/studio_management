@@ -35,8 +35,7 @@
           {% for x in ar %}
             {% if x.total %}
               <tr>
-                <td><button class="btn btn-primary-outline" hx-get="{% url 'finance:open_invoices' pk=x.customer_id %} " hx-target="#dialog2">{{ x.hr_customer }}</button><br>
-                <a href='{{ x.get_absolute_url }}'>{{ x.hr_customer }}</a></td>
+                <td><u><div style="color:Blue;" hx-get="{% url 'finance:open_invoices' pk=x.customer_id %} " hx-target="#dialog2">{{ x.hr_customer }}</div></u></td>
                 <td>{{ x.current|floatformat:2 }}</td>
                 <td>{{ x.thirty|floatformat:2 }}</td>
                 <td>{{ x.sixty|floatformat:2 }}</td>
