@@ -135,7 +135,7 @@ def overview(request, id=None):
     else: 
         contact = ''
     print(id)
-    history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).order_by("-workorder")[:5]
+    history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).exclude(void=1).order_by("-workorder")[:5]
     workid = workorder.id
     categories = Category.objects.all().distinct().exclude(active=0).order_by('name')
     #total = decimal.Decimal(total.total_price__sum)
@@ -1130,6 +1130,11 @@ def copy_workorder_item(request, pk, workorder=None):
         print(pk)
         obj = WorkorderItem.objects.get(pk=pk)
         obj.pk = None
+        print('asdakldmakldamsl')
+        obj.added_to_parent = 0
+        obj.parent = 0
+        obj.parent_item = None
+        obj.child = 0
         obj.save()
         #print(obj.pk)
         #print(pk)

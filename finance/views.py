@@ -500,10 +500,14 @@ def all_lk(request):
 def open_invoices(request, pk):
    workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
    total_balance = workorders.filter().aggregate(Sum('open_balance'))
+   credits = Customer.objects.get(pk=pk)
+   credits = credits.credit
+   print(credits)
    customer = pk
    context = {
        'customer':customer,
        'total_balance':total_balance,
+       'credit':credits,
        'workorders':workorders,
    }
    return render(request, 'finance/reports/modals/open_invoices.html', context)
@@ -515,6 +519,7 @@ def open_invoices_recieve_payment(request, pk):
    #customer = 
    paymenttype = PaymentType.objects.all()
    form = PaymentForm
+
    context = {
        'total_balance':total_balance,
        'workorders':workorders,
