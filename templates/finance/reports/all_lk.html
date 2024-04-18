@@ -10,30 +10,53 @@
     
 
       Total outstanding: {{ total_balance.open_balance__sum|floatformat:2 }}
+      <p>
+      <table>
+        <tr>
+            <td><img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;"></td><td>Billed</td>
+            <td><img src="{% static 'img/site/overduebill-50.png' %}" style="width:20px;height:20px;"></td><td>Overdue</td>
+            <td><img src="{% static 'img/site/paidbill-50.png' %}" style="width:20px;height:20px;"></td><td>Paid</td>
+        </tr>
+    </table>
 
  
     
       <table class="table">
         <thead>
           <tr>
-            <th scope="col" class="">LK Workorder</th>
+            <th scope="col" class="">Printleader Workorder</th>
             <th scope="col" class="">Description</th>
             <th scope="col" class="">Customer</th>
             <th scope="col" class="">Date Created</th>
             <th scope="col" class="">Date Billed</th>
             <th scope="col" class="">Open Balance</th>
+            <th scope="col" class="">Aging</th>
+            <th scope="col" class="">Status</th>
+
           </tr>
         </thead>
         <tbody>
           
           {% for x in workorders %}
               <tr>
-                <td><a href='{{ x.get_absolute_url }}'>{{ x.lk_workorder }}</a></td>
+                <td><a href='{{ x.get_absolute_url }}'>{{ x.printleader_workorder }}</a></td>
                 <td>{{ x.description }}</td>
                 <td>{{ x.hr_customer }}</td>
                 <td>{{ x.created }}</td>
                 <td>{{ x.date_billed }}</td>
                 <td>{{ x.open_balance }}</td>
+                <td>{% if x.aging %}{{ x.aging }}{% endif %}</td>
+                <td>
+                  {% if x.billed %}
+                        {% if x.paid_in_full %}
+                          <img src="{% static 'img/site/paidbill-50.png' %}" style="width:20px;height:20px;">
+                        {% elif x.aging > 30 %}
+                          <img src="{% static 'img/site/overduebill-50.png' %}" style="width:20px;height:20px;">
+                        {% else %}
+                        <img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;">
+                        {% endif %}
+                    {% endif %}
+                </td>
               </tr>
           {% endfor %}
         </tbody>

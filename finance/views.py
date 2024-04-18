@@ -125,6 +125,7 @@ def recieve_payment(request):
 @login_required
 def unrecieve_payment(request):
     paymenttype = PaymentType.objects.all()
+    customers = Customer.objects.all().order_by('company_name')
     if request.method == "POST":
             customer = request.POST.get('customer')
             print(customer)
@@ -141,6 +142,7 @@ def unrecieve_payment(request):
     context = {
         'paymenttype':paymenttype,
         'form': form,
+        'customers':customers,
     }
     return render(request, 'finance/AR/modals/unrecieve_payment.html', context)
 

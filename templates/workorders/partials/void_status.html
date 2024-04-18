@@ -1,3 +1,9 @@
-<center>{% if void is True %}
+<center>
+{% if void is True %}
    <p> <h1 style="color:red;">Workorder Void</h1>
-{% endif %}</center>
+{% endif %}
+
+{% if paid is True %}
+   <p> <h1 style="color:green;">Paid</h1>
+{% endif %}
+</center>

@@ -1860,10 +1860,12 @@ def void_status(request):
     print(pk)
     workorder = Workorder.objects.get(pk=pk)
     void = workorder.void
+    paid = workorder.paid_in_full
     print('void')
     print(void)
     context = {
         'void':void,
+        'paid':paid,
     }
     return render(request, 'workorders/partials/void_status.html', context)
     
