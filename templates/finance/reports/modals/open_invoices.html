@@ -5,7 +5,7 @@
 <script src="{% static 'js/datepicker.js' %}"></script>
 
 
-<form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
+<form hx-post="{% url 'finance:apply_payment' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
   <div class="modal-header">
     <h5 class="modal-title">Open Invoices</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -24,20 +24,34 @@
             <th scope="col" class=""></th>
             <th scope="col" class="">Amount</th>
             <th scope="col" class="">Date Billed</th>
+            <th scope="col" class="">Partial Payment</th>
+            <th scope="col" class=""></th>
+            <th scope="col" class=""></th>
           </tr>
         </thead>
         <tbody>
 
     {% for x in workorders %}
         <tr>
+            <form hx-post="{% url 'finance:apply_payment' %}">
+              {% csrf_token %}
             <td>{{ x.workorder }}</td>
             <td>{{ x.description }}</td>
             <td>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}}{% endif %}</td>
             <td>{{ x.open_balance }}</td>
             <td>{{ x.date_billed }}</td>
+            <td><input type="text" name="partial_payment" class="text form-control" id="partial_payment" size="10"></td>
+            <td>
+                <input type="hidden" id="pk" name="pk" value="{{x.id}}">
+                <input type="hidden" id="customer" name="customer" value="{{customer}}">
+                <button class="btn btn-primary btn-sm" type="submit">Pay</button>
+            </td>
         </tr>
+        </form>
     {% endfor %}
 
+
+    
 
 
         </table>
@@ -52,9 +66,8 @@
     <span class="flex-grow-1"></span>
     
     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-      Cancel
+      Close
     </button>
-    <button type="submit" class="btn btn-primary">Save</button>
   </div>
 </form>
 {% endwith %}

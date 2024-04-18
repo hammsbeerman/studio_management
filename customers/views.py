@@ -283,7 +283,10 @@ def contact_info(request):
         print(contact.contact_id)
         contact = contact.contact_id
         print(contact)
-        contact = Contact.objects.get(id=contact)
+        try:
+            contact = Contact.objects.get(id=contact)
+        except:
+            contact = None    
         context = { 'contact': contact,}
         return render(request, 'customers/partials/contact_info.html', context)
     workorder = Workorder.objects.get(workorder=id)

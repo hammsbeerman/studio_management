@@ -207,9 +207,27 @@ def apply_payment(request):
                     open_balance = round(open_balance, 2)
                     print(open_balance)
                     Customer.objects.filter(pk=cust).update(credit = credit, open_balance = open_balance)
-                    return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
-                else:
-                    return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+                # Get info for open invoices modal
+                print('modal area!!!!!')
+                print('customer')
+                print(cust)
+                modal_workorders = Workorder.objects.filter(customer=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+                modal_total_balance = modal_workorders.filter().aggregate(Sum('open_balance'))
+                modal_credits = Customer.objects.get(pk=cust)
+                modal_credits = modal_credits.credit
+                print(modal_credits)
+                modal_customer = cust
+                print(modal_customer)
+                context = {
+                    'customer':modal_customer,
+                    'total_balance':modal_total_balance,
+                    'credit':modal_credits,
+                    'workorders':modal_workorders,
+                }
+                return render(request, 'finance/reports/modals/open_invoices.html', context)
+                #     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+                # else:
+                #     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
             else:
                 open = workorder.open_balance 
             if credit >= open:
@@ -225,6 +243,25 @@ def apply_payment(request):
                 else:
                     open_balance = 0
                 Customer.objects.filter(pk=cust).update(credit = credit, avg_days_to_pay = avg_days, open_balance = open_balance)
+                # Get info for open invoices modal
+                print('modal area!!!!!')
+                print('customer')
+                print(cust)
+                modal_workorders = Workorder.objects.filter(customer=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+                modal_total_balance = modal_workorders.filter().aggregate(Sum('open_balance'))
+                modal_credits = Customer.objects.get(pk=cust)
+                modal_credits = modal_credits.credit
+                print(modal_credits)
+                modal_customer = cust
+                print(modal_customer)
+                context = {
+                    'customer':modal_customer,
+                    'total_balance':modal_total_balance,
+                    'credit':modal_credits,
+                    'workorders':modal_workorders,
+                }
+                return render(request, 'finance/reports/modals/open_invoices.html', context)
+    
     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
 
 def unapply_payment(request):
