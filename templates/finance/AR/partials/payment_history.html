@@ -1,0 +1,26 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col" class="">Date</th>
+        <th scope="col" class="">Amount</th>
+        <th scope="col" class="">Payment Type</th>
+      </tr>
+    </thead>
+    <tbody>
+
+{% for x in payment %}
+    <tr>
+    <td>{{x.date}}</td>
+    <td>{{x.amount}}</td>
+    <td>{{x.payment_type}}</td>
+    <td>
+        <u><div style="color:Blue;" hx-get="{% url 'finance:remove_payment' pk=x.id %} " hx-target="#dialog">Remove</div></u>
+    </td>
+    </tr>
+{% endfor %}
+
+    </table>

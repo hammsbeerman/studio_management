@@ -45,6 +45,7 @@ class Payments(models.Model):
     refunded_invoice_number = models.CharField('Refund Invoice Number', max_length=100, blank=True, null=True)
     amount = models.DecimalField('Amount', max_digits=10, decimal_places=2, blank=True, null=True)
     memo = models.CharField('Memo', max_length=500, blank=True, null=True)
+    void = models.BooleanField('Void Payment', default=False, blank=False, null=False)
 
 
     def __str__(self):

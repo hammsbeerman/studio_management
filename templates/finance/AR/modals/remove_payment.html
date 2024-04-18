@@ -1,0 +1,38 @@
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+{% with WIDGET_ERROR_CLASS='is-invalid' %}
+{% load static %}
+<script src="{% static 'js/datepicker.js' %}"></script>
+
+
+<form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Remove Payment</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+
+    
+    <select class="custom-select mb-4" id="customer" hx-trigger="change" name="customer" hx-get="{% url 'finance:payment_history' %}" hx-target="#payment_history">
+        <option selected>Customer</option>
+          {% for x in customers %}
+            <option value="{{ x.id }}">{{ x.company_name }}</option>
+          {% endfor %}
+    </select>
+        <div id="payment_history">
+          
+        </div>
+
+    <input type="hidden" id="cat" name="cat" value="{{ cat }}">
+    <input type="hidden" id="id" name="id" value="{{ pk }}">
+  </div>
+  <div class="modal-footer">
+    
+    <span class="flex-grow-1"></span>
+    
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+      Close
+    </button>
+  </div>
+</form>
+{% endwith %}

@@ -7,7 +7,7 @@ from django.db.models import Avg, Count, Min, Sum, Subquery, Case, When, Value, 
 from django.db.models import Q
 from django.utils import timezone
 import logging
-from .models import AccountsPayable, DailySales, Araging
+from .models import AccountsPayable, DailySales, Araging, Payments
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm
 from customers.models import Customer
 from workorders.models import Workorder
@@ -144,7 +144,7 @@ def unrecieve_payment(request):
         'form': form,
         'customers':customers,
     }
-    return render(request, 'finance/AR/modals/unrecieve_payment.html', context)
+    return render(request, 'finance/AR/modals/remove_payment.html', context)
 
 def payment_detail(request):
     if request.method == "GET":
@@ -569,7 +569,64 @@ def open_invoices_recieve_payment(request, pk):
    }
    return render(request, 'finance/reports/modals/open_invoice_recieve_payment.html', context)
 
+def payment_history(request):
+    if request.method == "GET":
+        customer = request.GET.get('customer')
+        payment = Payments.objects.filter(customer=customer).exclude(void=1).order_by('-date')
+        context = {
+            'payment':payment,
+            'customer':customer,
+        }
+    return render(request, 'finance/AR/partials/payment_history.html', context)
 
+def remove_payment(request, pk=None):
+    customers = Customer.objects.filter().exclude(credit__lte=0).exclude(credit=None).order_by('company_name')
+    if request.method == "POST":
+        Payments.objects.filter(pk=pk).update(void = 1)
+        details = Payments.objects.get(pk=pk)
+        amount = details.amount
+        customer = details.customer.id
+        cust = Customer.objects.get(id=customer)
+        print(amount)
+        print(cust)
+        print(customer)
+        credit = cust.credit - amount
+        print(cust.credit)
+        Customer.objects.filter(pk=details.customer.id).update(credit=credit)
+        cust = Customer.objects.get(id=customer)
+        print(cust.credit)
+        #return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    context = {
+        'customers':customers,
+    }
+    return render(request, 'finance/AR/modals/remove_payment.html', context)
+
+
+
+
+
+# def unrecieve_payment(request):
+#     paymenttype = PaymentType.objects.all()
+#     customers = Customer.objects.all().order_by('company_name')
+#     if request.method == "POST":
+#             customer = request.POST.get('customer')
+#             print(customer)
+#             check = request.POST.get('check_number')
+#             giftcard = request.POST.get('giftcard_number')
+#             refund = request.POST.get('refunded_invoice_number')
+#             amount = request.POST.get('amount')
+#             amount = int(amount)
+#             cust = Customer.objects.get(id=customer)
+#             credit = cust.credit - amount
+#             Customer.objects.filter(pk=customer).update(credit=credit)
+#             return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+#     form = PaymentForm
+#     context = {
+#         'paymenttype':paymenttype,
+#         'form': form,
+#         'customers':customers,
+#     }
+#     return render(request, 'finance/AR/modals/remove_payment.html', context)
 
 
 
