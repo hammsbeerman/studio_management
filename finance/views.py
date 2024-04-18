@@ -76,6 +76,7 @@ def recieve_payment(request):
     paymenttype = PaymentType.objects.all()
     customers = Customer.objects.all().order_by('company_name')
     if request.method == "POST":
+            modal = request.POST.get('modal')
             print('testing')
             customer = request.POST.get('customer')
             print(customer)
@@ -113,7 +114,22 @@ def recieve_payment(request):
                     high_balance = balance
                 print(high_balance)
                 Customer.objects.filter(pk=customer).update(credit=credit, open_balance=open_balance, high_balance=high_balance)
-                return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+                if modal == '1':
+                    workorders = Workorder.objects.filter(customer=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+                    total_balance = workorders.filter().aggregate(Sum('open_balance'))
+                    credits = Customer.objects.get(pk=customer)
+                    credits = credits.credit
+                    print(credits)
+                    customer = customer
+                    context = {
+                        'customer':customer,
+                        'total_balance':total_balance,
+                        'credit':credits,
+                        'workorders':workorders,
+                    }
+                    return render(request, 'finance/reports/modals/open_invoices.html', context)
+                else:
+                    return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     form = PaymentForm
     context = {
         'paymenttype':paymenttype,
