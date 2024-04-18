@@ -40,10 +40,10 @@
                 <td><a href='{{ x.get_absolute_url }}'>{{ x.printleader_workorder }}</a></td>
                 <td>{{ x.description }}</td>
                 <td>{{ x.hr_customer }}</td>
-                <td>{{ x.created }}</td>
-                <td>{{ x.date_billed }}</td>
-                <td>{{ x.open_balance }}</td>
-                <td>{% if x.aging %}{{ x.aging }}{% endif %}</td>
+                <td>{{ x.created|date:"M d, Y" }}</td>
+                <td>{% if x.date_billed %}{{ x.date_billed|date:"M d, Y" }}{% endif %}</td>
+                <td>{% if x.open_balance %}{{ x.open_balance }}{% endif %}</td>
+                <td>{% if x.aging and x.paid_in_full == 0 %}{{ x.aging }}{% endif %}</td>
                 <td>
                   {% if x.billed %}
                         {% if x.paid_in_full %}

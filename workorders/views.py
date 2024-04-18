@@ -226,7 +226,7 @@ def workorder_lk_list(request):
 
 @login_required
 def quote_list(request):
-    workorder = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0)
+    workorder = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).exclude(void=1)
     context = {
         'workorders': workorder,
     }
