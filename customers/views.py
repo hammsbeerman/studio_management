@@ -261,7 +261,9 @@ def cust_info(request):
 
 @login_required
 def contact_info(request):
+    print('test')
     if request.htmx:
+        print('htmx')
         changeworkorder = request.GET.get('workorder')
         changecustomer = request.GET.get('customer')
         workorder = Workorder.objects.get(id=changeworkorder)
@@ -282,11 +284,11 @@ def contact_info(request):
         contact = Workorder.objects.get(id=workorder)
         print(contact.contact_id)
         contact = contact.contact_id
-        print(contact)
+        print(contact)    
         try:
-            contact = Contact.objects.get(id=contact)
+            contact = Contact.objects.get(id=contact) 
         except:
-            contact = None    
+            pass
         context = { 'contact': contact,}
         return render(request, 'customers/partials/contact_info.html', context)
     workorder = Workorder.objects.get(workorder=id)
