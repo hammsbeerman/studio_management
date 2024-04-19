@@ -585,7 +585,9 @@ def open_invoices(request, pk):
 @login_required
 def open_invoices_recieve_payment(request, pk):
    workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
-   total_balance = workorders.filter().aggregate(Sum('open_balance'))
+   total_balance = Araging.objects.get(customer=pk)
+   total_balance = total_balance.total
+   print(total_balance)
    customer = Customer.objects.get(id=pk)
    #customer = 
    paymenttype = PaymentType.objects.all()
