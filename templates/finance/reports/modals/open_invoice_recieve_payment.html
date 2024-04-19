@@ -43,6 +43,7 @@
             <thead>
               <tr>
                 <th scope="col" class="">Workorder</th>
+                <th scope="col" class=""></th>
                 <th scope="col" class="">Amount</th>
               </tr>
             </thead>
@@ -51,10 +52,16 @@
         {% for x in workorders %}
             <tr>
                 <td>{{ x.workorder }}</td>
+                <td>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}}{% endif %}</td>
                 <td>{{ x.open_balance }}</td>
             </tr>
         {% endfor %}
-            
+            <tr>
+              <td>Total:</td>
+              <td></td>
+              <td>{{ x.customer.open_balance }}</td>
+            </tr>
+              
     
     
         
