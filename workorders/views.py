@@ -225,6 +225,19 @@ def workorder_lk_list(request):
     return render(request, 'workorders/partials/list_lk_order.html', context)
 
 @login_required
+def workorder_kos_list(request):
+    workorder = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    completed = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-workorder")[:20]
+    quote = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
+    context = {
+        'workorders': workorder,
+        'completed': completed,
+        'quote': quote,
+
+    }
+    return render(request, 'workorders/partials/list_kos_order.html', context)
+
+@login_required
 def quote_list(request):
     workorder = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).exclude(void=1)
     context = {
@@ -1861,11 +1874,16 @@ def void_status(request):
     workorder = Workorder.objects.get(pk=pk)
     void = workorder.void
     paid = workorder.paid_in_full
+    billed = workorder.billed
+    customer = workorder.customer.id
+    print(customer)
     print('void')
     print(void)
     context = {
         'void':void,
         'paid':paid,
+        'billed':billed,
+        'customer':customer,
     }
     return render(request, 'workorders/partials/void_status.html', context)
     

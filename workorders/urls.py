@@ -39,6 +39,7 @@ from .views import (
     dashboard,
     workorder_k_list,
     workorder_lk_list,
+    workorder_kos_list,
     void_workorder,
     void_status
     # removed,
@@ -87,6 +88,7 @@ urlpatterns = [
     path('dashboard/', dashboard, name='dashboard'),
     path("k_workorders/", workorder_k_list, name='workorder_k_list'),
     path("lk_workorders/", workorder_lk_list, name='workorder_lk_list'),
+    path("kos_workorders/", workorder_kos_list, name='workorder_kos_list'),
     path("void_workorder/<int:pk>/<int:void>/", void_workorder, name='void_workorder'),
     path("void_workorder/", void_workorder, name='void_workorder'),
     path("void_status/", void_status, name='void_status'),

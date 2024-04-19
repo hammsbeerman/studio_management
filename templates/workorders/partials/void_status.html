@@ -6,4 +6,10 @@
 {% if paid is True %}
    <p> <h1 style="color:green;">Paid</h1>
 {% endif %}
+
+{% if paid is not True and billed is True%}
+<p>
+   <p>
+      <button type="button" class="btn btn-info" hx-get="{% url 'finance:open_invoices' pk=customer %}" hx-target="#dialog2">Pay Invoice</button>
+{% endif %}
 </center>

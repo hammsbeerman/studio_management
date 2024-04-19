@@ -538,7 +538,7 @@ def krueger_ar(request):
 
 @login_required
 def lk_ar(request):
-    workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('lk_workorder')
+    workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(internal_company = 'Office Supplies').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('lk_workorder')
     total_balance = workorders.filter().aggregate(Sum('open_balance'))
     context = {
         'total_balance':total_balance,
@@ -548,7 +548,7 @@ def lk_ar(request):
 
 @login_required
 def all_printleader(request):
-    workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(quote=1).exclude(void=1).order_by('-printleader_workorder')
+    workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(internal_company = 'Office Supplies').exclude(quote=1).exclude(void=1).order_by('-printleader_workorder')
     total_balance = workorders.filter().aggregate(Sum('open_balance'))
     context = {
         'total_balance':total_balance,
@@ -558,7 +558,7 @@ def all_printleader(request):
 
 @login_required
 def all_lk(request):
-    workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(quote=1).exclude(void=1).order_by('-lk_workorder')
+    workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(internal_company = 'Office Supplies').exclude(quote=1).exclude(void=1).order_by('-lk_workorder')
     total_balance = workorders.filter().aggregate(Sum('open_balance'))
     context = {
         'total_balance':total_balance,
@@ -585,9 +585,9 @@ def open_invoices(request, pk):
 @login_required
 def open_invoices_recieve_payment(request, pk):
    workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
-   total_balance = Araging.objects.get(customer=pk)
-   total_balance = total_balance.total
-   print(total_balance)
+   total_balance = workorders.filter().aggregate(Sum('open_balance'))
+   #total_balance = total_balance.total
+   #print(total_balance)
    customer = Customer.objects.get(id=pk)
    #customer = 
    paymenttype = PaymentType.objects.all()

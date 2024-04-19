@@ -17,6 +17,7 @@ List of workorders {{company}}
         <button class="nav-link" id="nav-studio-tab" data-bs-toggle="tab" data-bs-target="#nav-studio" type="button" role="tab" aria-controls="nav-studio" aria-selected="false">Studio Management</button>
         <button class="nav-link" id="nav-krueger-tab" data-bs-toggle="tab" data-bs-target="#nav-krueger" type="button" role="tab" aria-controls="nav-krueger" aria-selected="false">Krueger</button>
         <button class="nav-link active" id="nav-lk-tab" data-bs-toggle="tab" data-bs-target="#nav-lk" type="button" role="tab" aria-controls="nav-lk" aria-selected="true">LK Design</button>
+        <button class="nav-link" id="nav-kos-tab" data-bs-toggle="tab" data-bs-target="#nav-kos" type="button" role="tab" aria-controls="nav-kos" aria-selected="false">Office Supply</button>
         <!--<button class="nav-link" id="nav-type-tab" data-bs-toggle="tab" data-bs-target="#nav-type" type="button" role="tab" aria-controls="nav-type" aria-selected="false">Not Used</button>-->
     </div>
     {% elif company == 'Krueger Printing' %}
@@ -24,6 +25,15 @@ List of workorders {{company}}
         <button class="nav-link" id="nav-studio-tab" data-bs-toggle="tab" data-bs-target="#nav-studio" type="button" role="tab" aria-controls="nav-studio" aria-selected="false">Studio Management</button>
         <button class="nav-link active" id="nav-krueger-tab" data-bs-toggle="tab" data-bs-target="#nav-krueger" type="button" role="tab" aria-controls="nav-krueger" aria-selected="true">Krueger</button>
         <button class="nav-link" id="nav-lk-tab" data-bs-toggle="tab" data-bs-target="#nav-lk" type="button" role="tab" aria-controls="nav-lk" aria-selected="false">LK Design</button>
+        <button class="nav-link" id="nav-kos-tab" data-bs-toggle="tab" data-bs-target="#nav-kos" type="button" role="tab" aria-controls="nav-kos" aria-selected="false">Office Supply</button>
+        <!--<button class="nav-link" id="nav-type-tab" data-bs-toggle="tab" data-bs-target="#nav-type" type="button" role="tab" aria-controls="nav-type" aria-selected="false">Not Used</button>-->
+    </div>
+    {% elif company == 'Office Supplies' %}
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <button class="nav-link" id="nav-studio-tab" data-bs-toggle="tab" data-bs-target="#nav-studio" type="button" role="tab" aria-controls="nav-studio" aria-selected="false">Studio Management</button>
+        <button class="nav-link" id="nav-krueger-tab" data-bs-toggle="tab" data-bs-target="#nav-krueger" type="button" role="tab" aria-controls="nav-krueger" aria-selected="true">Krueger</button>
+        <button class="nav-link" id="nav-lk-tab" data-bs-toggle="tab" data-bs-target="#nav-lk" type="button" role="tab" aria-controls="nav-lk" aria-selected="false">LK Design</button>
+        <button class="nav-link active" id="nav-kos-tab" data-bs-toggle="tab" data-bs-target="#nav-kos" type="button" role="tab" aria-controls="nav-kos" aria-selected="true">Office Supply</button>
         <!--<button class="nav-link" id="nav-type-tab" data-bs-toggle="tab" data-bs-target="#nav-type" type="button" role="tab" aria-controls="nav-type" aria-selected="false">Not Used</button>-->
     </div>
     {% else %}
@@ -31,6 +41,7 @@ List of workorders {{company}}
         <button class="nav-link active" id="nav-studio-tab" data-bs-toggle="tab" data-bs-target="#nav-studio" type="button" role="tab" aria-controls="nav-studio" aria-selected="true">Studio Management</button>
         <button class="nav-link" id="nav-krueger-tab" data-bs-toggle="tab" data-bs-target="#nav-krueger" type="button" role="tab" aria-controls="nav-krueger" aria-selected="false">Krueger</button>
         <button class="nav-link" id="nav-lk-tab" data-bs-toggle="tab" data-bs-target="#nav-lk" type="button" role="tab" aria-controls="nav-lk" aria-selected="false">LK Design</button>
+        <button class="nav-link" id="nav-kos-tab" data-bs-toggle="tab" data-bs-target="#nav-kos" type="button" role="tab" aria-controls="nav-kos" aria-selected="false">Office Supply</button>
         <!--<button class="nav-link" id="nav-type-tab" data-bs-toggle="tab" data-bs-target="#nav-type" type="button" role="tab" aria-controls="nav-type" aria-selected="false">Not Used</button>-->
     </div>
     {% endif %}
@@ -42,20 +53,29 @@ List of workorders {{company}}
         <div class="tab-pane fade" id="nav-studio" role="tabpanel" aria-labelledby="nav-studio-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_list' %}" hx-target="this"></div>
         <div class="tab-pane fade" id="nav-krueger" role="tabpanel" aria-labelledby="nav-krueger-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_k_list' %}" hx-target="this"></div>
         <div class="tab-pane fade show active" id="nav-lk" role="tabpanel" aria-labelledby="nav-lk-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_lk_list' %}" hx-target="this"></div>
+        <div class="tab-pane fade" id="nav-kos" role="tabpanel" aria-labelledby="nav-kos-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_kos_list' %}" hx-target="this"></div>
     {% elif company == 'Krueger Printing' %}
         
 
-    <div class="tab-pane fade" id="nav-studio" role="tabpanel" aria-labelledby="nav-studio-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_list' %}" hx-target="this"></div>
+        <div class="tab-pane fade" id="nav-studio" role="tabpanel" aria-labelledby="nav-studio-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_list' %}" hx-target="this"></div>
         <div class="tab-pane fade show active" id="nav-krueger" role="tabpanel" aria-labelledby="nav-krueger-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_k_list' %}" hx-target="this"></div>
         <div class="tab-pane fade" id="nav-lk" role="tabpanel" aria-labelledby="nav-lk-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_lk_list' %}" hx-target="this"></div>
+        <div class="tab-pane fade" id="nav-kos" role="tabpanel" aria-labelledby="nav-kos-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_kos_list' %}" hx-target="this"></div>
+    {% elif company == 'Office Supplies' %}
+        
+
+        <div class="tab-pane fade" id="nav-studio" role="tabpanel" aria-labelledby="nav-studio-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_list' %}" hx-target="this"></div>
+        <div class="tab-pane fade" id="nav-krueger" role="tabpanel" aria-labelledby="nav-krueger-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_k_list' %}" hx-target="this"></div>
+        <div class="tab-pane fade" id="nav-lk" role="tabpanel" aria-labelledby="nav-lk-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_lk_list' %}" hx-target="this"></div>
+        <div class="tab-pane fade show active" id="nav-kos" role="tabpanel" aria-labelledby="nav-kos-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_kos_list' %}" hx-target="this"></div>
     
-        {% else %}
+    {% else %}
         
 
     <div class="tab-pane fade show active" id="nav-studio" role="tabpanel" aria-labelledby="nav-studio-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_list' %}" hx-target="this"></div>
         <div class="tab-pane fade" id="nav-krueger" role="tabpanel" aria-labelledby="nav-krueger-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_k_list' %}" hx-target="this"></div>
         <div class="tab-pane fade" id="nav-lk" role="tabpanel" aria-labelledby="nav-lk-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_lk_list' %}" hx-target="this"></div>
-
+        <div class="tab-pane fade" id="nav-kos" role="tabpanel" aria-labelledby="nav-kos-tab" hx-trigger="load, itemListChanged from:body" hx-get="{% url 'workorders:workorder_kos_list' %}" hx-target="this"></div>
     {% endif %}
   
         
