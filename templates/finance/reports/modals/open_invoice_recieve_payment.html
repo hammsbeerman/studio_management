@@ -12,29 +12,58 @@
   </div>
   <div class="modal-body">
 
-    Customer: {{ customer.company_name }}
+    <div class="container">
+      <div class="row">
+        <div class="col-sm">
+            Customer: {{ customer.company_name }}
 
-    {{form.date|as_crispy_field}}
-    
-    
-    
+            {{form.date|as_crispy_field}}
+      
+      
 
-    <select class="custom-select mb-4" id="payment_type" hx-trigger="change" name="payment_type" hx-get="{% url 'finance:payment_detail' %}" hx-target="#payment_detail">
-      <option selected>Payment Type</option>
-          {% for x in paymenttype %}
-            <option value="{{ x.id }}">{{ x.name }}</option>
-          {% endfor %}
-      </select>
-      <div id="payment_detail">
+            <select class="custom-select mb-4" id="payment_type" hx-trigger="change" name="payment_type" hx-get="{% url 'finance:payment_detail' %}" hx-target="#payment_detail">
+              <option selected>Payment Type</option>
+                  {% for x in paymenttype %}
+                    <option value="{{ x.id }}">{{ x.name }}</option>
+                  {% endfor %}
+              </select>
+              <div id="payment_detail">
+                
+              </div>
+
+            {{form.amount|as_crispy_field}}
+
+            {{form.memo|as_crispy_field}}
+
+            <input type="hidden" id="customer" name="customer" value="{{ customer.id }}">
+            <input type="hidden" id="modal" name="modal" value="1">
+          </div>
+        <div class="col-sm">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col" class="">Workorder</th>
+                <th scope="col" class="">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+    
+        {% for x in workorders %}
+            <tr>
+                <td>{{ x.workorder }}</td>
+                <td>{{ x.open_balance }}</td>
+            </tr>
+        {% endfor %}
+            
+    
+    
         
+    
+    
+            </table>
+        </div>
       </div>
-
-    {{form.amount|as_crispy_field}}
-
-    {{form.memo|as_crispy_field}}
-
-    <input type="hidden" id="customer" name="customer" value="{{ customer.id }}">
-    <input type="hidden" id="modal" name="modal" value="1">
+    </div>
   </div>
   <div class="modal-footer">
     

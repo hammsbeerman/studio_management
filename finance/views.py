@@ -16,9 +16,11 @@ from controls.models import PaymentType
 
 logger = logging.getLogger(__file__)
 
+@login_required
 def finance_main(request):
     return render(request, 'finance/main.html')
 
+@login_required
 def bill_list(request):
     pass
 
@@ -31,6 +33,7 @@ def ar_dashboard(request):
     }
     return render(request, "finance/AR/ar_dashboard.html", context)
 
+@login_required
 def open_workorders(request):
     customers = Customer.objects.all()
     if request.method == "GET":
@@ -53,6 +56,7 @@ def open_workorders(request):
     }
     return render(request, "finance/AR/partials/workorder_list.html", context)
 
+@login_required
 def closed_workorders(request, cust):
     customers = Customer.objects.all()
     if request.method == "GET":
@@ -162,6 +166,7 @@ def unrecieve_payment(request):
     }
     return render(request, 'finance/AR/modals/remove_payment.html', context)
 
+@login_required
 def payment_detail(request):
     if request.method == "GET":
         type = request.GET.get('payment_type')
@@ -176,6 +181,7 @@ def payment_detail(request):
         }
     return render(request, 'finance/AR/partials/payment_detail.html', context)
 
+@login_required
 def apply_payment(request):
     if request.method == "POST":
             cust = request.POST.get('customer')
@@ -280,6 +286,7 @@ def apply_payment(request):
     
     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
 
+@login_required
 def unapply_payment(request):
     if request.method == "POST":
         cust = request.POST.get('customer')
@@ -359,7 +366,7 @@ def apply_other(request, cust=None):
     }
     return render(request, 'finance/AR/modals/apply_elsewhere.html', context)
 
-
+@login_required
 def add_bill_payable(request):
     form = AccountsPayableForm(request.POST or None)
     if request.user.is_authenticated:
@@ -372,7 +379,8 @@ def add_bill_payable(request):
     else:
         messages.success(request, "You must be logged in")
         return redirect('home')
-    
+
+@login_required  
 def add_daily_sale(request):
     form = DailySalesForm(request.POST or None)
     if request.user.is_authenticated:
@@ -385,17 +393,20 @@ def add_daily_sale(request):
     else:
         messages.success(request, "You must be logged in")
         return redirect('home')
-    
+
+@login_required   
 def view_daily_sales(request):
     sales_list = DailySales.objects.all()
     return render(request, 'finance/reports/view_sales.html',
         {'sales_list': sales_list})
 
+@login_required
 def view_bills_payable(request):
     bills_list = AccountsPayable.objects.all()
     return render(request, 'finance/AP/view_bills.html',
         {'bill_list': bills_list})
 
+@login_required
 def complete_not_billed(request):
     listing = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).order_by('hr_customer')
     print(listing)
@@ -405,17 +416,17 @@ def complete_not_billed(request):
     return render(request, 'finance/reports/complete_not_billed.html', context)
 
 
-aging = Workorder.objects.all().exclude(billed=0).exclude(paid_in_full=1)
-#         today = timezone.now()
-#         for x in aging:
-#             if not x.date_billed:
-#                 x.date_billed = today
-#             age = x.date_billed - today
-#             age = abs((age).days)
-#             print(type(age))
-#             Workorder.objects.filter(pk=x.pk).update(aging = age)
+# aging = Workorder.objects.all().exclude(billed=0).exclude(paid_in_full=1)
+# #         today = timezone.now()
+# #         for x in aging:
+# #             if not x.date_billed:
+# #                 x.date_billed = today
+# #             age = x.date_billed - today
+# #             age = abs((age).days)
+# #             print(type(age))
+# #             Workorder.objects.filter(pk=x.pk).update(aging = age)
 
-
+@login_required
 def ar_aging(request):
     update_ar = request.GET.get('up')
     print('update')
@@ -515,7 +526,7 @@ def ar_aging(request):
     }
     return render(request, 'finance/reports/ar_aging.html', context)
 
-
+@login_required
 def krueger_ar(request):
     workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('printleader_workorder')
     total_balance = workorders.filter().aggregate(Sum('open_balance'))
@@ -525,6 +536,7 @@ def krueger_ar(request):
     }
     return render(request, 'finance/reports/krueger_ar.html', context)
 
+@login_required
 def lk_ar(request):
     workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('lk_workorder')
     total_balance = workorders.filter().aggregate(Sum('open_balance'))
@@ -534,8 +546,9 @@ def lk_ar(request):
     }
     return render(request, 'finance/reports/lk_ar.html', context)
 
+@login_required
 def all_printleader(request):
-    workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(quote=1).exclude(void=1).order_by('printleader_workorder')
+    workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(quote=1).exclude(void=1).order_by('-printleader_workorder')
     total_balance = workorders.filter().aggregate(Sum('open_balance'))
     context = {
         'total_balance':total_balance,
@@ -543,8 +556,9 @@ def all_printleader(request):
     }
     return render(request, 'finance/reports/all_printleader.html', context)
 
+@login_required
 def all_lk(request):
-    workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(quote=1).exclude(void=1).order_by('lk_workorder')
+    workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(quote=1).exclude(void=1).order_by('-lk_workorder')
     total_balance = workorders.filter().aggregate(Sum('open_balance'))
     context = {
         'total_balance':total_balance,
@@ -552,6 +566,7 @@ def all_lk(request):
     }
     return render(request, 'finance/reports/all_lk.html', context)
 
+@login_required
 def open_invoices(request, pk):
    workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
    total_balance = workorders.filter().aggregate(Sum('open_balance'))
@@ -567,6 +582,7 @@ def open_invoices(request, pk):
    }
    return render(request, 'finance/reports/modals/open_invoices.html', context)
 
+@login_required
 def open_invoices_recieve_payment(request, pk):
    workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
    total_balance = workorders.filter().aggregate(Sum('open_balance'))
@@ -585,6 +601,7 @@ def open_invoices_recieve_payment(request, pk):
    }
    return render(request, 'finance/reports/modals/open_invoice_recieve_payment.html', context)
 
+@login_required
 def payment_history(request):
     if request.method == "GET":
         customer = request.GET.get('customer')
@@ -595,6 +612,7 @@ def payment_history(request):
         }
     return render(request, 'finance/AR/partials/payment_history.html', context)
 
+@login_required
 def remove_payment(request, pk=None):
     customers = Customer.objects.filter().exclude(credit__lte=0).exclude(credit=None).order_by('company_name')
     if request.method == "POST":
