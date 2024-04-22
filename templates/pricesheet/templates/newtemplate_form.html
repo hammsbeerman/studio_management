@@ -206,19 +206,10 @@ This form should only be used for setting up and editing templates for lineitems
                         </div>
                         <div class="row">
                             <div class='col'>
-                                {% if form.step_trim_to_size_price %}
-                                <label for="id_step_trim_to_size_price" class="form-label">
-                                    Trim to size
-                                </label>
-                                <input type="text" name="step_trim_to_size_price" maxlength="12" class="textinput form-control" id="id_step_trim_to_size_price" value="{{ fixed.trim_to_size}}">{{ form.step_trim_to_size_price|as_crispy_field }}{% endif %}
+                                {% if form.step_trim_to_size_price %}{{ form.step_trim_to_size_price|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
-                                {% if form.step_wear_and_tear_price %}
-                                <label for="id_step_wear_and_tear_price" class="form-label">
-                                    Wear and Tear
-                                </label>
-                                <input type="text" name="step_wear_and_tear_price" maxlength="12" class="textinput form-control" id="id_step_wear_and_tear_price" value="{{ fixed.wear_and_tear}}">
-                                {% endif %}
+                                {% if form.step_wear_and_tear_price %}{{ form.step_wear_and_tear_price|as_crispy_field}}{% endif %}
                             </div>
                         </div>
                         Options:
