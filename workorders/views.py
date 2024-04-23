@@ -1148,6 +1148,10 @@ def copy_workorder_item(request, pk, workorder=None):
         obj.parent = 0
         obj.parent_item = None
         obj.child = 0
+        obj.void = 0
+        obj.void_memo = None
+        obj.completed = 0
+        obj.job_status_id = 1
         obj.save()
         #print(obj.pk)
         #print(pk)
@@ -1315,6 +1319,9 @@ def copy_workorder(request, id=None):
     obj.days_to_pay = ''
     obj.aging = None
     obj.workorder_status_id = 1
+    obj.lk_workorder = None
+    obj.printleader_workorder = None
+    obj.kos_workorder = None
     #Increment workorder number
     newworkorder = obj.workorder
     #Update numbering table
@@ -1343,6 +1350,10 @@ def copy_workorder(request, id=None):
         item.pk=None
         item.workorder_hr=newworkorder
         item.last_item_order=workorder
+        item.void = 0
+        item.void_memo = None
+        item.completed = 0
+        item.job_status_id = 1
         if item.absolute_price:
             item.last_item_price = item.absolute_price
         else:
