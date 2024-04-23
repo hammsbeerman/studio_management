@@ -7,7 +7,7 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Date Recieved</th>
+            <th>Invoice Date</th>
             <th>Vendor</th>
             <th>Description</th>
             <th>Invoice Number</th>
@@ -18,7 +18,7 @@
     
 {% for bill in bill_list %}
     <tr>
-        <td>{{ bill.date_recieved }}</td>
+        <td>{{ bill.invoice_date }}</td>
         <td>{{ bill.vendor }}</td>
         <td>{{ bill.description }}</td>
         <td>{{ bill.invoice_number }}</td>

@@ -6,7 +6,7 @@ from customers.models import Customer
 
 
 class AccountsPayable(models.Model):
-    date_recieved = models.DateField(auto_now=False, auto_now_add=False)
+    invoice_date = models.DateField(auto_now=False, auto_now_add=False)
     vendor = models.ForeignKey(Vendor, blank=False, null=False, on_delete=models.DO_NOTHING)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     invoice_number = models.CharField('Invoice Number', max_length=100, blank=True, null=True)

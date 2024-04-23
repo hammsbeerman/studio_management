@@ -375,7 +375,12 @@ def add_bill_payable(request):
                 add_record = form.save()
                 messages.success(request, "Record Added...")
                 return redirect('finance:add_bill_payable')
-        return render(request, 'finance/AP/add_ap.html', {'form':form})
+        bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('vendor', 'invoice_date')
+        context = {
+            'form':form,
+            'bills':bills,
+        }
+        return render(request, 'finance/AP/add_ap.html', context)
     else:
         messages.success(request, "You must be logged in")
         return redirect('home')

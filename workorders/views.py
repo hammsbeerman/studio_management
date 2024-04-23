@@ -1890,4 +1890,14 @@ def void_status(request):
 def close_pay_modal(request):
     print('test')
     return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderVoid'})
+
+def complete_allitems(request):
+    workorders = Workorder.objects.filter().exclude(completed=0)
+    for x in workorders:
+        print(x.workorder)
+        item = WorkorderItem.objects.filter(workorder_hr=x.workorder)
+        for y in item:
+            print(y.workorder_hr)
+            WorkorderItem.objects.filter(pk=y.pk).update(job_status_id=6, completed=1)
+    return redirect('dashboard:dashboard')
     

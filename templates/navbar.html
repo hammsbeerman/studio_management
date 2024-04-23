@@ -68,8 +68,9 @@
                 </a>
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                   <li><a class="dropdown-item" href="{% url 'pricesheet:template_list' %}">Price Templates</a></li>
-                  <li><a class="dropdown-item" href="{% url 'pdf:management' %}">PDF Options</a></li>
+                  <!-- <li><a class="dropdown-item" href="{% url 'pdf:management' %}">PDF Options</a></li> -->
                   <li><a class="dropdown-item" href="/admin">Admin</a></li>
+                  <li><a class="dropdown-item" href="{% url 'workorders:complete_allitems' %}">Complete Items for Completed Workorders</a></li>
                 </ul> 
               </li>
               <li class="nav-item dropdown">

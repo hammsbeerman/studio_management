@@ -21,7 +21,7 @@ def dashboard(request, id=None):
     #completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
     #quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
     status = JobStatus.objects.all()
-    print(visitor)
+    #print(visitor)
 
     #article_obj = Article.objects.get(id=1)
     #Get all articles
@@ -71,7 +71,7 @@ def selected_item_list(request, id=None):
     #test = 'hello'
     if request.method == "GET":
         item = request.GET.get('items')
-        print(item)
+        #print(item)
         try:
             item_status = JobStatus.objects.get(id=item)
             print(item_status)
@@ -82,7 +82,7 @@ def selected_item_list(request, id=None):
             item_status = 'Select Job Status'
             items = ''
             pass
-        print(items)
+        #print(items)
     #print(item_status)
     #print(status)
     context = {
@@ -98,7 +98,7 @@ def group_item_list(request, id=None):
     user = request.user.profile.id
     group = Profile.objects.get(user=user)
     test = group.group.all()
-    print(test)
+    #print(test)
     items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(completed=1)
     #for x in test:
     ##items = WorkorderItem.objects.filter(assigned_group_id__exact = test).exclude(completed=1).order_by("-workorder")
@@ -110,7 +110,7 @@ def group_item_list(request, id=None):
     # for x in group:
     #     print(group)
     # print('Group user')
-    print(user)
+    #print(user)
     #items = WorkorderItem.objects.filter(job_status_id = 2).exclude(completed=1).order_by("-workorder")
 
     context = {
@@ -123,10 +123,10 @@ def stale_item_list(request, id=None):
     user = request.user.profile.id
     group = Profile.objects.get(user=user)
     test = group.group.all()
-    print(test)
+    #print(test)
     stale_date = timezone.now() - timedelta(days=-7)
     stale_quote_date = timezone.now() - timedelta(days=-14)
-    print(stale_date)
+    #print(stale_date)
     items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_date).exclude(completed=1)
     quotes = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_quote_date).exclude(completed=1)
     
@@ -141,7 +141,7 @@ def stale_item_list(request, id=None):
     # for x in group:
     #     print(group)
     # print('Group user')
-    print(user)
+    #print(user)
     #items = WorkorderItem.objects.filter(job_status_id = 2).exclude(completed=1).order_by("-workorder")
 
     context = {

@@ -6,15 +6,41 @@
 <h1>Add Bill Payable</h1>
 <br/>
 
-<form method="POST" action="{% url 'finance:add_bill_payable' %}">
-    {% csrf_token %}
+<div class="container">
+    <div class="row">
+      <div class="col-sm">
+            <form method="POST" action="{% url 'finance:add_bill_payable' %}">
+                {% csrf_token %}
 
-    {{ form.as_p }}
+                {{ form.as_p }}
 
-<br/>
-    <button type="submit" class="btn btn-secondary">Add Bill Payable</button>
+            <br/>
+                <button type="submit" class="btn btn-secondary">Add Bill Payable</button>
 
-</form>
+            </form>
+        </div>
+        <div class="col-sm">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col" class="">Vendor</th>
+                  <th scope="col" class="">Date</th>
+                  <th scope="col" class="">Amount</th>
+                  <th scope="col" class="">Invoice #</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for x in bills %}
+                <tr>
+                    <td>{{ x.vendor }}</td>
+                    <td>{{ x.invoice_date }}</td>
+                    <td>{{ x.amount }}</td>
+                    <td>{{ x.invoice_number }}</td>
+                </tr>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 
 </div>
 
