@@ -129,8 +129,8 @@ def stale_item_list(request, id=None):
     print(stale_date)
     # items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_date).exclude(completed=1)
     # quotes = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_quote_date).exclude(completed=1)
-    item7 = WorkorderItem.objects.filter().exclude(updated__gt=stale_date).exclude(completed=1)
-    item14 = WorkorderItem.objects.filter().exclude(updated__gt=stale_quote_date).exclude(completed=1)
+    item7 = WorkorderItem.objects.filter().exclude(updated__lt=stale_date).exclude(completed=1)
+    item14 = WorkorderItem.objects.filter().exclude(updated__lt=stale_quote_date).exclude(completed=1)
     
     #items = WorkorderItem.objects.filter(updated__lt=stale_date)
     #for x in test:
