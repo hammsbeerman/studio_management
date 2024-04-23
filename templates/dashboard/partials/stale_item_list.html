@@ -3,7 +3,7 @@
 
 
 <div class="row">
-    <div class="col-sm-6">
+    <div class="col-sm-4">
         (unchanged for 7+ days)
         {% if item7 %}
         <table>
@@ -30,7 +30,7 @@
         </table>
         {% endif %}
     </div>
-    <div class="col-sm-6">
+    <div class="col-sm-4">
         (unchanged for 14+ days)
         {% if item14 %}
         <table>
@@ -54,6 +54,33 @@
                 </tr>
         {% endif %}
         {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+    <div class="col-sm-4">
+        (Oldest unchanged)
+        {% if itemold %}
+        <table>
+        {% for x in itemold %}
+        {% if x.workorder.completed is False and x.workorder.quote == '0' %}
+            <tr>
+                <td><a href="{% url 'workorders:overview' id=x.workorder_hr %}">{{ x.workorder_hr }} -- {{ x.description }} -- {{ x.workorder.hr_customer }} </a></td>
+                <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_status' pk=x.pk%}" hx-target="#dialog">{% if x.job_status %}<img src="{{ x.job_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</button></td>
+                <td>{% if x.notes %}
+                    <button class="btn btn-primary-outline" hx-get="{% url 'workorders:notes' pk=x.pk%}" hx-target="#dialog">
+                        <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+                    </button>
+                {% else %}
+                    <button class="btn btn-primary-outline" hx-get="{% url 'workorders:notes' pk=x.pk%}" hx-target="#dialog">
+                        <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
+                    </button>
+                {% endif %}</td>
+                <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:stale' pk=x.pk%}" hx-target="#dialog">
+                    <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+                </button></td>
+                </tr>
+            {% endif %}
+            {% endfor %}
         </table>
         {% endif %}
     </div>

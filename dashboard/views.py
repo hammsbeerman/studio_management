@@ -131,6 +131,7 @@ def stale_item_list(request, id=None):
     # quotes = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_quote_date).exclude(completed=1)
     item7 = WorkorderItem.objects.filter().exclude(updated__lt=stale_date).exclude(completed=1)
     item14 = WorkorderItem.objects.filter().exclude(updated__lt=stale_quote_date).exclude(completed=1)
+    itemold = WorkorderItem.objects.filter().exclude(completed=1).exclude(void=1).order_by('updated')
     
     #items = WorkorderItem.objects.filter(updated__lt=stale_date)
     #for x in test:
@@ -149,5 +150,6 @@ def stale_item_list(request, id=None):
     context = {
         'item7':item7,
         'item14':item14,
+        'itemold':itemold,
     }
     return render(request, "dashboard/partials/stale_item_list.html", context)
