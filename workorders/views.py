@@ -1886,4 +1886,8 @@ def void_status(request):
         'customer':customer,
     }
     return render(request, 'workorders/partials/void_status.html', context)
+
+def close_pay_modal(request):
+    print('test')
+    return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderVoid'})
     
