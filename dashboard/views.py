@@ -17,7 +17,7 @@ from accounts.models import Profile
 @login_required
 def dashboard(request, id=None):
     visitor = request.user.id
-    items = WorkorderItem.objects.filter(assigned_user_id = visitor).exclude(completed=1).order_by("-workorder")
+    items = WorkorderItem.objects.filter(assigned_user_id = visitor).exclude(completed=1).exclude(void=1).order_by("-workorder")
     #completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
     #quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
     status = JobStatus.objects.all()
@@ -43,8 +43,8 @@ def dashboard(request, id=None):
 @login_required
 def assigned_item_list(request, id=None):
     user = request.user.id
-    items = WorkorderItem.objects.filter(assigned_user_id = user).exclude(completed=1).order_by("-workorder")
-    quotes = WorkorderItem.objects.filter(assigned_user_id = user).exclude(completed=1).order_by("-workorder")
+    items = WorkorderItem.objects.filter(assigned_user_id = user).exclude(completed=1).exclude(void=1).order_by("-workorder")
+    quotes = WorkorderItem.objects.filter(assigned_user_id = user).exclude(completed=1).exclude(void=1).order_by("-workorder")
 
     context = {
         'items':items,
@@ -57,7 +57,7 @@ def assigned_item_list(request, id=None):
 @login_required
 def design_item_list(request, id=None):
     user = request.user.id
-    items = WorkorderItem.objects.filter(job_status_id = 2).exclude(completed=1).order_by("-workorder")
+    items = WorkorderItem.objects.filter(job_status_id = 2).exclude(completed=1).exclude(void=1).order_by("-workorder")
 
     context = {
         'items':items,
@@ -76,7 +76,7 @@ def selected_item_list(request, id=None):
             item_status = JobStatus.objects.get(id=item)
             print(item_status)
             print(item_status.name)
-            items = WorkorderItem.objects.filter(job_status_id = item).order_by("-workorder")
+            items = WorkorderItem.objects.filter(job_status_id = item).exclude(void=1).order_by("-workorder")
             print(items)
         except:
             item_status = 'Select Job Status'
@@ -99,7 +99,7 @@ def group_item_list(request, id=None):
     group = Profile.objects.get(user=user)
     test = group.group.all()
     #print(test)
-    items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(completed=1)
+    items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(completed=1).exclude(void=1)
     #for x in test:
     ##items = WorkorderItem.objects.filter(assigned_group_id__exact = test).exclude(completed=1).order_by("-workorder")
     # groups = UserGroup.group_set.all()
@@ -126,9 +126,11 @@ def stale_item_list(request, id=None):
     #print(test)
     stale_date = timezone.now() - timedelta(days=-7)
     stale_quote_date = timezone.now() - timedelta(days=-14)
-    #print(stale_date)
-    items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_date).exclude(completed=1)
-    quotes = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_quote_date).exclude(completed=1)
+    print(stale_date)
+    # items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_date).exclude(completed=1)
+    # quotes = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_quote_date).exclude(completed=1)
+    item7 = WorkorderItem.objects.filter().exclude(updated__gt=stale_date).exclude(completed=1)
+    item14 = WorkorderItem.objects.filter().exclude(updated__gt=stale_quote_date).exclude(completed=1)
     
     #items = WorkorderItem.objects.filter(updated__lt=stale_date)
     #for x in test:
@@ -145,7 +147,7 @@ def stale_item_list(request, id=None):
     #items = WorkorderItem.objects.filter(job_status_id = 2).exclude(completed=1).order_by("-workorder")
 
     context = {
-        'items':items,
-        'quotes':quotes,
+        'item7':item7,
+        'item14':item14,
     }
     return render(request, "dashboard/partials/stale_item_list.html", context)

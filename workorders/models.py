@@ -103,6 +103,8 @@ class WorkorderItem(models.Model):
     assigned_group = models.ForeignKey(UserGroup, blank=True, null=True, on_delete=models.SET_NULL)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+    void = models.BooleanField('Void Workorder', blank=False, null=False, default=False)
+    void_memo = models.CharField('Void Memo', max_length=100, blank=True, null=True)
 
     def get_absolute_url(self):
         return self.workorder.get_absolute_url()

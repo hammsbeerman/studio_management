@@ -5,9 +5,9 @@
 <div class="row">
     <div class="col-sm-6">
         (unchanged for 7+ days)
-        {% if items %}
+        {% if item7 %}
         <table>
-        {% for x in items %}
+        {% for x in item7 %}
         {% if x.workorder.completed is False and x.workorder.quote == '0' %}
             <tr>
                 <td><a href="{% url 'workorders:overview' id=x.workorder_hr %}">{{ x.workorder_hr }} -- {{ x.description }} -- {{ x.workorder.hr_customer }} </a></td>
@@ -32,10 +32,10 @@
     </div>
     <div class="col-sm-6">
         (unchanged for 14+ days)
-        {% if quotes %}
+        {% if item14 %}
         <table>
-        {% for x in quotes %}
-        {% if x.workorder.completed is False and x.workorder.quote == '1' and x.workorder.quote == '0' %}
+        {% for x in item14 %}
+        {% if x.workorder.completed is False and x.workorder.quote == '0' %}
             <tr>
                 <td><a href="{% url 'workorders:overview' id=x.workorder_hr %}">{{ x.workorder_hr }} -- {{ x.description }} -- {{ x.workorder.hr_customer }} </a></td>
                 <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_status' pk=x.pk%}" hx-target="#dialog">{% if x.job_status %}<img src="{{ x.job_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</button></td>

@@ -1853,6 +1853,10 @@ def void_workorder(request, pk=None, void=None):
                 return render (request, "workorders/modals/void_workorder_modal.html", context)
                 print('no memo')
             Workorder.objects.filter(pk=pk).update(void = 1, billed = 0, void_memo=memo)
+            items = WorkorderItem.objects.filter(workorder_id=pk)
+            for x in items:
+                print(x.pk)
+                WorkorderItem.objects.filter(pk=x.pk).update(void=1, void_memo=memo)
             print(1)
         if void == 1:
             Workorder.objects.filter(pk=pk).update(void = 0, void_memo=memo)
