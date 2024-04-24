@@ -133,7 +133,7 @@ class ItemDetailForm(forms.ModelForm):
         widgets = {
             'last_item_order': forms.TextInput(attrs={'readonly':'readonly'}),
             'last_item_price': forms.TextInput(attrs={'readonly':'readonly'}),
-            'prequoted': forms.CheckboxInput(attrs={'readonly':'readonly'}),
+            'prequoted': forms.TextInput(attrs={'readonly':'readonly'}),
             'quoted_amount': forms.TextInput(attrs={'readonly':'readonly'}),
             'total_price': forms.TextInput(attrs={'readonly':'readonly'}),
             'override_price': forms.TextInput(attrs={'readonly':'readonly'}),
