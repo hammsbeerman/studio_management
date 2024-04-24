@@ -43,7 +43,8 @@ from .views import (
     void_workorder,
     void_status,
     close_pay_modal,
-    complete_allitems
+    complete_allitems,
+    item_details,
     # removed,
 )
 
@@ -96,6 +97,7 @@ urlpatterns = [
     path("void_status/", void_status, name='void_status'),
     path("close_modal/", close_pay_modal, name='close_pay_modal'),
     path("complete_allitems/", complete_allitems, name='complete_allitems'),
+    path('item_details/<int:pk>/', item_details, name='item_details'),
     # path('removed/', removed, name='removed')
     
 

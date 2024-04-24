@@ -121,6 +121,15 @@ class ParentItemForm(forms.ModelForm):
         model = WorkorderItem
         fields = ['description', 'quantity', 'parent_item', 'parent', 'added_to_parent']
 
+class ItemDetailForm(forms.ModelForm):
+    class Meta:
+        model = WorkorderItem
+        fields = ['last_item_order', 'last_item_price', 'prequoted', 'quoted_amount', 'notes', 'job_status', 'total_price', 'override_price', 'total_with_tax']
+        labels = {
+            'total_price':'Calculated Price',
+
+        }
+
 # class TaskNoteForm(forms.ModelForm):
 #     class Meta:
 #         model = KruegerJobDetail

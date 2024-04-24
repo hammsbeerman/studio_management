@@ -10,7 +10,7 @@ from django.contrib import messages
 from customers.models import Customer, Contact
 from controls.models import Numbering, Category, SubCategory, SetPriceCategory, SetPriceItemPrice
 from .models import Workorder, DesignType, WorkorderItem
-from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm, ParentItemForm, PostageItemForm, JobStatusForm
+from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm, ParentItemForm, PostageItemForm, JobStatusForm, ItemDetailForm
 from krueger.forms import KruegerJobDetailForm, WideFormatDetailForm
 from krueger.models import KruegerJobDetail, WideFormat
 from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
@@ -1916,3 +1916,21 @@ def complete_allitems(request):
             WorkorderItem.objects.filter(pk=y.pk).update(job_status_id=6, completed=1)
     return redirect('dashboard:dashboard')
     
+@login_required
+def item_details(request, pk=None):
+    item = get_object_or_404(WorkorderItem, pk=pk)
+    if request.method == "POST":
+        id = request.POST.get('id')
+        print(id)
+        item = get_object_or_404(WorkorderItem, pk=id)
+        form = ItemDetailForm(request.POST, instance=item)
+        if form.is_valid():
+                form.save()
+                return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+    form = ItemDetailForm(instance=item)
+    context = {
+        #'notes':notes,
+        'form':form,
+        'pk': pk,
+    }
+    return render(request, 'workorders/modals/item_details.html', context) 
