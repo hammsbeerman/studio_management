@@ -127,7 +127,17 @@ class ItemDetailForm(forms.ModelForm):
         fields = ['last_item_order', 'last_item_price', 'prequoted', 'quoted_amount', 'notes', 'job_status', 'total_price', 'override_price', 'total_with_tax']
         labels = {
             'total_price':'Calculated Price',
+            'total_with_tax':'Total With Tax',
 
+        }
+        widgets = {
+            'last_item_order': forms.TextInput(attrs={'readonly':'readonly'}),
+            'last_item_price': forms.TextInput(attrs={'readonly':'readonly'}),
+            'prequoted': forms.CheckboxInput(attrs={'readonly':'readonly'}),
+            'quoted_amount': forms.TextInput(attrs={'readonly':'readonly'}),
+            'total_price': forms.TextInput(attrs={'readonly':'readonly'}),
+            'override_price': forms.TextInput(attrs={'readonly':'readonly'}),
+            'total_with_tax': forms.TextInput(attrs={'readonly':'readonly'}),
         }
 
 # class TaskNoteForm(forms.ModelForm):
