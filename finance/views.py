@@ -338,6 +338,20 @@ def apply_other(request, cust=None):
         customer = cust
         print(customer)
     if request.method == "POST":
+            customer = request.POST.get('customer')
+            amount = request.POST.get('amount')
+            if not amount:
+                print('no amount')
+                form = AppliedElsewhereForm
+                message= 'Please enter an amount'
+                context = {
+                    'form': form,
+                    'customer':customer,
+                    'message':message,
+                }
+                return render(request, 'finance/AR/modals/apply_elsewhere.html', context)
+            else:
+                print(amount)
             print(1)
             customer = request.POST.get('customer')
             print(customer)
@@ -345,18 +359,31 @@ def apply_other(request, cust=None):
             if form.is_valid():
                 obj = form.save(commit=False)
                 obj.customer_id = customer
-                obj.save()
                 print(customer)
                 cust = Customer.objects.get(id=customer)
                 try:
                     credit = cust.credit - obj.amount
-                    print(1)
+                    if credit < 0:
+                        message = 'Customer only has credit of:'
+                        credit = cust.credit
+                        context = {
+                            'form': form,
+                            'customer':customer,
+                            'message':message,
+                            'credit':credit,
+                        }
+                        return render(request, 'finance/AR/modals/apply_elsewhere.html', context)
+                    print('credit')
+                    print(credit)
                 except: 
                     credit = obj.amount
                     print(2)
+                obj.save()
                 Customer.objects.filter(pk=customer).update(credit=credit)
                 print(3)
-                return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+                #return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+                #return render(request, 'finance/reports/modals/open_invoices.html', pk=customer)
+                return redirect('finance:open_invoices', pk=customer)
             else:
                 print(form.errors)
     form = AppliedElsewhereForm

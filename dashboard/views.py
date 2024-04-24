@@ -124,13 +124,13 @@ def stale_item_list(request, id=None):
     group = Profile.objects.get(user=user)
     test = group.group.all()
     #print(test)
-    stale_date = timezone.now() - timedelta(days=7)
-    stale_quote_date = timezone.now() - timedelta(days=14)
-    print(stale_date)
+    stale_7date = timezone.now() - timedelta(days=7)
+    stale_14date = timezone.now() - timedelta(days=14)
+    #print(stale_date)
     # items = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_date).exclude(completed=1)
     # quotes = WorkorderItem.objects.filter(assigned_group__profile__user=request.user).exclude(updated__lt=stale_quote_date).exclude(completed=1)
-    item7 = WorkorderItem.objects.filter().exclude(void=1).exclude(updated__gte=stale_date).exclude(completed=1)
-    item14 = WorkorderItem.objects.filter().exclude(void=1).exclude(updated__gte=stale_quote_date).exclude(completed=1)
+    item7 = WorkorderItem.objects.filter().exclude(void=1).exclude(updated__gte=stale_7date).exclude(completed=1)
+    item14 = WorkorderItem.objects.filter().exclude(void=1).exclude(updated__gte=stale_14date).exclude(updated__lte=stale_7date).exclude(completed=1)
     itemold = WorkorderItem.objects.filter().exclude(void=1).exclude(completed=1).order_by('updated')
 
 

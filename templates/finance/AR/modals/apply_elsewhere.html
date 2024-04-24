@@ -13,6 +13,7 @@
   <div class="modal-body">
     {{form.date|as_crispy_field}}<br/>
 
+    {{ message }} {{ credit }}
     {{form.amount|as_crispy_field}}
 
     {{form.memo|as_crispy_field}}

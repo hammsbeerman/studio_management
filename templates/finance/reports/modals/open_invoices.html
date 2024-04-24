@@ -64,6 +64,7 @@
   <div class="modal-footer">
     <button hx-get="{% url 'finance:open_invoices_recieve_payment' pk=customer %}" hx-target="#dialog2" class="btn btn-success">Recieve Payment</button>
     <span class="flex-grow-1"></span>
+    <button hx-get="{% url 'finance:apply_other' cust=customer %}" hx-target="#dialog2" class="btn btn-success">Apply Elsewhere</button>
     <button hx-get="{% url 'workorders:close_pay_modal' %}" class="btn btn-secondary">Close</button>
 
   </div>
