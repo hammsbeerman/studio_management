@@ -119,6 +119,14 @@ def mark_all_verified(request):
         Workorder.objects.filter(pk=x.pk).update(checked_and_verified=1)
     return render (request, "controls/utilities.html")
 
+@login_required
+def mark_all_invoiced(request):
+    workorder = Workorder.objects.filter(completed=1).exclude(billed=0)
+    for x in workorder:
+        print(x.workorder)
+        Workorder.objects.filter(pk=x.pk).update(invoice_sent=1)
+    return render (request, "controls/utilities.html")
+
 
 
 

@@ -10,6 +10,7 @@ from .views import (
     add_setprice_category,
     utilities,
     mark_all_verified,
+    mark_all_invoiced,
     #setprice_list,
 )
 
@@ -23,5 +24,6 @@ urlpatterns = [
     path('add_setprice_item/', add_setprice_item, name='add_setprice_item'),
     path('utilities/', utilities, name='utilities'),
     path('mark_verified/', mark_all_verified, name='mark_all_verified'),
+    path('mark_invoiced/', mark_all_invoiced, name='mark_all_invoiced'),
     #path('setprice_list/', setprice_list, name='setprice_list'),
 ]
