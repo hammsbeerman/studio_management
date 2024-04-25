@@ -217,9 +217,10 @@ $(document).ready(function(){
           } else {
             x = height
             y = width
+            height = y
+            width = x
           }
-           height = y
-           width = x
+           
         }
 
 
