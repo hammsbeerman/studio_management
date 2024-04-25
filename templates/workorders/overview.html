@@ -88,24 +88,50 @@
   {% if workorder.completed == 0 %}
          <button hx-get="{% url 'workorders:add_item' parent_id=workid %}" hx-target="#dialog" class="btn btn-primary">Add an item</button>
   {% else %}
-          <table>
-            <tr>
-              <td>
-              </td>
-            </tr>
-          </table>
-                <a href="{% url 'pdf:invoice_pdf' id=workid %}" class="btn btn-primary" target="_blank">Create PDF Invoice</a>
-            {% if workorder.date_billed is None%}
-
-            <a href="{% url 'workorders:billed' id=workid %}" class="btn btn-primary" role="button">Bill Invoice</a>
+  <p>
+    <br>
+    <p>
+    <table class="table">
+      <tr>
+        <td>
+              
+            {% if workorder.internal_company == 'LK Design' or workorder.checked_and_verified == 1 %}
+            <a href="{% url 'pdf:invoice_pdf' id=workid %}" class="btn btn-primary" target="_blank">Create PDF Invoice</a>
+            {% endif %}
+        </td>
+         
+        <td>
+          {% if workorder.completed =%}
+          {% if workorder.invoice_sent %}
+            Invoice Sent
+          {% else %}
+            <a href="{% url 'workorders:invoice_sent' pk=workid %}" class="btn btn-primary" role="button">Invoiced</a>
+          {% endif %}
+        </td>   
             
-            {% else %}
+        <td>  
+            {% if workorder.date_billed %}
               Date Billed: {{ workorder.date_billed }} 
             {% endif %}
-           
-            {% if request.user.is_staff %}
-            hello user
-          {% endif %}
+        </td>
+
+        <td>
+            {% if request.user.is_staff %} 
+              {% if workorder.completed == 1 and workorder.checked_and_verified == 0 %}
+                <a href="{% url 'workorders:verify' pk=workid %}" class="btn btn-primary" role="button">Verify</a>
+              {% elif workorder.completed == 1 and workorder.checked_and_verified == 1 %}
+                verified
+              {% endif %}
+        </td>
+        <td>
+              {% if workorder.date_billed is None%}
+                <a href="{% url 'workorders:billed' id=workid %}" class="btn btn-primary" role="button">Bill Invoice</a>
+              {% endif %}
+            {% endif %}
+        </td>
+        
+          </tr>
+        </table>
           
 
   {% endif %}

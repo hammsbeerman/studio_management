@@ -45,6 +45,8 @@ from .views import (
     close_pay_modal,
     complete_allitems,
     item_details,
+    verify,
+    invoice_sent,
     # removed,
 )
 
@@ -98,6 +100,10 @@ urlpatterns = [
     path("close_modal/", close_pay_modal, name='close_pay_modal'),
     path("complete_allitems/", complete_allitems, name='complete_allitems'),
     path('item_details/<int:pk>/', item_details, name='item_details'),
+    path('verify/<int:pk>/', verify, name='verify'),
+    path('invoice_sent/<int:pk>/', invoice_sent, name='invoice_sent'),
+
+
     # path('removed/', removed, name='removed')
     
 

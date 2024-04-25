@@ -1691,7 +1691,7 @@ def complete_status(request):
         item.completed = 0
         item.total_balance = 0
         item.open_balance = 0
-        item.completed = 0
+        item.checked_and_verified = 0
         item.updated = timezone.now()
         item.workorder_total = 0
         item.subtotal = 0
@@ -1934,3 +1934,18 @@ def item_details(request, pk=None):
         'pk': pk,
     }
     return render(request, 'workorders/modals/item_details.html', context) 
+
+@login_required
+def verify(request, pk=None):
+    workorder = Workorder.objects.get(pk=pk)
+    item = Workorder.objects.filter(pk=pk).update(checked_and_verified=1)
+    print(workorder.workorder)
+    return redirect('workorders:overview', id=workorder.workorder)
+
+@login_required
+def invoice_sent(request, pk=None):
+    workorder = Workorder.objects.get(pk=pk)
+    item = Workorder.objects.filter(pk=pk).update(invoice_sent=1)
+    print(workorder.workorder)
+    return redirect('workorders:overview', id=workorder.workorder)
+
