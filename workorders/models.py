@@ -51,6 +51,10 @@ class Workorder(models.Model):
     workorder_status = models.ForeignKey(JobStatus, blank=True, null=True, on_delete=models.SET_NULL)
     void = models.BooleanField('Void Workorder', blank=False, null=False, default=False)
     void_memo = models.CharField('Void Memo', max_length=100, blank=True, null=True)
+    checked_and_verified = models.BooleanField('Checked and Verified', blank=False, null=False, default=False)
+    invoice_sent = models.BooleanField('Invoice Sent', blank=False, null=False, default=False)
+    delivery_pickup = models.CharField('Delivery or Pickup', choices=[('Delivery', 'Delivery'), ('Pickup', 'Pickup')], max_length=100, blank=False, null=False, default='Delivery')
+    delivered_or_pickedup = models.BooleanField('Delivered or Picked Up', blank=False, null=False, default=False)
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})
