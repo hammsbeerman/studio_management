@@ -84,7 +84,7 @@
       </tr>
     </tbody>
   </table>
-
+  
   {% if workorder.completed == 0 %}
          <button hx-get="{% url 'workorders:add_item' parent_id=workid %}" hx-target="#dialog" class="btn btn-primary">Add an item</button>
   {% else %}
@@ -102,7 +102,10 @@
             {% else %}
               Date Billed: {{ workorder.date_billed }} 
             {% endif %}
-
+           
+            {% if request.user.is_staff %}
+            hello user
+          {% endif %}
           
 
   {% endif %}

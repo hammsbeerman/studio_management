@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+<H1>Utilities - Use with caution</h1>
+<a href="{% url 'workorders:complete_allitems' %}">Complete Items for Completed Workorders</a>
+<br>
+<a href="{% url 'controls:mark_all_verified' %}">Mark all workorders verified</a>
+
+
+
+
+
+{% endblock content %}

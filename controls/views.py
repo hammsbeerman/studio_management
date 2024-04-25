@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPriceCategoryForm
 from .models import SetPriceCategory, SubCategory, Category, SetPriceItemPrice
+from workorders.models import Workorder
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -105,8 +106,18 @@ def add_setprice_item(request):
 #     }
 #     return render (request, "pricesheet/partials/setprice_list.html", context)
 
+@login_required
+def utilities(request):
+    return render (request, "controls/utilities.html")
 
 
+@login_required
+def mark_all_verified(request):
+    workorder = Workorder.objects.filter(completed=1)
+    for x in workorder:
+        print(x.workorder)
+        Workorder.objects.filter(pk=x.pk).update(checked_and_verified=1)
+    return render (request, "controls/utilities.html")
 
 
 
