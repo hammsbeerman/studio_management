@@ -101,7 +101,11 @@
         </td>
          
         <td>
-          {% if workorder.completed =%}
+          {% if workorder.completed == '1' %}
+          {% endif %}
+          
+          
+          
           {% if workorder.invoice_sent %}
             Invoice Sent
           {% else %}
