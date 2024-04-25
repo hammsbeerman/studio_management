@@ -340,27 +340,31 @@ margin-top: 25px;
 		<tbody>
 			<tr>
 			  <th>Ship Via</th>
-			  <th>
+			  <!-- <th>
 			  <span>Sub-Total</span>
 			  <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
 			  <span>Tax</span>
-			    </th>
+			    </th> -->
+        <th>Subtotal</th>
+        <th>Tax</th>
 			  <th>Freight</th>
-			  <th></th>
+			  <th>Total</th>
 			  <th>Deposit</th>
 			  <th>Amount Due</th>
 			</tr>	
 			<tr>
-				<td>123</td>
-				<td>
-			<span>Sub-Total</span>
+				<td></td>
+				<!--<td>
+			  <span>{{workorder.subtotal}}</span>
 			  <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
-			  <span>Tax</span>
-				</td>
-				<td>123</td>
-				<td>123</td>
-				<td>123</td>
-				<td>123</td>
+			  <span>{{workorder.tax}}</span> 
+				</td>-->
+				<td>{{workorder.subtotal}}</td>
+				<td>{{workorder.tax}}</td>
+        <td></td>
+				<td>{{workorder.total_balance}}</td>
+				<td>{{workorder.amount_paid}}</td>
+        <td>{{workorder.open_balance}}</td>
 			</tr>
 		</tbody>
 	</table>
