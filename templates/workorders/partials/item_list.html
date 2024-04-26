@@ -46,7 +46,7 @@
         </td>
         <td>   
             <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk workorder=object.workorder %}" hx-target="#dialog">Copy</button>
-            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk%}" hx-target="#dialog">Copy To:</button>
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk%}" hx-target="#dialog2">Copy To:</button>
         </td>
         <td>
             {% if object.notes %}

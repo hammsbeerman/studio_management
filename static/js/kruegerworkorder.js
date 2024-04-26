@@ -111,15 +111,17 @@ $(document).ready(function(){
       $('#bulkmail-row').slideToggle(200)
       });
 
-      if ($("#id_misc1_price").val() > .01){
+
+      if (($("#id_misc1_price").val() > .01) || ($("#id_misc1_description").val()))  {
         $('#misc1-row').show()
-        
+      //if ($("#id_misc1_description").val()){
+        //$('#misc1-row').show()
       } else {
         $('#misc1-row').hide()
         //alert( "Handler for `keyup` called." );
       }
 
-      if ($("#id_misc2_price").val() > .01){
+      if ($("#id_misc2_price").val() > .01 || ($("#id_misc2_description").val())){
         $('#misc2-row').show()
       } else {
         $('#misc2-row').hide()
@@ -138,7 +140,7 @@ $(document).ready(function(){
       });
 
       //$('#misc3-row').hide()
-      if ($("#id_misc3_price").val() > .01){
+      if ($("#id_misc3_price").val() > .01 || ($("#id_misc3_description").val())){
         $('#misc3-row').show()
       } else {
         $('#misc3-row').hide()
@@ -149,7 +151,7 @@ $(document).ready(function(){
       });
 
       //$('#misc4-row').hide()
-      if ($("#id_misc4_price").val() > .01){
+      if ($("#id_misc4_price").val() > .01 || ($("#id_misc4_description").val())){
         $('#misc4-row').show()
       } else {
         $('#misc4-row').hide()
@@ -294,8 +296,6 @@ $(document).ready(function(){
           paper_cost = paper_cost.toFixed(2);
 
           $('#id_material_cost').val(paper_cost);
-
-
 
 
           document.getElementById("id_paper_price").innerHTML = price_per_m;
@@ -763,7 +763,7 @@ $(document).ready(function(){
       $('#price_ea').val(price_ea);
       document.getElementById("id_price_ea").innerHTML = price_ea;
 
-
+      
 
 
       document.getElementById("id_price_ea").innerHTML = price_ea;

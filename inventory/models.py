@@ -52,6 +52,7 @@ class Vendor(models.Model):
     phone2 = models.CharField('Phone 2', max_length=100, blank=True, null=True)
     email = models.EmailField('Email', max_length=100, blank=True, null=True)
     website = models.URLField('Website', max_length=100, blank=True, null=True)
+    supplier = models.BooleanField('Supplier', blank=False, null=False, default=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     inventorydetails = models.ManyToManyField(Inventory, through="InventoryDetail")
