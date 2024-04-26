@@ -11,7 +11,7 @@
             Workorder to copy Line to:
               <select id="workorder" name="workorder" >      
                   {% for workorder in workorders %}
-                      <option value="{{workorder.workorder}}">{{ workorder.workorder }} {{ workorder.hr_customer }} {% if x.lk_workorder %}- LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}- PL: {{ x.printleader_workorder}} {% elif x.kos_workorder %}- KOS: {{ x.kos_workorder}}{% endif %}</option>
+                      <option value="{{workorder.workorder}}">{{ workorder.workorder }} {{ workorder.hr_customer }} {% if workorder.lk_workorder %}- LK: {{ workorder.lk_workorder }} {% elif workorder.printleader_workorder %}- PL: {{ workorder.printleader_workorder}} {% elif workorder.kos_workorder %}- KOS: {{ workorder.kos_workorder}}{% endif %}</option>
                   {% endfor %}
               </select>
       </div>
