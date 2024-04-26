@@ -52,7 +52,7 @@
         {% for x in workorders %}
             <tr>
                 <td>{{ x.workorder }}</td>
-                <td>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}}{% endif %}</td>
+                <td>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}} {% elif x.kos_workorder %}KOS: {{ x.kos_workorder}}{% endif %}</td>
                 <td>{{ x.open_balance }}</td>
             </tr>
         {% endfor %}
