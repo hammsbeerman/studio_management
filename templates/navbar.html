@@ -31,7 +31,9 @@
                 <li><a class="dropdown-item" href="{% url 'workorders:dashboard' %}">Workorder List</a></li>
                 <li><a class="dropdown-item" href="{% url 'workorders:createbase' %}">Add Workorder</a></li>
                 <li><a class="dropdown-item" href="{% url 'workorders:quote_list' %}">Quote List</a></li>
-                <li><a class="dropdown-item" href="#">Abandoned Quotes</a></li>
+                <!-- <li><a class="dropdown-item" href="#">Abandoned Quotes</a></li> -->
+                <li><a class="dropdown-item" href="{% url 'finance:all_printleader' %}">All Printleader Invoices</a></li>
+                <li><a class="dropdown-item" href="{% url 'finance:all_lk' %}">All LK Invoices</a></li>
               </ul> 
             </li>
             <li class="nav-item dropdown">

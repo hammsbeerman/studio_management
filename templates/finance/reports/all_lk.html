@@ -24,7 +24,7 @@
       <table class="table">
         <thead>
           <tr>
-            <th scope="col" class="">Printleader Workorder</th>
+            <th scope="col" class="">LK Workorder</th>
             <th scope="col" class="">Description</th>
             <th scope="col" class="">Customer</th>
             <th scope="col" class="">Date Created</th>
@@ -39,7 +39,7 @@
           
           {% for x in workorders %}
               <tr>
-                <td><a href='{{ x.get_absolute_url }}'>{{ x.printleader_workorder }}</a></td>
+                <td><a href='{{ x.get_absolute_url }}'>{{ x.lk_workorder }}</a></td>
                 <td>{{ x.description }}</td>
                 <td>{{ x.hr_customer }}</td>
                 <td>{{ x.created|date:"M d, Y" }}</td>
