@@ -18,7 +18,7 @@
     <td>{{x.amount}}</td>
     <td>{{x.payment_type}}</td>
     <td>
-        <u><div style="color:Blue;" hx-get="{% url 'finance:remove_payment' pk=x.id %} " hx-target="#dialog">Remove</div></u>
+        <u><div style="color:Blue;" hx-post="{% url 'finance:remove_payment' pk=x.id %} " hx-target="#dialog">Remove</div></u>
     </td>
     </tr>
 {% endfor %}

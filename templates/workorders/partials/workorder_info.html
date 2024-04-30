@@ -18,6 +18,7 @@ Workorder Info
                       {% if workorder.original_order %}Original Order #: <a href="{% url 'workorders:overview' id=workorder.original_order %}">{{ workorder.original_order }}</a><br/> {% endif %}
                       {% if workorder.lk_workorder %}LK Workorder #: {{ workorder.lk_workorder }}<br/> {% endif %}
                       {% if workorder.printleader_workorder %}Printleader Order #: {{ workorder.printleader_workorder }} {% endif %}
+                      {% if workorder.kos_workorder %}Office Supply Order #: {{ workorder.kos_workorder }} {% endif %}
 </div>
 <div class="card-footer">
         <button hx-get="{% url 'workorders:edit_workorder' %}?workorder={{ workorder.id }}" hx-target="#dialog">Edit</button>
