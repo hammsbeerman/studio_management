@@ -470,12 +470,13 @@ Form for entering line item details
 
 <script>
 
-    $(document).ready(function () {
+    /*Typeahead doesn't work with HTMX
+      $(document).ready(function () {
         $("#paper_stock").select2();
         $('#paper_stock').on('select2:select', (e) => {
           htmx.trigger("#paper_stock", "change")
         });
-      })
+      })*/
 
 
     const modal = new bootstrap.Modal(document.getElementById("modal"))
