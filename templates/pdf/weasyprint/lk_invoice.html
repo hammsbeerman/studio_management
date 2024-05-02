@@ -217,7 +217,7 @@ table.ordert-first {margin-bottom: 11px;}
 		  <tr>
               <td style="width: 65.5%;text-align: justify;font-size: 9pt;padding: 13px 12px;" colspan="2" rowspan="2">Terms: To be paid within 30 business days of invoice date. Please make all checks payable to LK Design Studio. Unpaid balances incur interest at 1.5% per month. If you have any questions, please call (608) 768-0092 or email lindsey@lkdesignstudio.com</td>
               <td width="113" style="font-weight:bold;">SUBTOTAL</td>
-              <td width="113" style="font-weight:bold;">${{subtotal.absolute_price__sum|floatformat:2}}</td>
+              <td width="113" style="font-weight:bold;">${{workorder.subtotal}}</td>
             </tr>
 			
 			<tr>
@@ -231,7 +231,7 @@ table.ordert-first {margin-bottom: 11px;}
 			        <div style="width:148px;">We offer vehicle lettering, signs, and large format printing. Inquire today!</div></td>
               <td  rowspan="2"><div style="width:126px;">Ask us about Wedding and Portrait Photography!</div></td>
               <td width="113" style="font-weight:bold;">SALES TAX (5.5%)</td>
-              <td width="113" style="font-weight:bold;">${{ tax.tax_amount__sum|floatformat:2 }}</td>
+              <td width="113" style="font-weight:bold;">${{workorder.tax}}</td>
             </tr>
 			
 			<tr>
@@ -243,7 +243,7 @@ table.ordert-first {margin-bottom: 11px;}
 		     <tr>
               <td colspan="2"><span style="font-weight:bold;font-size:18px;font-style:italic;text-align: center;">Thank you for your business!</span></td>
               <td width="110" style="font-size:15px;">BALANCE DUE</td>
-              <td width="110" style="font-size:16pt;font-weight:bold;">${{total.total_with_tax__sum|floatformat:2}}</td>
+              <td width="110" style="font-size:16pt;font-weight:bold;">${{workorder.total_balance}}</td>
             </tr>	
 		</tbody>
 	</table>	
