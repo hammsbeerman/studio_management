@@ -62,9 +62,9 @@
         <td><b>Subtotal:</b></td>
         <td><b>{{ subtotal.absolute_price__sum|floatformat:2 }}</b></td>
         <td><b>Tax:</b></td>
-        <td><b>{{ tax.tax_amount__sum|floatformat:2 }}</b></td>
+        <td><b>{{ abs_tax }}</b></td>
         <td><b>Total:</td>
-        <td><b>{{ total.total_with_tax__sum|floatformat:2 }}</b></td>
+        <td><b>{{ total|floatformat:2 }}</b></td>
         <td></td>
         <td></td>
     </tr>

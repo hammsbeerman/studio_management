@@ -1687,27 +1687,53 @@ def complete_status(request):
     total_invoice = WorkorderItem.objects.filter(workorder_id=workorder).exclude(billable=0).exclude(parent=1).aggregate(
             sum=Sum('total_with_tax'),
             tax=Sum('tax_amount'),
+            abs=Sum('absolute_price')
             )
     #total_invoice = list(WorkorderItem.objects.aggregate(Sum('total_with_tax')).values())[0]
-    total = list(total_invoice.values())[0]
-    if not total:
-        total = 0
-    total = round(total, 2)
+    #total_with_tax = list(total_invoice.values())[0]
     tax = list(total_invoice.values())[1]
+    subtotal = list(total_invoice.values())[2]
+    if not subtotal:
+        subtotal = 0
+    subtotal = round(subtotal, 2)
     if not tax:
         tax = 0
-    tax = round(tax, 2)
-    base = total - tax
-    print(total)
-    print(tax)
-    print(base)
+    tax_percent = Decimal.from_float(.055)
+    tax_amount = Decimal.from_float(1.055)
+    abs_tax = subtotal * tax_percent
+    abs_tax = round(abs_tax, 2)
+    total = subtotal + abs_tax
+
+    # print('Abs tax')
+    #     #print(abs_tax)
+    #     subtotal_ag = list(subtotal.values())[0]
+    #     print(subtotal_ag)
+    #     tax_percent = Decimal.from_float(.055)
+    #     tax_amount = Decimal.from_float(1.055)
+    #     abs_tax = subtotal_ag * tax_percent
+    #     abs_tax = round(abs_tax, 2)
+    #     # if lineitem.tax_exempt == 1:
+    #     #     lineitem.tax_amount = 0
+    #     #     lineitem.total_with_tax = lineitem.absolute_price
+    #     # else:
+    #     #     lineitem.tax_amount = lineitem.absolute_price * tax_percent
+    #     #     lineitem.total_with_tax = lineitem.absolute_price * tax
+    #     print(abs_tax)
+    #     total = subtotal_ag + abs_tax
+
+
+    # tax = round(tax, 2)
+    # base = total - tax
+    # print(total)
+    # print(tax)
+    # print(base)
     if item.completed == 0:
         item.total_balance = total
         item.open_balance = total
         item.updated = timezone.now()
         item.workorder_total = total
-        item.subtotal = base
-        item.tax = tax
+        item.subtotal = subtotal
+        item.tax = abs_tax
         if not item.amount_paid:
             item.amount_paid = 0
         item.completed = 1
