@@ -334,8 +334,15 @@ def edititem(request, id, pk, cat,):
             else:
                 print('absolute price')
                 print(type(lineitem.absolute_price))
-                lineitem.tax_amount = lineitem.absolute_price * tax_percent
-                lineitem.total_with_tax = lineitem.absolute_price * tax
+                tax_amount = lineitem.absolute_price * tax_percent
+                rounded_tax_amount = round(tax_amount, 2)
+                #rounded_tax = round(tax_percent, 2)
+                print('Rounded tax')
+
+                print(rounded_tax_amount)
+                #lineitem.tax_amount = lineitem.absolute_price * tax_percent
+                lineitem.tax_amount = rounded_tax_amount
+                lineitem.total_with_tax = lineitem.absolute_price + rounded_tax_amount
             if lineitem.notes:
                 notes = lineitem.notes
             else:
