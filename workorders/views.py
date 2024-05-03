@@ -392,6 +392,7 @@ def workorder_item_list(request, id=None):
         #id=1
         #obj = get_object_or_404(Workorder, id=id,)
         #qs = Workorder.objects.all()
+        print('hello')
         print(id)
         completed = Workorder.objects.get(id=id)
         obj = WorkorderItem.objects.filter(workorder_id=id)
@@ -399,37 +400,25 @@ def workorder_item_list(request, id=None):
         #print(category.name)
         #print(obj.item_category_id.name)
         subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
-        #tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
-        #total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
-        #override_total = WorkorderItem.objects.filter(workorder_id=id).exclude(override_price__isnull=True).aggregate(Sum('override_price'))
-        #abs_tax = subtotal * .055
+        tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
+        total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
         print('Abs tax')
         #print(abs_tax)
         subtotal_ag = list(subtotal.values())[0]
-        print(subtotal_ag)
-        tax_percent = Decimal.from_float(.055)
-        tax_amount = Decimal.from_float(1.055)
-        abs_tax = subtotal_ag * tax_percent
-        abs_tax = round(abs_tax, 2)
-        # if lineitem.tax_exempt == 1:
-        #     lineitem.tax_amount = 0
-        #     lineitem.total_with_tax = lineitem.absolute_price
-        # else:
-        #     lineitem.tax_amount = lineitem.absolute_price * tax_percent
-        #     lineitem.total_with_tax = lineitem.absolute_price * tax
-        print(abs_tax)
-        total = subtotal_ag + abs_tax
-
-
-
-
-
-
-
-
-
-
-
+        if subtotal_ag:
+            print(subtotal_ag)
+            tax_percent = Decimal.from_float(.055)
+            tax_amount = Decimal.from_float(1.055)
+            abs_tax = subtotal_ag * tax_percent
+            abs_tax = round(abs_tax, 2)
+            print(subtotal_ag)
+            print(tax_percent)
+            print(abs_tax)
+            total = subtotal_ag + abs_tax
+        else:
+            abs_tax = 0
+        #abs_tax = round(abs_tax, 2)
+        #override_total = WorkorderItem.objects.filter(workorder_id=id).exclude(override_price__isnull=True).aggregate(Sum('override_price'))
         print(total)
     except:
         obj = None
@@ -441,6 +430,7 @@ def workorder_item_list(request, id=None):
         "test": test,
         "items": obj,
         "subtotal":subtotal,
+        #"tax":tax,
         "abs_tax":abs_tax,
         "total": total,
     }

@@ -48,7 +48,8 @@ def search(request):
     q = request.GET.get('q')
     workorders = Workorder.objects.filter(
         Q(hr_customer__icontains=q) | Q(workorder__icontains=q) | Q(description__icontains=q) |
-        Q(lk_workorder__icontains=q) | Q(printleader_workorder__icontains=q) | Q(kos_workorder__icontains=q)
+        Q(lk_workorder__icontains=q) | Q(printleader_workorder__icontains=q) |
+        Q(kos_workorder__icontains=q) | Q(workorder_total__icontains=q)
           ).distinct()
     open = workorders.filter(paid_in_full=0).exclude(completed=0)
     workorder_item = WorkorderItem.objects.filter(description__icontains=q).distinct()
