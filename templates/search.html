@@ -3,7 +3,14 @@
 {% block content %}
 
 <center><h4>Search results</h4></center>
-
+{% if open %}
+    Open Workorders:
+    <br>
+    {% for x in open %}
+        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}</li>
+    {% endfor %}
+{% endif %}
+<p>
 {% if workorders %}
     Workorders:
     <br>

@@ -48,8 +48,9 @@ def search(request):
     q = request.GET.get('q')
     workorders = Workorder.objects.filter(
         Q(hr_customer__icontains=q) | Q(workorder__icontains=q) | Q(description__icontains=q) |
-        Q(lk_workorder__icontains=q) | Q(printleader_workorder__icontains=q)
+        Q(lk_workorder__icontains=q) | Q(printleader_workorder__icontains=q) | Q(kos_workorder__icontains=q)
           ).distinct()
+    open = workorders.filter(paid_in_full=0).exclude(completed=0)
     workorder_item = WorkorderItem.objects.filter(description__icontains=q).distinct()
     customer = Customer.objects.filter(
         Q(company_name__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q)
@@ -60,6 +61,7 @@ def search(request):
     #contact = Contact.objects.filter(fname__icontains=q)
     context = {
         'workorders':workorders,
+        'open':open,
         'workorder_item':workorder_item,
         'customer':customer,
         'contact':contact,
