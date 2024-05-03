@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+
+<form method='POST' action=''>
+    {% csrf_token %}
+    <label for="company">Choose a company:</label>
+    <br>
+    <select name="company" id="company">
+    <option value="">--Please choose an option--</option>
+    <option value="1">Krueger Printing</option>
+    <option value="2">LK Design</option>
+    <option value="3">Krueger Office Supply</option>
+    <option value="4">Krueger Test</option>
+    </select><br>
+    <br>
+    <label for="fname">Starting Workorder:</label><br>
+    <input type="text" id="start" name="start"><br>
+    <label for="lname">Ending Workorder:</label><br>
+    <input type="text" id="end" name="end"><br><br>
+    <input type="submit" value="Submit">
+</form> 
+
+{% if missing %}
+    {% for x in missing %}
+        {{x}}<br>
+    {% endfor %}
+{% endif %}
+
+
+  {% endblock content %}

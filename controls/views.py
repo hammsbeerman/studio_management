@@ -127,6 +127,67 @@ def mark_all_invoiced(request):
         Workorder.objects.filter(pk=x.pk).update(invoice_sent=1)
     return render (request, "controls/utilities.html")
 
+def missing_workorders(request):
+    if request.method =="POST":
+        start = request.POST.get('start')
+        end = request.POST.get('end')
+        company = request.POST.get('company')
+        try:
+            start = int(start)
+        except:
+            return render (request, "controls/missing_workorders.html")
+        try:
+            end = int(end)
+        except:
+            return render (request, "controls/missing_workorders.html")
+        workorders = list(range(start, end + 1))
+        print(workorders)
+        # max = workorders[0]
+        # for i in workorders:
+        #     #print(i)
+        #     if i > max:
+        #         max = i
+        # print(max)
+        #test = 3
+        # if company == test:
+        #     print('same')
+        print(company)
+        company = int(company)
+        if company == 1:
+            print('printleader')
+            #xisting = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('kos_workorder', flat=True)
+            existing = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('printleader_workorder', flat=True)
+        elif company == 2:
+            print('lk')
+            #xisting = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('kos_workorder', flat=True)
+            existing = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('lk_workorder', flat=True)
+        elif company == 3:
+            print('kos')
+            #xisting = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('kos_workorder', flat=True)
+            existing = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('printleader_workorder', flat=True)
+        else:
+            print('broken')
+            return render (request, "controls/missing_workorders.html")
+        exist = (list(existing))
+        print(exist)
+        try:
+            cleaned = [eval(i) for i in exist]
+        except:
+            return render (request, "controls/missing_workorders.html")
+        print(cleaned)
+
+        set1 = set(workorders)
+        set2 = set(cleaned)
+
+
+        missing = list(sorted(set1 - set2))
+        print('missing:', missing)
+        context = {
+            'missing':missing,
+        }
+        return render (request, "controls/missing_workorders.html", context)
+    return render (request, "controls/missing_workorders.html")
+    
 
 
 

@@ -399,26 +399,36 @@ def workorder_item_list(request, id=None):
         #category = Category.objects.filter(id=obj.item_category.id)
         #print(category.name)
         #print(obj.item_category_id.name)
-        subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
+        subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).exclude(tax_exempt=1).aggregate(Sum('absolute_price'))
+        subtotal_exempt = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).exclude(tax_exempt=0).aggregate(Sum('absolute_price'))
         tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
         total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
         print('Abs tax')
         #print(abs_tax)
-        subtotal_ag = list(subtotal.values())[0]
-        if subtotal_ag:
-            print(subtotal_ag)
+        subtotal_aggregate = list(subtotal.values())[0]
+        subtotal_exempt_aggregate = list(subtotal_exempt.values())[0]
+        if subtotal_aggregate:
+            print(subtotal_aggregate)
             tax_percent = Decimal.from_float(.055)
             tax_amount = Decimal.from_float(1.055)
-            abs_tax = subtotal_ag * tax_percent
+            abs_tax = subtotal_aggregate * tax_percent
             abs_tax = round(abs_tax, 2)
-            print(subtotal_ag)
+            print(subtotal_aggregate)
             print(tax_percent)
             print(abs_tax)
-            total = subtotal_ag + abs_tax
         else:
             abs_tax = 0
+        if not subtotal_aggregate:
+            subtotal_aggregate = 0
+        if not subtotal_exempt_aggregate:
+            subtotal_exempt_aggregate = 0
+        if not abs_tax:
+            abs_tax = 0
+        subtotal = subtotal_aggregate + subtotal_exempt_aggregate
+        total = subtotal_aggregate + subtotal_exempt_aggregate + abs_tax
         #abs_tax = round(abs_tax, 2)
         #override_total = WorkorderItem.objects.filter(workorder_id=id).exclude(override_price__isnull=True).aggregate(Sum('override_price'))
+        print('total')
         print(total)
     except:
         obj = None
@@ -613,8 +623,10 @@ def edit_design_item(request, pk, cat):
             lineitem.tax_amount = 0
             lineitem.total_with_tax = lineitem.absolute_price
         else:
-            lineitem.tax_amount = lineitem.absolute_price * tax_percent
-            lineitem.total_with_tax = lineitem.absolute_price * tax
+            rounded_tax = lineitem.absolute_price * tax
+            rounded_tax = round(rounded_tax, 2)
+            lineitem.tax_amount = rounded_tax - lineitem.absolute_price
+            lineitem.total_with_tax = rounded_tax
         lineitem.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     print(category)
@@ -666,8 +678,10 @@ def edit_postage_item(request, pk, cat):
             lineitem.tax_amount = 0
             lineitem.total_with_tax = lineitem.absolute_price
         else:
-            lineitem.tax_amount = lineitem.absolute_price * tax_percent
-            lineitem.total_with_tax = lineitem.absolute_price * tax
+            rounded_tax = lineitem.absolute_price * tax
+            rounded_tax = round(rounded_tax, 2)
+            lineitem.tax_amount = rounded_tax - lineitem.absolute_price
+            lineitem.total_with_tax = rounded_tax
         lineitem.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     print(category)
@@ -721,8 +735,10 @@ def edit_custom_item(request, pk, cat):
             lineitem.tax_amount = 0
             lineitem.total_with_tax = lineitem.absolute_price
         else:
-            lineitem.tax_amount = lineitem.absolute_price * tax_percent
-            lineitem.total_with_tax = lineitem.absolute_price * tax
+            rounded_tax = lineitem.absolute_price * tax
+            rounded_tax = round(rounded_tax, 2)
+            lineitem.tax_amount = rounded_tax - lineitem.absolute_price
+            lineitem.total_with_tax = rounded_tax
         lineitem.save()
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     print(category)
@@ -794,8 +810,10 @@ def edit_orderout_item(request, pk, cat):
             lineitem.tax_amount = 0
             lineitem.total_with_tax = lineitem.absolute_price
         else:
-            lineitem.tax_amount = lineitem.absolute_price * tax_percent
-            lineitem.total_with_tax = lineitem.absolute_price * tax
+            rounded_tax = lineitem.absolute_price * tax
+            rounded_tax = round(rounded_tax, 2)
+            lineitem.tax_amount = rounded_tax - lineitem.absolute_price
+            lineitem.total_with_tax = rounded_tax
         if lineitem.notes:
             notes = lineitem.notes
         else:
@@ -923,8 +941,10 @@ def edit_set_price_item(request, pk, cat):
             lineitem.tax_amount = 0
             lineitem.total_with_tax = lineitem.absolute_price
         else:
-            lineitem.tax_amount = lineitem.absolute_price * tax_percent
-            lineitem.total_with_tax = lineitem.absolute_price * tax
+            rounded_tax = lineitem.absolute_price * tax
+            rounded_tax = round(rounded_tax, 2)
+            lineitem.tax_amount = rounded_tax - lineitem.absolute_price
+            lineitem.total_with_tax = rounded_tax
         if lineitem.notes:
             notes = lineitem.notes
         else:
@@ -1487,8 +1507,10 @@ def tax(request, tax, id):
         lineitem = WorkorderItem.objects.get(id=id)
         lineitem.tax_exempt = 0
         if lineitem.absolute_price is not None:
-            lineitem.tax_amount = lineitem.absolute_price * tax_percent
-            lineitem.total_with_tax = lineitem.absolute_price * tax_sum
+            rounded_tax = lineitem.absolute_price * tax
+            rounded_tax = round(rounded_tax, 2)
+            lineitem.tax_amount = rounded_tax - lineitem.absolute_price
+            lineitem.total_with_tax = rounded_tax
         lineitem.save()
         context = {
             'tax':False,
@@ -1686,44 +1708,22 @@ def complete_status(request):
     if not subtotal:
         subtotal = 0
     subtotal = round(subtotal, 2)
+    tax = round(tax, 2)
     if not tax:
         tax = 0
     tax_percent = Decimal.from_float(.055)
     tax_amount = Decimal.from_float(1.055)
     abs_tax = subtotal * tax_percent
     abs_tax = round(abs_tax, 2)
-    total = subtotal + abs_tax
+    total = subtotal + tax
 
-    # print('Abs tax')
-    #     #print(abs_tax)
-    #     subtotal_ag = list(subtotal.values())[0]
-    #     print(subtotal_ag)
-    #     tax_percent = Decimal.from_float(.055)
-    #     tax_amount = Decimal.from_float(1.055)
-    #     abs_tax = subtotal_ag * tax_percent
-    #     abs_tax = round(abs_tax, 2)
-    #     # if lineitem.tax_exempt == 1:
-    #     #     lineitem.tax_amount = 0
-    #     #     lineitem.total_with_tax = lineitem.absolute_price
-    #     # else:
-    #     #     lineitem.tax_amount = lineitem.absolute_price * tax_percent
-    #     #     lineitem.total_with_tax = lineitem.absolute_price * tax
-    #     print(abs_tax)
-    #     total = subtotal_ag + abs_tax
-
-
-    # tax = round(tax, 2)
-    # base = total - tax
-    # print(total)
-    # print(tax)
-    # print(base)
     if item.completed == 0:
         item.total_balance = total
         item.open_balance = total
         item.updated = timezone.now()
         item.workorder_total = total
         item.subtotal = subtotal
-        item.tax = abs_tax
+        item.tax = tax
         if not item.amount_paid:
             item.amount_paid = 0
         item.completed = 1

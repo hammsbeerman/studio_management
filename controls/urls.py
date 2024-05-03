@@ -11,6 +11,7 @@ from .views import (
     utilities,
     mark_all_verified,
     mark_all_invoiced,
+    missing_workorders,
     #setprice_list,
 )
 
@@ -25,5 +26,6 @@ urlpatterns = [
     path('utilities/', utilities, name='utilities'),
     path('mark_verified/', mark_all_verified, name='mark_all_verified'),
     path('mark_invoiced/', mark_all_invoiced, name='mark_all_invoiced'),
+    path('missing_workorders/', missing_workorders, name='missing_workorders'),
     #path('setprice_list/', setprice_list, name='setprice_list'),
 ]
