@@ -1507,7 +1507,7 @@ def tax(request, tax, id):
         lineitem = WorkorderItem.objects.get(id=id)
         lineitem.tax_exempt = 0
         if lineitem.absolute_price is not None:
-            rounded_tax = lineitem.absolute_price * tax
+            rounded_tax = lineitem.absolute_price * tax_sum
             rounded_tax = round(rounded_tax, 2)
             lineitem.tax_amount = rounded_tax - lineitem.absolute_price
             lineitem.total_with_tax = rounded_tax
