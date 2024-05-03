@@ -160,11 +160,11 @@ def missing_workorders(request):
         elif company == 2:
             print('lk')
             #xisting = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('kos_workorder', flat=True)
-            existing = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('lk_workorder', flat=True)
+            existing = Workorder.objects.filter(lk_workorder__isnull=False).values_list('lk_workorder', flat=True)
         elif company == 3:
             print('kos')
             #xisting = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('kos_workorder', flat=True)
-            existing = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('printleader_workorder', flat=True)
+            existing = Workorder.objects.filter(kos_workorder__isnull=False).values_list('printleader_workorder', flat=True)
         else:
             print('broken')
             return render (request, "controls/missing_workorders.html")
