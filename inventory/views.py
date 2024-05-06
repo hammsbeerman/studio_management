@@ -43,9 +43,10 @@ def add_vendor(request):
         form = AddVendorForm(request.POST)
         if form.is_valid():
             form.save()
-        vendor = Vendor.objects.all()
+        vendors = Vendor.objects.all().order_by('name')
+        #print(vendor)
         context = {
-            'vendor': vendor,
+            'vendors': vendors,
         }
         return render (request, "inventory/vendors/list.html", context)
     context = {
