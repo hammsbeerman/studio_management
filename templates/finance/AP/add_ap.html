@@ -27,6 +27,7 @@
                   <th scope="col" class="">Date</th>
                   <th scope="col" class="">Amount</th>
                   <th scope="col" class="">Invoice #</th>
+                  <th scope="col" class="">Date Due</th>
                 </tr>
               </thead>
               <tbody>
@@ -36,6 +37,7 @@
                     <td>{{ x.invoice_date }}</td>
                     <td>{{ x.amount }}</td>
                     <td>{{ x.invoice_number }}</td>
+                    <td>{{ x.date_due }}</td>
                 </tr>
             {% endfor %}
         </div>

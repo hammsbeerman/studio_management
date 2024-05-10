@@ -11,6 +11,7 @@ class AccountsPayable(models.Model):
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     invoice_number = models.CharField('Invoice Number', max_length=100, blank=True, null=True)
     amount = models.DecimalField('Amount', max_digits=10, decimal_places=2)
+    date_due = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
     discount = models.DecimalField('Discount', blank=True, null=True, max_digits=10, decimal_places=2)
     discount_date_due = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
     paid = models.BooleanField('Paid', null=True, default=False)

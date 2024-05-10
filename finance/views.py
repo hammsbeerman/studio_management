@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models import Avg, Count, Min, Sum, Subquery, Case, When, Value, DecimalField, OuterRef
 from django.db.models import Q
 from django.utils import timezone
+from datetime import timedelta, datetime
 import logging
 from .models import AccountsPayable, DailySales, Araging, Payments
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm
@@ -399,10 +400,18 @@ def add_bill_payable(request):
     if request.user.is_authenticated:
         if request.method == "POST":
             if form.is_valid():
-                add_record = form.save()
+                obj = form.save(commit=False)
+                date_due = request.POST.get('date_due')
+                invoice_date = request.POST.get('invoice_date')
+                if not date_due:
+                    date = datetime.strptime(invoice_date, "%m/%d/%Y")
+                    #d = timedelta(days=30)
+                    date_due = date + timedelta(days=30)
+                    obj.date_due = date_due
+                obj.save()
                 messages.success(request, "Record Added...")
                 return redirect('finance:add_bill_payable')
-        bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('vendor', 'invoice_date')
+        bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')
         context = {
             'form':form,
             'bills':bills,

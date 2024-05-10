@@ -25,3 +25,7 @@ $( function() {
 $( function() {
   $( "#id_invoice_date" ).datepicker();
 } );
+
+$( function() {
+  $( "#id_date_due" ).datepicker();
+} );
