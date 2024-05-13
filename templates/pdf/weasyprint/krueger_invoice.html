@@ -228,7 +228,7 @@ margin-top: 25px;
 			<th colspan="2">invoice Date</th>
 			</tr>
 			<tr>
-			<td colspan="2">{{workorder.workorder}}</td>
+			<td colspan="2">{{workorder.workorder}}{% if workorder.printleader_workorder %} / {{workorder.printleader_workorder }}{%endif %}</td>
 			<td colspan="2">{{date|date:"M d, Y"}}</td>
 			</tr>
 			<tr>

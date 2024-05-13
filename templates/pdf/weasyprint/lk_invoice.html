@@ -146,7 +146,7 @@ table.ordert-first {margin-bottom: 11px;}
             </tr>
             <tr>
               <td>{{date|date:"M d, Y"}}</td>
-              <td>{{workorder.workorder}}</td>
+              <td>{{workorder.workorder}}{% if workorder.lk_workorder %} / {{workorder.lk_workorder }}{%endif %}</td>
               <td>{{workorder.po_number}}</td>
             </tr>
           </table>
