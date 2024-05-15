@@ -449,7 +449,7 @@ def view_bills_payable(request):
 
 @login_required
 def complete_not_billed(request):
-    listing = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).order_by('hr_customer')
+    listing = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(void=1).order_by('hr_customer')
     print(listing)
     context = {
         'listing':listing,
