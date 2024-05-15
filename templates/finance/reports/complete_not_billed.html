@@ -19,6 +19,7 @@
             <th scope="col" class="col-1">Customer</th>
             <th scope="col" class="col-1">Amount</th>
             <th scope="col" class="col-1">View</th>
+            <th scope="col" class="col-1">External Num</th>
           </tr>
         </thead>
         <tbody>
@@ -29,6 +30,7 @@
                 <td colspan>{{ x.hr_customer }}</td>
                 <td>{{ x.open_balance|floatformat:2 }}</td>
                 <td><a href='{{ x.get_absolute_url }}'>{{ x.workorder }}</a></td>
+                <td><a href='{{ x.get_absolute_url }}'>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}} {% elif x.kos_workorder %}KOS: {{ x.kos_workorder}}{% endif %}</a></td>
               </tr>
             {% endif %}
           {% endfor %}
