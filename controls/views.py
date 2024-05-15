@@ -127,6 +127,7 @@ def mark_all_invoiced(request):
         Workorder.objects.filter(pk=x.pk).update(invoice_sent=1)
     return render (request, "controls/utilities.html")
 
+@login_required
 def missing_workorders(request):
     if request.method =="POST":
         start = request.POST.get('start')
@@ -187,6 +188,19 @@ def missing_workorders(request):
         }
         return render (request, "controls/missing_workorders.html", context)
     return render (request, "controls/missing_workorders.html")
+
+@login_required
+def update_complete_date(request):
+    workorder = Workorder.objects.filter(completed=1)
+    for x in workorder:
+        print(x.workorder)
+        date = x.updated
+        print(date)
+        Workorder.objects.filter(pk=x.pk).update(date_completed=date)
+    return render (request, "controls/utilities.html")
+
+def special_tools(request):
+    return render (request, "controls/specialized_tools.html")
     
 
 

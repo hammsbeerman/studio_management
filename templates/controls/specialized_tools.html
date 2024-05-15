@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+<H1>Utilities - Use with caution - These will break the system</h1>
+<a href="{% url 'workorders:complete_allitems' %}">Complete Items for Completed Workorders</a>
+<br>
+<a href="{% url 'controls:mark_all_verified' %}">Mark all workorders verified</a>
+<br>
+<a href="{% url 'controls:mark_all_invoiced' %}">Mark all workorders invoiced</a>
+<br>
+<a href="{% url 'controls:update_complete_date' %}">Add date to completed invoices</a>
+
+
+
+
+
+
+{% endblock content %}

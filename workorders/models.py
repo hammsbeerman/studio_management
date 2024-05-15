@@ -40,6 +40,7 @@ class Workorder(models.Model):
     completed = models.BooleanField(blank=False, null=False, default=False)
     explore_created = models.BooleanField(blank=False, null=False, default=False)
     billed = models.BooleanField('Billed', blank=False, null=False, default=False)
+    date_completed = models.DateTimeField(auto_now = False, blank=True, null=True)
     date_billed = models.DateTimeField(auto_now = False, blank=True, null=True)
     total_balance = models.DecimalField('Total Balance', max_digits=8, decimal_places=2, blank=True, null=True)
     amount_paid = models.DecimalField('Amount Paid', max_digits=8, decimal_places=2, blank=True, null=True)
