@@ -27,7 +27,8 @@ from .views import (
     open_invoices,
     open_invoices_recieve_payment,
     payment_history,
-    remove_payment
+    remove_payment,
+    all_open_printleader,
 )
 
 app_name='finance'
@@ -53,6 +54,7 @@ urlpatterns = [
     path('krueger_ar/', krueger_ar, name='krueger_ar'),
     path('lk_ar/', lk_ar, name='lk_ar'),
     path('all_printleader/', all_printleader, name='all_printleader'),
+    path('all_open_printleader/', all_open_printleader, name='all_open_printleader'),
     path('all_lk/', all_lk, name='all_lk'),
     path('open_invoices/<int:pk>/', open_invoices, name='open_invoices'),
     path('open_invoices_recieve_payment/<int:pk>/', open_invoices_recieve_payment, name='open_invoices_recieve_payment'),

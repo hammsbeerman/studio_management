@@ -598,6 +598,16 @@ def all_printleader(request):
     return render(request, 'finance/reports/all_printleader.html', context)
 
 @login_required
+def all_open_printleader(request):
+    workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(internal_company = 'Office Supplies').exclude(quote=1).exclude(void=1).exclude(paid_in_full=1).order_by('printleader_workorder')
+    total_balance = workorders.filter().aggregate(Sum('open_balance'))
+    context = {
+        'total_balance':total_balance,
+        'workorders':workorders,
+    }
+    return render(request, 'finance/reports/all_open_printleader.html', context)
+
+@login_required
 def all_lk(request):
     workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(internal_company = 'Office Supplies').exclude(quote=1).exclude(void=1).order_by('-lk_workorder')
     total_balance = workorders.filter().aggregate(Sum('open_balance'))
