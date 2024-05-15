@@ -188,7 +188,7 @@ def dashboard(request, id=None):
 @login_required
 def workorder_list(request):
     workorder = Workorder.objects.all().exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
-    completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("date_completed")[:20]
+    completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
     quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
     context = {
         'workorders': workorder,
@@ -201,7 +201,7 @@ def workorder_list(request):
 @login_required
 def workorder_k_list(request):
     workorder = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
-    completed = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("date_completed")[:20]
+    completed = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
     quote = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
     context = {
         'workorders': workorder,
@@ -214,7 +214,7 @@ def workorder_k_list(request):
 @login_required
 def workorder_lk_list(request):
     workorder = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
-    completed = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("date_completed")[:20]
+    completed = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
     quote = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
     context = {
         'workorders': workorder,
@@ -227,7 +227,7 @@ def workorder_lk_list(request):
 @login_required
 def workorder_kos_list(request):
     workorder = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
-    completed = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("date_completed")[:20]
+    completed = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
     quote = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
     context = {
         'workorders': workorder,
