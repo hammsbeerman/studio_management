@@ -187,12 +187,14 @@ def dashboard(request, id=None):
 
 @login_required
 def workorder_list(request):
-    workorder = Workorder.objects.all().exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    workorder = Workorder.objects.all().exclude(workorder=1111).exclude(orderout_waiting=1).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    orderout = Workorder.objects.all().exclude(workorder=1111).exclude(orderout_waiting=0).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
     quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
     context = {
         'workorders': workorder,
         'completed': completed,
+        'orderout': orderout,
         'quote': quote,
 
     }
@@ -200,12 +202,14 @@ def workorder_list(request):
 
 @login_required
 def workorder_k_list(request):
-    workorder = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    workorder = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(orderout_waiting=1).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    orderout = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(orderout_waiting=0).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     completed = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
     quote = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
     context = {
         'workorders': workorder,
         'completed': completed,
+        'orderout': orderout,
         'quote': quote,
 
     }
@@ -213,12 +217,14 @@ def workorder_k_list(request):
 
 @login_required
 def workorder_lk_list(request):
-    workorder = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    workorder = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(orderout_waiting=1).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    orderout = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(orderout_waiting=0).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     completed = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
     quote = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
     context = {
         'workorders': workorder,
         'completed': completed,
+        'orderout': orderout,
         'quote': quote,
 
     }
@@ -226,12 +232,14 @@ def workorder_lk_list(request):
 
 @login_required
 def workorder_kos_list(request):
-    workorder = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    workorder = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(orderout_waiting=1).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
+    orderout = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(orderout_waiting=0).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     completed = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
     quote = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
     context = {
         'workorders': workorder,
         'completed': completed,
+        'orderout': orderout,
         'quote': quote,
 
     }
@@ -1996,4 +2004,20 @@ def invoice_sent(request, pk=None):
     return redirect('workorders:overview', id=workorder.workorder)
 
 
-
+@login_required
+def orderout_wait(request):
+    workorder = request.GET.get('workorder')
+    print(workorder)
+    
+    item = Workorder.objects.get(id = workorder)
+    
+    if item.orderout_waiting == 0:
+        item.orderout_waiting = 1
+        item.updated = timezone.now()
+        #item.total_balance = 
+        item.save()
+    else:
+        item.orderout_waiting = 0
+        item.updated = timezone.now()
+        item.save()
+    return redirect("workorders:overview", id=item.workorder)

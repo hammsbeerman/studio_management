@@ -42,10 +42,18 @@
         <a href="{% url 'workorders:copy_workorder' id=workid %}" class="btn btn-primary btn-sm" role="button">Duplicate Workorder</a>
         {% if workorder.completed == 0 %}
           <a href="{% url 'workorders:complete_status'  %}?workorder={{workorder.id}}" class="btn btn-primary btn-sm" role="button">Complete Workorder</a>
+          <p>
+          <p>
+          {% if workorder.orderout_waiting == 1 %}
+            <a href="{% url 'workorders:orderout_wait'  %}?workorder={{workorder.id}}" class="btn btn-primary btn-sm" role="button">Waiting on orderout</a>
+          {% else %}
+            <a href="{% url 'workorders:orderout_wait'  %}?workorder={{workorder.id}}" class="btn btn-primary btn-sm" role="button">No orderouts Pending</a>
+          {% endif %}
         {% else %}
           <a href="{% url 'workorders:complete_status'  %}?workorder={{workorder.id}}" class="btn btn-primary btn-sm" role="button">Un-Complete Workorder</a>
         {% endif %}
       {% endif %}
+      
   </div>
 </div>
 

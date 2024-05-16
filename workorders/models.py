@@ -46,6 +46,7 @@ class Workorder(models.Model):
     amount_paid = models.DecimalField('Amount Paid', max_digits=8, decimal_places=2, blank=True, null=True)
     open_balance = models.DecimalField('Open Balance', max_digits=8, decimal_places=2, blank=True, null=True)
     paid_in_full = models.BooleanField('Paid in Full', blank=False, null=False, default=False)
+    orderout_waiting = models.BooleanField('Waiting on Orderout', blank=False, null=False, default=False)
     date_paid = models.DateTimeField(auto_now = False, blank=True, null=True)
     aging = models.PositiveSmallIntegerField('Aging', blank=True, null=True)
     days_to_pay = models.CharField('Days to pay', max_length=100, blank=True, null=True)

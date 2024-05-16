@@ -27,3 +27,17 @@
             </ul></p>
     </div>
 </div>
+<div class="row">
+    <div class="col-sm-4">
+        Order Outs
+        <p><ul>
+            {% for x in orderout %}
+            <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.customer.company_name }}</a></li>
+            {% endfor %}
+        </ul></p>
+    </div>
+    <div class="col-sm-4">
+    </div>
+    <div class="col-sm-4">
+    </div>
+</div>

@@ -47,6 +47,7 @@ from .views import (
     item_details,
     verify,
     invoice_sent,
+    orderout_wait,
     # removed,
 )
 
@@ -102,6 +103,7 @@ urlpatterns = [
     path('item_details/<int:pk>/', item_details, name='item_details'),
     path('verify/<int:pk>/', verify, name='verify'),
     path('invoice_sent/<int:pk>/', invoice_sent, name='invoice_sent'),
+    path('orderout_wait/', orderout_wait, name='orderout_wait'),
 
 
     # path('removed/', removed, name='removed')
