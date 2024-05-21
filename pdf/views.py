@@ -34,6 +34,9 @@ def invoice_pdf(request, id):
     items = WorkorderItem.objects.filter(workorder=id)
     
     workorder = Workorder.objects.get(id=id)
+    payment = workorder.amount_paid
+    open_bal = workorder.open_balance
+    total_bal = workorder.total_balance
     if not workorder.date_billed:
         workorder.date_billed = timezone.now()
         workorder.billed = 1
@@ -62,15 +65,21 @@ def invoice_pdf(request, id):
         rows += string
     #print(rows)
 
+    if payment:
+        total_bal = open_bal
+    print('payment')
+    print(payment)
     context = {
         'items':items,
         'workorder':workorder,
         'customer':customer,
+        'payment':payment,
         'contact':contact,
         'date':date,
         'subtotal':subtotal,
         'tax':tax, 
         'total':total,
+        'total_bal':total_bal,
         'rows': rows
     }
 

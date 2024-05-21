@@ -235,15 +235,15 @@ table.ordert-first {margin-bottom: 11px;}
             </tr>
 			
 			<tr>
-			  {% if payment %} <td width="113" style="font-weight:bold;">PAYMENT</td>
-              <td width="113" style="font-weight:bold;">$0</td>{% endif %}
+			  {% if payment %} <td width="113" style="font-weight:bold;">PAYMENTS</td>
+              <td width="113" style="font-weight:bold;">{{payment}}</td>{% endif %}
 			</tr>	
 			
 
 		     <tr>
               <td colspan="2"><span style="font-weight:bold;font-size:18px;font-style:italic;text-align: center;">Thank you for your business!</span></td>
               <td width="110" style="font-size:15px;">BALANCE DUE</td>
-              <td width="110" style="font-size:16pt;font-weight:bold;">${{workorder.total_balance}}</td>
+              <td width="110" style="font-size:16pt;font-weight:bold;">${{total_bal}}</td>
             </tr>	
 		</tbody>
 	</table>	
