@@ -37,8 +37,10 @@ def invoice_pdf(request, id):
     payment = workorder.amount_paid
     open_bal = workorder.open_balance
     total_bal = workorder.total_balance
+    date = workorder.date_billed
     if not workorder.date_billed:
         workorder.date_billed = timezone.now()
+        date = workorder.date_billed
         workorder.billed = 1
         workorder.save()
     customer = Customer.objects.get(id=workorder.customer.id)
@@ -49,7 +51,7 @@ def invoice_pdf(request, id):
         contact = ''
     print(contact)
     #print(customer.company_name)
-    date = datetime.date.today()
+    #date = datetime.date.today()
     subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
     tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
     total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
