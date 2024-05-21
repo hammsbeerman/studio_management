@@ -209,14 +209,14 @@ def apply_payment(request):
                 print(partial)
                 full_payment = 0
                 partial = int(partial)
-                if credit > partial:
+                if credit >= partial:
                     open = workorder.open_balance
                     paid = workorder.amount_paid
                     if paid:
                         paid = paid + partial
                     else:
                         paid = partial
-                    if paid > total:
+                    if paid >= total:
                         partial = open
                         paid = total
                         full_payment = 1

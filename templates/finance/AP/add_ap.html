@@ -9,6 +9,8 @@
 <div class="container">
     <div class="row">
       <div class="col-sm-4">
+        <p>
+          <p>
             <form method="POST" action="{% url 'finance:add_bill_payable' %}">
                 {% csrf_token %}
 
@@ -18,8 +20,8 @@
                 <button type="submit" class="btn btn-secondary">Add Bill Payable</button>
 
             </form>
-        </div>
-        <div class="col-sm-8">
+      </div>
+      <div class="col-sm-8">
             <table class="table">
               <thead>
                 <tr>
@@ -40,7 +42,7 @@
                     <td>{{ x.date_due }}</td>
                 </tr>
             {% endfor %}
-        </div>
+      </div>
     </div>
 </div>
 
