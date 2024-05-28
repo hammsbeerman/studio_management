@@ -1364,6 +1364,7 @@ def copy_workorder(request, id=None):
     obj.paid_in_full = 0
     obj.days_to_pay = ''
     obj.aging = None
+    obj.void = 0
     obj.workorder_status_id = 1
     obj.lk_workorder = None
     obj.printleader_workorder = None

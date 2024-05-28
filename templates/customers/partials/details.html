@@ -54,6 +54,7 @@
             </div>
         </div>
       </div>
+    
 
       {% include 'customers/partials/icon_legend.html' %}
       <hr>
@@ -109,17 +110,41 @@
                   </tr>
                   {% endfor %}
                 </table></p>
-          
-          {% if voided %}
-          
-              Voided / Refunded Workorders
-              <p><ul>
-                  {% for x in  quote %}
-                  <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
-                  {% endfor %}
-                  </ul></p>
           </div>
-          {% endif %}
+        </div>
+          <hr>
+          <div class="row">
+              <div class="col-sm-4">
+                sdasd
+                {% if voided %}
+                
+                    Voided / Refunded Workorders
+                    <p><ul>
+                        {% for x in  quote %}
+                        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a></li>
+                        {% endfor %}
+                        </ul></p>
+                {% endif %}
+              </div>
+              <div class="col-sm-8">
+                Payment History:
+                <p><table class="table">
+                  <th scope="col" class="">Date</th>
+                  <th scope="col" class="">Amount</th>
+                  <th scope="col" class="">Payment Type</th>
+                  <th scope="col" class="">Number</th>
+                {% for x in payments %}
+                <tr>
+                  <td>{{x.date}}</td>
+                  <td>{{x.amount}}</td>
+                  <td>{{x.payment_type}}</td>
+                  <td>{% if x.check_number %}{{x.check_number}}{% elif x.giftcard_number %}{{x.giftcard_number}}{% endif %}</td>
+                </tr>
+                {% endfor %}
+              </table>
+              </div>
+            
+          
       </div>
       </div>
       

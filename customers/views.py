@@ -8,6 +8,7 @@ from .forms import CustomerForm, ContactForm, CustomerNoteForm
 from controls.models import Numbering
 from workorders.models import Workorder
 from workorders.forms import WorkorderForm
+from finance.models import Payments
 
 @login_required
 def customer_info(request):
@@ -461,6 +462,7 @@ def expanded_detail(request, id=None):
         onetwenty = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
         #current = list(current.values())[0]
         #current = round(current, 2)
+        payments = Payments.objects.filter(customer=id).exclude(void=1).order_by('-date')
 
 
         context = {
@@ -477,7 +479,8 @@ def expanded_detail(request, id=None):
             'sixty':sixty,
             'ninety':ninety,
             'onetwenty':onetwenty,
-        }
+            'payments':payments,
+                            }
         if search:
             return render(request, "customers/search_detail.html", context)
         else:
