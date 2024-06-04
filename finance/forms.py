@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 from django.urls import reverse_lazy
-from .models import Payments, AccountsPayable, DailySales, Appliedother
+from .models import Payments, AccountsPayable, DailySales, Appliedother#, WorkorderPayment
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 
@@ -34,3 +34,11 @@ class AppliedElsewhereForm(forms.ModelForm):
     class Meta:
         model = Appliedother
         fields = ['date', 'customer', 'amount', 'memo']
+
+# class WorkorderPayment(forms.ModelForm):
+#    #state = forms.CharField(widget=USStateSelect(), initial='WI')
+#    class Meta:
+#        model = WorkorderPayment
+#        fields = ['workorder', 'payment', 'payment_amount', 'date']
+#        labels = {
+#         }

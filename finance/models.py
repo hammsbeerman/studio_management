@@ -39,18 +39,30 @@ class DailySales(models.Model):
 class Payments(models.Model):
     date= models.DateField(auto_now=False, auto_now_add=False, blank=False, null=False)
     customer = models.ForeignKey(Customer, blank=False, null=False, on_delete=models.DO_NOTHING)
-    workorder = models.ForeignKey(Workorder, blank=True, null=True, on_delete=models.DO_NOTHING)
+    workorder = models.ForeignKey(Workorder, blank=True, null=True, on_delete=models.DO_NOTHING, related_name="Workorder")
     payment_type = models.ForeignKey(PaymentType, blank=False, null=False, on_delete=models.DO_NOTHING)
     check_number = models.CharField('Check Number', max_length=100, blank=True, null=True)
     giftcard_number = models.CharField('GiftCard Number', max_length=100, blank=True, null=True)
     refunded_invoice_number = models.CharField('Refund Invoice Number', max_length=100, blank=True, null=True)
     amount = models.DecimalField('Amount', max_digits=10, decimal_places=2, blank=True, null=True)
+    available = models.DecimalField('Amount Available', max_digits=10, decimal_places=2, default=None, null=True)
     memo = models.CharField('Memo', max_length=500, blank=True, null=True)
     void = models.BooleanField('Void Payment', default=False, blank=False, null=False)
+    workorder_applied = models.ManyToManyField(Workorder, through='WorkorderPayment')
 
 
     def __str__(self):
-        return self.customer.company_name
+        return self.customer.company_name + ' -- ' + self.payment_type.name
+    
+class WorkorderPayment(models.Model):
+    workorder = models.ForeignKey(Workorder, null=True, on_delete=models.SET_NULL)
+    payment = models.ForeignKey(Payments, null=True, on_delete=models.SET_NULL)
+    payment_amount = models.DecimalField('Payment Amount', max_digits=10, decimal_places=2, default=None, null=True)
+    date= models.DateField(auto_now=True, auto_now_add=False, blank=False, null=False)
+    void = models.BooleanField('Void Payment', default=False, blank=False, null=False)
+
+    def __str__(self):
+        return self.workorder.workorder
     
 class Araging(models.Model):
     customer = models.OneToOneField(Customer, blank=False, null=True, unique=True, on_delete=models.SET_NULL)

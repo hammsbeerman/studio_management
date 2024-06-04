@@ -7,8 +7,9 @@ from django.db.models import Avg, Count, Min, Sum, Subquery, Case, When, Value, 
 from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta, datetime
+from decimal import Decimal
 import logging
-from .models import AccountsPayable, DailySales, Araging, Payments
+from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm
 from customers.models import Customer
 from workorders.models import Workorder
@@ -82,12 +83,38 @@ def recieve_payment(request):
     customers = Customer.objects.all().order_by('company_name')
     if request.method == "POST":
             modal = request.POST.get('modal')
-            print('testing')
+            id_list = request.POST.getlist('payment')
+            payment_total = 0
+            for x in id_list:
+                print('payment total')
+                print(payment_total)
+                t = Workorder.objects.get(pk=int(x))
+                balance = t.open_balance
+                payment_total = payment_total + balance
+            amount = request.POST.get('amount')
+            amount = Decimal(amount)
+            if payment_total > amount:
+                form = PaymentForm
+                customer = request.POST.get('customer')
+                # context = {
+                #     'paymenttype':paymenttype,
+                #     'customers':customers,
+                #     'form': form,
+                # }
+                return redirect('finance:open_invoices_recieve_payment', pk=customer, msg=1)
+            # for x in id_list:
+            #     Workorder.objects.filter(pk=int(x)).update(paid_in_full=True)
+            print('testing123')
             customer = request.POST.get('customer')
             print(customer)
             check = request.POST.get('check_number')
             giftcard = request.POST.get('giftcard_number')
             refund = request.POST.get('refunded_invoice_number')
+            date = request.POST.get('date')
+            #date = date.datetime('%Y-%m-%d')
+            #date = datetime.strptime(date, '%Y/%m/%d').date()
+            date = datetime.strptime(date, '%m/%d/%Y')
+            print(date)
             form = PaymentForm(request.POST)
             if form.is_valid():
                 obj = form.save(commit=False)
@@ -96,12 +123,40 @@ def recieve_payment(request):
                 obj.giftcard_number = giftcard
                 obj.refunded_invoice_number = refund
                 obj.save()
+                print('Payment ID')
+                payment_id = obj.pk
+                remainder = amount
+                date = date.date()
+                print(amount)
+                for x in id_list:
+                    #Workorder.objects.filter(pk=pk).update(open_balance = open, amount_paid = paid, paid_in_full = full_payment, date_paid = date)
+                    amount = Workorder.objects.get(pk=int(x))
+                    #Most of this fiddlefuckery is to convert datetimes to date
+                    date_billed = amount.date_billed
+                    date_billed = date_billed.replace(tzinfo=None)
+                    date_billed = date_billed.date()
+                    days_to_pay = date - date_billed
+                    days_to_pay = abs((days_to_pay).days)
+                    Workorder.objects.filter(pk=int(x)).update(paid_in_full=1, date_paid=date, open_balance=0, amount_paid = amount.total_balance, days_to_pay = days_to_pay, payment_id = payment_id)
+                    remainder = remainder - amount.open_balance
+                    print('Remainder')
+                    print(remainder)
+                    #Save Payment History
+                    p = WorkorderPayment(workorder_id=int(x), payment_id=payment_id, payment_amount=amount.total_balance, date=date)
+                    p.save()
+                print(remainder)
+                Payments.objects.filter(pk=payment_id).update(available=remainder)
+                # if remainder > 0:
+                #     Payments.objects.filter(pk=payment_id).update(available=remainder)
+                # else:
+                #     Payments.objects.filter(pk=payment_id).update(available=remainder)
                 print(customer)
                 cust = Customer.objects.get(id=customer)
                 try:
                     credit = cust.credit + obj.amount
                 except: 
                     credit = obj.amount
+                credit = credit - payment_total
                 open_balance = Workorder.objects.filter(customer_id=customer).exclude(completed=0).exclude(paid_in_full=1).aggregate(sum=Sum('open_balance'))
                 open_balance = list(open_balance.values())[0]
                 print(open_balance)
@@ -125,14 +180,16 @@ def recieve_payment(request):
                     credits = Customer.objects.get(pk=customer)
                     credits = credits.credit
                     print(credits)
-                    customer = customer
-                    context = {
-                        'customer':customer,
-                        'total_balance':total_balance,
-                        'credit':credits,
-                        'workorders':workorders,
-                    }
-                    return render(request, 'finance/reports/modals/open_invoices.html', context)
+                    #customer = customer
+                    print(customer)
+                    # context = {
+                    #     'pk': customer,
+                    #     'customer':customer,
+                    #     'total_balance':total_balance,
+                    #     'credit':credits,
+                    #     'workorders':workorders,
+                    # }
+                    return redirect('finance:open_invoices', pk=customer)
                 else:
                     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     form = PaymentForm
@@ -187,8 +244,22 @@ def apply_payment(request):
     if request.method == "POST":
             cust = request.POST.get('customer')
             pk = request.POST.get('pk')
+            payment = request.POST.get('payment')
+            payment_id = payment
+            print(payment)
+            try:
+                payment_detail = Payments.objects.get(pk=payment)
+            except:
+                #return render(request, 'finance/reports/modals/open_invoices.html')
+                return redirect('finance:open_invoices', pk=cust, msg=1)
+            print('Payment #')
+            print(payment)
             customer = Customer.objects.get(id=cust)
             workorder = Workorder.objects.get(id=pk)
+            hr_workorder = workorder.workorder
+            amount_paid = workorder.amount_paid
+            print('amount paid')
+            print(amount_paid)
             partial = request.POST.get('partial_payment')
             total = workorder.total_balance
             date_billed = workorder.date_billed
@@ -197,6 +268,8 @@ def apply_payment(request):
             date = timezone.now()
             days_to_pay = date - date_billed
             days_to_pay = abs((days_to_pay).days)
+            if days_to_pay < 0:
+                days_to_pay = 0
             avg_days = Workorder.objects.filter(customer_id=cust).exclude(days_to_pay=0).aggregate(avg=Avg('days_to_pay'))
             avg_days = list(avg_days.values())[0]
             print(avg_days)
@@ -204,32 +277,56 @@ def apply_payment(request):
             if not avg_days:
                 avg_days = 0
             credit = customer.credit
+            payment_available = payment_detail.available
             if partial:
                 print('partial')
                 print(partial)
                 full_payment = 0
-                partial = int(partial)
-                if credit >= partial:
+                partial = float(partial)
+                partial = Decimal.from_float(partial)
+                #if credit >= partial:
+                print('Payment Available')
+                print(payment_available)
+                print(partial)
+                partial = round(partial, 2)
+                if payment_available >= partial:
+                    print('yadda')
                     open = workorder.open_balance
                     paid = workorder.amount_paid
+                    paid = round(paid, 2)
+                    partial = round(partial, 2)
                     if paid:
                         paid = paid + partial
                     else:
                         paid = partial
+                    print('paid')
+                    print(paid)
+                    print('total')
+                    print(total)
                     if paid >= total:
                         partial = open
                         paid = total
                         full_payment = 1
                     open = open - partial
                     credit = credit - partial
+                    available = payment_available - partial
                     print(full_payment)
                     Workorder.objects.filter(pk=pk).update(open_balance = open, amount_paid = paid, paid_in_full = full_payment, date_paid = date)
+                    Payments.objects.filter(pk=payment_id).update(available=available)
+                    #Save Payment History
+                    p = WorkorderPayment(workorder_id=pk, payment_id=payment_id, payment_amount=partial, date=date)
+                    p.save()
                     #open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
                     open_balance = Workorder.objects.filter(customer_id=cust).exclude(completed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
                     open_balance = list(open_balance.values())[0]
-                    open_balance = round(open_balance, 2)
+                    if open_balance:
+                        open_balance = round(open_balance, 2)
+                    else:
+                        open_balance = 0
                     print(open_balance)
                     Customer.objects.filter(pk=cust).update(credit = credit, open_balance = open_balance)
+                else:
+                    return redirect('finance:open_invoices', pk=cust, msg=1)
                 # Get info for open invoices modal
                 print('modal area!!!!!')
                 print('customer')
@@ -241,7 +338,9 @@ def apply_payment(request):
                 print(modal_credits)
                 modal_customer = cust
                 print(modal_customer)
+                payments = Payments.objects.filter(customer=modal_customer).exclude(available=None)
                 context = {
+                    'payments':payments,
                     'customer':modal_customer,
                     'total_balance':modal_total_balance,
                     'credit':modal_credits,
@@ -253,7 +352,8 @@ def apply_payment(request):
                 #     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
             else:
                 open = workorder.open_balance 
-            if credit >= open:
+            #if credit >= open:
+            if payment_available >= open:
                 Workorder.objects.filter(pk=pk).update(open_balance = 0, amount_paid = total, paid_in_full = 1, date_paid = date, days_to_pay = days_to_pay)
                 credit = credit - open
                 open_balance = Workorder.objects.filter(customer_id=cust).exclude(completed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
@@ -265,7 +365,12 @@ def apply_payment(request):
                     print(open_balance)
                 else:
                     open_balance = 0
+                available = payment_available - open
+                Payments.objects.filter(pk=payment_id).update(available=available)
                 Customer.objects.filter(pk=cust).update(credit = credit, avg_days_to_pay = avg_days, open_balance = open_balance)
+                #Save Payment History
+                p = WorkorderPayment(workorder_id=pk, payment_id=payment_id, payment_amount=open, date=date)
+                p.save()
                 # Get info for open invoices modal
                 print('modal area!!!!!')
                 print('customer')
@@ -277,13 +382,17 @@ def apply_payment(request):
                 print(modal_credits)
                 modal_customer = cust
                 print(modal_customer)
+                payments = Payments.objects.filter(customer=customer).exclude(available=None)
                 context = {
+                    'payments':payments,
                     'customer':modal_customer,
                     'total_balance':modal_total_balance,
                     'credit':modal_credits,
                     'workorders':modal_workorders,
                 }
                 return render(request, 'finance/reports/modals/open_invoices.html', context)
+            else:
+                return redirect('finance:open_invoices', pk=cust, msg=1)
     
     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
 
@@ -618,14 +727,21 @@ def all_lk(request):
     return render(request, 'finance/reports/all_lk.html', context)
 
 @login_required
-def open_invoices(request, pk):
+def open_invoices(request, pk, msg=None):
    workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+   payments = Payments.objects.filter(customer=pk).exclude(available = None)
    total_balance = workorders.filter().aggregate(Sum('open_balance'))
    credits = Customer.objects.get(pk=pk)
    credits = credits.credit
    print(credits)
    customer = pk
+   if msg:
+       message = "Please select a different payment"
+   else:
+       message = ''
    context = {
+       'message':message,
+       'payments':payments,
        'customer':customer,
        'total_balance':total_balance,
        'credit':credits,
@@ -634,25 +750,30 @@ def open_invoices(request, pk):
    return render(request, 'finance/reports/modals/open_invoices.html', context)
 
 @login_required
-def open_invoices_recieve_payment(request, pk):
-   workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
-   total_balance = workorders.filter().aggregate(Sum('open_balance'))
-   #total_balance = total_balance.total
-   #print(total_balance)
-   customer = Customer.objects.get(id=pk)
-   #customer = 
-   paymenttype = PaymentType.objects.all()
-   form = PaymentForm
+def open_invoices_recieve_payment(request, pk, msg=None):
+    if msg:
+       message = "The payment amount is less than the workorders selected"
+    else:
+       message = ''
+    workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+    total_balance = workorders.filter().aggregate(Sum('open_balance'))
+    #total_balance = total_balance.total
+    #print(total_balance)
+    customer = Customer.objects.get(id=pk)
+    #customer = 
+    paymenttype = PaymentType.objects.all()
+    form = PaymentForm
 
-   context = {
-       'total_balance':total_balance,
-       'workorders':workorders,
-       'paymenttype':paymenttype,
+    context = {
+        'total_balance':total_balance,
+        'workorders':workorders,
+        'paymenttype':paymenttype,
         'customer':customer,
         'form': form,
+        'message': message,
 
-   }
-   return render(request, 'finance/reports/modals/open_invoice_recieve_payment.html', context)
+    }
+    return render(request, 'finance/reports/modals/open_invoice_recieve_payment.html', context)
 
 @login_required
 def payment_history(request):

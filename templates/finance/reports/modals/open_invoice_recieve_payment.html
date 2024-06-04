@@ -13,6 +13,7 @@
   <div class="modal-body">
 
     <div class="container">
+      <p style="color:red">{{ message }}</p>
       <div class="row">
         <div class="col-sm">
             Customer: {{ customer.company_name }}
@@ -45,6 +46,7 @@
                 <th scope="col" class="">Workorder</th>
                 <th scope="col" class=""></th>
                 <th scope="col" class="">Amount</th>
+                <th scope="col" class="">Apply</th>
               </tr>
             </thead>
             <tbody>
@@ -54,6 +56,7 @@
                 <td>{{ x.workorder }}</td>
                 <td>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}} {% elif x.kos_workorder %}KOS: {{ x.kos_workorder}}{% endif %}</td>
                 <td>{{ x.open_balance }}</td>
+                <td><input name="payment" type="checkbox" value="{{ x.id }}" /></td>
             </tr>
         {% endfor %}
             <tr>

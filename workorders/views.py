@@ -1354,6 +1354,7 @@ def copy_workorder(request, id=None):
     n = Numbering.objects.get(pk=1)
     #Update settings for new workorder
     obj.workorder = n.value
+    obj.quote = 0
     obj.quote_number = ''
     obj.completed = 0
     obj.original_order = lastworkorder
@@ -1362,13 +1363,27 @@ def copy_workorder(request, id=None):
     obj.open_balance = obj.workorder_total
     obj.total_balance = obj.workorder_total
     obj.paid_in_full = 0
+    obj.amount_paid = None
+    obj.open_balance = None
+    obj.total_balance = None
+    obj.invoice_sent = 0
+    obj.date_completed = None
+    obj.payment_id = None
+    obj.date_paid = None
+    obj.abandon_quote = 0
+    obj.tax = None
+    obj.subtotal = None
+    obj.workorder_total = None
     obj.days_to_pay = ''
     obj.aging = None
     obj.void = 0
+    obj.void_memo = None
     obj.workorder_status_id = 1
     obj.lk_workorder = None
     obj.printleader_workorder = None
     obj.kos_workorder = None
+    obj.checked_and_verified = 0
+    obj.delivered_or_pickedup = 0
     #Increment workorder number
     newworkorder = obj.workorder
     #Update numbering table
