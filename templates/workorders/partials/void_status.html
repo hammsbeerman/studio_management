@@ -6,7 +6,13 @@
 {% if paid is True %}
    <p> <h1 style="color:green;">Paid</h1>
    {% for x in payments %}
-   ${{x.payment_amount}} - {{x.payment.payment_type}} {% if x.payment.checknumber %} - {{ x.payment.checknumber }} {% endif %} {{ x.date }}<br>
+      {{ x.date }} : 
+      ${{x.payment_amount}} - {{x.payment.payment_type}} 
+         {% if x.payment.check_number %} - {{ x.payment.check_number }} {% endif %} 
+         {% if x.payment.giftcard_number %} - {{ x.payment.giftcard_number }} {% endif %}
+      <br>
+      {% if x.payment.memo%}Note: {{ x.payment.memo }}<br>{% endif %}
+
    {% endfor %}
 {% endif %}
 
