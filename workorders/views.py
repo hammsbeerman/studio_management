@@ -1444,12 +1444,13 @@ def copy_workorder(request, id=None):
             objdetail = WideFormat.objects.get(workorder_item=oldid)
             objdetail.pk = None
             objdetail.workorder_item = obj.pk
-            objdetail.last_item_order = obj.workorder_hr
+            objdetail.last_item_order = lastworkorder
             if objdetail.override_price:
                 objdetail.last_item_price = objdetail.override_price
             else:
                 objdetail.last_item_price = objdetail.price_total
             objdetail.save()
+            print('hello')
         except Exception as e:
             print("The error is:", e)
         try:
