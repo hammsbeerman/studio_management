@@ -5,6 +5,9 @@
 
 {% if paid is True %}
    <p> <h1 style="color:green;">Paid</h1>
+   {% for x in payments %}
+   ${{x.payment_amount}} - {{x.payment.payment_type}} {% if x.payment.checknumber %} - {{ x.payment.checknumber }} {% endif %} {{ x.date }}<br>
+   {% endfor %}
 {% endif %}
 
 {% if paid is not True and billed is True%}

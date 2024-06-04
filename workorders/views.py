@@ -17,6 +17,7 @@ from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
 from inventory.models import OrderOut, SetPrice, Photography
 from pricesheet.forms import WideFormatForm
 from accounts.models import Profile
+from finance.models import WorkorderPayment
 
 @login_required
 def create_base(request):
@@ -1961,10 +1962,12 @@ def void_status(request):
     paid = workorder.paid_in_full
     billed = workorder.billed
     customer = workorder.customer.id
+    payments = WorkorderPayment.objects.filter(workorder=pk)
     print(customer)
     print('void')
     print(void)
     context = {
+        'payments':payments,
         'void':void,
         'paid':paid,
         'billed':billed,
