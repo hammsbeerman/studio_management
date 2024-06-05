@@ -1443,7 +1443,10 @@ def copy_workorder(request, id=None):
         try: 
             objdetail = WideFormat.objects.get(workorder_item=oldid)
             objdetail.pk = None
-            objdetail.workorder_item = obj.pk
+            #objdetail.workorder_item = obj.pk
+            objdetail.workorder_item = item.pk
+            objdetail.workorder_id = new_workorder_id
+            objdetail.hr_workorder = newworkorder
             objdetail.last_item_order = lastworkorder
             if objdetail.override_price:
                 objdetail.last_item_price = objdetail.override_price
