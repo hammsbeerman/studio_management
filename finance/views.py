@@ -189,7 +189,16 @@ def recieve_payment(request):
                     #     'credit':credits,
                     #     'workorders':workorders,
                     # }
-                    return redirect('finance:open_invoices', pk=customer)
+                    credits = Customer.objects.get(pk=customer)
+                    credits = credits.credit
+                    if credits:
+                        return redirect('finance:open_invoices', pk=customer)
+                    else:
+                        workorders = Workorder.objects.filter(customer=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+                        if workorders:
+                            return redirect('finance:open_invoices', pk=customer)
+                        #Update paid status
+                        return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderVoid'})
                 else:
                     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     form = PaymentForm
