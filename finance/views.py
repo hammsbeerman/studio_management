@@ -355,10 +355,17 @@ def apply_payment(request):
                     'credit':modal_credits,
                     'workorders':modal_workorders,
                 }
-                return render(request, 'finance/reports/modals/open_invoices.html', context)
-                #     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
-                # else:
-                #     return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+                credits = Customer.objects.get(pk=cust)
+                credits = credits.credit
+                if credits:
+                    return render(request, 'finance/reports/modals/open_invoices.html', context)
+                else:
+                    workorders = Workorder.objects.filter(customer=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+                    if workorders:
+                        return render(request, 'finance/reports/modals/open_invoices.html', context)
+                    #Update paid status
+                    return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderVoid'})
+                    #return render(request, 'finance/reports/modals/open_invoices.html', context)
             else:
                 open = workorder.open_balance 
             #if credit >= open:
@@ -399,7 +406,17 @@ def apply_payment(request):
                     'credit':modal_credits,
                     'workorders':modal_workorders,
                 }
-                return render(request, 'finance/reports/modals/open_invoices.html', context)
+                credits = Customer.objects.get(pk=cust)
+                credits = credits.credit
+                if credits:
+                    return render(request, 'finance/reports/modals/open_invoices.html', context)
+                else:
+                    workorders = Workorder.objects.filter(customer=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+                    if workorders:
+                        return render(request, 'finance/reports/modals/open_invoices.html', context)
+                    #Update paid status
+                    return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderVoid'})
+                    #return render(request, 'finance/reports/modals/open_invoices.html', context)
             else:
                 return redirect('finance:open_invoices', pk=cust, msg=1)
     
