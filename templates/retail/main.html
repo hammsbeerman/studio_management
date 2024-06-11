@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<center><h4>Krueger Printing Retail Page</h4></center>
+<p>
+    <p>
+{% for x in cats %}
+    {% if x.parent is None %}<li><a href='{{ x.get_subcat_url }}'>{{ x.name }}</a>{% if x.get_parent_url is not None %} -- <a href='{{ x.get_parent_url }}'>{{ x.name }}</a>{% endif %} </li>{% endif %}
+{% endfor %}
+
+
+
+{% endblock content %}

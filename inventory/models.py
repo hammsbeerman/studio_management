@@ -4,6 +4,13 @@ from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import SubCategory, Measurement, InventoryCategory
 
+class InventoryMaster(models.Model):
+    name = models.CharField('Name', max_length=100, blank=True, null=True)
+    description = models.CharField('Description', max_length=100, blank=True, null=True)
+    unit_cost = models.CharField('Unit Cost', max_length=100, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+    current_stock = models.CharField('Current Stock', max_length=100, blank=True, null=True)
 
 
 
@@ -35,6 +42,8 @@ class Inventory(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     inventory_category = models.ManyToManyField(InventoryCategory)
+    retail_item = models.BooleanField('Retail Item', default=True)
+    #retail_category = 
 
     
 

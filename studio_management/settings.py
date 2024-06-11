@@ -95,6 +95,7 @@ LOCAL_APPS = [
     'krueger',
     'pdf',
     'pricesheet',
+    'retail',
     #'vendors',
     'workorders',
     

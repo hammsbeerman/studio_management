@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<center><h4>Krueger Printing Retail Page</h4></center>
+<p>
+    <p>
+{% for x in cats %}
+        {{ x.name }} -- {{x.description}}<br>
+{% endfor %}
+
+
+
+{% endblock content %}

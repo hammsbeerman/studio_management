@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Measurement, SetPriceCategory, SetPriceItemPrice, InventoryCategory, JobStatus, UserGroup, PaymentType
+from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Measurement, SetPriceCategory, SetPriceItemPrice, InventoryCategory, JobStatus, UserGroup, PaymentType, RetailInventoryCategory, RetailInventorySubCategory
 
 
 
@@ -50,3 +50,18 @@ admin.site.register(JobStatus)
 admin.site.register(UserGroup)
 
 admin.site.register(PaymentType)
+
+
+
+
+class RetailInventoryCategoryAdmin(admin.ModelAdmin):
+    
+    list_display = ('name',)
+
+admin.site.register(RetailInventoryCategory, RetailInventoryCategoryAdmin)
+
+class RetailInventorySubCategoryAdmin(admin.ModelAdmin):
+    
+    list_display = ('name',)
+
+admin.site.register(RetailInventorySubCategory, RetailInventorySubCategoryAdmin)

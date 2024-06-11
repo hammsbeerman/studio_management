@@ -36,6 +36,18 @@
                 <li><a class="dropdown-item" href="{% url 'finance:all_lk' %}">All LK Invoices</a></li>
               </ul> 
             </li>
+            <!-- Not yet functional 
+            {% if request.user.is_staff %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Retail
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'retail:retail_home' %}">Retail Home</a></li>
+              </ul> 
+            </li>
+            {% endif %}
+            -->
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 Finance

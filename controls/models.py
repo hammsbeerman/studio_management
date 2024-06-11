@@ -143,4 +143,30 @@ class PaymentType(models.Model):
     def __str__(self):
         return self.name
 
+class RetailInventoryCategory(models.Model):
+    name = models.CharField('Name', max_length=100, null = True)
+    icon = models.ImageField(null=True, blank=True, upload_to="retail_category")
+    description = models.CharField('Description', max_length=100, blank=True, null=True)
+    active = models.BooleanField('Active', blank=True, null=True, default=True)
+    parent = models.CharField('Parent Category', max_length=10, null = True)
+
+    def __str__(self):
+        return self.name
+    
+    def get_subcat_url(self):
+        return reverse("retail:subcat", kwargs={"cat": self.pk})
+    
+    def get_parent_url(self):
+        return reverse("retail:parent", kwargs={"cat": self.parent})
+    
+class RetailInventorySubCategory(models.Model):
+    name = models.CharField('Name', max_length=100, blank=True, null=True)
+    icon = models.ImageField(null=True, blank=True, upload_to="retail_category")
+    description = models.CharField('Description', max_length=100, blank=True, null=True)
+    inventory_category = models.ManyToManyField(RetailInventoryCategory)
+    active = models.BooleanField('Active', blank=True, null=True, default=True)
+    
+
+    def __str__(self):
+        return self.name
     
