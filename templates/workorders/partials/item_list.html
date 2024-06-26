@@ -33,7 +33,7 @@
                 {% elif object.item_category.formname == 'OrderOutForm'%}
                     <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_orderout_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
                 {% elif object.item_category.formname == 'SetPriceForm'%}
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_set_price_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
+                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_set_price_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Edit</button>
                 {% elif object.item_category.formname == 'ParentItemForm'%}
                     <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_parent_item' pk=object.pk  workorder=object.workorder_id cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
                 {% elif object.item_category.formname == 'PostageItemForm'%}
@@ -78,7 +78,7 @@
 
 
         <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_status' pk=object.pk%}" hx-target="#dialog">{% if object.job_status %}<img src="{{ object.job_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</button>
-        
+        </td>
         
         
         
@@ -121,5 +121,9 @@
         $(document).ready(function () {
           $("#id_paper_stock").select2();
         })
+
+        $('#somepapers').select2({
+            dropdownParent: $('#modal3')
+        });
       
       </script>

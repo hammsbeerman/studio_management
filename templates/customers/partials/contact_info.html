@@ -1,22 +1,53 @@
-
-
-                  <div class="card-header">
-                    Contact Info
-                    </div>
-                        <div class="card-body" id="contactinfo">
-                            <h5 class="card-title">{% if contact %}{{ contact.fname}} {% if contact.lname %}{{contact.lname }}{% endif %}</h5>
-                            <p class="card-text">
-                                {% if contact.address1 %}Address: {{ contact.address1 }} <br/>
-                                {% if contact.address2 %}{{contact.address2}}{% endif %}<br/>
-                                {{ contact.city }}, {{contact.state}} {{contact.zipcode }}<br/>{% endif %}
-                                {% if contact.phone1 %}Phone: {{ contact.phone1 }}<br/>{% endif %}
-                                {% if contact.email %}Email: {{ contact.email }}<br/>{% endif %}
-                                {% endif %}
-                            
-                        </div>
-                        <div class="card-footer">
-                          <button hx-get="{% url 'customers:edit_contact' %}?contact={{ contact.id }}&customer={{ changecustomer }}&workorder={{ changeworkorder }}" hx-target="#dialog">Edit</button>
-                          <button hx-get="{% url 'customers:new_contact' %}?customer={{ changecustomer }}&workorder={{ changeworkorder }}" hx-target="#dialog">Add</button>
-                          <button hx-get="{% url 'customers:change_contact' %}?customer={{ changecustomer }}&workorder={{ changeworkorder }}" hx-target="#dialog">Change</button>
-                          <button hx-get="{% url 'customers:contact_info' %}?contact={{ contact.id }}&workorder={{changeworkorder}}&customer={{changecustomer}}" hx-target="#contact-card">Refresh</button>
-                        </div>
+<nav>
+  
+  <div class="nav nav-tabs" id="nav-tab" role="tablist">
+      <button class="nav-link active" id="nav-ship-tab" data-bs-toggle="tab" data-bs-target="#nav-ship" type="button" role="tab" aria-controls="nav-ship" aria-selected="true">Ship To</button>
+      <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">Contact Info</button>
+  </div>
+</nav>
+<div class="tab-content" id="nav-tabContent">
+  <div class="tab-pane fade show active" id="nav-ship" role="tabpanel" aria-labelledby="nav-ship-tab">
+    <div class="card-header">
+      Ship To
+      </div>
+          <div class="card-body" id="shippinginfo">
+              <h5 class="card-title">{{ shipto.company_name}}</h5>
+              <p class="card-text">
+                  {% if shipto.address1 %}Address: {{ shipto.address1 }} <br/>
+                  {% if shipto.address2 %}{{shipto.address2}}{% endif %}<br/>
+                  {{ shipto.city }}, {{shipto.state}} {{shipto.zipcode }}{% endif %}<br/>
+                  {% if shipto.phone1 %}Phone: {{ shipto.phone1 }}<br/>{% endif %}
+                  {% if shipto.email %}Email: {{ shipto.email }}<br/>{% endif %}
+                  
+              
+          </div>
+          <div class="card-footer">
+            <button hx-get="{% url 'customers:edit_shipto' %}?shipto={{ shipto.id }}&customer={{ changecustomer }}&workorder={{ changeworkorder }}" hx-target="#dialog">Edit</button>
+            <button hx-get="{% url 'customers:new_shipto' %}?customer={{ changecustomer }}&workorder={{ changeworkorder }}" hx-target="#dialog">Add</button>
+            <button hx-get="{% url 'customers:change_shipto' %}?customer={{ changecustomer }}&workorder={{ changeworkorder }}" hx-target="#dialog">Change</button>
+            <button hx-get="{% url 'customers:contact_info' %}?contact={{ contact.id }}&workorder={{changeworkorder}}&customer={{changecustomer}}" hx-target="#contact-card">Refresh</button>
+          </div>
+  </div>
+  <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+    <div class="card-header">
+      Contact Info
+      </div>
+          <div class="card-body" id="contactinfo">
+              <h5 class="card-title">{% if contact %}{{ contact.fname}} {% if contact.lname %}{{contact.lname }}{% endif %}</h5>
+              <p class="card-text">
+                  {% if contact.address1 %}Address: {{ contact.address1 }}{% endif %} <br/>
+                  {% if contact.address2 %}{{contact.address2}}{% endif %}<br/>
+                  {{ contact.city }}, {{contact.state}} {{contact.zipcode }}<br/>{% endif %}
+                  {% if contact.phone1 %}Phone: {{ contact.phone1 }}<br/>{% endif %}
+                  {% if contact.email %}Email: {{ contact.email }}<br/>{% endif %}
+                  
+              
+          </div>
+          <div class="card-footer">
+            <button hx-get="{% url 'customers:edit_contact' %}?contact={{ contact.id }}&customer={{ changecustomer }}&workorder={{ changeworkorder }}" hx-target="#dialog">Edit</button>
+            <button hx-get="{% url 'customers:new_contact' %}?customer={{ changecustomer }}&workorder={{ changeworkorder }}" hx-target="#dialog">Add</button>
+            <button hx-get="{% url 'customers:change_contact' %}?customer={{ changecustomer }}&workorder={{ changeworkorder }}" hx-target="#dialog">Change</button>
+            <button hx-get="{% url 'customers:contact_info' %}?contact={{ contact.id }}&workorder={{changeworkorder}}&customer={{changecustomer}}" hx-target="#contact-card">Refresh</button>
+          </div>
+  </div>
+</div>

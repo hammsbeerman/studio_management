@@ -13,7 +13,9 @@ from .views import (
     mark_all_invoiced,
     missing_workorders,
     update_complete_date,
-    special_tools
+    special_tools,
+    customer_shipto,
+    workorder_ship
     #setprice_list,
 )
 
@@ -31,5 +33,7 @@ urlpatterns = [
     path('missing_workorders/', missing_workorders, name='missing_workorders'),
     path('update_complete_date/', update_complete_date, name='update_complete_date'),
     path('special_tools/', special_tools, name='special_tools'),
+    path('customer_shipto/', customer_shipto, name='customer_shipto'),
+    path('workorder_ship/', workorder_ship, name='workorder_ship'),
     #path('setprice_list/', setprice_list, name='setprice_list'),
 ]

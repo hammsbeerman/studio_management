@@ -3,8 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Min, Sum
 from django.utils import timezone
 from django.http import HttpResponse
-from .models import Customer, Contact
-from .forms import CustomerForm, ContactForm, CustomerNoteForm
+from .models import Customer, Contact, ShipTo
+from .forms import CustomerForm, ContactForm, CustomerNoteForm, ShipToForm
 from controls.models import Numbering
 from workorders.models import Workorder
 from workorders.forms import WorkorderForm
@@ -269,36 +269,77 @@ def contact_info(request):
         changecustomer = request.GET.get('customer')
         workorder = Workorder.objects.get(id=changeworkorder)
         contact = workorder.contact_id
+        shipto = workorder.ship_to_id
         print(contact)
+        print('somethingfadasda')
+        print('shipto')
+        print(shipto)
+        print('testing')
         if contact:
             print(contact)
             print('test')
             contact = Contact.objects.get(id=contact)
             print(contact.id)
-            context = { 'contact': contact,
-                        'changecustomer':changecustomer,
-                        'changeworkorder':changeworkorder
-                       }
+            if shipto:
+                shipto = ShipTo.objects.get(id=shipto)
+            else:
+                shipto = ''
+            context = { 
+                'contact': contact,
+                'changecustomer':changecustomer,
+                'changeworkorder':changeworkorder,
+                'shipto':shipto
+                }
+            return render(request, 'customers/partials/contact_info.html', context)
+        if shipto:
+            shipto = ShipTo.objects.get(id=shipto)
+            if contact:
+                contact = Contact.objects.get(id=contact)
+            else:
+                contact = ''
+            context = { 
+                'contact': contact,
+                'changecustomer':changecustomer,
+                'changeworkorder':changeworkorder,
+                'shipto':shipto
+                }
             return render(request, 'customers/partials/contact_info.html', context)
         workorder = request.GET.get('workorder')
+        print('workorder')
         print(workorder)
         contact = Workorder.objects.get(id=workorder)
         print(contact.contact_id)
+        print('Shipto')
+        print(contact.ship_to_id)
         contact = contact.contact_id
-        print(contact)    
+        #shipto = contact.ship_to_id
+        print(contact)
+        print('shipto')
+        print(shipto)   
         #try:
-        contact = Contact.objects.get(id=contact) 
+        #contacts = Contact.objects.get(id=contact)
+        shipto = ShipTo.objects.get(id=shipto)
         
         #except:
         #    pass
-        context = { 'contact': contact,}
+        print('testing')
+        context = { 
+            #'contacts': contacts,
+            'shipto': shipto,
+                   }
         return render(request, 'customers/partials/contact_info.html', context)
     workorder = Workorder.objects.get(workorder=id)
     if workorder.contact_id:
         contact = Contact.objects.get(id=workorder.contact_id)
     else: 
         contact = ''
+    if workorder.ship_to_id:
+        shipto = ShipTo.objects.get(id=workorder.ship_to_id)
+    else:
+        shipto = ''
+    print('testing')
     context = {
+            'shipto': shipto,
             'workorder': workorder,
             'contact': contact,
             'changecustomer':changecustomer,
@@ -485,3 +526,97 @@ def expanded_detail(request, id=None):
             return render(request, "customers/search_detail.html", context)
         else:
             return render(request, "customers/partials/details.html", context)
+        
+@login_required
+def edit_shipto(request):
+    shipto = request.GET.get('shipto')
+    #customer = request.GET.get('customer')
+    if request.method == "POST":
+        shipto_num = request.POST.get("shipto")
+        obj = get_object_or_404(ShipTo, pk=shipto_num)
+        #obj = (Contact, pk=contact_num)
+        form = ShipToForm(request.POST, instance=obj)
+        if form.is_valid():
+                form.save()
+                return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
+    else:
+        if not shipto:
+            workorder = request.GET.get('workorder')
+            if not workorder:
+                return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
+            shipto = Workorder.objects.get(id=workorder)
+            shipto = shipto.ship_to_id
+        obj = get_object_or_404(ShipTo, id=shipto)
+        form = ShipToForm(instance=obj)
+        context = {
+            'form': form,
+            'shipto': shipto
+        }
+    return render(request, 'customers/modals/edit_shipto.html', context)
+
+@login_required
+def new_shipto(request):
+    customer = request.GET.get('customer')
+    workorder = request.GET.get('workorder')
+    print('customer')
+    print(customer)
+    print('workorder')
+    print(workorder)
+    if request.method == "POST":
+        form = ShipToForm(request.POST)
+        if form.is_valid():
+            company_num = request.POST.get("customer")
+            workorder = request.POST.get("workorder")
+            print(workorder)
+            form.instance.customer_id = company_num
+            print(company_num)
+            print(form.instance.id)
+            form.save()
+            if workorder:
+                contact = form.instance.id
+                try:
+                    Workorder.objects.filter(pk=workorder).update(ship_to_id=contact)
+                except:
+                    return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
+                #obj = get_object_or_404(Workorder, pk=workorder)
+                #form2 = 
+                print(form.instance.id)
+                print('else')
+            return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
+            
+    else:
+        form = ShipToForm()
+        context = {
+            'form': form,
+            'customer': customer,
+            'workorder': workorder
+        }
+    return render(request, 'customers/modals/newshipto_form.html', context)
+
+@login_required
+def change_shipto(request):
+    customer = request.GET.get('customer')
+    workorder = request.GET.get('workorder')
+    if request.method == "POST":
+        shipto = request.POST.get('shipto')
+        workorder = request.POST.get('workorder')
+        #obj = get_object_or_404(Workorder, pk=workorder)
+        #form = WorkorderForm
+        print(shipto)
+        print(workorder)
+        try:
+            obj = Workorder.objects.get(id=workorder)
+            obj.ship_to_id = shipto
+            obj.save(update_fields=['ship_to_id'])
+            print('here')
+            return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
+        except:
+            return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
+    print(customer)
+    #print(workorder)
+    obj = ShipTo.objects.filter(customer=customer)
+    context = {
+        'obj': obj,
+        'workorder': workorder
+    }
+    return render(request, 'customers/modals/change_shipto.html', context)

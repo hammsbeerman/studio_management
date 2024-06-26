@@ -90,6 +90,12 @@
   {{ form.description|as_crispy_field }}
 </div>
 
+<select id="somepapers">
+{% for paper in papers %}
+                                        <option value="{{paper.pk}}">{{ paper.description }}</option>
+                                        {% endfor %}
+                                </select>
+
 <div class='col'>
   {{ form.paper_stock|as_crispy_field }}
 </div>

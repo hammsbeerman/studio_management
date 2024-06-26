@@ -1,0 +1,25 @@
+{% load crispy_forms_tags %}
+
+<div class="modal-content">
+    
+    <div class="modal-header">
+        <h5 class="modal-title">Change Shipping Address</h5>
+      </div>
+      <div class="modal-body">
+        <form hx-post="{% url 'customers:change_shipto' %}"> 
+          {% csrf_token %}
+          {{message}}
+          <select class="custom-select mb-4" id="id_shipto" name="shipto">
+
+            <option value='' selected>Select Shipping Address</option>
+            {% for object in obj %}
+              <option value="{{ object.id }}">{% if object.company_name %}{{ object.company_name }}{% endif %} {% if object.first_name %}{{object.first_name }}{% endif %}{% if object.last_name %}{{object.last_name }}{% endif %}</option>
+            {% endfor %}
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit">Save</button>
+      </div>
+      <input type="hidden" id="workorder" name="workorder" value="{{ workorder }}">
+    </form>

@@ -15,6 +15,7 @@ from customers.models import Customer
 from workorders.models import Workorder
 from .forms import PaymentForm
 from controls.models import PaymentType
+from inventory.models import Vendor
 
 logger = logging.getLogger(__file__)
 
@@ -547,7 +548,9 @@ def add_bill_payable(request):
                 messages.success(request, "Record Added...")
                 return redirect('finance:add_bill_payable')
         bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')
+        vendors = Vendor.objects.all()
         context = {
+            'vendors':vendors,
             'form':form,
             'bills':bills,
         }

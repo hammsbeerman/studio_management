@@ -43,8 +43,18 @@
         
         
         
-        <td>{% if object.last_item_order %}{{object.last_item_order}}{% endif %}</td>
-        <td>{% if object.last_item_order %}{{object.last_item_price}}{% endif %}</td>
+        <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_status' pk=object.pk%}" hx-target="#dialog">{% if object.job_status %}<img src="{{ object.job_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</button>
+        </td>
+        
+        
+        
+        
+        
+        <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_details' pk=object.pk%}" hx-target="#dialog">
+            <img src="{% static 'img/site/details-24.png' %}" style="width:20px;height:20px;">
+        </button></td>
+
+        
         <td></td>
         <td>{% if object.item_category.id == 2 or object.item_category.id == 6 or object.item_category.id == 9 or object.item_category.id == 10 %}<a href="{% url 'pdf:lineitem_pdf' id=object.pk %}" class="btn btn-primary" target="_blank">Line details</a>{% endif %}</td>
         

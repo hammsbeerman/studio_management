@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
 from django.urls import reverse
-from customers.models import Customer, Contact
+from customers.models import Customer, Contact, ShipTo
 from controls.models import Category, SubCategory, DesignType, SetPriceCategory, SetPriceItemPrice, PostageType, JobStatus, UserGroup
 from accounts.models import Profile
 
@@ -9,6 +9,7 @@ from accounts.models import Profile
 class Workorder(models.Model):
     customer = models.ForeignKey(Customer, blank=False, null=True, on_delete=models.SET_NULL, related_name='workorders')
     contact = models.ForeignKey(Contact, blank=True, null=True, on_delete=models.SET_NULL)
+    ship_to = models.ForeignKey(ShipTo, blank=True, null=True, on_delete=models.SET_NULL)
     hr_customer = models.CharField('Customer Name', max_length=100, blank=True, null=True,)
     hr_contact = models.CharField('Contact Name', max_length=100, blank=True, null=True,)
     ##company = models.OneToOneField(Customer, on_delete=models.SET_NULL, blank=True, null=True)

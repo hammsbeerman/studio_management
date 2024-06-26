@@ -2,7 +2,7 @@ from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
-from .models import Customer, Contact
+from .models import Customer, Contact, ShipTo
 
 class CustomerContactInline(admin.StackedInline):
     model = Contact
@@ -18,5 +18,7 @@ class CustomerAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 admin.site.register(Customer, CustomerAdmin)
 
 admin.site.register(Contact)
+
+admin.site.register(ShipTo)
 
 #admin.site.register(CustomerContact)

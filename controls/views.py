@@ -4,6 +4,7 @@ from django.utils import timezone
 from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPriceCategoryForm
 from .models import SetPriceCategory, SubCategory, Category, SetPriceItemPrice
 from workorders.models import Workorder
+from customers.models import Customer, ShipTo
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -201,7 +202,112 @@ def update_complete_date(request):
 
 def special_tools(request):
     return render (request, "controls/specialized_tools.html")
-    
+
+def customer_shipto(request):
+    #index = 0
+    #limit = 5
+    customer = Customer.objects.all()
+    for x in customer:
+        company_name = x.company_name
+        first_name = x.first_name
+        last_name = x.last_name
+        address1 = x.address1
+        address2 = x.address2
+        city = x.city
+        state = x.state
+        zipcode = x.zipcode
+        phone1 = x.phone1
+        phone2 = x.phone2
+        email = x.email
+        website = x.website
+        logo = x.logo
+        notes = x.notes
+        active = x.active
+        shipto = ShipTo()
+        shipto.customer_id = x.pk
+        shipto.company_name = company_name
+        shipto.first_name = first_name
+        shipto.last_name = last_name
+        shipto.address1 = address1
+        shipto.address2 = address2
+        shipto.city = city
+        shipto.state = state
+        shipto.zipcode = zipcode
+        shipto.phone1 = phone1
+        shipto.phone2 = phone2
+        shipto.email = email
+        shipto.website = website
+        shipto.logo = logo
+        shipto.notes = notes
+        shipto.active = active
+        shipto.save()
+        print('Saved')
+        #index += 1
+        #if index == limit:
+        #    break
+    return render (request, "controls/utilities.html")
+
+
+def workorder_ship(request):
+    # index = 0
+    # limit = 5
+    workorder = Workorder.objects.all()
+    for x in workorder:
+        customer = Customer.objects.get(pk=x.customer_id)
+        cust = customer.id
+        #pk = 203
+        print(x.pk)
+        print(x.workorder)
+        print(customer.company_name)
+        print('customer num')
+        print(cust)
+        shipto = ShipTo.objects.get(customer_id=cust)
+        print(shipto.pk)
+        ship = shipto.pk
+        Workorder.objects.filter(pk=x.pk).update(ship_to_id=ship)
+        # index += 1
+        # if index == limit:
+        #    break
+        #shipto = ShipTo.objects.get(pk=customer.pk)
+        #print(shipto)
+        #shipto = ShipTo.objects.filter(customer=x.pk)
+        #print(shipto)
+        # print(x.pk)
+        # pk = x.pk
+        # pk = int(pk)
+        # print(pk)
+        # try:
+        #     shipto = ShipTo.objects.get(customer=pk)
+        #     print(shipto)
+        # except:
+        #     print(x.pk)
+        #     print('Nope')
+        
+
+
+
+        # print(x.id)
+        # try:
+        #     shipto = ShipTo.objects.get(customer_id=x.id)
+        #     print('sadasda')
+        #     print(shipto.id)
+        # except:
+        #     pass
+
+
+
+
+
+
+        # try:
+        #     shipto = ShipTo.objects.get(customer=x.pk)
+        #     ship = shipto.pk
+        #     print(x.id)
+        #     print(ship)
+        #     Workorder.objects.filter(pk=x.pk).update(ship_to_id=ship)
+        # except:
+        #     pass
+    return render (request, "controls/utilities.html")
 
 
 

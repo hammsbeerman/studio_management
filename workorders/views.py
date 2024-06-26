@@ -14,7 +14,7 @@ from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, Desig
 from krueger.forms import KruegerJobDetailForm, WideFormatDetailForm
 from krueger.models import KruegerJobDetail, WideFormat
 from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
-from inventory.models import OrderOut, SetPrice, Photography
+from inventory.models import OrderOut, SetPrice, Photography, Inventory
 from pricesheet.forms import WideFormatForm
 from accounts.models import Profile
 from finance.models import WorkorderPayment
@@ -986,7 +986,9 @@ def edit_set_price_item(request, pk, cat):
     ####
     #form = DesignItemForm(instance=item)
     print(setprice_selected)
+    papers = Inventory.objects.all().order_by('name')
     context = {
+        'papers':papers,
         'pk':pk,
         'form': form,
         'item': item,
