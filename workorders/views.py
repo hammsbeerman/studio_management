@@ -7,7 +7,7 @@ from django.utils import timezone
 from decimal import Decimal
 from datetime import datetime
 from django.contrib import messages
-from customers.models import Customer, Contact
+from customers.models import Customer, Contact, ShipTo
 from controls.models import Numbering, Category, SubCategory, SetPriceCategory, SetPriceItemPrice
 from .models import Workorder, DesignType, WorkorderItem
 from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm, ParentItemForm, PostageItemForm, JobStatusForm, ItemDetailForm
@@ -78,6 +78,10 @@ def create_base(request):
             form.instance.hr_customer = hrcust
             print(cust)
             print(hrcust)
+            shipto = ShipTo.objects.get(customer_id=cust)
+            print('shipto')
+            print(shipto.pk)
+            form.instance.ship_to_id = shipto.pk
             #
             form.instance.contact_id = request.POST.get('contacts')
             cont = form.instance.contact_id

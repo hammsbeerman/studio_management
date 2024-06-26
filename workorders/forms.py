@@ -14,7 +14,7 @@ class WorkorderForm(DynamicFormMixin, forms.ModelForm):
     #description = forms.CharField(label="Description", widget=forms.Textarea())
     class Meta:
         model = Workorder
-        fields = ['internal_company', 'quote', 'description', 'deadline', 'po_number', 'budget', 'quoted_price', 'kos_workorder', 'lk_workorder', 'printleader_workorder', 'customer']
+        fields = ['internal_company', 'quote', 'description', 'deadline', 'po_number', 'budget', 'quoted_price', 'kos_workorder', 'lk_workorder', 'printleader_workorder', 'customer', 'ship_to']
         labels = {
             'workorder':'Workorder',
             'deadline':'Deadline',

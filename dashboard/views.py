@@ -15,7 +15,11 @@ from accounts.models import Profile
 #from articles.models import Article
 
 @login_required
-def dashboard(request, id=None):
+def dashboard(request):
+    pass
+
+@login_required
+def assigned_items(request, id=None):
     visitor = request.user.id
     items = WorkorderItem.objects.filter(assigned_user_id = visitor).exclude(completed=1).exclude(void=1).order_by("-workorder")
     #completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
@@ -37,7 +41,7 @@ def dashboard(request, id=None):
         #'quote': quote,
         'status':status,
     }
-    return render(request, "dashboard/employee_dashboard.html", context)
+    return render(request, "dashboard/assigned_items.html", context)
 
 
 @login_required

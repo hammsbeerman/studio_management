@@ -7,7 +7,7 @@
     Open Workorders:
     <br>
     {% for x in open %}
-        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}</li>
+        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.description %} - {{ x.description }}{% endif %}{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}{% if x.void %}<span style="color:red;">Void</span>{% endif %}</li>
     {% endfor %}
 {% endif %}
 <p>
@@ -15,7 +15,7 @@
     Workorders:
     <br>
     {% for x in workorders %}
-        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}</li>
+        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.description %} - {{ x.description }}{% endif %}{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}{% if x.void %}<span style="color:red;">Void</span>{% endif %}</li>
     {% endfor %}
 {% endif %}
 <p>
