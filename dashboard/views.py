@@ -1,7 +1,7 @@
 #import random
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Q
 from datetime import timedelta
 from django.utils import timezone
@@ -16,7 +16,7 @@ from accounts.models import Profile
 
 @login_required
 def dashboard(request):
-    pass
+    return redirect('workorders:dashboard')
 
 @login_required
 def assigned_items(request, id=None):
