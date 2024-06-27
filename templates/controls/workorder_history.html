@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-sm-4">
+        
+
+        
+            <!-- {% for x in customer %}
+                {{x.hr_customer}}<br>
+            {% endfor %}
+            <hr> -->
+            {% for x in unique_list %}
+                {{ x.hr_customer }}<br>
+            {% endfor %}
+        
+    </div>
+    <div class="col-sm-4">
+        
+    </div>
+</div>
+
+
+  {% endblock content %}
