@@ -54,7 +54,7 @@ def customers(request):
     context = {
         'customers': customer
         }
-    #print(customer)
+    print(customer)
     #print(contacts)
     return render(request, 'customers/partials/customers.html', context)
 

@@ -31,7 +31,7 @@ Workorders Items:
 Customers:
 <p>
 {% for x in customer %}
-<li><a href='{{ x.get_absolute_url }}'>{{ x.company_name }}</a></li>
+<li><a href='{{ x.get_absolute_url }}'>{{ x.company_name }}</a>{% if not x.active %}<span style="color:red;"> - Inactive</span>{% endif %}</li>
 {% endfor %}
 <p>
 {% endif %}

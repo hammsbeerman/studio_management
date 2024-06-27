@@ -22,7 +22,7 @@ from finance.models import WorkorderPayment
 @login_required
 def create_base(request):
     #newcustomerform = CustomerForm(request.POST or None)
-    customer = Customer.objects.all()
+    customer = Customer.objects.filter(active=1).order_by('company_name')
     # workorder = Numbering.objects.get(name='Workorder Number')
     # workorder = int(workorder.value)
     # inc = int('1')
