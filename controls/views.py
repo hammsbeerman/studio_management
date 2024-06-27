@@ -342,5 +342,21 @@ def cust_address(request):
     }
     return render (request, "controls/customers_with_address.html", context)
 
+def cust_wo_address(request):
+    customer = Workorder.objects.all().order_by('hr_customer')
+    unique_list = []
+    list = []
+    for x in customer:
+        # check if exists in unique_list or not
+        if x.hr_customer not in list:
+            unique_list.append(x)
+            list.append(x.hr_customer)
+    print(unique_list)
+
+    context = {
+        'unique_list':unique_list,
+    }
+    return render (request, "controls/customers_without_address.html", context)
+
 
 

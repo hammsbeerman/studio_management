@@ -17,7 +17,8 @@ from .views import (
     customer_shipto,
     workorder_ship,
     cust_history,
-    cust_address
+    cust_address,
+    cust_wo_address
     #setprice_list,
 )
 
@@ -39,5 +40,6 @@ urlpatterns = [
     path('workorder_ship/', workorder_ship, name='workorder_ship'),
     path('cust_history/', cust_history, name='cust_history'),
     path('cust_address/', cust_address, name='cust_address'),
+    path('cust_wo_address/', cust_wo_address, name='cust_wo_address'),
     #path('setprice_list/', setprice_list, name='setprice_list'),
 ]

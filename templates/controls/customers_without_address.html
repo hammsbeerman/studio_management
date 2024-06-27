@@ -18,6 +18,7 @@
         </tr>
     </thead>
     {% for x in unique_list %}
+        {% if not x.customer.address1 or not x.customer.city or not x.customer.zipcode %}
         <tr>
             <td>{{x.hr_customer}}</td>
             <td>{{x.customer.first_name}}</td>
@@ -28,6 +29,7 @@
             <td>{{x.customer.state}}</td>
             <td>{{x.customer.zipcode}}</td>
         </tr>
+        {% endif %}
     {% endfor %}
 </table>
 
