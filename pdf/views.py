@@ -86,7 +86,13 @@ def invoice_pdf(request, id):
     }
 
     if workorder.internal_company == 'LK Design':
-        html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
+        i = len(items)
+        print('list length')
+        print(i)
+        if i < 15:
+            html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
+        else:
+            html_string=render_to_string('pdf/weasyprint/lk_invoice_long.html', context)
     else:
         html_string=render_to_string('pdf/weasyprint/krueger_invoice.html', context)
 

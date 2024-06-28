@@ -114,6 +114,7 @@ def new_customer(request):
             print(newcust)
             customer = Customer.objects.get(pk=newcust)
             print(customer)
+            #Add customer info to shipto database
             shipto = ShipTo()
             shipto.customer_id = newcust
             shipto.company_name = customer.company_name
