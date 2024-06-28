@@ -102,15 +102,40 @@ def new_customer(request):
                 #print(obj.company_name)
                 form.save()
                 n.save()
-                return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
-            if cn:
+                #return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+            else:
                 print(cn)
                 form.save()
                 n.save()
-                return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
-            #obj.save
-            #form.save()
-            #return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+                #return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+            print('customer stuff')
+            newcust = form.instance.pk
+            print(form.instance.pk)
+            print(newcust)
+            customer = Customer.objects.get(pk=newcust)
+            print(customer)
+            shipto = ShipTo()
+            shipto.customer_id = newcust
+            shipto.company_name = customer.company_name
+            shipto.first_name = customer.first_name
+            shipto.last_name = customer.last_name
+            shipto.address1 = customer.address1
+            shipto.address2 = customer.address2
+            shipto.city = customer.city
+            shipto.state = customer.state
+            shipto.zipcode = customer.zipcode
+            shipto.phone1 = customer.phone1
+            shipto.phone2 = customer.phone2
+            shipto.email = customer.email
+            shipto.website = customer.website
+            shipto.logo = customer.logo
+            shipto.notes = customer.notes
+            shipto.active = customer.active
+            shipto.save()
+            print('Saved')
+            # obj.save
+            # form.save()
+            return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
     else:
         form = CustomerForm()
     return render(request, 'customers/modals/newcustomer_form.html', {
