@@ -105,6 +105,16 @@ table.ordert-first {margin-bottom: 11px;}
 /*.items-area tr:last-child td{border-bottom: 1px solid #ddd !important;}*/
 .items-area tr td:nth-child(2) {text-align: left;}
 
+/*items area 2nd page*/
+.items-area2 {overflow: hidden;    border: 1px solid #000;height: 800px;}
+.items-area2 table {width: 100%;border-collapse: collapse;margin-bottom:10px;}
+.items-area2 tr td {text-align: center;padding: 5px;line-height: normal;}
+.items-area2 table tr th, .items-area2 table tr td {border: 1px solid #000;}
+.items-area2 table tr td {border-top: 0 !important; border-bottom: 0 !important;}
+.items-area2 table tr th{text-align:center;text-transform:uppercase;padding:8px 0;font-weight:normal;}
+/*.items-area tr:last-child td{border-bottom: 1px solid #ddd !important;}*/
+.items-area2 tr td:nth-child(2) {text-align: left;}
+
 
 /*Last Table*/
 .last-table{width:100%;text-align:center;}
@@ -211,6 +221,46 @@ table.ordert-first {margin-bottom: 11px;}
     <span style ='color:red'>{{ workorder.notes }}</span>
     {% endif %}
     <p style="page-break-before: always" ></p>
+
+    <div class="items-area2 fix">
+        <table>
+          <thead><tr>
+			  <th>QUANTITY</th>
+              <th>DESCRIPTION</th>
+              <th>RATE</th>
+              <th>AMOUNT</th>
+              <th>Tax</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items2 %}
+              {% if item.child == 0 %}
+              <tr>
+                <td>{% if item.quantity%}{% if item.show_qty_on_wo %}{{item.quantity}}{% endif %}{% endif %}</td>
+                <td>{% if item.description%}{{item.description}}{% endif %}</td>
+                <td>{% if item.unit_price %}{{item.unit_price|floatformat:4}}{% endif %}</td>
+                <td>{% if item.absolute_price %}{% if item.billable %}{% if item.absolute_price %}{{item.absolute_price}}{% else %}{{item.total}}{% endif %}{% else %} -- {% endif %}{% endif %}</td>
+                <td>{% if item.absolute_price %}{% if item.tax_exempt %}--{% else %}T{%endif%}{% endif %}</td>          
+              </tr>
+              {% if item.show_notes %}
+              <tr>
+                <td colspan='5'>{{item.notes}}</td>
+              </tr>
+              {% endif %}
+              {% endif %}
+            {% endfor %}
+            {% autoescape off %}
+                {{ rows2 }}
+            {% endautoescape %}
+
+  
+              
+
+
+			
+          </tbody>
+        </table>
+      </div>
 
 <!-- Total table -->
 <div class="last-table-area fix">

@@ -32,6 +32,8 @@ def invoice_pdf(request, id):
     response['Content-Transfer-Encoding'] = 'binary'
 
     items = WorkorderItem.objects.filter(workorder=id)
+    item_length = len(items)
+
     
     workorder = Workorder.objects.get(id=id)
     payment = workorder.amount_paid
@@ -56,6 +58,18 @@ def invoice_pdf(request, id):
     tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
     total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
     l = len(items)
+    if item_length > 15:
+        items = WorkorderItem.objects.filter(workorder=id)[:15]
+        items2 = WorkorderItem.objects.filter(workorder=id)[12:30]
+        rows2 = ''
+        n = 60
+        for x in range(n):
+            string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
+            #string = 'hello<br/>'
+            #print('test')
+            rows2 += string
+    else:
+        items2=''
     print(l)
     n = 40 - l
     print(n)
@@ -73,6 +87,7 @@ def invoice_pdf(request, id):
     print(payment)
     context = {
         'items':items,
+        'items2':items2,
         'workorder':workorder,
         'customer':customer,
         'payment':payment,
@@ -82,14 +97,15 @@ def invoice_pdf(request, id):
         'tax':tax, 
         'total':total,
         'total_bal':total_bal,
-        'rows': rows
+        'rows': rows,
+        'rows2': rows2
     }
 
     if workorder.internal_company == 'LK Design':
-        i = len(items)
-        print('list length')
-        print(i)
-        if i < 15:
+        # i = len(items)
+        # print('list length')
+        # print(i)
+        if item_length < 15:
             html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
         else:
             html_string=render_to_string('pdf/weasyprint/lk_invoice_long.html', context)
