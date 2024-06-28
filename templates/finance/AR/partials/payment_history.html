@@ -15,7 +15,7 @@
 {% for x in payment %}
     <tr>
     <td>{{x.date}}</td>
-    <td>{{x.amount}}</td>
+    <td>{{x.available}}</td>
     <td>{{x.payment_type}}</td>
     <td>
         <u><div style="color:Blue;" hx-post="{% url 'finance:remove_payment' pk=x.id %} " hx-target="#dialog">Remove</div></u>

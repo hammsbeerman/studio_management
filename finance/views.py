@@ -341,14 +341,14 @@ def apply_payment(request):
                 print('modal area!!!!!')
                 print('customer')
                 print(cust)
-                modal_workorders = Workorder.objects.filter(customer=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+                modal_workorders = Workorder.objects.filter(customer=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(workorder_total=0).order_by('workorder')
                 modal_total_balance = modal_workorders.filter().aggregate(Sum('open_balance'))
                 modal_credits = Customer.objects.get(pk=cust)
                 modal_credits = modal_credits.credit
                 print(modal_credits)
                 modal_customer = cust
                 print(modal_customer)
-                payments = Payments.objects.filter(customer=modal_customer).exclude(available=None)
+                payments = Payments.objects.filter(customer=modal_customer).exclude(available=None).exclude(void=1)
                 context = {
                     'payments':payments,
                     'customer':modal_customer,
@@ -427,34 +427,20 @@ def apply_payment(request):
 def unapply_payment(request):
     if request.method == "POST":
         cust = request.POST.get('customer')
-        pk = request.POST.get('pk')
+        pk = request.POST.get('workorder_pk')
+        print(pk)
         customer = Customer.objects.get(id=cust)
         workorder = Workorder.objects.get(id=pk)
         print(customer)
         print(workorder)
         print(pk)
-        # partial = request.POST.get('p')
-        # g = request.POST.get('g')
-        # k = request.POST.get('k')
-        # date = ''
-        # print(g)
-        # print(k)
-        # print(pk)
-        # print(cust)
-        # print(workorder)
-        # print(partial)
-        # if partial:
-        #     credit = partial
-        #     total = workorder.total_balance
-        #     open = workorder.open_balance
-        #     paid = workorder.amount_paid
-        #     if open:
-        #         open = open + partial
-        #     else:
-        #         open = partial
-        #     paid = total - open
-        #     Workorder.objects.filter(pk=pk).update(open_balance = open, amount_paid = paid, date_paid = date)
-        # else:
+        
+        # #This isn't working yet, needs to be further worked out
+        # try:
+        #     WorkorderPayment.objects.filter(workorder_id=pk).update(void=1)
+        #     payment = WorkorderPayment.objects.filter(workorder_id=pk)
+        # except:
+        #     pass
         total = workorder.total_balance
         #open = workorder.open_balance
         paid = workorder.amount_paid
@@ -757,8 +743,8 @@ def all_lk(request):
 
 @login_required
 def open_invoices(request, pk, msg=None):
-   workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
-   payments = Payments.objects.filter(customer=pk).exclude(available = None)
+   workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(workorder_total=0).order_by('workorder')
+   payments = Payments.objects.filter(customer=pk).exclude(available = None).exclude(void = 1)
    total_balance = workorders.filter().aggregate(Sum('open_balance'))
    credits = Customer.objects.get(pk=pk)
    credits = credits.credit
@@ -808,7 +794,7 @@ def open_invoices_recieve_payment(request, pk, msg=None):
 def payment_history(request):
     if request.method == "GET":
         customer = request.GET.get('customer')
-        payment = Payments.objects.filter(customer=customer).exclude(void=1).order_by('-date')
+        payment = Payments.objects.filter(customer=customer).exclude(void=1).exclude(available=0).order_by('-date')
         context = {
             'payment':payment,
             'customer':customer,
@@ -821,7 +807,7 @@ def remove_payment(request, pk=None):
     if request.method == "POST":
         Payments.objects.filter(pk=pk).update(void = 1)
         details = Payments.objects.get(pk=pk)
-        amount = details.amount
+        amount = details.available
         customer = details.customer.id
         cust = Customer.objects.get(id=customer)
         print(amount)

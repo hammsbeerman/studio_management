@@ -38,10 +38,10 @@
                   <td>{{ x.amount_paid }}</td>
                   <td>{{ x.open_balance }}</td>
                   <td>
-                    <input type="hidden" id="pk" name="pk" value="{{x.id}}">
+                    <input type="hidden" id="workorder_pk" name="workorder_pk" value="{{x.id}}">
                     <input type="hidden" id="customer" name="customer" value="{{customer.id}}">
                     <button class="btn btn-primary btn-sm" type="submit">Unapply Payment</button></td>
-
+                  </form>
                   </tr>
                 {% endfor %}
               </tbody>
