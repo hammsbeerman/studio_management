@@ -173,7 +173,8 @@ def missing_workorders(request):
         exist = (list(existing))
         print(exist)
         try:
-            cleaned = [eval(i) for i in exist]
+            print(exist)
+            cleaned = [eval(i) for i in exist if i.isdigit( )]
         except:
             return render (request, "controls/missing_workorders.html")
         print(cleaned)
