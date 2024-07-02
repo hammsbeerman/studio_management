@@ -58,6 +58,7 @@ def invoice_pdf(request, id):
     tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
     total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
     l = len(items)
+
     if item_length > 15:
         items = WorkorderItem.objects.filter(workorder=id)[:15]
         items2 = WorkorderItem.objects.filter(workorder=id)[12:30]
@@ -70,6 +71,7 @@ def invoice_pdf(request, id):
             rows2 += string
     else:
         items2=''
+        rows2 = ''
     print(l)
     n = 40 - l
     print(n)
