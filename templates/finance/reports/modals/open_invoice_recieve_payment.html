@@ -47,6 +47,7 @@
                 <th scope="col" class=""></th>
                 <th scope="col" class="">Amount</th>
                 <th scope="col" class="">Apply</th>
+                <th scope="col" class="">Date Billed</th>
               </tr>
             </thead>
             <tbody>
@@ -57,6 +58,7 @@
                 <td>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}} {% elif x.kos_workorder %}KOS: {{ x.kos_workorder}}{% endif %}</td>
                 <td>{{ x.open_balance }}</td>
                 <td><input name="payment" type="checkbox" value="{{ x.id }}" /></td>
+                <td>{{x.date_billed }}</td>
             </tr>
         {% endfor %}
             <tr>
