@@ -81,17 +81,17 @@
                       <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a>
                     </td>
                     <td>
-                    {% if x.billed %}
-                        {% if x.paid_in_full %}
-                          <img src="{% static 'img/site/paidbill-50.png' %}" style="width:20px;height:20px;">
-                        {% elif x.aging > 30 %}
-                        {{ x.aging }}
-                          <img src="{% static 'img/site/overduebill-50.png' %}" style="width:20px;height:20px;">
-                        {% else %}
-                        <img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;">
-                        {% endif %}
-                        {{ x.workorder_total }}
-                    {% endif %}
+                  {% if x.billed %}
+                      {% if x.paid_in_full %}           
+                        <img src="{% static 'img/site/paidbill-50.png' %}" style="width:20px;height:20px;" title="Paid in Full">
+                      {% elif x.aging > 30 %}
+                      {{ x.aging }}
+                        <img src="{% static 'img/site/overduebill-50.png' %}" style="width:20px;height:20px;" title="Past 30 Days">
+                      {% else %}
+                      <img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;" title="Billed Out">
+                      {% endif %}
+                      {{ x.workorder_total }}
+                  {% endif %}
                     </td>
                     <!-- Temporarily disabled -->
                     <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
