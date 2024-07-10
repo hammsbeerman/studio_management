@@ -92,6 +92,7 @@
               {% else %}
               <img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;">
               {% endif %}
+              {{ x.workorder_total }}
           {% endif %}
           </td>
           <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
