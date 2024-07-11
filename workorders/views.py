@@ -1970,6 +1970,9 @@ def void_status(request):
     workorder = Workorder.objects.get(pk=pk)
     void = workorder.void
     paid = workorder.paid_in_full
+    if paid == 0:
+        open = workorder.open_balance
+        total = workorder.total_balance
     billed = workorder.billed
     customer = workorder.customer.id
     payments = WorkorderPayment.objects.filter(workorder=pk)
@@ -1982,6 +1985,8 @@ def void_status(request):
         'paid':paid,
         'billed':billed,
         'customer':customer,
+        'open':open,
+        'total':total,
     }
     return render(request, 'workorders/partials/void_status.html', context)
 

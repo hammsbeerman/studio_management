@@ -2,10 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status, generics, viewsets
 from decimal import Decimal
 from .forms import AddVendorForm, AddInventoryItemForm
-from .models import Vendor
-from inventory.models import Inventory
+from .models import Vendor, Inventory
+from .serializers import InventorySerializer
+#from inventory.models import Inventory
 
 # Create your views here.
 
@@ -118,3 +123,50 @@ def add_inventory_item(request):
     else:
         messages.success(request, "You must be logged in")
         return redirect('home')
+
+
+#Below this is solely for testing API data
+
+#For testing serializer
+#@api_view(['GET', 'POST'])
+def inventory_list(request):
+    if request.method == 'GET':
+        inventory = Inventory.objects.all()
+        serializer = InventorySerializer(inventory, many=True)
+        #return JsonResponse(serializer.data, safe=False)
+        return JsonResponse({'inventory': serializer.data})
+    if request.method == 'POST':
+        #items = request.POST
+        #print(items)
+        serializer = InventorySerializer(data=request.data)
+        #print(1)
+        #print(serializer)
+        if serializer.is_valid():
+            #print(2)
+            serializer.save()
+            #print(3)
+            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+        
+#def new_inventory_list(request)
+
+
+class InventoryCreate(generics.ListCreateAPIView):
+    queryset = Inventory.objects.all()
+    serializer_class = InventorySerializer
+
+class InventoryPRUD(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Inventory.objects.all()
+    serializer_class = InventorySerializer
+    lookup_field = "pk"
+
+class InventoryListAPIView(generics.ListAPIView):
+    queryset = Inventory.objects.all()
+    serializer_class = InventorySerializer
+
+class InventoryDetailAPIView(generics.RetrieveAPIView):
+    queryset = Inventory.objects.all()
+    serializer_class = InventorySerializer
+
+class InventoryViewSet(viewsets.ModelViewSet):
+    queryset = Inventory.objects.all()
+    serializer_class = InventorySerializer

@@ -14,6 +14,19 @@
       {% if x.payment.memo%}Note: {{ x.payment.memo }}<br>{% endif %}
 
    {% endfor %}
+
+{% elif open < total %}
+<br>
+   {% for x in payments %}
+   {{ x.date }} : 
+   ${{x.payment_amount}} - {{x.payment.payment_type}} 
+      {% if x.payment.check_number %} - {{ x.payment.check_number }} {% endif %} 
+      {% if x.payment.giftcard_number %} - {{ x.payment.giftcard_number }} {% endif %}
+   <br>
+   {% if x.payment.memo%}Note: {{ x.payment.memo }}<br>{% endif %}
+
+   {% endfor %}
+   <span style="color:red">Open balance: {{ open }}</span>
 {% endif %}
 
 {% if paid is not True and billed is True%}
