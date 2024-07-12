@@ -29,7 +29,7 @@
    <span style="color:red">Open balance: {{ open }}</span>
 {% endif %}
 
-{% if paid is not True and billed is True%}
+{% if paid is not True and billed is True %}
 <p>
    <p>
       <button type="button" class="btn btn-info" hx-get="{% url 'finance:open_invoices' pk=customer %}" hx-target="#dialog2">Pay Invoice</button>

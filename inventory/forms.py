@@ -25,6 +25,10 @@ class OrderOutForm(forms.ModelForm):
             'total_price':'Calculated Item sell price',
 
         }
+       widgets = {
+       'last_item_order': forms.TextInput(attrs={'readonly':'readonly'}),
+       'last_item_price': forms.TextInput(attrs={'readonly':'readonly'}),
+       }
        
 class SetPriceForm(forms.ModelForm):
    class Meta:
@@ -34,6 +38,10 @@ class SetPriceForm(forms.ModelForm):
             'total_price':'Item sell price',
 
         }
+       widgets = {
+       'last_item_order': forms.TextInput(attrs={'readonly':'readonly'}),
+       'last_item_price': forms.TextInput(attrs={'readonly':'readonly'}),
+       }
        
 class PhotographyForm(forms.ModelForm):
    class Meta:
@@ -43,6 +51,10 @@ class PhotographyForm(forms.ModelForm):
             'total_price':'Item sell price',
 
         }
+       widgets = {
+       'last_item_order': forms.TextInput(attrs={'readonly':'readonly'}),
+       'last_item_price': forms.TextInput(attrs={'readonly':'readonly'}),
+       }
        
 class AddInventoryItemForm(forms.ModelForm):
    #state = forms.CharField(widget=USStateSelect(), initial='WI')

@@ -1973,6 +1973,10 @@ def void_status(request):
     if paid == 0:
         open = workorder.open_balance
         total = workorder.total_balance
+    #Set open and total to be the same for view
+    else:
+        open = 0
+        total = 0
     billed = workorder.billed
     customer = workorder.customer.id
     payments = WorkorderPayment.objects.filter(workorder=pk)

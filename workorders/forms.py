@@ -80,6 +80,10 @@ class CustomItemForm(forms.ModelForm):
             'unit_price':'Price per piece',
 
         }
+       widgets = {
+       'last_item_order': forms.TextInput(attrs={'readonly':'readonly'}),
+       'last_item_price': forms.TextInput(attrs={'readonly':'readonly'}),
+       }
        
 class AddSetPriceCategoryForm(forms.ModelForm):
    class Meta:
