@@ -61,7 +61,7 @@ def invoice_pdf(request, id):
 
     if item_length > 15:
         items = WorkorderItem.objects.filter(workorder=id)[:15]
-        items2 = WorkorderItem.objects.filter(workorder=id)[12:30]
+        items2 = WorkorderItem.objects.filter(workorder=id)[16:30]
         rows2 = ''
         n = 60
         for x in range(n):
