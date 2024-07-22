@@ -170,3 +170,16 @@ class RetailInventorySubCategory(models.Model):
     def __str__(self):
         return self.name
     
+class PrintleaderHistory(models.Model):
+    printleader_invoice = models.CharField('Printleader Invoice', max_length=100, blank=True, null=True)
+    customer = models.CharField('Customer', max_length=100, blank=True, null=True)
+    printleader_customer_number = models.CharField('Printleader Customer Number', max_length=100, blank=True, null=True)
+    invoice_date = models.DateField(auto_now = False, blank=True, null=True)
+    nontaxable_amount = models.CharField('Non taxable amount', max_length=100, blank=True, null=True)
+    taxable_amount = models.CharField('Taxable Amount', max_length=100, blank=True, null=True)
+    tax_amount = models.CharField('Tax', max_length=100, blank=True, null=True)
+    invoice_total = models.CharField('Invoice Total', max_length=100, blank=True, null=True)
+
+    
+
+    
