@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.utils import timezone
+from django.db.models import Q
 from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPriceCategoryForm
-from .models import SetPriceCategory, SubCategory, Category, SetPriceItemPrice
+from .models import SetPriceCategory, SubCategory, Category
 from workorders.models import Workorder
 from customers.models import Customer, ShipTo
 from django.contrib.auth.decorators import login_required
@@ -358,6 +359,3 @@ def cust_wo_address(request):
         'unique_list':unique_list,
     }
     return render (request, "controls/customers_without_address.html", context)
-
-
-

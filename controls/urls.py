@@ -18,7 +18,7 @@ from .views import (
     workorder_ship,
     cust_history,
     cust_address,
-    cust_wo_address
+    cust_wo_address,
     #setprice_list,
 )
 

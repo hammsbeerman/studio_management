@@ -327,7 +327,20 @@ Form for entering line item details
                                 {% if form.step_bulk_mail_tray_sort_paperwork_price %}{{ form.step_bulk_mail_tray_sort_paperwork_price|as_crispy_field }}{% endif %}
                             </div>
                         </div>
-                        <hr>
+                        <div class="row" id="duplo-row">
+                            <div class='col'>
+                                {% if form.step_run_through_duplo %}{{ form.step_run_through_duplo|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_duplo_tasks %}{{ form.step_duplo_tasks|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_duplo_price_per_task %}{{ form.step_duplo_price_per_task|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
+                                {% if form.step_duplo_price %}{{ form.step_duplo_price|as_crispy_field }}{% endif %}
+                            </div>
+                        </div>
                         <div class="row" id="misc1-row">
                             <div class='col'>
                                 {{ form.misc1_description|as_crispy_field }}

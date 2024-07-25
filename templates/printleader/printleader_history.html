@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+
+<div class="row">
+    <div id="customers" class="col-sm-12">
+      <select class="custom-select mb-4" id="customer" hx-trigger="change, itemListChanged from:body" name="customers" hx-get="{% url 'printleader:printleader_history_detail' %}" hx-target="#customers">
+      <option selected>Select Customer</option>
+          {% for x in customers %}
+            <option value="{{ x.id }}">{{ x.customer }}</option>
+          {% endfor %}
+      </select>
+    </div>
+  </div>
+
+
+{% endblock content %}
+
+
+{% block scripts %}
+
+
+<script>
+
+
+    $(document).ready(function () {
+      $("#customer").select2();
+      $('#customer').on('select2:select', (e) => {
+        htmx.trigger("#customer", "change")
+      });
+    })
+
+</script>
+
+{% endblock %}

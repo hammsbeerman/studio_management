@@ -1,0 +1,44 @@
+<div class="row">
+    <div id="customers" class="col-sm-12">
+      <select class="custom-select mb-4" id="customer" hx-trigger="change, itemListChanged from:body" name="customers" hx-get="{% url 'printleader:printleader_history_detail' %}" hx-target="#customers">
+      <option selected>Select Customer</option>
+          {% for x in customers %}
+            <option value="{{ x.id }}">{{ x.customer }}</option>
+          {% endfor %}
+      </select>
+    </div>
+  </div>
+<p>
+    <h3>{{name }}</h3>
+<p>
+  {% for x in workorders %}
+    {{ x.printleader_invoice}} - {{ x.invoice_date }} <br/>
+  {% endfor %}
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <script>
+
+
+    $(document).ready(function () {
+      $("#customer").select2();
+      $('#customer').on('select2:select', (e) => {
+        htmx.trigger("#customer", "change")
+      });
+    })
+
+</script>

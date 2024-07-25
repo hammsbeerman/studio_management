@@ -111,6 +111,19 @@ $(document).ready(function(){
       $('#bulkmail-row').slideToggle(200)
       });
 
+      if (($("#id_step_duplo_price").val() > .01) || ($("#id_step_duplo_price").val()))  {
+        $('#duplo-row').show()
+      //if ($("#id_misc1_description").val()){
+        //$('#misc1-row').show()
+      } else {
+        $('#duplo-row').hide()
+        //alert( "Handler for `keyup` called." );
+      }
+
+      $('#show-duplo').click(function(){
+        $('#duplo-row').slideToggle(200)
+        });
+
 
       if (($("#id_misc1_price").val() > .01) || ($("#id_misc1_description").val()))  {
         $('#misc1-row').show()

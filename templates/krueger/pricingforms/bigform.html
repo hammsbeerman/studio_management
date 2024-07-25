@@ -201,6 +201,7 @@
                                 <td>Bulk Mail: <input type="checkbox" id="show-bulkmail"></td>
                             </tr>
                             <tr>    
+                                <td>Run through Duplo: <input type="checkbox" id="show-duplo"></td>
                                 <td>Misc 1: <input type="checkbox" id="show-misc1"></td>
                                 <td>Misc 2: <input type="checkbox" id="show-misc2"></td>
                                 <td>Misc 3: <input type="checkbox" id="show-misc3"></td>
@@ -334,7 +335,11 @@
                                 {{ form.step_bulk_mail_tray_sort_paperwork_price|as_crispy_field }}
                             </div>
                         </div>
-                        <hr>
+                        <div class="row" id="duplo-row">
+                            <div class='col'>
+                                {{ form.step_bulk_mail_tray_sort_paperwork_price|as_crispy_field }}
+                            </div>
+                        </div>
                         <div class="row" id="misc1-row">
                             <div class='col'>
                                 {{ form.misc1_description|as_crispy_field }}

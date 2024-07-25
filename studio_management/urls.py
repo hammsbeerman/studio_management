@@ -34,6 +34,7 @@ urlpatterns = [
     path('krueger/', include('krueger.urls')),
     path('pdf/', include('pdf.urls')),
     path('pricesheet/', include('pricesheet.urls')),
+    path('printleader/', include('printleader.urls')),
     path('retail/', include('retail.urls')),
     #path('vendors/', include('vendors.urls')),
     path('workorders/', include('workorders.urls')),

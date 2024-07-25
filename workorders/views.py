@@ -1899,6 +1899,8 @@ def task_notes(request, pk=None, task=None):
             KruegerJobDetail.objects.filter(workorder_item = id).update(tab_note = note)
         if task == 'bulkmail_note':
             KruegerJobDetail.objects.filter(workorder_item = id).update(bulkmail_note = note)
+        if task == 'duplo_note':
+            KruegerJobDetail.objects.filter(workorder_item = id).update(duplo_note = note)
         if task == 'misc1_note':
             KruegerJobDetail.objects.filter(workorder_item = id).update(misc1_note = note)
         if task == 'misc2_note':
@@ -1910,7 +1912,7 @@ def task_notes(request, pk=None, task=None):
 
         return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
     #form = TaskNoteForm(instance=item)
-    print(item.perf_note)
+    #print(item.perf_note)
     context = {
         #'notes':notes,
         #'form':form,

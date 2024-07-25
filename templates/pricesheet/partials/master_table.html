@@ -134,7 +134,18 @@
         </td>{% endif %}
     </tr>
     {% endif %}
-    <tr>    
+    <tr>   
+        <td>Run through Duplo: <input type="checkbox" id="show-duplo">
+            {% if formdata.duplo_note %}
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='duplo_note' %}" hx-target="#dialog">
+                <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+            </button>
+            {% else %}
+            <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='duplo_note' %}" hx-target="#dialog">
+                <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
+            </button>
+            {% endif %}
+        </td>
         <td>Misc 1: <input type="checkbox" id="show-misc1">
             {% if formdata.misc1_note %}
             <button class="btn btn-primary-outline" hx-get="{% url 'workorders:task_notes' pk=pk task='misc1_note' %}" hx-target="#dialog">

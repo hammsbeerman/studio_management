@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Measurement, SetPriceCategory, SetPriceItemPrice, InventoryCategory, JobStatus, UserGroup, PaymentType, RetailInventoryCategory, RetailInventorySubCategory, PrintleaderHistory
+from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Measurement, SetPriceCategory, SetPriceItemPrice, InventoryCategory, JobStatus, UserGroup, PaymentType, RetailInventoryCategory, RetailInventorySubCategory
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources
 from import_export.fields import Field
@@ -68,11 +68,4 @@ class RetailInventorySubCategoryAdmin(admin.ModelAdmin):
 
 admin.site.register(RetailInventorySubCategory, RetailInventorySubCategoryAdmin)
 
-class PrintleaderHistoryAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    #inlines = [InventoryVendorInline]
-    readonly_fields = ['printleader_invoice', 'customer']
-    list_display = ('customer', 'printleader_invoice')
-    invoice_date = Field(attribute='invoice_date', column_name='invoice_date', widget=DateWidget('%m/%d/%Y'))
-    #fields = ['name',]
 
-admin.site.register(PrintleaderHistory, PrintleaderHistoryAdmin)

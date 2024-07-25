@@ -11,37 +11,23 @@
 
      <label for="notes">Notes:</label>
 
-<textarea id="notes" name="notes" rows="8" cols="50">
-  {% if task == 'mailmerge_note' %}
-    {{item.mailmerge_note}}
-  {% elif task == 'pad_note' %}
-    {{ item.pad_note }}
-  {% elif task == 'perf_note' %}
-    {{ item.perf_note }}
-  {% elif task == 'numbering_note' %}
-    {{ item.numbering_note }}
-  {% elif task == 'wraparound_note' %}
-    {{ item.wraparound_note }}
-  {% elif task == 'drill_note' %}
-    {{ item.drill_note }}
-  {% elif task == 'staple_note' %}
-    {{ item.staple_note }}
-  {% elif task == 'fold_note' %}
-    {{ item.fold_note }}
-  {% elif task == 'tab_note' %}
-    {{ item.tab_note }}
-  {% elif task == 'bulkmail_note' %}
-    {{ item.bulkmail_note }}
-  {% elif task == 'misc1_note' %}
-    {{ item.misc1_note }}
-  {% elif task == 'misc2_note' %}
-    {{item.misc2_note}}
-  {% elif task == 'misc3_note' %}
-    {{ item.misc3_note }}
-  {% elif task == 'misc4_note' %}
-    {{ item.misc4_note }}
-  {% endif %}
-</textarea> 
+
+  {% if task == 'mailmerge_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{item.mailmerge_note}}</textarea> {% endif %}
+  {% if task == 'pad_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.pad_note }}</textarea> {% endif %}
+  {% if task == 'perf_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.perf_note }}</textarea> {% endif %}
+  {% if task == 'numbering_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.numbering_note }}</textarea> {% endif %}
+  {% if task == 'wraparound_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.wraparound_note }}</textarea> {% endif %}
+  {% if task == 'drill_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.drill_note }}</textarea> {% endif %}
+  {% if task == 'staple_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.staple_note }}</textarea> {% endif %}
+  {% if task == 'fold_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.fold_note }}</textarea> {% endif %}
+  {% if task == 'tab_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.tab_note }}</textarea> {% endif %}
+  {% if task == 'bulkmail_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.bulkmail_note }}</textarea> {% endif %}
+  {% if task == 'duplo_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.duplo_note }}</textarea> {% endif %}
+  {% if task == 'misc1_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.misc1_note }}</textarea> {% endif %}
+  {% if task == 'misc2_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{item.misc2_note}}</textarea> {% endif %}
+  {% if task == 'misc3_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.misc3_note }}</textarea> {% endif %}
+  {% if task == 'misc4_note' %}<textarea id="notes" name="notes" rows="8" cols="50">{{ item.misc4_note }}</textarea> {% endif %}
+
 
     <input type="hidden" id="task" name="task" value="{{ task }}">
     <input type="hidden" id="id" name="id" value="{{ pk }}">
