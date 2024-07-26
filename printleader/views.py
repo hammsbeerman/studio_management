@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.db.models import Q
-from .models import PrintleaderHistory
+from .models import PrintleaderHistory, PrintleaderARINVODA
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -13,15 +13,16 @@ def printleader_history(request):
         if x.customer not in list:
             unique_list.append(x)
             list.append(x.customer)
-    q = request.GET.get('q')
-    if q:
-        workorders = PrintleaderHistory.objects.filter(
-            Q(printleader_invoice__icontains=q) | Q(customer__icontains=q)
-            ).distinct()
-    else:
-        workorders = ''
+    #Search function not written out yet
+    #q = request.GET.get('q')
+    # if q:
+    #     workorders = PrintleaderHistory.objects.filter(
+    #         Q(printleader_invoice__icontains=q) | Q(customer__icontains=q)
+    #         ).distinct()
+    # else:
+    #     workorders = ''
     context = {
-        'workorders':workorders,
+        #'workorders':workorders,
         'customers':unique_list,
     }
     return render (request, "printleader/printleader_history.html", context)
@@ -36,6 +37,7 @@ def printleader_history_detail(request):
         if x.customer not in list:
             unique_list.append(x)
             list.append(x.customer)
+    #print(unique_list)
     #Get workorders for selected customer
     id = request.GET.get('customers')
     x = PrintleaderHistory.objects.get(id=id)
@@ -43,6 +45,9 @@ def printleader_history_detail(request):
     name = x.customer
     #print(cust)
     workorders = PrintleaderHistory.objects.filter(printleader_customer_number = cust).order_by('-invoice_date')
+    # for x in workorders:
+    #     description = PrintleaderARINVODA.objects.filter(InvoiceNum = x.printleader_invoice)
+    #     print(description)
     # print(workorders)
     # for x in workorders:
     #     print(x)
@@ -52,3 +57,56 @@ def printleader_history_detail(request):
         'customers':unique_list,
     }
     return render (request, "printleader/partials/printleader_history_detail.html", context)
+
+def job_details(request):
+    num = 23390
+    workorder = PrintleaderHistory.objects.get(printleader_invoice=num)
+    print(workorder.id)
+
+    detail = '23614'
+    print(detail)
+    obj = PrintleaderARINVODA.objects.filter(InvoiceNum = detail)
+    for x in obj:
+        print('ok')
+        print(x.Jobname)
+    print('end')
+    for x in workorder:
+        try:
+            detail = PrintleaderARINVODA.objects.get(InvoiceNum = x.printleader_invoice)
+            print(detail.InvoiceNum)
+        except:
+            detail = None
+            #print('No match')
+        detail = 23614
+        if detail is not None:
+            #print(detail.InvoiceNum)
+            #print(detail.Lineno)
+            #invoice = detail.InvoiceNum
+            #invoice = 23614
+            #print(invoice)
+            obj = PrintleaderARINVODA.objects.filter(InvoiceNum = detail)
+            for x in obj:
+                print(x.Jobname)
+                #print('hello')
+            #print(obj)
+            #print('duh')
+            #for x in obj:
+            #    print(x.Jobname)
+            # for x in invoice:
+            #     obj = PrintleaderARINVODA.objects.get(InvoiceNum = x)
+                # print(obj.Jobname)
+            # #detail = PrintleaderARINVODA.objects.filter(InvoiceNum = x.printleader_invoice)
+            # for y in detail:
+            #     print(detail.Lineno)
+            #     invoice = x.printleader_invoice
+            #     customer = x.customer
+            #     customer_number = x.printleader_customer_number
+            #     job_name = detail.Jobname
+            #     print(invoice)
+            #     print(customer)
+            #     print(customer_number)
+            #     print(job_name)
+        else:
+            pass
+            
+    return render (request, "printleader/printleader_history.html")

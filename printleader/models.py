@@ -10,6 +10,13 @@ class PrintleaderHistory(models.Model):
     tax_amount = models.CharField('Tax', max_length=100, blank=True, null=True)
     invoice_total = models.CharField('Invoice Total', max_length=100, blank=True, null=True)
 
+class PrintleaderHighLevel(models.Model):
+    printleader_invoice = models.CharField('Printleader Invoice', max_length=100, blank=True, null=True)
+    customer = models.CharField('Customer', max_length=100, blank=True, null=True)
+    printleader_customer_number = models.CharField('Printleader Customer Number', max_length=100, blank=True, null=True)
+    printleader_job_name = models.CharField('Printleader Job Name', max_length=100, blank=True, null=True)
+    
+
 class PrintleaderARINVODA(models.Model):
     InvoiceNum = models.CharField(max_length=100, null=True, blank=True, verbose_name='InvoiceNum')
     Lineno = models.CharField(max_length=100, null=True, blank=True, verbose_name='Lineno')
@@ -348,3 +355,4 @@ class PrintleaderSORITL(models.Model):
 
     def __str__(self):
         return self.Invoice
+    
