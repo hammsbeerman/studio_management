@@ -329,7 +329,7 @@ class PrintleaderSORITL(models.Model):
     Dact_time = models.CharField(max_length=100, null=True, blank=True, verbose_name='Dact_time')
     Itemtotal = models.CharField(max_length=100, null=True, blank=True, verbose_name='Itemtotal')
     Unitcost = models.CharField(max_length=100, null=True, blank=True, verbose_name='Unitcost')
-    Workmess = models.CharField(max_length=100, null=True, blank=True, verbose_name='Workmess')
+    Workmess = models.CharField(max_length=200, null=True, blank=True, verbose_name='Workmess')
     Barcode = models.CharField(max_length=100, null=True, blank=True, verbose_name='Barcode')
     Taxitem = models.CharField(max_length=100, null=True, blank=True, verbose_name='Taxitem')
     Taxperc = models.CharField(max_length=100, null=True, blank=True, verbose_name='Taxperc')
