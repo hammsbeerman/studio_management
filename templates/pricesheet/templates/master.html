@@ -338,6 +338,9 @@ Form for entering line item details
                                 {% if form.step_duplo_price_per_task %}{{ form.step_duplo_price_per_task|as_crispy_field }}{% endif %}
                             </div>
                             <div class='col'>
+                                {% if form.duplo_number_of_pieces %}{{ form.duplo_number_of_pieces|as_crispy_field }}{% endif %}
+                            </div>
+                            <div class='col'>
                                 {% if form.step_duplo_price %}{{ form.step_duplo_price|as_crispy_field }}{% endif %}
                             </div>
                         </div>

@@ -484,6 +484,28 @@ $(document).ready(function(){
   
   
     });
+
+    $('#id_container').on("click change",function(){
+      //alert( "Handler for `keyup` called." );
+      var run_through_duplo = $('#id_step_run_through_duplo').val();
+      var price = $('#id_step_duplo_price_per_task').val();
+      var qty = $('#id_step_duplo_tasks').val();
+      var pieces = $('#id_duplo_number_of_pieces').val();
+
+      var total = qty * price * pieces
+      total = total.toFixed(2);
+
+      total = Number(total)
+      run_through_duplo = Number(run_through_duplo)
+
+      price = total + run_through_duplo
+
+      price = price.toFixed(2);
+
+      $('#id_step_duplo_price').val(price);
+  
+  
+    });
 //############################################################### Begining of total form
     $('#id_container').on("click change",function(){
       var qty = $('#id_qty').val();
@@ -632,6 +654,12 @@ $(document).ready(function(){
         var tray = 0;
       }
 
+      if ($("#id_step_duplo_price").length){
+        var duplo = $('#id_step_duplo_price').val();
+      } else {
+        var duplo = 0;
+      }
+
       if ($("#id_misc1_price").length){
         var misc1 = $('#id_misc1_price').val();
       } else {
@@ -746,6 +774,7 @@ $(document).ready(function(){
       fold = Number(fold)
       tab = Number(tab)
       tray = Number(tray)
+      duplo = Number(duplo)
       misc1 = Number(misc1)
       misc2 = Number(misc2)
       misc3 = Number(misc3)
@@ -757,7 +786,7 @@ $(document).ready(function(){
 
 
       var total = workorder + reclaim + send_to_press + mailmerge+ material_cost + markup + side1 + side2 + trim + wear + print_mailmerge + ncr + white + perf + number + insert_cover + insert + insert_chip + set_drill + 
-      drill + staple + fold + tab + tray + misc1 + misc2 + misc3 + misc4 + count + package + deliver + packing_slip
+      drill + staple + fold + tab + tray + duplo + misc1 + misc2 + misc3 + misc4 + count + package + deliver + packing_slip
 
       //var total = workorder + reclaim + send_to_press + mailmerge + material_cost + markup + side1 + side2 + trim
       total = total.toFixed(2);
