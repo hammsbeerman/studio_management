@@ -21,7 +21,7 @@ class KruegerJobDetailForm(forms.ModelForm):
             'step_staple_price', 'step_insert_wrap_around_price', 'step_insert_chip_divider_price', 'step_set_folder_price', 'fold_price_per_fold', 'fold_number_to_fold', 'step_fold_price', 
             'tabs_price_per_tab', 'tabs_per_piece', 'tabs_number_of_pieces', 'step_tab_price', 'step_bulk_mail_tray_sort_paperwork_price', 'step_id_count_price', 'step_count_package_price', 
             'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_m', 'misc1_description', 'misc1_price', 'misc2_description', 'misc2_price', 'misc3_description',
-            'misc3_price', 'misc4_description', 'misc4_price', 'override_price', 'step_run_through_duplo', 'duplo_number_of_pieces', 'step_duplo_tasks', 'step_duplo_price_per_task', 'step_duplo_price', 'duplo_note'
+            'misc3_price', 'misc4_description', 'misc4_price', 'override_price', 'step_run_through_duplo', 'duplo_number_of_pieces', 'step_duplo_tasks', 'step_duplo_price_per_task', 'step_duplo_price'
         ]
         widgets = {
             'qty': forms.NumberInput(attrs={}),
