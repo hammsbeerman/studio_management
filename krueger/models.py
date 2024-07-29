@@ -170,8 +170,7 @@ class KruegerJobDetail(models.Model):
     misc3_note = models.CharField('Misc3 Note', max_length=100, blank=True, null=True)
     misc4_note = models.CharField('Misc4 Note', max_length=100, blank=True, null=True)
 
-    def __str__(self):
-        return self.internal_company
+    
 
 
 class WideFormat(models.Model):

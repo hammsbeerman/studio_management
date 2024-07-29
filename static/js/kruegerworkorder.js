@@ -111,7 +111,7 @@ $(document).ready(function(){
       $('#bulkmail-row').slideToggle(200)
       });
 
-      if (($("#id_step_duplo_price").val() > .01) || ($("#id_step_duplo_price").val()))  {
+      if ($("#id_step_duplo_price").val() > .01)  {
         $('#duplo-row').show()
       //if ($("#id_misc1_description").val()){
         //$('#misc1-row').show()

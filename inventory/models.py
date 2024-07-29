@@ -15,7 +15,7 @@ class InventoryMaster(models.Model):
 
 
 class Inventory(models.Model):
-    name = models.CharField('Name', max_length=100, blank=True, null=True)
+    name = models.CharField('Name', max_length=100, blank=False, null=False)
     name2 = models.CharField('Additional Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     internal_part_number = models.CharField('Internal Part Number', max_length=100, blank=True, null=True)
