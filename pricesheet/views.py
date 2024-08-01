@@ -308,6 +308,10 @@ def edititem(request, id, pk, cat,):
                 price_ea = temp_total / obj.qty
             else:
                 temp_total = total
+                temp_total = (float(temp_total))
+                price_ea = temp_total / obj.qty
+            print('temptotal')
+            print(temp_total)
             obj.save()
             #print(pk)
             #KruegerJobDetail.objects.filter(pk=pk).update(paper_stock_id = paperstock)
@@ -558,6 +562,8 @@ def edit_wideformat_item(request, pk, cat,):
                 price_ea = temp_total / obj.quantity
             else:
                 temp_total = total
+                temp_total = (float(temp_total))
+                price_ea = temp_total / obj.quantity
             if mask.isnumeric():
                 obj.mask_id = mask
             if laminate.isnumeric():
@@ -568,6 +574,8 @@ def edit_wideformat_item(request, pk, cat,):
             #update workorderitem table
             print('temptotal')
             print(temp_total)
+            print('price ea')
+            print(price_ea)
             lineitem = WorkorderItem.objects.get(id=pk)
             lineitem.internal_company = internal_company
             lineitem.description = obj.description
