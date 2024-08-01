@@ -424,6 +424,8 @@ def workorder_item_list(request, id=None):
             print(subtotal_aggregate)
             tax_percent = Decimal.from_float(.055)
             tax_amount = Decimal.from_float(1.055)
+            subtotal_aggregate = round(subtotal_aggregate, 3)
+            tax_percent = round(tax_percent, 3)
             abs_tax = subtotal_aggregate * tax_percent
             abs_tax = round(abs_tax, 2)
             print(subtotal_aggregate)

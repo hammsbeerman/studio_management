@@ -37,6 +37,7 @@ def printleader_history_detail(request):
         if x.customer not in list:
             unique_list.append(x)
             list.append(x.customer)
+    #print(list)
     #print(unique_list)
     #Get workorders for selected customer
     id = request.GET.get('customers')
@@ -45,6 +46,52 @@ def printleader_history_detail(request):
     name = x.customer
     #print(cust)
     workorders = PrintleaderHistory.objects.filter(printleader_customer_number = cust).order_by('-invoice_date')
+    work = []
+    for workorder in workorders:
+        details = PrintleaderARINVODA.objects.filter(InvoiceNum = x.printleader_invoice)
+        work.append({
+            'workorder': workorder.printleader_invoice,
+             'detail': [detail.Jobname for detail in details]
+        })
+
+
+
+
+    # work = []
+    # for x in workorders:
+    #     print(x)
+    #     work.append([])
+    #     invoice = x.printleader_invoice
+    #     details = PrintleaderARINVODA.objects.filter(InvoiceNum = invoice)
+    #     print(work)
+    #     print('i')
+    #     print(details)
+    #     #for y in details:
+    #     for j in details:
+    #         print('hello')
+    #         print(work[x])
+    #         work[x].append(4)
+    #         print(work[x])
+    # print(work)
+
+    # print('space')    
+    # matrix = []
+    # for i in range(6):
+    #     # Append an empty sublist inside the list
+    #     matrix.append([])
+    #     print(matrix)
+    #     for j in range(5):
+    #         matrix[i].append(j)
+    # print(matrix)
+
+    #print(workorders)
+
+    # for x in workorders:
+    #     print('i')
+    #     work.append([])
+    #     details = PrintleaderARINVODA.objects.filter()
+    # print(details)
+
     # for x in workorders:
     #     description = PrintleaderARINVODA.objects.filter(InvoiceNum = x.printleader_invoice)
     #     print(description)
@@ -52,6 +99,7 @@ def printleader_history_detail(request):
     # for x in workorders:
     #     print(x)
     context = {
+        'work':work,
         'name':name,
         'workorders':workorders,
         'customers':unique_list,
