@@ -94,7 +94,15 @@
   </table>
   
   {% if workorder.completed == 0 %}
-         <button hx-get="{% url 'workorders:add_item' parent_id=workid %}" hx-target="#dialog" class="btn btn-primary">Add an item</button>
+      
+            <button hx-get="{% url 'workorders:add_item' parent_id=workid %}" hx-target="#dialog" class="btn btn-primary">Add an item</button>
+       
+          {% if workorder.quote == '1' %}
+   
+            <a href="{% url 'pdf:invoice_pdf' id=workid %}" class="btn btn-primary" target="_blank">Create PDF Invoice</a>
+       
+          {% endif %}
+    
   {% else %}
   <p>
     <br>

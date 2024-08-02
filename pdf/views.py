@@ -108,11 +108,20 @@ def invoice_pdf(request, id):
         # print('list length')
         # print(i)
         if item_length < 15:
-            html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
+            if workorder.quote == '0':
+                html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
+            else:
+                html_string=render_to_string('pdf/weasyprint/lk_quote.html', context)
         else:
-            html_string=render_to_string('pdf/weasyprint/lk_invoice_long.html', context)
+            if workorder.quote == '0':
+                html_string=render_to_string('pdf/weasyprint/lk_invoice_long.html', context)
+            else:
+                html_string=render_to_string('pdf/weasyprint/lk_quote_long.html', context)
     else:
-        html_string=render_to_string('pdf/weasyprint/krueger_invoice.html', context)
+        if workorder.quote == '0':
+            html_string=render_to_string('pdf/weasyprint/krueger_invoice.html', context)
+        else:
+            html_string=render_to_string('pdf/weasyprint/krueger_quote.html', context)
 
     html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
 
