@@ -2,7 +2,7 @@
 <p class="card-text">
 <ul>
     {% for x in  history %}
-    <li><a href="{% url 'workorders:overview' id=x.workorder %}">{{ x.workorder }} -- {{ x.description }}</a></li>
+    <li><a href="{% url 'workorders:overview' id=x.workorder %}">{{ x.workorder }} -- {{ x.description }}{% if x.lk_workorder %} - {{ x.lk_workorder}}{% endif %}{% if x.printleader_workorder %} - {{x.printleader_workorder}}{% endif %}</a></li>
     {% endfor %}
     </ul>
 

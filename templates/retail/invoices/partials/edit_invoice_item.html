@@ -1,0 +1,28 @@
+<form action='/retail/edit_invoice_item/{{ pk }}/' method="POST">
+    
+    {% csrf_token %}
+    
+    <!-- Name: <input type="text" value="{{ name }}" name="name"> -->
+    </br>
+    Name: <input type="text" value="{{ name }}" name="name">
+    </br>
+    Vendor Part Number: <input type="text" value="{{ vpn }}" name="vendor_part_number">
+    </br>
+    Description: <input type="text" value="{{ description }}" name="description">
+    </br>
+    Unit Cost: <input type="text" value="{{ unit_cost }}" name="unit_cost">
+    </br>
+    Qty: <input type="text" value="{{ qty }}" name="qty">
+
+
+
+
+    
+    <input type="hidden" id="pk" name="pk" value="{{ pk }}">
+    <input type="hidden" id="internal_part_number" name="internal_part_number" value="{{ ipn }}">
+    <input type="hidden" id="vendor" name="vendor" value="{{ vendor }}">
+    
+    </br>
+    <button type="submit">Save</button>
+</form>
+

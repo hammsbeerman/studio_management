@@ -1,0 +1,15 @@
+{% load static %}
+
+Add Inventory Item:
+<p>
+    <form action='/retail/add_inventory_item/' method="POST">
+          {% csrf_token %}
+            {{ form.as_p }}   
+            
+            <input type="hidden" id="invoice" name="invoice" value="{{ invoice }}">
+                  
+              
+            
+        <button type="submit">Save</button>
+ 
+    </form>

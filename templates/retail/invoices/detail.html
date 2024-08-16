@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+
+<h3>Invoice Number: {{ invoice.invoice_number }}</h3>
+<h4>Date: {{ invoice.invoice_date }}</br>
+    Vendor: {{invoice.vendor.name}}
+</h4>
+<p>
+
+<div class="container">
+    
+    
+</div>
+<p>
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col" class="">Name</th>
+            <th scope="col" class="">Vendor Part Number</th>
+            <th scope="col" class="">Description</th>
+            <th scope="col" class="">Internal Part Number</th>
+            <th scope="col" class="">Unit Cost</th>
+            <th scope="col" class="">Qty</th>
+            <th scope="col" class=""></th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for x in items %}
+            <tr>
+                <td>{{ x.name }}</td>
+                <td>{{ x.vendor_part_number }}</td>
+                <td>{{ x.description }}</td>
+                <td>{{ x.internal_part_number }}</td>
+                <td>{{ x.unit_cost }}</td>
+                <td>{{ x.qty }}</td>
+                <td>
+                    <button hx-trigger="click" hx-get="{% url 'retail:edit_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Edit</button>
+                    <button hx-trigger="click" hx-get="{% url 'retail:edit_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Delete</button>
+                </tr>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>   
+<p>
+<!-- <div id="invoices">
+ <button hx-trigger="click" hx-get="{% url 'retail:add_invoice_item' invoice=invoice.id %}" hx-target="#invoices" class="btn btn-danger">Add an item</button> 
+</div> -->
+
+<div id="invoices">
+    <button hx-trigger="click" hx-get="{% url 'retail:add_invoice_item' invoice=invoice.id vendor=0 %}" hx-target="#invoices" class="btn btn-danger">Add an item</button>
+</div>
+
+<div id="remainder"></div>
+
+
+<div id="modal" class="modal fade">
+    <div id="dialog" class="modal-dialog" hx-target="this"></div>
+  </div>
+  
+{% endblock content %}
+
+
+

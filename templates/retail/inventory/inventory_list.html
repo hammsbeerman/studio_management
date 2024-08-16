@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+{% for x in items %}
+    {{x.id}} - {{x.name}} - {{x.description }} - {{x.created}}  -  {{x.updated }}  {{ x.high_price }}  -  {{ x.primary_vendor }}</br>
+{% endfor %}
+
+{% endblock %}

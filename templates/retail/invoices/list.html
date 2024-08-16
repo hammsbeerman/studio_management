@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+List of invoices
+
+<a href="{% url 'retail:add_invoice' %}">Add Invoice</a> | <a href="#">Placeholder</a>
+
+<p><ul>
+    {% for x in  invoices %}
+    <li><a href='{{ x.get_absolute_url }}'>{{ x.invoice_number }}</a></li>
+    {% endfor %}
+    </ul></p>
+
+{% endblock content %}

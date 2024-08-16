@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+
+<h3>Add Vendor:</h3>
+<p>
+<form action='' method="POST">
+    {% csrf_token %}
+
+ <!-- <div id="testing" hx-trigger="CustomerAdded from:body" hx-refresh="True" hx-get="{% url 'customers:customers' %}" hx-target="#custlist">
+</div> -->
+<div class="container">
+    {% if message %}<mark class="red">{{ message }}</mark>{% endif %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+</div>
+
+</form>
+
+{% endblock content %}

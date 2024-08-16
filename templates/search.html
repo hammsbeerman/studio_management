@@ -3,37 +3,48 @@
 {% block content %}
 
 <center><h4>Search results</h4></center>
+{% if message %}
+ {{ message }}
+{% endif %}
 {% if open %}
     Open Workorders:
-    <br>
     {% for x in open %}
         <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.description %} - {{ x.description }}{% endif %}{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}{% if x.void %}<span style="color:red;">Void</span>{% endif %}</li>
     {% endfor %}
 {% endif %}
 <p>
+</br>
 {% if workorders %}
     Workorders:
-    <br>
     {% for x in workorders %}
         <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.description %} - {{ x.description }}{% endif %}{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}{% if x.void %}<span style="color:red;">Void</span>{% endif %}</li>
     {% endfor %}
 {% endif %}
 <p>
+</br>
+{% if balance %}
+    Matching balance:
+    {% for x in balance %}
+        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.description %} - {{ x.description }}{% endif %}{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}{% if x.void %}<span style="color:red;">Void</span>{% endif %}</li>
+    {% endfor %}
+{% endif %}
+    <p>
+    </br>
 {% if workorder_item %}
 Workorders Items:
-<p>
 {% for x in workorder_item %}
     <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.workorder.hr_customer }}</a></li>
 {% endfor %}
 {% endif %}
 <p>
+</br>
 {% if customer %}
 Customers:
-<p>
 {% for x in customer %}
 <li><a href='{{ x.get_absolute_url }}'>{{ x.company_name }}</a>{% if not x.active %}<span style="color:red;"> - Inactive</span>{% endif %}</li>
 {% endfor %}
 <p>
+</br>
 {% endif %}
 {% if contact %}
 <p>

@@ -41,6 +41,12 @@ def create_base(request):
         #'messages':messages,
     }
     if request.method == "POST":
+        customer = request.POST.get('customer')
+        print('custom customer')
+        print(customer)
+        if customer == "Select Customer":
+            messages.error(request, "Please select a customer.")
+            return render(request, 'workorders/create.html', context)
         print('hi')
         form = WorkorderForm(request.POST)
         #print(form.internal_company)

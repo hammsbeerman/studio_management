@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+
+<h3>{{ vendor.name }}</h3>
+<p>
+
+<div class="container">
+    Name: {{vendor.name}}
+    <br/>
+    Address 1:  {{vendor.address1}}
+    <br/>
+    Address 2: {{vendor.address2}}
+    <br>
+    City: {{vendor.city}}
+    <br/>
+    State: {{vendor.state}}
+    <br/>
+    Zipcode: {{vendor.zipcode}}
+    <br/>
+    Phone 1: {{vendor.phone1}}
+    <br/>
+    Phone 2: {{vendor.phone2}}
+    <br>
+    Email: {{vendor.email}}
+    <br>
+    Website: {{vendor.website}}
+</div>
+
+
+{% endblock content %}

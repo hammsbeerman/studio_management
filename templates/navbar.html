@@ -10,10 +10,10 @@
           {% if not user.is_authenticated %}
           
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'login' %}">Login</a>
+              <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
             </li>
             <!-- <li class="nav-item">
-              <a class="nav-link" href="{% url 'register' %}">Register</a>
+              <a class="nav-link" href="{% url 'accounts:register' %}">Register</a>
             </li> -->
           {% endif %}
 
@@ -99,10 +99,29 @@
                   <li><a class="dropdown-item" href="{% url 'pdf:showitems' %}">Item list w/ xhtml2pdf</a></li>
                 </ul> 
               </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Retail
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                  <li><a class="dropdown-item" href="{% url 'retail:add_vendor' %}">Add Vendor</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:vendor_list' %}">List Vendors</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:add_invoice' %}">Add Invoice</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:invoice_list' %}">Invoices</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:add_inventory_item' %}">Add Inventory Item</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:retail_inventory_list' %}">Inventory List</a></li>
+                  <!-- <li><a class="dropdown-item" href="{% url 'retail:add_item_to_vendor' %}">Add Item to vendor</a></li> -->
+                </ul>
+              </li>
             {% endif %}
-          
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                User
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a></li>
+                <li><a class="dropdown-item" href="{% url 'accounts:update_password' %}">Change Password</a></li>
+              </ul>
             </li>
           {% endif %}
       
