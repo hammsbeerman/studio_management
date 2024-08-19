@@ -18,7 +18,8 @@ from .views import (
     add_inventory_item,
     vendor_item_remainder,
     retail_inventory_list,
-    edit_invoice_item
+    edit_invoice_item,
+    delete_invoice_item
 )
 
 app_name='retail'
@@ -48,7 +49,8 @@ urlpatterns = [
     path('add_inventory_item/', add_inventory_item, name='add_inventory_item'),
     path('vendor_item_remainder/<int:vendor>/<int:invoice>', vendor_item_remainder, name='vendor_item_remainder'),
     path('retail_inventory_list/', retail_inventory_list, name='retail_inventory_list'),
-
+    path('add_item_to_vendor/<int:vendor>/<int:invoice>', add_item_to_vendor, name='add_item_to_vendor'),
+    path('delete_invoice_item/<int:invoice>/<int:id>', delete_invoice_item, name='delete_invoice_item'),
 
 
 ]

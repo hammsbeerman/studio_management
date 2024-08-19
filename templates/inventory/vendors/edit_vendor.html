@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+
+<form action='/inventory/edit_vendor/{{ vendor }}/' method="POST">
+    {% csrf_token %}
+      {{ form.as_p }}   
+      
+      <input type="hidden" id="vendor" name="vendor" value="{{ vendor }}">
+            
+        
+      
+  <button type="submit">Save</button>
+
+</form>
+
+{% endblock content %}

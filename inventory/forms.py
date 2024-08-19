@@ -11,7 +11,7 @@ class AddVendorForm(forms.ModelForm):
    state = forms.CharField(widget=USStateSelect(), initial='WI')
    class Meta:
        model = Vendor
-       fields = ['name', 'address1', 'address2', 'city', 'state', 'zipcode', 'phone1', 'phone2', 'email', 'website', 'supplier']
+       fields = ['name', 'address1', 'address2', 'city', 'state', 'zipcode', 'phone1', 'phone2', 'email', 'website', 'supplier', 'retail_vendor']
        labels = {
         }
 

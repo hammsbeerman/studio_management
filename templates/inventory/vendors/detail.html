@@ -9,26 +9,30 @@
 <p>
 
 <div class="container">
-    Name: {{vendor.name}}
+    Name: {% if vendor.name %}{{vendor.name}}{% endif %}
     <br/>
-    Address 1:  {{vendor.address1}}
+    Address 1:  {% if vendor.address1 %}{{vendor.address1}}{% endif %}
     <br/>
-    Address 2: {{vendor.address2}}
+    Address 2: {% if vendor.address2 %}{{vendor.address2}}{% endif %}
     <br>
-    City: {{vendor.city}}
+    City: {% if vendor.city %}{{vendor.city}}{% endif %}
     <br/>
-    State: {{vendor.state}}
+    State: {% if vendor.state %}{{vendor.state}}{% endif %}
     <br/>
-    Zipcode: {{vendor.zipcode}}
+    Zipcode: {% if vendor.zipcode %}{{vendor.zipcode}}{% endif %}
     <br/>
-    Phone 1: {{vendor.phone1}}
+    Phone 1: {% if vendor.phone1 %}{{vendor.phone1}}{% endif %}
     <br/>
-    Phone 2: {{vendor.phone2}}
+    Phone 2: {% if vendor.phone2 %}{{vendor.phone2}}{% endif %}
     <br>
-    Email: {{vendor.email}}
+    Email: {% if vendor.email %}{{vendor.email}}{% endif %}
     <br>
-    Website: {{vendor.website}}
+    Website: {% if vendor.website %}{{vendor.website}}{% endif %}
+    <br>
+    Supplier: {{ supplier }}
+    <br>
+    Retail Vendor: {{ retail }}
 </div>
-
-
+<br>
+<a href="{% url 'inventory:edit_vendor' id=vendor.id %}">Edit  Vendor</a>
 {% endblock content %}

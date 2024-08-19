@@ -1,7 +1,15 @@
 from django.db import models
 from django.urls import reverse
+from datetime import datetime
+from django.db.models import Max
 from controls.models import RetailInventoryCategory, Measurement
 from inventory.models import Inventory, Vendor
+
+from django.dispatch import receiver
+from django.db.models.signals import (
+    post_save,
+    post_delete
+)
 
 # class RetailVendor(models.Model):
 #     name = models.CharField('Name', max_length=100, blank=False, null=False)
@@ -72,7 +80,7 @@ class RetailVendorItemDetail(models.Model):
     #internal_part_number = models.ManyToManyField(RetailInventoryMaster)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
-    high_price = models.DecimalField('High Price', max_digits=8, decimal_places=2, blank=True, null=True)
+    high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -87,7 +95,7 @@ class RetailInvoiceItem(models.Model):
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     #internal_part_number = models.CharField('Internal Part Number', max_length=100, blank=True, null=True)
     internal_part_number = models.ForeignKey(RetailInventoryMaster, on_delete=models.CASCADE)
-    unit_cost = models.DecimalField('Unit Cost', max_digits=8, decimal_places=2, blank=True, null=True)
+    unit_cost = models.DecimalField('Unit Cost', max_digits=15, decimal_places=4, blank=True, null=True)
     qty = models.DecimalField('Qty', max_digits=8, decimal_places=2, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
@@ -96,6 +104,84 @@ class RetailInvoiceItem(models.Model):
 
     def __str__(self):
         return self.name
+
+##Not currently being used    
+class InventoryMaster(models.Model):
+    name = models.CharField('Name', max_length=100, blank=True, null=True)
+    supplies_internal_part_number = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.DO_NOTHING)
+    retail_inventory_part_number = models.ForeignKey(RetailInventoryMaster, blank=True, null=True, on_delete=models.DO_NOTHING)
+    description = models.CharField('Description', max_length=100, blank=True, null=True)
+    unit_cost = models.CharField('Unit Cost', max_length=100, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+    current_stock = models.CharField('Current Stock', max_length=100, blank=True, null=True)
+    
+
+@receiver(post_save, sender=RetailInvoiceItem)   
+def highprice_handler(sender, instance, created, *args, **kwargs):
+    print(args, kwargs)
+    print('cool')
+    internal_part_number = instance.internal_part_number
+    unit_cost = instance.unit_cost
+    vendor = instance.vendor.id
+    print(instance.unit_cost)
+    print(instance.vendor.id)
+    items = RetailInvoiceItem.objects.filter(vendor=vendor, internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
+    print(items)
+    price = list(items.values())[0]
+    #price_dec = 
+    #Update high price for vendor item
+    current_high = RetailVendorItemDetail.objects.get(vendor=vendor, internal_part_number=internal_part_number)
+    current_high = current_high.high_price
+    print(current_high)
+    if current_high < price:
+        print('ok')
+        RetailVendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
+    else:
+        print('no change')
+    #price = items
+    print(price)
+    print('done')
+    #items = RetailInvoiceItem.objects.filter(vendor=vendor, internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
+    # for x in items:
+    #     print (x.name)
+    #     print (x.unit_cost)
+
+#post_save.connect(highprice_handler, sender=RetailInvoiceItem)
+
+@receiver(post_delete, sender=RetailInvoiceItem)   
+def highprice_handler(sender, instance, *args, **kwargs):
+    print('deleted')
+    print(instance)
+    print(instance.vendor)
+    vendor = instance.vendor.id
+    internal_part_number = instance.internal_part_number
+    print(internal_part_number)
+    items = RetailInvoiceItem.objects.filter(vendor=vendor, internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
+    print(items)
+    price = list(items.values())[0]
+    print(price)
+    RetailVendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
+
+    # internal_part_number = instance.internal_part_number
+    # unit_cost = instance.unit_cost
+    # vendor = instance.vendor.id
+    # items = RetailInvoiceItem.objects.filter(vendor=vendor, internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
+    # print(items)
+    # price = list(items.values())[0]
+    # #price_dec = 
+    # #Update high price for vendor item
+    # current_high = RetailVendorItemDetail.objects.get(vendor=vendor, internal_part_number=internal_part_number)
+    # current_high = current_high.high_price
+    # print(current_high)
+    # if current_high < price:
+    #     print('ok')
+    #     RetailVendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
+    # else:
+    #     print('no change')
+    # #price = items
+    # print(price)
+    # print('done')
     
     
 

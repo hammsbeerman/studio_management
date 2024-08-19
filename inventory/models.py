@@ -4,15 +4,6 @@ from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import SubCategory, Measurement, InventoryCategory
 
-class InventoryMaster(models.Model):
-    name = models.CharField('Name', max_length=100, blank=True, null=True)
-    description = models.CharField('Description', max_length=100, blank=True, null=True)
-    unit_cost = models.CharField('Unit Cost', max_length=100, blank=True, null=True)
-    created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
-    current_stock = models.CharField('Current Stock', max_length=100, blank=True, null=True)
-
-
 
 class Inventory(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False)
@@ -50,6 +41,8 @@ class Inventory(models.Model):
     def __str__(self):
         return self.name
     
+
+    
 class Vendor(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     address1 = models.CharField('Address 1', max_length=100, blank=True, null=True)
@@ -72,7 +65,7 @@ class Vendor(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("inventory:detail", kwargs={"id": self.id})
+        return reverse("inventory:vendor_detail", kwargs={"id": self.id})
 
     # def get_hx_url(self):
     #     return reverse("vendors:hx-detail", kwargs={"id": self.id})

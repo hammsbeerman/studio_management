@@ -1,0 +1,6 @@
+
+    <p><ul>
+        {% for x in  vendors %}
+        <li><a href='{{ x.get_absolute_url }}'>{{ x.name }}</a></li>
+        {% endfor %}
+        </ul></p>

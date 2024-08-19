@@ -40,7 +40,10 @@
                 <td>{{ x.qty }}</td>
                 <td>
                     <button hx-trigger="click" hx-get="{% url 'retail:edit_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Edit</button>
-                    <button hx-trigger="click" hx-get="{% url 'retail:edit_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Delete</button>
+                    <!-- <button hx-trigger="click" hx-get="{% url 'retail:delete_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Delete</button>
+                    <button hx-get="{% url 'retail:delete_invoice_item' invoice=invoice.id id=x.id %}" class="btn btn-secondary">Delete</button> -->
+                    <a href="{% url 'retail:delete_invoice_item'  invoice=invoice.id id=x.id %}" class="btn btn-secondary" role="button">Delete</a>
+                    
                 </tr>
 
             </tr>

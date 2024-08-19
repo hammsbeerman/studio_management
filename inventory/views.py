@@ -62,21 +62,69 @@ def add_vendor(request):
 
 
 @login_required
-def vendor_list(request):
-    vendor = Vendor.objects.all().order_by("name")
-    print('vendors')
-    context = {
-        'vendors': vendor,
-    }
-    return render(request, 'inventory/vendors/list.html', context)
+def vendor_list(request, vendor=None):
+    if not vendor:
+        vendor = Vendor.objects.all().order_by("name")
+        print('vendors')
+        context = {
+            'vendors': vendor,
+        }
+        return render(request, 'inventory/vendors/list.html', context)
+    else:
+        if vendor == 'All':
+            vendor = Vendor.objects.all().order_by("name")
+        if vendor == 'Retail':
+            vendor = Vendor.objects.filter(retail_vendor=1).order_by("name")
+        elif vendor == 'Supply':
+            vendor = Vendor.objects.filter(supplier=1).order_by("name")
+        elif vendor == 'Other':
+            vendor = Vendor.objects.filter(supplier=0, retail_vendor=0).order_by("name")
+        print('vendors')
+        context = {
+            'vendors': vendor,
+        }
+        return render(request, 'inventory/vendors/partials/vendor_list.html', context)
 
 @login_required
-def detail(request, id):
+def vendor_detail(request, id):
     vendor = get_object_or_404(Vendor, id=id)
+    if vendor.supplier == 1:
+        supplier = 'True'
+    else:
+        supplier = 'False'
+    if vendor.retail_vendor == 1:
+        retail = 'True'
+    else:
+        retail = 'False'
     context = {
+        'retail': retail,
+        'supplier':supplier,
         'vendor': vendor,
     }
     return render(request, 'inventory/vendors/detail.html', context)
+
+@login_required
+def edit_vendor(request, id):
+    if request.method == "POST":
+        vendor = Vendor.objects.get(id=id)
+        print(id)
+        form = AddVendorForm(request.POST, instance=vendor)
+        if form.is_valid():
+            form.save()
+        vendors = Vendor.objects.all().order_by('name')
+        #print(vendor)
+        context = {
+            'vendors': vendors,
+        }
+        return render (request, "inventory/vendors/list.html", context)
+    obj = get_object_or_404(Vendor, id=id)
+    form = AddVendorForm(instance=obj)
+    vendor = id
+    context = {
+        'form':form,
+        'vendor':vendor,
+    }
+    return render(request, 'inventory/vendors/edit_vendor.html', context)
 
 @login_required
 def add_inventory_item(request):
@@ -125,6 +173,23 @@ def add_inventory_item(request):
         return redirect('home')
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Below this is solely for testing API data
 
 #For testing serializer
@@ -150,23 +215,23 @@ def inventory_list(request):
 #def new_inventory_list(request)
 
 
-class InventoryCreate(generics.ListCreateAPIView):
-    queryset = Inventory.objects.all()
-    serializer_class = InventorySerializer
+# class InventoryCreate(generics.ListCreateAPIView):
+#     queryset = Inventory.objects.all()
+#     serializer_class = InventorySerializer
 
-class InventoryPRUD(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Inventory.objects.all()
-    serializer_class = InventorySerializer
-    lookup_field = "pk"
+# class InventoryPRUD(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Inventory.objects.all()
+#     serializer_class = InventorySerializer
+#     lookup_field = "pk"
 
-class InventoryListAPIView(generics.ListAPIView):
-    queryset = Inventory.objects.all()
-    serializer_class = InventorySerializer
+# class InventoryListAPIView(generics.ListAPIView):
+#     queryset = Inventory.objects.all()
+#     serializer_class = InventorySerializer
 
-class InventoryDetailAPIView(generics.RetrieveAPIView):
-    queryset = Inventory.objects.all()
-    serializer_class = InventorySerializer
+# class InventoryDetailAPIView(generics.RetrieveAPIView):
+#     queryset = Inventory.objects.all()
+#     serializer_class = InventorySerializer
 
-class InventoryViewSet(viewsets.ModelViewSet):
-    queryset = Inventory.objects.all()
-    serializer_class = InventorySerializer
+# class InventoryViewSet(viewsets.ModelViewSet):
+#     queryset = Inventory.objects.all()
+#     serializer_class = InventorySerializer

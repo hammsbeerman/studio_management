@@ -7,10 +7,23 @@ List of vendors
 
 <a href="{% url 'inventory:add_vendor' %}">Add Vendor</a> | <a href="{% url 'finance:add_bill_payable' %}">Add Bill to be paid</a> | <a href="{% url 'finance:view_bills_payable' %}">View Bills to be paid</a>
 
-<p><ul>
-    {% for x in  vendors %}
-    <li><a href='{{ x.get_absolute_url }}'>{{ x.name }}</a></li>
-    {% endfor %}
-    </ul></p>
+<div id="vendors">
+    <p><ul>
+        {% for x in  vendors %}
+        <li><a href='{{ x.get_absolute_url }}'>{{ x.name }}</a></li>
+        {% endfor %}
+        </ul></p>
+</div>
+
+
+    
+    
+
+
+    <button hx-trigger="click" hx-get="{% url 'inventory:vendor_list' vendor='All' %}" hx-target="#vendors" class="btn btn-secondary">All Vendors</button>
+    <button hx-trigger="click" hx-get="{% url 'inventory:vendor_list' vendor='Retail' %}" hx-target="#vendors" class="btn btn-secondary">Retail Vendors</button>
+    <button hx-trigger="click" hx-get="{% url 'inventory:vendor_list' vendor='Supply' %}" hx-target="#vendors" class="btn btn-secondary">Supplier Vendors</button>
+    <button hx-trigger="click" hx-get="{% url 'inventory:vendor_list' vendor='Other' %}" hx-target="#vendors" class="btn btn-secondary">Other Vendors</button>
 
 {% endblock content %}
+
