@@ -4,6 +4,7 @@ from datetime import datetime
 from django.db.models import Max
 from controls.models import RetailInventoryCategory, Measurement
 from inventory.models import Inventory, Vendor
+from finance.models import AccountsPayable
 
 from django.dispatch import receiver
 from django.db.models.signals import (
@@ -35,25 +36,25 @@ from django.db.models.signals import (
 #         return reverse("retail:vendor_detail", kwargs={"id": self.id})
     
 ##!   
-class RetailInvoices(models.Model):
-    invoice_date = models.DateField('Invoice Date', blank=True, null=True)
-    invoice_number = models.CharField('Invoice Number', max_length=100, blank=True, null=False)
-    vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
-    total = models.CharField('Total', max_length=100, blank=True, null=True)
-    date_due = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    discount = models.DecimalField('Discount', blank=True, null=True, max_digits=10, decimal_places=2)
-    discount_date_due = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    paid = models.BooleanField('Paid', null=True, default=False)
-    date_paid = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
-    amount_paid = models.DecimalField('Amount Paid', blank=True, null=True, max_digits=10, decimal_places=2)
-    payment_method = models.CharField('Payment Method', choices=[('Cash', 'Cash'), ('Check', 'Check'), ('Credit Card', 'Credit Card'), ('Trade', 'Trade'), ('Other', 'Other')], max_length=100, blank=True, null=True)
+# class RetailInvoices(models.Model):
+#     invoice_date = models.DateField('Invoice Date', blank=True, null=True)
+#     invoice_number = models.CharField('Invoice Number', max_length=100, blank=True, null=False)
+#     vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
+#     total = models.CharField('Total', max_length=100, blank=True, null=True)
+#     date_due = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
+#     discount = models.DecimalField('Discount', blank=True, null=True, max_digits=10, decimal_places=2)
+#     discount_date_due = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
+#     paid = models.BooleanField('Paid', null=True, default=False)
+#     date_paid = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
+#     amount_paid = models.DecimalField('Amount Paid', blank=True, null=True, max_digits=10, decimal_places=2)
+#     payment_method = models.CharField('Payment Method', choices=[('Cash', 'Cash'), ('Check', 'Check'), ('Credit Card', 'Credit Card'), ('Trade', 'Trade'), ('Other', 'Other')], max_length=100, blank=True, null=True)
     
 
-    def __str__(self):
-         return self.invoice_number
+#     def __str__(self):
+#          return self.invoice_number
     
-    def get_absolute_url(self):
-        return reverse("retail:invoice_detail", kwargs={"id": self.id})
+#     def get_absolute_url(self):
+#         return reverse("retail:invoice_detail", kwargs={"id": self.id})
 
 
 ##!
@@ -88,7 +89,7 @@ class RetailVendorItemDetail(models.Model):
     
 class RetailInvoiceItem(models.Model):
     vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
-    invoice = models.ForeignKey(RetailInvoices, blank=True, null=True, on_delete=models.DO_NOTHING)
+    invoice = models.ForeignKey(AccountsPayable, blank=True, null=True, on_delete=models.DO_NOTHING)
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     #name = models.ForeignKey(RetailInventoryMaster, on_delete=models.CASCADE, related_name='item_name')
     vendor_part_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
@@ -133,6 +134,10 @@ def highprice_handler(sender, instance, created, *args, **kwargs):
     #Update high price for vendor item
     current_high = RetailVendorItemDetail.objects.get(vendor=vendor, internal_part_number=internal_part_number)
     current_high = current_high.high_price
+    if current_high is None:
+        current_high = 0
+    if price is None:
+        price = 0
     print(current_high)
     if current_high < price:
         print('ok')

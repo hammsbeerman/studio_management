@@ -1,9 +1,9 @@
 from django.db import models
+from django.urls import reverse
 from inventory.models import Vendor
 from workorders.models import Workorder
 from controls.models import PaymentType
 from customers.models import Customer
-from retail.models import RetailInvoices
 
 from django.dispatch import receiver
 from django.db.models.signals import (
@@ -16,8 +16,9 @@ class AccountsPayable(models.Model):
     invoice_date = models.DateField(auto_now=False, auto_now_add=False)
     vendor = models.ForeignKey(Vendor, blank=False, null=False, on_delete=models.DO_NOTHING)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
-    invoice_number = models.CharField('Invoice Number', max_length=100, blank=True, null=True)
-    amount = models.DecimalField('Amount', max_digits=10, decimal_places=2)
+    total = models.CharField('Total', max_length=100, blank=True, null=True)
+    invoice_number = models.CharField('Invoice Number', max_length=100, blank=True, null=False)
+    amount = models.DecimalField('Amount', max_digits=10, decimal_places=2, blank=True, null=True)
     date_due = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
     discount = models.DecimalField('Discount', blank=True, null=True, max_digits=10, decimal_places=2)
     discount_date_due = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
@@ -25,11 +26,18 @@ class AccountsPayable(models.Model):
     date_paid = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
     amount_paid = models.DecimalField('Amount Paid', blank=True, null=True, max_digits=10, decimal_places=2)
     payment_method = models.CharField('Payment Method', choices=[('Cash', 'Cash'), ('Check', 'Check'), ('Credit Card', 'Credit Card'), ('Trade', 'Trade'), ('Other', 'Other')], max_length=100, blank=True, null=True)
+    retail_invoice = models.BooleanField('Retail Invoice', null=True, default=True)
+    supplies_invoice = models.BooleanField('Supplies Invoice', null=True, default=True)
     #workorder = models.ForeignKey(Workorder, blank=False, null=False, on_delete=models.DO_NOTHING)
+
+    def get_absolute_url(self):
+        return reverse("finance:invoice_detail", kwargs={"id": self.id})
+
+    
 
     def __str__(self):
         #Pulling from Foreign Key
-        return self.vendor.name
+        return self.vendor.name + ' -- ' + self.invoice_number
     
 class DailySales(models.Model):
     date = models.DateField(auto_now=False, auto_now_add=False, blank=False, null=False)

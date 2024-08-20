@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+Add Item to Vendor:
+<p>
+
+<form action='/finance/invoice_detail/' method="POST">
+    {% csrf_token %}
+
+
+<select class="custom-select mb-4" id="id_item" hx-trigger="change" name="item" hx-get="{% url 'finance:vendor_item_remainder' vendor=vendor invoice=invoice %}" hx-target="#remainder">
+
+<option selected>Select Item</option>
+    {% for object in items %}
+      <option value="{{ object.id }}">{{ object.name }}</option>
+    {% endfor %}
+</select>
+<button  class="btn btn-primary-outline" hx-get="{% url 'finance:add_item_to_vendor' vendor=vendor invoice=invoice %}" hx-target="#invoices">Add New part<img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
+</form>
+
+{% endblock %}

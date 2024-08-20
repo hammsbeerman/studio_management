@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import RetailVendorItemDetail, RetailInventoryMaster, RetailInvoiceItem, RetailInvoices
+from .models import RetailVendorItemDetail, RetailInventoryMaster, RetailInvoiceItem
 
 
 class RetailInventoryAdmin(admin.ModelAdmin):
@@ -18,4 +18,4 @@ admin.site.register(RetailInvoiceItem)
 
 #admin.site.register(RetailVendor)
 
-admin.site.register(RetailInvoices)
+#admin.site.register(RetailInvoices)

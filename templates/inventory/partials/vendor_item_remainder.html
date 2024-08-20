@@ -1,0 +1,17 @@
+<form action='/finance/add_item_to_vendor/' method="POST">
+    
+    {% csrf_token %}
+    
+    Name: <input type="text" value="{{ name }}" name="name">
+    </br>
+    Description: <input type="text" value="{{ description }}" name="description">
+    </br>
+    Vendor Part Number: <input type="text" value="{{ vendor_part_number }}" name="vendor_part_number">
+    </br>
+    <input type="hidden" id="internal_part_number" name="internal_part_number" value="{{ ipn }}">
+    <input type="hidden" id="invoice" name="invoice" value="{{ invoice }}">
+    <input type="hidden" id="vendor" name="vendor" value="{{ vendor }}">
+    
+    
+    <button type="submit">Save</button>
+    </form>

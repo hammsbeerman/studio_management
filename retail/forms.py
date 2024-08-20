@@ -2,7 +2,8 @@ from django import forms
 from django.forms import ModelForm
 from django.urls import reverse_lazy
 from django.db.models.functions import Lower
-from .models import RetailInvoices, RetailInvoiceItem, RetailInventoryMaster, RetailVendorItemDetail
+from .models import RetailInvoiceItem, RetailInventoryMaster, RetailVendorItemDetail
+from finance.models import AccountsPayable
 from inventory.models import Vendor
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
@@ -19,8 +20,8 @@ class AddVendorForm(forms.ModelForm):
        
 class AddInvoiceForm(forms.ModelForm):
    class Meta:
-       model = RetailInvoices
-       fields = ['invoice_date', 'invoice_number', 'vendor', 'total', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method']
+       model = AccountsPayable
+       fields = ['invoice_date', 'invoice_number', 'vendor', 'total', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method', 'retail_invoice', 'supplies_invoice']
        labels = {
         }
        

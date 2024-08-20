@@ -1,0 +1,27 @@
+<form action='/finance/ap/invoice_detail/{{ invoice }}/' method="POST">
+    
+    {% csrf_token %}
+    
+    <!-- Name: <input type="text" value="{{ name }}" name="name"> -->
+    </br>
+    Vendor Part Number: <input type="text" value="{{ vpn }}" name="vendor_part_number">
+    </br>
+    Description: <input type="text" value="{{ description }}" name="description">
+    </br>
+    Unit Cost: <input type="text" name="unit_cost">
+    </br>
+    Qty: <input type="text" name="qty">
+
+
+
+
+    <input type="hidden" id="invoice" name="invoice" value="{{ invoice }}">
+    <input type="hidden" id="vendor" name="vendor" value="{{ vendor }}">
+    <input type="hidden" id="name" name="name" value="{{ name }}">
+    <input type="hidden" id="internal_part_number" name="internal_part_number" value="{{ ipn }}">
+    
+    </br>
+    <button type="submit">Save</button>
+</form>
+    
+

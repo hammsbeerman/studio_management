@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -10,10 +10,11 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 import logging
 from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment
-from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm
+from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm
+from retail.forms import AddInvoiceItemForm, RetailVendorItemDetailForm, RetailInventoryMasterForm
+from retail.models import RetailVendorItemDetail, RetailInvoiceItem, RetailInventoryMaster
 from customers.models import Customer
 from workorders.models import Workorder
-from .forms import PaymentForm
 from controls.models import PaymentType
 from inventory.models import Vendor
 
@@ -823,6 +824,450 @@ def remove_payment(request, pk=None):
         'customers':customers,
     }
     return render(request, 'finance/AR/modals/remove_payment.html', context)
+
+
+
+############################################
+###########
+
+# AP Invoices
+
+###########
+#############################################
+
+@login_required
+def invoice_detail(request, id=None):
+    if request.method == "POST":
+        # invoice = request.POST.get('invoice')
+        vendor = request.POST.get('vendor')
+        #vendor = int(vendor)
+        invoice = id
+        print('id')
+        print(id)
+        form = AddInvoiceItemForm(request.POST)
+        if form.is_valid():
+            print(invoice)
+            form.instance.invoice_id = invoice
+            form.save()
+            name = form.instance.name
+            print(name)
+            print(vendor)
+            print('here')
+            #item = RetailVendorItemDetail.objects.get(name=name, vendor_id=vendor)
+            ##
+            # try:
+            #     item = RetailVendorItemDetail.objects.get(name=name, vendor_id=vendor)
+            #     print(item)
+            # except:
+            #     print('No Item')
+            # if item:
+            #     print(item.pk)
+            #     high_price = item.high_price
+            #     print(high_price)
+            #     current_price = form.instance.unit_cost
+            #     print(current_price)
+            #     if high_price:
+            #         high_price = int(high_price)
+            #     if current_price:
+            #         if not high_price:
+            #             high_price = 0
+            #             current_price = Decimal(current_price)
+            #             RetailVendorItemDetail.objects.filter(pk=item.pk).update(high_price=current_price, updated=datetime.now())
+            #             print(3)
+            #         current_price = int(current_price)
+            #         if current_price > high_price:
+            #             current_price = Decimal(current_price)
+            #             RetailVendorItemDetail.objects.filter(pk=item.pk).update(high_price=current_price)
+            #             print(4)       
+            # #     
+                # if high_price == 'None':
+                #     high_price = 0
+                # if current_price == 'None':
+                #     current_price = 0
+                # if not high_price:
+                    
+                
+                    
+            # if not item:
+            #     print(vendor)
+            #     RetailVendorItemDetail.objects.create(
+            #         vendor_id = vendor,
+            #         name=name,
+            #         vendor_part_number = form.instance.vendor_part_number,
+            #         description = form.instance.description,
+            #         internal_part_number = form.instance.internal_part_number,
+            #         high_price = form.instance.unit_cost
+            #         )
+        else:
+            print(form.errors)
+        invoice = get_object_or_404(AccountsPayable, id=invoice)
+        print('djska')
+        print(invoice)
+        items = RetailInvoiceItem.objects.filter(invoice_id = invoice)
+        print(items)
+        #items = 
+        #print(vendor)
+        # context = {
+        #     'invoice': invoice,
+        #     'items': items,
+        # }
+        return redirect ('finance:invoice_detail', id=id)
+    invoice = get_object_or_404(AccountsPayable, id=id)
+    items = RetailInvoiceItem.objects.filter(invoice_id = id)
+    context = {
+        'invoice': invoice,
+        'items': items,
+    }
+    return render(request, 'finance/AP/invoice_detail.html', context)
+
+def add_invoice_item(request, invoice=None, vendor=None):
+    if vendor:
+        item_id = request.GET.get('name')
+        if item_id:
+            # print(item_id)
+            # print(vendor)
+            try:
+                item = get_object_or_404(RetailVendorItemDetail, internal_part_number=item_id, vendor=vendor)
+                name = item.name
+                ipn = item_id
+                vpn = item.vendor_part_number
+                description = item.description
+                context = {
+                    'name': name,
+                    'vpn': vpn,
+                    'ipn': ipn,
+                    'description': description,
+                    'vendor':vendor,
+                    'invoice':invoice,
+                }
+                return render (request, "finance/AP/partials/invoice_item_remainder.html", context)
+            except:
+                # print('sorry')
+                item = ''
+                form = ''
+                vendor = ''
+            # print(vendor)
+            form = AddInvoiceItemForm
+            context = {
+                'form':form,
+                'vendor':vendor,
+                'invoice':invoice,
+            }
+            return render (request, "finance/AP/partials/invoice_item_remainder.html", context)
+    invoice = invoice
+    vendor = AccountsPayable.objects.get(id=invoice)
+    # print(vendor.vendor.name)
+    vendor = vendor.vendor.id
+    # print(vendor)
+    #items = RetailInvoiceItem.objects.filter(vendor=vendor)
+    items = RetailVendorItemDetail.objects.filter(vendor=vendor)
+    form = AddInvoiceItemForm
+    context = {
+        'items': items,
+        'invoice': invoice,
+        'vendor': vendor,
+        'form': form,
+    }
+    return render (request, "finance/AP/partials/add_invoice_item.html", context)
+
+
+def edit_invoice_item(request, invoice=None, id=None):
+    print(id)
+    item = RetailInvoiceItem.objects.get(id=id)
+    print(item)
+    print(item.pk)
+    if request.method == "POST":
+        invoice = item.invoice_id
+        print(invoice)
+        print('here')
+        #vendor = request.POST.get('vendor')
+        form = AddInvoiceItemForm(request.POST)
+        if form.is_valid():
+            #form.save()
+            name = form.instance.name
+            vendor_part_number = form.instance.vendor_part_number
+            description = form.instance.description
+            unit_cost = form.instance.unit_cost
+            qty = form.instance.qty
+            RetailInvoiceItem.objects.filter(pk=id).update(name=name, description=description, vendor_part_number=vendor_part_number, unit_cost=unit_cost, qty=qty)
+            print('IPN')
+            print(item.internal_part_number.id)
+            print('Vendor')
+            print(item.vendor.id)
+            
+            # vendor_item = RetailVendorItemDetail.objects.get(internal_part_number=item.internal_part_number.id, vendor=item.vendor.id)
+            # print(vendor_item.pk)
+            try:
+                vendor_item = RetailVendorItemDetail.objects.get(internal_part_number=item.internal_part_number.id, vendor=item.vendor.id)
+                print(vendor_item.pk)
+            except:
+                print('failed')
+            if vendor_item:
+                high_price = vendor_item.high_price
+                print(high_price)
+                current_price = form.instance.unit_cost
+                print(current_price)
+                high_price = int(high_price)
+                current_price = int(current_price)
+                print('issue')
+                if high_price == 'None':
+                    hp = 0
+                    print(1)
+                else:
+                    hp = high_price
+                print('issue')
+                if current_price == 'None':
+                    cp = 0
+                    print(2)
+                else:
+                    cp = current_price
+                print('issue')
+                #updated = datetime.now
+                #print(updated)
+                if not high_price:
+                    RetailVendorItemDetail.objects.filter(pk=vendor_item.pk).update(high_price=cp)
+                    print(3)
+                if current_price > high_price:
+                    print(high_price)
+                    print(hp)
+                    print(current_price)
+                    print(cp)
+                    RetailVendorItemDetail.objects.filter(pk=vendor_item.pk).update(high_price=cp, updated=datetime.now()) 
+                #RetailVendorItemDetail.objects.filter(pk=item.pk).update(high_price=cp)
+                print(high_price)
+                print(hp)
+                print(current_price)
+                print(cp)
+                print('something')
+                print(invoice)
+                return redirect ('finance:invoice_detail', id=invoice)
+            
+        else:
+            print(form.errors)
+
+    name = item.name
+    vpn = item.vendor_part_number
+    description = item.description
+    unit_cost = item.unit_cost
+    qty = item.qty
+    pk = item.pk
+    ipn = item.internal_part_number.id
+    vendor = item.vendor.id
+    #form = AddInvoiceItemForm(instance=item)
+    # if request.method == "POST":
+    #     invoice = request.POST.get('invoice')
+    #     vendor = request.POST.get('vendor')
+    #     #vendor = int(vendor)
+    #     id = invoice
+    #     form = AddInvoiceItemForm(request.POST)
+    #     if form.is_valid():
+    #         form.instance.invoice_id = invoice
+    #         form.save()
+    #         name = form.instance.name
+    #         try:
+    #             item = RetailVendorItemDetail.objects.get(name=name, vendor_id=vendor)
+    #             print(item.pk)
+    #             high_price = item.high_price
+    #             print(high_price)
+    #             current_price = form.instance.unit_cost
+    #             print(current_price)
+    #             if not high_price:
+    #                 RetailVendorItemDetail.objects.filter(pk=item.pk).update(high_price=current_price, updated=datetime.now())
+    #             elif current_price > high_price:
+    #                 RetailVendorItemDetail.objects.filter(pk=item.pk).update(high_price=current_price, updated=datetime.now())            
+    #         except:
+    #             print(vendor)
+    #             RetailVendorItemDetail.objects.create(
+    #                 vendor_id = vendor,
+    #                 name=name,
+    #                 vendor_part_number = form.instance.vendor_part_number,
+    #                 description = form.instance.description,
+    #                 internal_part_number = form.instance.internal_part_number,
+    #                 high_price = form.instance.unit_cost
+    #                 )
+    #     else:
+    #         print(form.errors)
+    item = RetailInvoiceItem.objects.filter(id=id)
+    print(item)
+    context = {
+        'item':item,
+        'name':name,
+        'vendor':vendor,
+        'vpn':vpn,
+        'description':description,
+        'unit_cost':unit_cost,
+        'qty':qty,
+        'pk':pk,
+        'ipn':ipn,
+        #'form':form
+    }
+    return render (request, "finance/AP/partials/edit_invoice_item.html", context)
+
+@login_required
+def delete_invoice_item(request, id=None, invoice=None):
+    print('invoice')
+    print(invoice)
+    print('id')
+    print(id)
+    try:
+        item = get_object_or_404(RetailInvoiceItem, id=id)
+        item.delete()
+    except:
+        print('fail')
+    return redirect ('finance:invoice_detail', id=invoice)
+
+def add_item_to_vendor(request, vendor=None, invoice=None):
+    print('vendor')
+    print(vendor)
+    if request.method == "POST":
+        print('something')
+        form = RetailVendorItemDetailForm(request.POST)
+        if form.is_valid():
+            form.save()
+            print('valid')
+            invoice = request.POST.get('invoice')
+            vendor_part_number = request.POST.get('vendor_part_number')
+            vendor = request.POST.get('vendor')
+            pk = form.instance.pk
+            RetailVendorItemDetail.objects.filter(pk=pk).update(vendor=vendor, vendor_part_number=vendor_part_number)
+            return redirect ('finance:invoice_detail', id=invoice)
+        else:
+            print(form.errors)
+        #return redirect ('retail:invoice_detail', id=invoice)
+        # name = request.POST.get('name')
+        # vendor_part_number = request.POST.get('vendor_part_number')
+        # internal_part_number = request.POST.get('internal_part_number')
+        # invoice = request.POST.get(invoice')
+        # 'name', 'vendor_part_number', 'description', 'internal_part_number'
+    form = RetailVendorItemDetailForm
+
+    #Get all inventory items
+    items = RetailInventoryMaster.objects.all()
+    list = []
+    #Go through inventory. If not matched with a vendor, add to select list
+    for x in items:
+        try:
+            print('part number')
+            obj = get_object_or_404(RetailVendorItemDetail, internal_part_number=x.pk, vendor=vendor)
+            print(obj)
+        except:
+            list.append(x)
+            print('except')
+            print(x.pk)
+    print(list)
+    context = {
+        'form':form,
+        'vendor': vendor,
+        'invoice': invoice,
+        'list':list,
+        # 'items':items,
+    }
+    if not vendor:
+        return render (request, "inventory/items/add_item_to_vendor.html", context)
+    return render (request, "inventory/partials/add_item_to_vendor.html", context)
+
+def add_inventory_item(request, vendor=None, invoice=None):
+    form = RetailInventoryMasterForm
+    if not invoice:
+        if request.method == "POST":
+            form = RetailInventoryMasterForm(request.POST)
+            if form.is_valid():
+                print(form.data)
+                #vendor = request.POST.get('primary_vendor')
+                #form.instance.primary_vendor = vendor
+                form.save()
+                pk = form.instance.pk
+                item = RetailInventoryMaster.objects.get(pk=pk)
+                print(item.pk)
+                vendor = item.primary_vendor
+                name = item.name
+                vpn = item.primary_vendor_part_number
+                description = item.description
+                invoice = request.POST.get('invoice')
+                print(vendor)
+                item = RetailVendorItemDetail(vendor=vendor, name=name, vendor_part_number=vpn, description=description, internal_part_number_id=item.pk )
+                item.save()
+                if invoice is None:
+                    return redirect ('finance:invoice_detail', id=invoice)
+                #return redirect ('finance:retail_inventory_list')
+                return redirect ('finance:invoice_detail', id=invoice)
+        context = {
+        'form':form,
+        'invoice':invoice
+        }
+        print('test')
+        return redirect ('finance:view_bills')
+    context = {
+        'form':form,
+        'invoice':invoice
+    }
+    return render (request, "inventory/partials/add_inventory_item.html", context)
+
+
+def vendor_item_remainder(request, vendor=None, invoice=None):
+    form = RetailVendorItemDetailForm
+    # invoice = invoice
+    # vendor = vendor
+    item_id = request.GET.get('item')
+    print(item_id)
+    if item_id:
+        try:
+            item = get_object_or_404(RetailInventoryMaster, pk=item_id)
+            print(item.id)
+            print('hello')
+            name = item.name
+            description = item.description
+            ipn = item.id
+        except:
+            print('sorry')
+            #item = ''
+            #form = ''
+            vendor = ''
+        print(vendor)
+        form = AddInvoiceItemForm
+        context = {
+            'form':form,
+            'name':name,
+            'description':description,
+            'ipn':ipn,
+            'vendor':vendor,
+            'invoice':invoice,
+        }
+        return render (request, "inventory/partials/vendor_item_remainder.html", context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

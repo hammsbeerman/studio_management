@@ -1,0 +1,48 @@
+{% load static %}
+
+{% block content %}
+
+Add Item to Vendor:
+<p>
+
+<form action='/finance/add_item_to_vendor/' method="POST">
+    {% csrf_token %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-10">
+      <select class="custom-select mb-4" id="id_item" hx-trigger="change" name="item" hx-get="{% url 'finance:vendor_item_remainder' vendor=vendor invoice=invoice %}" hx-target="#remainder">
+        <option selected>Select Item</option>
+      {% for object in list %}
+        <option value="{{ object.id }}">{{ object.name }} -- {{object.description }}</option>
+      {% endfor %}
+      </select>
+    </div>
+    <div class="col-sm-2">  
+      <button  class="btn btn-primary-outline" hx-get="{% url 'finance:add_inventory_item' vendor=vendor invoice=invoice %}" hx-target="#invoices"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">Add New Part</button>
+    </div>
+  </div>
+</div>
+
+    </form>
+
+{% endblock content %}
+
+
+{% block scripts %}
+
+<script>
+
+    $(document).ready(function () {
+      $("#id_item").select2();
+      $('#id_item').on('select2:select', (e) => {
+        htmx.trigger("#id_item", "change")
+      });
+    })
+
+    
+
+</script>
+
+{% endblock %}
+
+
