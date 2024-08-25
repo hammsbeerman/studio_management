@@ -42,3 +42,10 @@ class AppliedElsewhereForm(forms.ModelForm):
 #        fields = ['workorder', 'payment', 'payment_amount', 'date']
 #        labels = {
 #         }
+
+class AddInvoiceForm(forms.ModelForm):
+   class Meta:
+       model = AccountsPayable
+       fields = ['invoice_date', 'invoice_number', 'description', 'vendor', 'total', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method', 'retail_invoice', 'supplies_invoice', 'order_out']
+       labels = {
+        }

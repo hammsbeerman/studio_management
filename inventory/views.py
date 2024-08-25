@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status, generics, viewsets
 from decimal import Decimal
-from .forms import AddVendorForm, AddInventoryItemForm
+from .forms import AddVendorForm
 from .models import Vendor, Inventory
 from .serializers import InventorySerializer
 #from inventory.models import Inventory
@@ -126,51 +126,51 @@ def edit_vendor(request, id):
     }
     return render(request, 'inventory/vendors/edit_vendor.html', context)
 
-@login_required
-def add_inventory_item(request):
-    form = AddInventoryItemForm(request.POST or None)
-    item = Inventory.objects.all().order_by('name')
-    if request.user.is_authenticated:
-        if request.method == "POST":
-            #updated = timezone.now()
-            if form.is_valid():
-                item = request.POST.get('item')
-                obj = form.save(commit=False)
-                price_per_m = obj.price_per_m
-                price_per_m = float(price_per_m)
-                price_per_m = Decimal.from_float(price_per_m)
-                price_per_m = round(price_per_m, 2)
-                print(obj.invoice_date)
-                #price_per_m = int(price_per_m)
-                price_ea = price_per_m / 1000
-                print(price_per_m)
-                print(price_ea)
-                #item = get_object_or_404(Inventory, pk=test)
-                #print (item.name)
-                obj.save()
-                Inventory.objects.filter(pk=item).update(price_per_m=price_per_m, unit_cost=price_ea, updated=obj.invoice_date)
-            else:
-                print(form.errors)
+# @login_required
+# def add_inventory_item(request):
+#     form = AddInventoryItemForm(request.POST or None)
+#     item = Inventory.objects.all().order_by('name')
+#     if request.user.is_authenticated:
+#         if request.method == "POST":
+#             #updated = timezone.now()
+#             if form.is_valid():
+#                 item = request.POST.get('item')
+#                 obj = form.save(commit=False)
+#                 price_per_m = obj.price_per_m
+#                 price_per_m = float(price_per_m)
+#                 price_per_m = Decimal.from_float(price_per_m)
+#                 price_per_m = round(price_per_m, 2)
+#                 print(obj.invoice_date)
+#                 #price_per_m = int(price_per_m)
+#                 price_ea = price_per_m / 1000
+#                 print(price_per_m)
+#                 print(price_ea)
+#                 #item = get_object_or_404(Inventory, pk=test)
+#                 #print (item.name)
+#                 obj.save()
+#                 Inventory.objects.filter(pk=item).update(price_per_m=price_per_m, unit_cost=price_ea, updated=obj.invoice_date)
+#             else:
+#                 print(form.errors)
 
 
-                #messages.success(request, "Record Added...")
-            form = AddInventoryItemForm()
-            item = Inventory.objects.all().order_by('name')
-            context = {
-                'form':form,
-                'item':item
-            }
-            #return redirect('inventory:add_inventory_item', context)
-            return render(request, 'inventory/items/add_inventory_item.html', context)
+#                 #messages.success(request, "Record Added...")
+#             form = AddInventoryItemForm()
+#             item = Inventory.objects.all().order_by('name')
+#             context = {
+#                 'form':form,
+#                 'item':item
+#             }
+#             #return redirect('inventory:add_inventory_item', context)
+#             return render(request, 'inventory/items/add_inventory_item.html', context)
 
-        context = {
-            'form':form,
-            'item':item
-        }
-        return render(request, 'inventory/items/add_inventory_item.html', context)
-    else:
-        messages.success(request, "You must be logged in")
-        return redirect('home')
+#         context = {
+#             'form':form,
+#             'item':item
+#         }
+#         return render(request, 'inventory/items/add_inventory_item.html', context)
+#     else:
+#         messages.success(request, "You must be logged in")
+#         return redirect('home')
 
 
 

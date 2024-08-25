@@ -68,7 +68,7 @@
               <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                 <li><a class="dropdown-item" href="{% url 'inventory:add_vendor' %}">Add Vendor</a></li>
                 <li><a class="dropdown-item" href="{% url 'inventory:vendor_list' %}">Vendor List</a></li>
-                <li><a class="dropdown-item" href="{% url 'inventory:add_inventory_item' %}">Update Inventory Item</a></li>
+                
               </ul> 
             </li>
             <li class="nav-item dropdown">
@@ -106,9 +106,9 @@
                 <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                   <li><a class="dropdown-item" href="{% url 'retail:add_vendor' %}">Add Vendor</a></li>
                   <li><a class="dropdown-item" href="{% url 'retail:vendor_list' %}">List Vendors</a></li>
-                  <li><a class="dropdown-item" href="{% url 'retail:add_invoice' %}">Add Invoice</a></li>
+                  <li><a class="dropdown-item" href="{% url 'finance:add_invoice' %}">Add Invoice</a></li>
                   <li><a class="dropdown-item" href="{% url 'retail:invoice_list' %}">Invoices</a></li>
-                  <li><a class="dropdown-item" href="{% url 'finance:add_inventory_item' %}">Add Inventory Item</a></li>
+                  <!-- <li><a class="dropdown-item" href="{% url 'finance:add_inventory_item' %}">Add Inventory Item</a></li> -->
                   <li><a class="dropdown-item" href="{% url 'retail:retail_inventory_list' %}">Inventory List</a></li>
                   <!-- <li><a class="dropdown-item" href="{% url 'finance:add_item_to_vendor' %}">Add Item to vendor</a></li> -->
                 </ul>

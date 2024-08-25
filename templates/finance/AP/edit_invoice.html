@@ -13,7 +13,7 @@
       <div class="col-sm-4">
         <p>
           <p>
-            <form method="POST" action="{% url 'finance:add_invoice' %}">
+            <form method="POST" action="/finance/ap/edit_invoice/{{ pk }}/">
                 {% csrf_token %}
                 {% if message %}<mark class="red">{{ message }}</mark>{% endif %}
                 {{ form.as_p }}
@@ -26,7 +26,7 @@
                 </datalist> -->
 
             <br/>
-                <button type="submit" class="btn btn-secondary">Add Bill Payable</button>
+                <button type="submit" class="btn btn-secondary">Update Invoice</button>
 
             </form>
       </div>

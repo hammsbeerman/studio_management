@@ -18,7 +18,7 @@ Add Item to Vendor:
       </select>
     </div>
     <div class="col-sm-2">  
-      <button  class="btn btn-primary-outline" hx-get="{% url 'retail:add_inventory_item' vendor=vendor invoice=invoice %}" hx-target="#invoices"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">Add New Part</button>
+      <button  class="btn btn-primary-outline" hx-get="{% url 'retail:add_inventory_item' vendor=vendor invoice=invoice %}" hx-target="#remainder"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">Add New Part</button>
     </div>
   </div>
 </div>

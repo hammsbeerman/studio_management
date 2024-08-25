@@ -56,9 +56,11 @@
 </div> -->
 
 <div id="invoices">
-    <button hx-trigger="click" hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=0 %}" hx-target="#invoices" class="btn btn-danger">Add an item</button>
+    <!--{% if vendor.retail_vendor %}--><button hx-trigger="click" hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id %}" hx-target="#remainder" class="btn btn-danger">Add Invoice Item</button><!--{% endif %}-->
+    <!-- {% if vendor.supplier %}<button hx-trigger="click" hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id %}" hx-target="#remainder" class="btn btn-danger">Add Supply Item</button>{% endif %}
+    <button hx-trigger="click" hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id %}" hx-target="#remainder" class="btn btn-danger">Add Non Inventory Item</button> -->
 </div>
-
+<p>
 <div id="remainder"></div>
 
 

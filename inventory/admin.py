@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Inventory, Vendor, InventoryDetail, OrderOut, SetPrice, InventoryCategory
+from .models import Inventory, Vendor, OrderOut, SetPrice, InventoryCategory, InventoryMaster, VendorItemDetail
 from import_export.admin import ImportExportModelAdmin
 
 
@@ -23,7 +23,7 @@ class InventoryDetailAdmin(admin.ModelAdmin):
     list_display = ('item','vendor', 'vendor_item_number')
     #fields = ['name',]
 
-admin.site.register(InventoryDetail, InventoryDetailAdmin)
+#admin.site.register(InventoryDetail, InventoryDetailAdmin)
 
 # class InventoryVendorInline(admin.StackedInline):
 #     model = Vendor
@@ -53,3 +53,7 @@ admin.site.register(SetPrice)
 #     #fields = ['name',]
 
 # admin.site.register(InventoryCategory, InventoryCategoryAdmin)
+
+admin.site.register(InventoryMaster)
+
+admin.site.register(VendorItemDetail)

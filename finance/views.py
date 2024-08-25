@@ -11,12 +11,14 @@ from decimal import Decimal
 import logging
 from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm
-from retail.forms import AddInvoiceItemForm, RetailVendorItemDetailForm, RetailInventoryMasterForm
-from retail.models import RetailVendorItemDetail, RetailInvoiceItem, RetailInventoryMaster
+from retail.forms import AddInvoiceItemForm, RetailInventoryMasterForm
+from finance.forms import AddInvoiceForm
+from finance.models import InvoiceItem
 from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import PaymentType
-from inventory.models import Vendor
+from inventory.models import Vendor, InventoryMaster, VendorItemDetail
+from inventory.forms import InventoryMasterForm, VendorItemDetailForm
 
 logger = logging.getLogger(__file__)
 
@@ -517,34 +519,34 @@ def apply_other(request, cust=None):
     }
     return render(request, 'finance/AR/modals/apply_elsewhere.html', context)
 
-@login_required
-def add_bill_payable(request):
-    form = AccountsPayableForm(request.POST or None)
-    if request.user.is_authenticated:
-        if request.method == "POST":
-            if form.is_valid():
-                obj = form.save(commit=False)
-                date_due = request.POST.get('date_due')
-                invoice_date = request.POST.get('invoice_date')
-                if not date_due:
-                    date = datetime.strptime(invoice_date, "%m/%d/%Y")
-                    #d = timedelta(days=30)
-                    date_due = date + timedelta(days=30)
-                    obj.date_due = date_due
-                obj.save()
-                messages.success(request, "Record Added...")
-                return redirect('finance:add_bill_payable')
-        bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')
-        vendors = Vendor.objects.all()
-        context = {
-            'vendors':vendors,
-            'form':form,
-            'bills':bills,
-        }
-        return render(request, 'finance/AP/add_ap.html', context)
-    else:
-        messages.success(request, "You must be logged in")
-        return redirect('home')
+# @login_required
+# def add_bill_payable(request):
+#     form = AccountsPayableForm(request.POST or None)
+#     if request.user.is_authenticated:
+#         if request.method == "POST":
+#             if form.is_valid():
+#                 obj = form.save(commit=False)
+#                 date_due = request.POST.get('date_due')
+#                 invoice_date = request.POST.get('invoice_date')
+#                 if not date_due:
+#                     date = datetime.strptime(invoice_date, "%m/%d/%Y")
+#                     #d = timedelta(days=30)
+#                     date_due = date + timedelta(days=30)
+#                     obj.date_due = date_due
+#                 obj.save()
+#                 messages.success(request, "Record Added...")
+#                 return redirect('finance:add_bill_payable')
+#         bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')
+#         vendors = Vendor.objects.all()
+#         context = {
+#             'vendors':vendors,
+#             'form':form,
+#             'bills':bills,
+#         }
+#         return render(request, 'finance/AP/add_ap.html', context)
+#     else:
+#         messages.success(request, "You must be logged in")
+#         return redirect('home')
 
 @login_required  
 def add_daily_sale(request):
@@ -836,6 +838,90 @@ def remove_payment(request, pk=None):
 #############################################
 
 @login_required
+def add_invoice(request):
+    form = AddInvoiceForm()
+    if request.method == "POST":
+        form = AddInvoiceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            invoice = form.instance.pk
+            return redirect ('finance:invoice_detail', id=invoice)
+        else:
+            print(form.errors)
+        #invoices = RetailInvoices.objects.all().order_by('invoice_date')
+        #print(vendor)
+        # context = {
+        #     'invoices': invoices,
+        # }
+    bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')   
+    context = {
+        'form': form,
+        'bills':bills,
+        #'categories': categories
+    }
+    return render (request, "finance/AP/add_ap.html", context)
+
+def edit_invoice(request, invoice=None):
+    print('invoice')
+    print(invoice)
+    pk=invoice
+    if request.method == "POST":
+        instance = AccountsPayable.objects.get(id=pk)
+        form = AddInvoiceForm(request.POST or None, instance=instance)
+        if form.is_valid():
+            form.save()
+            #InvoiceItem.objects.filter(pk=id).update(name=name, description=description, vendor_part_number=vendor_part_number, unit_cost=unit_cost, qty=qty)
+            
+            return redirect ('finance:add_invoice')         
+        else:        
+            messages.success(request, "Something went wrong")
+            return redirect ('finance:add_invoice')
+    obj = get_object_or_404(AccountsPayable, id=invoice)
+    form = AddInvoiceForm(instance=obj)
+    bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')
+    context = {
+        'pk':pk,
+        'bills':bills,
+        'form':form
+    }
+    return render (request, "finance/AP/edit_invoice.html", context)
+
+
+
+
+# @login_required
+# def add_bill_payable(request):
+#     form = AccountsPayableForm(request.POST or None)
+#     if request.user.is_authenticated:
+#         if request.method == "POST":
+#             if form.is_valid():
+#                 obj = form.save(commit=False)
+#                 date_due = request.POST.get('date_due')
+#                 invoice_date = request.POST.get('invoice_date')
+#                 if not date_due:
+#                     date = datetime.strptime(invoice_date, "%m/%d/%Y")
+#                     #d = timedelta(days=30)
+#                     date_due = date + timedelta(days=30)
+#                     obj.date_due = date_due
+#                 obj.save()
+#                 messages.success(request, "Record Added...")
+#                 return redirect('finance:add_bill_payable')
+#         bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')
+#         vendors = Vendor.objects.all()
+#         context = {
+#             'vendors':vendors,
+#             'form':form,
+#             'bills':bills,
+#         }
+#         return render(request, 'finance/AP/add_ap.html', context)
+#     else:
+#         messages.success(request, "You must be logged in")
+#         return redirect('home')
+    
+
+
+
+@login_required
 def invoice_detail(request, id=None):
     if request.method == "POST":
         # invoice = request.POST.get('invoice')
@@ -903,7 +989,7 @@ def invoice_detail(request, id=None):
         invoice = get_object_or_404(AccountsPayable, id=invoice)
         print('djska')
         print(invoice)
-        items = RetailInvoiceItem.objects.filter(invoice_id = invoice)
+        items = InvoiceItem.objects.filter(invoice_id = invoice)
         print(items)
         #items = 
         #print(vendor)
@@ -913,8 +999,12 @@ def invoice_detail(request, id=None):
         # }
         return redirect ('finance:invoice_detail', id=id)
     invoice = get_object_or_404(AccountsPayable, id=id)
-    items = RetailInvoiceItem.objects.filter(invoice_id = id)
+    vendor = Vendor.objects.get(id=invoice.vendor.id)
+    print(vendor)
+    print(vendor.id)
+    items = InvoiceItem.objects.filter(invoice_id = id)
     context = {
+        'vendor':vendor,
         'invoice': invoice,
         'items': items,
     }
@@ -927,7 +1017,7 @@ def add_invoice_item(request, invoice=None, vendor=None):
             # print(item_id)
             # print(vendor)
             try:
-                item = get_object_or_404(RetailVendorItemDetail, internal_part_number=item_id, vendor=vendor)
+                item = get_object_or_404(VendorItemDetail, internal_part_number=item_id, vendor=vendor)
                 name = item.name
                 ipn = item_id
                 vpn = item.vendor_part_number
@@ -960,7 +1050,7 @@ def add_invoice_item(request, invoice=None, vendor=None):
     vendor = vendor.vendor.id
     # print(vendor)
     #items = RetailInvoiceItem.objects.filter(vendor=vendor)
-    items = RetailVendorItemDetail.objects.filter(vendor=vendor)
+    items = VendorItemDetail.objects.filter(vendor=vendor)
     form = AddInvoiceItemForm
     context = {
         'items': items,
@@ -973,77 +1063,85 @@ def add_invoice_item(request, invoice=None, vendor=None):
 
 def edit_invoice_item(request, invoice=None, id=None):
     print(id)
-    item = RetailInvoiceItem.objects.get(id=id)
+    item = InvoiceItem.objects.get(id=id)
     print(item)
     print(item.pk)
+    pk = item.pk
     if request.method == "POST":
-        invoice = item.invoice_id
-        print(invoice)
-        print('here')
-        #vendor = request.POST.get('vendor')
-        form = AddInvoiceItemForm(request.POST)
+        instance = InvoiceItem.objects.get(id=pk)
+        form = AddInvoiceItemForm(request.POST or None, instance=instance)
         if form.is_valid():
-            #form.save()
-            name = form.instance.name
-            vendor_part_number = form.instance.vendor_part_number
-            description = form.instance.description
-            unit_cost = form.instance.unit_cost
-            qty = form.instance.qty
-            RetailInvoiceItem.objects.filter(pk=id).update(name=name, description=description, vendor_part_number=vendor_part_number, unit_cost=unit_cost, qty=qty)
-            print('IPN')
-            print(item.internal_part_number.id)
-            print('Vendor')
-            print(item.vendor.id)
+            form.save()
+        # invoice = item.invoice_id
+        # print('invoice')
+        # print(invoice)
+        # print('here')
+        # #vendor = request.POST.get('vendor')
+        # form = AddInvoiceItemForm(request.POST)
+        # if form.is_valid():
+        #     #form.save()
+        #     name = form.instance.name
+        #     vendor_part_number = form.instance.vendor_part_number
+        #     description = form.instance.description
+        #     unit_cost = form.instance.unit_cost
+        #     qty = form.instance.qty
+        #     InvoiceItem.objects.filter(pk=id).update(name=name, description=description, vendor_part_number=vendor_part_number, unit_cost=unit_cost, qty=qty)
+        #     # print('IPN')
+            # print(item.internal_part_number.id)
+            # print('Vendor')
+            # print(item.vendor.id)
             
             # vendor_item = RetailVendorItemDetail.objects.get(internal_part_number=item.internal_part_number.id, vendor=item.vendor.id)
             # print(vendor_item.pk)
-            try:
-                vendor_item = RetailVendorItemDetail.objects.get(internal_part_number=item.internal_part_number.id, vendor=item.vendor.id)
-                print(vendor_item.pk)
-            except:
-                print('failed')
-            if vendor_item:
-                high_price = vendor_item.high_price
-                print(high_price)
-                current_price = form.instance.unit_cost
-                print(current_price)
-                high_price = int(high_price)
-                current_price = int(current_price)
-                print('issue')
-                if high_price == 'None':
-                    hp = 0
-                    print(1)
-                else:
-                    hp = high_price
-                print('issue')
-                if current_price == 'None':
-                    cp = 0
-                    print(2)
-                else:
-                    cp = current_price
-                print('issue')
-                #updated = datetime.now
-                #print(updated)
-                if not high_price:
-                    RetailVendorItemDetail.objects.filter(pk=vendor_item.pk).update(high_price=cp)
-                    print(3)
-                if current_price > high_price:
-                    print(high_price)
-                    print(hp)
-                    print(current_price)
-                    print(cp)
-                    RetailVendorItemDetail.objects.filter(pk=vendor_item.pk).update(high_price=cp, updated=datetime.now()) 
-                #RetailVendorItemDetail.objects.filter(pk=item.pk).update(high_price=cp)
-                print(high_price)
-                print(hp)
-                print(current_price)
-                print(cp)
-                print('something')
-                print(invoice)
-                return redirect ('finance:invoice_detail', id=invoice)
+            # try:
+            #     vendor_item = VendorItemDetail.objects.get(internal_part_number=item.internal_part_number.id, vendor=item.vendor.id)
+            #     print(vendor_item.pk)
+            # except:
+            #     print('failed')
+            # if vendor_item:
+            #     high_price = vendor_item.high_price
+            #     print(high_price)
+            #     current_price = form.instance.unit_cost
+            #     print(current_price)
+            #     high_price = int(high_price)
+            #     current_price = int(current_price)
+            #     print('issue')
+            #     if high_price == 'None':
+            #         hp = 0
+            #         print(1)
+            #     else:
+            #         hp = high_price
+            #     print('issue')
+            #     if current_price == 'None':
+            #         cp = 0
+            #         print(2)
+            #     else:
+            #         cp = current_price
+            #     print('issue')
+            #     #updated = datetime.now
+            #     #print(updated)
+            #     if not high_price:
+            #         VendorItemDetail.objects.filter(pk=vendor_item.pk).update(high_price=cp)
+            #         print(3)
+            #     if current_price > high_price:
+            #         print(high_price)
+            #         print(hp)
+            #         print(current_price)
+            #         print(cp)
+            #         VendorItemDetail.objects.filter(pk=vendor_item.pk).update(high_price=cp, updated=datetime.now()) 
+            #     #RetailVendorItemDetail.objects.filter(pk=item.pk).update(high_price=cp)
+            #     print(high_price)
+            #     print(hp)
+            #     print(current_price)
+            #     print(cp)
+            #     print('something')
+            #     print(invoice)
+            return redirect ('finance:invoice_detail', id=pk)
             
         else:
-            print(form.errors)
+            
+            messages.success(request, "Name, Unit Cost, and Qty are required")
+            return redirect ('finance:invoice_detail', id=invoice)
 
     name = item.name
     vpn = item.vendor_part_number
@@ -1087,7 +1185,7 @@ def edit_invoice_item(request, invoice=None, id=None):
     #                 )
     #     else:
     #         print(form.errors)
-    item = RetailInvoiceItem.objects.filter(id=id)
+    item = InvoiceItem.objects.filter(id=id)
     print(item)
     context = {
         'item':item,
@@ -1110,7 +1208,7 @@ def delete_invoice_item(request, id=None, invoice=None):
     print('id')
     print(id)
     try:
-        item = get_object_or_404(RetailInvoiceItem, id=id)
+        item = get_object_or_404(InvoiceItem, id=id)
         item.delete()
     except:
         print('fail')
@@ -1121,7 +1219,7 @@ def add_item_to_vendor(request, vendor=None, invoice=None):
     print(vendor)
     if request.method == "POST":
         print('something')
-        form = RetailVendorItemDetailForm(request.POST)
+        form = VendorItemDetailForm(request.POST)
         if form.is_valid():
             form.save()
             print('valid')
@@ -1129,26 +1227,22 @@ def add_item_to_vendor(request, vendor=None, invoice=None):
             vendor_part_number = request.POST.get('vendor_part_number')
             vendor = request.POST.get('vendor')
             pk = form.instance.pk
-            RetailVendorItemDetail.objects.filter(pk=pk).update(vendor=vendor, vendor_part_number=vendor_part_number)
+            print(vendor)
+            vendor_type = Vendor.objects.get(id=vendor)
+            if vendor_type.retail_vendor == 1:
+                VendorItemDetail.objects.filter(pk=pk).update(vendor=vendor, vendor_part_number=vendor_part_number)
             return redirect ('finance:invoice_detail', id=invoice)
         else:
             print(form.errors)
-        #return redirect ('retail:invoice_detail', id=invoice)
-        # name = request.POST.get('name')
-        # vendor_part_number = request.POST.get('vendor_part_number')
-        # internal_part_number = request.POST.get('internal_part_number')
-        # invoice = request.POST.get(invoice')
-        # 'name', 'vendor_part_number', 'description', 'internal_part_number'
-    form = RetailVendorItemDetailForm
-
+    form = VendorItemDetailForm
     #Get all inventory items
-    items = RetailInventoryMaster.objects.all()
+    items = InventoryMaster.objects.all()
     list = []
     #Go through inventory. If not matched with a vendor, add to select list
     for x in items:
         try:
             print('part number')
-            obj = get_object_or_404(RetailVendorItemDetail, internal_part_number=x.pk, vendor=vendor)
+            obj = get_object_or_404(VendorItemDetail, internal_part_number=x.pk, vendor=vendor)
             print(obj)
         except:
             list.append(x)
@@ -1167,17 +1261,17 @@ def add_item_to_vendor(request, vendor=None, invoice=None):
     return render (request, "inventory/partials/add_item_to_vendor.html", context)
 
 def add_inventory_item(request, vendor=None, invoice=None):
-    form = RetailInventoryMasterForm
+    form = InventoryMasterForm
     if not invoice:
         if request.method == "POST":
-            form = RetailInventoryMasterForm(request.POST)
+            form = InventoryMasterForm(request.POST)
             if form.is_valid():
                 print(form.data)
                 #vendor = request.POST.get('primary_vendor')
                 #form.instance.primary_vendor = vendor
                 form.save()
                 pk = form.instance.pk
-                item = RetailInventoryMaster.objects.get(pk=pk)
+                item = InventoryMaster.objects.get(pk=pk)
                 print(item.pk)
                 vendor = item.primary_vendor
                 name = item.name
@@ -1185,7 +1279,7 @@ def add_inventory_item(request, vendor=None, invoice=None):
                 description = item.description
                 invoice = request.POST.get('invoice')
                 print(vendor)
-                item = RetailVendorItemDetail(vendor=vendor, name=name, vendor_part_number=vpn, description=description, internal_part_number_id=item.pk )
+                item = VendorItemDetail(vendor=vendor, name=name, vendor_part_number=vpn, description=description, internal_part_number_id=item.pk )
                 item.save()
                 if invoice is None:
                     return redirect ('finance:invoice_detail', id=invoice)
@@ -1196,7 +1290,8 @@ def add_inventory_item(request, vendor=None, invoice=None):
         'invoice':invoice
         }
         print('test')
-        return redirect ('finance:view_bills')
+        #return redirect ('finance:view_bills_payable')
+        return render (request, "inventory/partials/add_inventory_item.html", context)
     context = {
         'form':form,
         'invoice':invoice
@@ -1205,14 +1300,14 @@ def add_inventory_item(request, vendor=None, invoice=None):
 
 
 def vendor_item_remainder(request, vendor=None, invoice=None):
-    form = RetailVendorItemDetailForm
+    form = VendorItemDetailForm
     # invoice = invoice
     # vendor = vendor
     item_id = request.GET.get('item')
     print(item_id)
     if item_id:
         try:
-            item = get_object_or_404(RetailInventoryMaster, pk=item_id)
+            item = get_object_or_404(InventoryMaster, pk=item_id)
             print(item.id)
             print('hello')
             name = item.name

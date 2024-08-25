@@ -1,12 +1,14 @@
 from django.contrib import admin
 
-from .models import Payments, Araging, AccountsPayable, WorkorderPayment
+from .models import Payments, Araging, AccountsPayable, WorkorderPayment, InvoiceItem
 
 admin.site.register(Payments)
 
 admin.site.register(Araging)
 
 admin.site.register(AccountsPayable)
+
+admin.site.register(InvoiceItem)
 
 
 class WorkorderPaymentAdmin(admin.ModelAdmin):

@@ -8,7 +8,7 @@ from .views import (
     vendor_list,
     add_vendor,
     vendor_detail,
-    add_inventory_item,
+    #add_inventory_item,
     edit_vendor,
     #Below this is solely for testing API data
     inventory_list,
@@ -27,7 +27,7 @@ urlpatterns = [
     path('add_vendor/', add_vendor, name='add_vendor'),
     path('edit_vendor/<int:id>/', edit_vendor, name='edit_vendor'),
     path('detail/<int:id>/', vendor_detail, name='vendor_detail'),
-    path('add_inventory_item/', add_inventory_item, name='add_inventory_item'),
+    #path('add_inventory_item/', add_inventory_item, name='add_inventory_item'),
     #Below this is solely for testing API data
     path('inventory_list/', inventory_list, name='inventory_list'),
     # path('inventory_create/', InventoryCreate.as_view(), name='inventory_create'),

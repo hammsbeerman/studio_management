@@ -3,10 +3,9 @@ from django.contrib.auth.decorators import login_required
 from datetime import datetime
 from decimal import Decimal
 from controls.models import RetailInventoryCategory, RetailInventorySubCategory
-from .forms import AddVendorForm, AddInvoiceForm, AddInvoiceItemForm, AddInvoiceItemRemainderForm, RetailVendorItemDetailForm, RetailInventoryMasterForm
-from .models import RetailInvoiceItem, RetailVendorItemDetail, RetailInventoryMaster
+from .forms import AddVendorForm, AddInvoiceItemForm, AddInvoiceItemRemainderForm, RetailInventoryMasterForm
 from finance.models import AccountsPayable
-from inventory.models import Vendor
+from inventory.models import Vendor, InventoryMaster
 
 ####################Not being used
 @login_required
@@ -196,6 +195,13 @@ def invoice_list(request):
     }
     return render(request, 'retail/invoices/list.html', context)
 
+def retail_inventory_list(request):
+    items = InventoryMaster.objects.all()
+    context = {
+        'items': items,
+    }
+    return render (request, "retail/inventory/inventory_list.html", context)
+
 # @login_required
 # def invoice_detail(request, id=None):
 #     if request.method == "POST":
@@ -241,28 +247,28 @@ def invoice_list(request):
 #     }
 #     return render(request, 'retail/invoices/detail.html', context)
 
-@login_required
-def add_invoice(request):
-    form = AddInvoiceForm()
-    if request.method == "POST":
-        form = AddInvoiceForm(request.POST)
-        if form.is_valid():
-            form.save()
-            invoice = form.instance.pk
-            return redirect ('retail:invoice_detail', id=invoice)
-        else:
-            print(form.errors)
-        #invoices = RetailInvoices.objects.all().order_by('invoice_date')
-        #print(vendor)
-        # context = {
-        #     'invoices': invoices,
-        # }
+# @login_required
+# def add_invoice(request):
+#     form = AddInvoiceForm()
+#     if request.method == "POST":
+#         form = AddInvoiceForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             invoice = form.instance.pk
+#             return redirect ('finance:invoice_detail', id=invoice)
+#         else:
+#             print(form.errors)
+#         #invoices = RetailInvoices.objects.all().order_by('invoice_date')
+#         #print(vendor)
+#         # context = {
+#         #     'invoices': invoices,
+#         # }
         
-    context = {
-        'form': form,
-        #'categories': categories
-    }
-    return render (request, "retail/invoices/add_invoice.html", context)
+#     context = {
+#         'form': form,
+#         #'categories': categories
+#     }
+#     return render (request, "retail/invoices/add_invoice.html", context)
 
 # @login_required
 # def delete_invoice_item(request, id=None, invoice=None):
@@ -373,12 +379,7 @@ def add_invoice(request):
 #     }
 #     return render (request, "retail/invoices/partials/add_inventory_item.html", context)
 
-def retail_inventory_list(request):
-    items = RetailInventoryMaster.objects.all()
-    context = {
-        'items': items,
-    }
-    return render (request, "retail/inventory/inventory_list.html", context)
+
 
 # @login_required
 # def invoice_detail(request, id=None):

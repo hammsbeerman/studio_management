@@ -13,7 +13,7 @@ from .views import (
     unapply_payment,
     unrecieve_payment,
     finance_main,
-    add_bill_payable,
+    #add_bill_payable,
     view_bills_payable,
     add_daily_sale,
     view_daily_sales,
@@ -35,7 +35,9 @@ from .views import (
     delete_invoice_item,
     add_item_to_vendor,
     add_inventory_item,
-    vendor_item_remainder
+    vendor_item_remainder,
+    add_invoice,
+    edit_invoice
 )
 
 app_name='finance'
@@ -47,7 +49,7 @@ urlpatterns = [
     path('add_item_to_vendor/<int:vendor>/<int:invoice>', add_item_to_vendor, name='add_item_to_vendor'),
     path('add_item_to_vendor/', add_item_to_vendor, name='add_item_to_vendor'),
     path('vendor_item_remainder/<int:vendor>/<int:invoice>', vendor_item_remainder, name='vendor_item_remainder'),
-    path('bill_payable/', add_bill_payable, name='add_bill_payable'),
+    #path('bill_payable/', add_bill_payable, name='add_bill_payable'),
     path('view_bills/', view_bills_payable, name='view_bills_payable'),
     path('daily_sale/', add_daily_sale, name='add_daily_sale'),
     path('view_sales/', view_daily_sales, name='view_daily_sales'),
@@ -66,6 +68,9 @@ urlpatterns = [
 
     # path('add_item_to_vendor/<int:vendor>/<int:invoice>', add_item_to_vendor, name='add_item_to_vendor'),
     path('ap/bill_list/', bill_list, name='bill_list'),
+    path('ap/add_invoice/', add_invoice, name='add_invoice'),
+    path('ap/edit_invoice/<int:invoice>/', edit_invoice, name='edit_invoice'),
+    #path('ap/edit_invoice/<int:invoice>', edit_invoice, name='edit_invoice'),
     path('ap/invoice_detail/', invoice_detail, name='invoice_detail'),
     path('ap/invoice_detail/<int:id>/', invoice_detail, name='invoice_detail'),
     path('ap/add_invoice_item/<int:invoice>/<int:vendor>', add_invoice_item, name='add_invoice_item'),
