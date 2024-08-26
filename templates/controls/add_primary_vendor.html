@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+Items without a primary vendor
+<p>
+
+<form action='/controls/add_primary_vendor/' method="POST">
+{% csrf_token %}
+
+    <select class="custom-select mb-4" id="vendor" name="vendor">
+        <option selected>Select Vendor</option>
+        {% for x in vendors %}
+            <option value="{{ x.id }}">{{ x.name }} </option>
+        {% endfor %} 
+    </select>
+    <br/>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Name</td>
+                <td>Description</td>
+                <td></td>
+            </tr>
+        </thead>
+        {% for x in items %}
+            {% if not x.primary_vendor %}
+            <tr>
+                <td>{{x.name}}</td>
+                <td>{{x.description}}</td>
+                <td><input name="item" type="checkbox" value="{{ x.id }}" /></td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+
+    <button type="submit">Update Vendors</button>
+</form>
+<p>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Name</td>
+                <td>Description</td>
+                <td>Primary Vendor</td>
+            </tr>
+        </thead>
+        {% for x in items %}
+            {% if x.primary_vendor %}
+            <tr>
+                <td>{{x.name}}</td>
+                <td>{{x.description}}</td>
+                <td>{{x.primary_vendor}}</td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+
+
+
+
+  {% endblock content %}

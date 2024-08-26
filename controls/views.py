@@ -2,10 +2,12 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.utils import timezone
 from django.db.models import Q
+from datetime import datetime
 from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPriceCategoryForm
 from .models import SetPriceCategory, SubCategory, Category
 from workorders.models import Workorder
 from customers.models import Customer, ShipTo
+from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -359,3 +361,63 @@ def cust_wo_address(request):
         'unique_list':unique_list,
     }
     return render (request, "controls/customers_without_address.html", context)
+
+#Create master inventory item from items already in inventory list
+def create_inventory_from_inventory(request):
+    inventory = Inventory.objects.all()[:80]
+
+    print(inventory)
+    for x in inventory:
+        if not x.internal_part_number:
+            name = x.name
+            description = x.description
+            p_vpn = x.vendor_part_number
+            measurement = x.measurement
+            unit_cost = x.unit_cost
+            m = x.price_per_m
+            if not unit_cost:
+                unit_cost=0
+            item = InventoryMaster(name=name, description=description, supplies=1, retail=1, primary_vendor_part_number=p_vpn, measurement=measurement, unit_cost=unit_cost, price_per_m=m)
+            item.save()
+            print('saved')
+            print(item.pk)
+            ipn = Inventory.objects.filter(pk=x.pk).update(internal_part_number=item.pk)
+            print('IPN')
+            print(ipn)
+            #Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
+    return render (request, "controls/specialized_tools.html")
+
+def add_primary_vendor(request):
+    if request.method =="POST":
+        vendor = request.POST.get('vendor')
+        id_list = request.POST.getlist('item')
+        print(vendor)
+        for x in id_list:
+            InventoryMaster.objects.filter(pk=x).update(primary_vendor=vendor)
+            i = InventoryMaster.objects.get(pk=x)
+            n = InventoryMaster.objects.filter(pk=x)
+            #print(n.id)
+            print(i.name)
+            item = VendorItemDetail(internal_part_number=InventoryMaster.objects.get(pk=x), vendor=i.primary_vendor, name=i.name, vendor_part_number=i.primary_vendor_part_number, description=i.description, supplies=i.supplies, retail=i.retail, non_inventory=i.non_inventory, created=datetime.now(), updated=datetime.now(), high_price=i.high_price)
+            item.save()
+    items = InventoryMaster.objects.all
+    vendors = Vendor.objects.all
+    context = {
+        'items':items,
+        'vendors':vendors,
+    }
+    return render (request, "controls/add_primary_vendor.html", context)
+
+def add_units_per_package(request):
+    if request.method =="POST":
+        units = request.POST.get('qty')
+        id_list = request.POST.getlist('item')
+        print(units)
+        for x in id_list:
+            InventoryMaster.objects.filter(pk=x).update(units_per_package=units)
+    items = InventoryMaster.objects.all
+    context = {
+        'items':items,
+    }
+    return render (request, "controls/add_units_per_package.html", context)
+

@@ -1,37 +1,38 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
 
 {% block content %}
 
-<div class="col-md-6 offset-md-3">
-
-
 {% if user.is_authenticated %}
+<h1>Finance Home</h1>
+<br/>
 
-<h1>Finance</h1>
-
-<a href="{% url 'finance:add_invoice' %}">Add Bill to be paid</a><br>
-<a href="{% url 'finance:view_bills_payable' %}">View Bills to be paid</a>
-
-<br>
-
-
-<p>
-<a href="{% url 'finance:add_daily_sale' %}">Add Daily Sale Record</a><br>
-<a href="{% url 'finance:view_daily_sales' %}">View Daily Sales History</a><br>
-
-<p>
-<a href="{% url 'finance:ar_aging' %}">A/R Aging</a><br>
-<a href="{% url 'finance:complete_not_billed' %}">Complete Not Billed</a><br>
-<a href="{% url 'finance:krueger_ar' %}">Krueger Outstanding Invoices</a><br>
-<a href="{% url 'finance:lk_ar' %}">LK Outstanding Invoices</a><br>
-
-<p>
-  <a href="{% url 'finance:all_printleader' %}">All Printleader Invoices</a><br>
-  <a href="{% url 'finance:all_open_printleader' %}">All Open Printleader Invoices</a><br>
-<p>
-  <a href="{% url 'finance:all_lk' %}">All LK Invoices</a><br>
-
-
+<div class="container">
+    <div class="row">
+      <div class="col-sm-3">
+        <a href="{% url 'finance:add_invoice' %}">Add Bill to be paid</a><br>
+        <a href="{% url 'finance:view_bills_payable' %}">View Bills to be paid</a><br>
+        <a href="{% url 'inventory:add_vendor' %}">Add Vendor</a><br>
+        <a href="{% url 'inventory:vendor_list' %}">Vendor List</a><br>
+      </div>
+      <div class="col-sm-3">
+        <a href="{% url 'finance:add_daily_sale' %}">Add Daily Sale Record</a><br>
+        <a href="{% url 'finance:view_daily_sales' %}">View Daily Sales History</a><br> 
+      </div>
+      <div class="col-sm-3">
+        <a href="{% url 'finance:ar_aging' %}">A/R Aging</a><br>
+        <a href="{% url 'finance:complete_not_billed' %}">Complete Not Billed</a><br>
+        <a href="{% url 'finance:krueger_ar' %}">Krueger Outstanding Invoices</a><br>
+        <a href="{% url 'finance:lk_ar' %}">LK Outstanding Invoices</a><br> 
+        <a href="{% url 'finance:all_lk' %}">All LK Invoices</a><br>  
+      </div>
+      <div class="col-sm-3">
+        <a href="{% url 'finance:all_printleader' %}">All Printleader Invoices</a><br>
+        <a href="{% url 'finance:all_open_printleader' %}">All Open Printleader Invoices</a><br>   
+      </div>
+    </div>
+</div>
 
 {% else %}
 
@@ -51,5 +52,6 @@
 </div>
 
 {% endif %}
+
 
 {% endblock %}

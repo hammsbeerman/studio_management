@@ -152,7 +152,25 @@ def highprice_handler(sender, instance, created, *args, **kwargs):
     print(current_high)
     if current_high < price:
         print('ok')
+        # print(vendor)
+        # print(internal_part_number.id)
+        # item = VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number)
+        # print('price')
+        # print(price)
+        # if item:
+        #     print('Has item')
+        # else:
+        #     print('No Item')
+        print(internal_part_number.id)
         VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
+        x = InventoryMaster.objects.get(pk=internal_part_number.id)
+        if x.units_per_package:
+            cost = price / x.units_per_package
+            m = cost * 1000
+        else:
+            cost=0
+            m = 0
+        InventoryMaster.objects.filter(pk=internal_part_number.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=datetime.now())
     else:
         print('no change')
     #price = items

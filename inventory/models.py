@@ -1,8 +1,16 @@
 from django.db import models
 from django.urls import reverse
+from datetime import datetime
 from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import SubCategory, Measurement, InventoryCategory
+from decimal import Decimal
+
+from django.dispatch import receiver
+from django.db.models.signals import (
+    post_save,
+    #post_delete
+)
     
 
     
@@ -46,15 +54,34 @@ class InventoryMaster(models.Model):
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     primary_vendor =  models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
     primary_vendor_part_number = models.CharField('Primary Vendor Part Number', max_length=100, blank=True, null=True)
+    measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING)
+    units_per_package = models.DecimalField('Units per package', max_digits=15, decimal_places=4, blank=True, null=True)
+    unit_cost = models.DecimalField('Unit Cost', max_digits=15, decimal_places=4, blank=True, null=True)
+    price_per_m = models.DecimalField('Price Per M', max_digits=15, decimal_places=4, blank=True, null=True)
+    #price_per_sqft = models.DecimalField('Price Per SqFt', max_digits=15, decimal_places=4, blank=True, null=True)
     supplies = models.BooleanField('Supply Item', blank=False, null=False, default=True)
     retail = models.BooleanField('Retail Item', blank=False, null=False, default=True)
     non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False, default=False)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
-    high_price = models.CharField('High Price', max_length=100, blank=True, null=True)
+    high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
 
     def __str__(self):
         return self.name
+    
+@receiver(post_save, sender=InventoryMaster)  
+def Unit_Cost_Handler(sender, instance, created, *args, **kwargs):
+    print(args, kwargs)
+    print(instance.pk)
+    if instance.high_price:
+        if instance.units_per_package:
+            unit_cost = Decimal(instance.high_price) / instance.units_per_package
+            print(unit_cost)
+            m = unit_cost * 1000
+            unit_cost = round(unit_cost, 6)
+            m = round(m, 6)
+            InventoryMaster.objects.filter(pk=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
+            Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
     
 
 
@@ -227,6 +254,11 @@ class VendorContact(models.Model):
     email = models.EmailField('Email', max_length=100, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+
+
+@receiver(post_save, sender=InventoryMaster)  
+def Inventory_Master_Handler(sender, instance, created, *args, **kwargs):
+    print(args, kwargs)
 
 
     

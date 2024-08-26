@@ -1063,11 +1063,13 @@ def add_invoice_item(request, invoice=None, vendor=None):
 
 def edit_invoice_item(request, invoice=None, id=None):
     print(id)
+    print(invoice)
     item = InvoiceItem.objects.get(id=id)
     print(item)
     print(item.pk)
     pk = item.pk
     if request.method == "POST":
+        invoice = request.POST.get('invoice')
         instance = InvoiceItem.objects.get(id=pk)
         form = AddInvoiceItemForm(request.POST or None, instance=instance)
         if form.is_valid():
@@ -1136,7 +1138,7 @@ def edit_invoice_item(request, invoice=None, id=None):
             #     print(cp)
             #     print('something')
             #     print(invoice)
-            return redirect ('finance:invoice_detail', id=pk)
+            return redirect ('finance:invoice_detail', id=invoice)
             
         else:
             
@@ -1197,6 +1199,7 @@ def edit_invoice_item(request, invoice=None, id=None):
         'qty':qty,
         'pk':pk,
         'ipn':ipn,
+        'invoice':invoice
         #'form':form
     }
     return render (request, "finance/AP/partials/edit_invoice_item.html", context)

@@ -19,6 +19,9 @@ from .views import (
     cust_history,
     cust_address,
     cust_wo_address,
+    create_inventory_from_inventory,
+    add_primary_vendor,
+    add_units_per_package,
     #setprice_list,
 )
 
@@ -41,5 +44,8 @@ urlpatterns = [
     path('cust_history/', cust_history, name='cust_history'),
     path('cust_address/', cust_address, name='cust_address'),
     path('cust_wo_address/', cust_wo_address, name='cust_wo_address'),
+    path('create_inventory_from_inventory/', create_inventory_from_inventory, name='create_inventory_from_inventory'),
+    path('add_primary_vendor/', add_primary_vendor, name='add_primary_vendor'),
+    path('add_units_per_package/', add_units_per_package, name='add_units_per_package'),
     #path('setprice_list/', setprice_list, name='setprice_list'),
 ]
