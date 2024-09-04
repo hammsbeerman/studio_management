@@ -8,8 +8,11 @@ admin.site.register(Araging)
 
 admin.site.register(AccountsPayable)
 
-admin.site.register(InvoiceItem)
+class InvoiceItemAdmin(admin.ModelAdmin):
+    readonly_fields=('invoice_unit',)
 
+admin.site.register(InvoiceItem, InvoiceItemAdmin)
+    
 
 class WorkorderPaymentAdmin(admin.ModelAdmin):
     list_display = ('workorder', 'payment', 'payment_amount', 'date')

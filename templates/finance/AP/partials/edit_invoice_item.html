@@ -10,6 +10,19 @@
     </br>
     Description: <input type="text" value="{{ description }}" name="description">
     </br>
+    <br/>
+    Variation: <select class="custom-select mb-4" id="variation" name="variation">
+
+        {% if variation %}
+            <option selected value="{{variation}}">{{ variation }} -- {{ variation_qty }}</option>
+        {% else %}
+            <option selected>Select Item</option>
+        {% endif %}
+            {% for x in variations %}
+              <option value="{{ x.id }}">{{ x.variation.name }} -- {{ x.variation_qty }}</option>
+            {% endfor %}
+        </select>
+        <br/>
     Unit Cost: <input type="text" value="{{ unit_cost }}" name="unit_cost">
     </br>
     Qty: <input type="text" value="{{ qty }}" name="qty">

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics, viewsets
 from decimal import Decimal
 from .forms import AddVendorForm
-from .models import Vendor, Inventory
+from .models import Vendor, Inventory, InventoryQtyVariations
 from .serializers import InventorySerializer
 #from inventory.models import Inventory
 
@@ -125,6 +125,64 @@ def edit_vendor(request, id):
         'vendor':vendor,
     }
     return render(request, 'inventory/vendors/edit_vendor.html', context)
+
+
+def item_variations(request):
+    items = InventoryQtyVariations.objects.all()
+    unique_list = []
+    list = []
+    for x in items:
+        # check if exists in unique_list or not
+        if x.inventory not in list:
+            unique_list.append(x)
+            list.append(x.inventory)
+    print(unique_list)
+    context = {
+        #'group':group,
+        'unique_list':unique_list
+    }
+    return render(request, 'inventory/items/view_variations.html', context)
+
+def item_variation_details(request, id=None):
+    print(id)
+    variations = InventoryQtyVariations.objects.filter(inventory=id)
+    print(variations)
+    context = {
+        'variations':variations
+    }
+    return render(request, 'inventory/items/view_variation_details.html', context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # @login_required
 # def add_inventory_item(request):

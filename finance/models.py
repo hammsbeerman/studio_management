@@ -2,7 +2,7 @@ from django.db import models
 from django.urls import reverse
 from datetime import datetime
 from django.db.models import Max
-from inventory.models import Vendor, InventoryMaster, VendorItemDetail
+from inventory.models import Vendor, InventoryMaster, VendorItemDetail, InventoryPricingGroup, InventoryQtyVariations, Inventory
 from workorders.models import Workorder
 from controls.models import PaymentType
 from customers.models import Customer
@@ -10,7 +10,7 @@ from customers.models import Customer
 from django.dispatch import receiver
 from django.db.models.signals import (
     post_save,
-    #post_delete
+    post_delete
 )
 
 
@@ -113,89 +113,147 @@ class InvoiceItem(models.Model):
     vendor_part_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     internal_part_number = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
+    invoice_unit = models.ForeignKey(InventoryQtyVariations, blank=True, null=True, on_delete=models.CASCADE)
+    #invoice_unit = models.CharField('Invoice Unit', max_length=100, blank=True, null=True)
+    invoice_unit_cost = models.DecimalField('Invoice Unit Cost', max_digits=15, decimal_places=4, blank=True, null=True)
+    invoice_qty = models.DecimalField('Invoice Qty', max_digits=8, decimal_places=2, blank=True, null=True)
+    # variation = models.ForeignKey(InventoryQtyVariations, blank=True, null=True, on_delete=models.CASCADE)
+    # variation = models.CharField('Variation', max_length=100, blank=True, null=True)
+    # variation_name = models.CharField('Description', max_length=100, blank=True, null=True)
+    # variation_qty = models.DecimalField('Variation Qty', max_digits=8, decimal_places=2, blank=True, null=True)
     unit_cost = models.DecimalField('Unit Cost', max_digits=15, decimal_places=4, blank=True, null=True)
+    #price_ea = models.DecimalField('Price Each', max_digits=15, decimal_places=4, blank=True, null=True)
     qty = models.DecimalField('Qty', max_digits=8, decimal_places=2, blank=True, null=True)
+    ppm = models.BooleanField('Price Per M', default=False, blank=False, null=False)
+    line_total = models.DecimalField('Line Total', max_digits=8, decimal_places=2, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)    
 
     def __str__(self):
         return self.name
-    
 
 
-@receiver(post_save, sender=InvoiceItem)   
-def highprice_handler(sender, instance, created, *args, **kwargs):
-    print(args, kwargs)
-    print('cool')
-    internal_part_number = instance.internal_part_number
-    unit_cost = instance.unit_cost
+@receiver(post_delete, sender=InvoiceItem)   
+def highprice_remove_handler(sender, instance, *args, **kwargs):
+    print('deleted')
+    print(instance)
+    print(instance.vendor)
     vendor = instance.vendor.id
-    print(instance.unit_cost)
-    print(instance.vendor.id)
-    name = instance.name
-    print(name)
-    vendor_part_number = instance.vendor_part_number
-    print(vendor_part_number)
-    description = instance.description
-    print(description)
+    internal_part_number = instance.internal_part_number
+    print(internal_part_number)
     items = InvoiceItem.objects.filter(vendor=vendor, internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
     print(items)
     price = list(items.values())[0]
-    #price_dec = 
-    #Update high price for vendor item
+    print('1')
+    print(price)
+    vendorprice = VendorItemDetail.objects.get(vendor=vendor, internal_part_number=internal_part_number)
+    print('highprice')
+    print(vendorprice.high_price)
+    #Lower price for vendor item if highest price was deleted from invoice item
+    if vendorprice.high_price > price:
+        VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
+    #Lower price for inventory master if highest price from any vendor was removed
+    overall_price = InvoiceItem.objects.filter(internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
+    op = list(overall_price.values())[0]
+    master_price = InventoryMaster.objects.get(pk=internal_part_number.id)
+    master_price = master_price.high_price
+    print('master')
+    print(master_price)
+    print('op')
+    print(op)
+    if master_price > op:
+        m = price * 1000
+        InventoryMaster.objects.filter(pk=internal_part_number.id).update(high_price=price, unit_cost=price, price_per_m=m, updated=datetime.now())
+        try:
+            Inventory.objects.filter(internal_part_number=internal_part_number.id).update(unit_cost=price, price_per_m=m, updated=datetime.now())
+        except:
+            pass
+    print('hello')
+    groups = InventoryPricingGroup.objects.filter(inventory=internal_part_number.id)
+    # high_price_list = []
+    # list = []
+    high_price_current = 0
+    for x in groups:
+        print('12')
+    #     #InventoryPricingGroup.objects.filter(group=x.group).update(high_price=price)
+        group_items = InventoryPricingGroup.objects.filter(group=x.group)
+        for x in group_items:
+            print('13')
+            price = InvoiceItem.objects.filter(internal_part_number=x.inventory.id).aggregate(Max('unit_cost'))
+            price = list(items.values())[0]
+            print(price)
+            if price > high_price_current:
+                print('deleted price')
+                high_price_current = price
+                print(high_price_current)
+            else:
+                print(price)
+    price = high_price_current
+    groups = InventoryPricingGroup.objects.filter(inventory=internal_part_number.id)
+    for x in groups:
+        InventoryPricingGroup.objects.filter(group=x.group).update(high_price=price)
+        group_items = InventoryPricingGroup.objects.filter(group=x.group)
+        for x in group_items:
+            y = InventoryMaster.objects.get(pk=x.inventory.id)
+            if y.units_per_base_unit:
+                cost = price / y.units_per_base_unit
+                m = cost * 1000
+            else:
+                cost=0
+                m = 0
+            print(x.inventory.id)
+            InventoryMaster.objects.filter(pk=x.inventory.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=datetime.now())
+            VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=x.inventory.id).update(high_price=price, updated=datetime.now())
+            Inventory.objects.filter(internal_part_number=x.inventory.id).update(unit_cost=cost, price_per_m=m, updated=datetime.now())
+        print(x.inventory)
+            
+            
+    #         # InventoryMaster.objects.filter(pk=x.inventory.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=datetime.now())
+    #         # VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=x.inventory.id).update(high_price=price, updated=datetime.now())
+    #         # Inventory.objects.filter(internal_part_number=x.inventory.id).update(unit_cost=cost, price_per_m=m, updated=datetime.now())
+    #     print(x.inventory)
+ 
+
+@receiver(post_save, sender=InvoiceItem)   
+def highprice_handler(sender, instance, created, *args, **kwargs):
+    internal_part_number = instance.internal_part_number
+    vendor = instance.vendor.id
+    #Check for highprice from specific vendor
+    items = InvoiceItem.objects.filter(vendor=vendor, internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
+    price = list(items.values())[0]
+    print('price')
+    print(price)
     current_high = VendorItemDetail.objects.get(vendor=vendor, internal_part_number=internal_part_number)
     current_high = current_high.high_price
     if current_high is None:
         current_high = 0
     if price is None:
         price = 0
-    print(current_high)
     if current_high < price:
-        print('ok')
-        # print(vendor)
-        # print(internal_part_number.id)
-        # item = VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number)
-        # print('price')
-        # print(price)
-        # if item:
-        #     print('Has item')
-        # else:
-        #     print('No Item')
-        print(internal_part_number.id)
+        #Update vendor high price
         VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
         x = InventoryMaster.objects.get(pk=internal_part_number.id)
-        if x.units_per_package:
-            cost = price / x.units_per_package
+        if x.units_per_base_unit:
+            cost = price / x.units_per_base_unit
             m = cost * 1000
         else:
             cost=0
             m = 0
         InventoryMaster.objects.filter(pk=internal_part_number.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=datetime.now())
+        try:
+            Inventory.objects.filter(internal_part_number=internal_part_number.id).update(unit_cost=cost, price_per_m=m, updated=datetime.now())
+        except:
+            pass
+        groups = InventoryPricingGroup.objects.filter(inventory=internal_part_number.id)
+        for x in groups:
+            InventoryPricingGroup.objects.filter(group=x.group).update(high_price=price)
+            group_items = InventoryPricingGroup.objects.filter(group=x.group)
+            for x in group_items:
+                print(x.inventory.id)
+                InventoryMaster.objects.filter(pk=x.inventory.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=datetime.now())
+                VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=x.inventory.id).update(high_price=price, updated=datetime.now())
+                Inventory.objects.filter(internal_part_number=x.inventory.id).update(unit_cost=cost, price_per_m=m, updated=datetime.now())
+            print(x.inventory)
     else:
         print('no change')
-    #price = items
     print(price)
-    #This line is broken
-    #VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(name=name, vendor_part_number=vendor_part_number, description=description, updated=datetime.now())
-    print('done')
-    #items = RetailInvoiceItem.objects.filter(vendor=vendor, internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
-    # for x in items:
-    #     print (x.name)
-    #     print (x.unit_cost)
-
-#post_save.connect(highprice_handler, sender=InvoiceItem)
-
-# @receiver(post_delete, sender=InvoiceItem)   
-# def highprice_handler(sender, instance, *args, **kwargs):
-#     print('deleted')
-#     print(instance)
-#     print(instance.vendor)
-#     vendor = instance.vendor.id
-#     internal_part_number = instance.internal_part_number
-#     print(internal_part_number)
-#     items = InvoiceItem.objects.filter(vendor=vendor, internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
-#     print(items)
-#     price = list(items.values())[0]
-#     print(price)
-#     VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
-    

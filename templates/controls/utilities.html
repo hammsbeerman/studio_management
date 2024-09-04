@@ -5,24 +5,29 @@
 
 {% block content %}
 <H1>Utilities - Use with caution</h1>
-<a href="{% url 'controls:special_tools' %}">Tools for setup and maintenance</a>
-<br>
-<a href="{% url 'controls:missing_workorders' %}">Missing Workorders</a>
-<br>
-<a href="{% url 'controls:cust_history' %}">Customers with workorder history</a>
-<br>
-<a href="{% url 'controls:cust_address' %}">Customers with Addresses</a>
-<br>
-<a href="{% url 'controls:cust_wo_address' %}">Customers without Addresses</a>
-<br>
-<a href="{% url 'printleader:printleader_history' %}">Printleader History</a>
-<br>
-<a href="{% url 'controls:add_primary_vendor' %}">Add Primary Vendor to Inventory Item</a>
-<br>
-<a href="{% url 'controls:add_units_per_package' %}">Add Units per Package</a>
 
 
 
+
+<div class="container">
+    <div class="row">
+      <div class="col-sm-3">
+        <a href="{% url 'controls:special_tools' %}">Tools for setup and maintenance</a><br>
+        <a href="{% url 'controls:missing_workorders' %}">Missing Workorders</a><br>
+        <a href="{% url 'controls:cust_history' %}">Customers with workorder history</a><br>
+        <a href="{% url 'controls:cust_address' %}">Customers with Addresses</a><br>
+        <a href="{% url 'controls:cust_wo_address' %}">Customers without Addresses</a><br>
+        <a href="{% url 'printleader:printleader_history' %}">Printleader History</a><br>
+      </div>
+      <div class="col-sm-3">
+        Update existing inventory<br>
+        <a href="{% url 'controls:add_primary_vendor' %}">Add Primary Vendor to Inventory Item</a><br>
+        <a href="{% url 'controls:add_primary_baseunit' %}">Add Primary Base Unit</a><br>
+        <a href="{% url 'controls:add_units_per_base_unit' %}">Add Units per Base Unit</a><br>
+        <a href="{% url 'controls:view_price_groups' %}">View Price Groups</a><br>
+      </div>
+    </div>
+</div>
 
 
 {% endblock content %}

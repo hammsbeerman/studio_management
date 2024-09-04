@@ -24,20 +24,20 @@ class AddVendorForm(forms.ModelForm):
 #        labels = {
 #         }
        
-class AddInvoiceItemForm(forms.ModelForm):
-   class Meta:
-       model = InvoiceItem
-       fields = ['name', 'vendor_part_number', 'description', 'internal_part_number', 'vendor', 'unit_cost', 'qty']
-       labels = {
-        }
+# class AddInvoiceItemForm(forms.ModelForm):
+#    class Meta:
+#        model = InvoiceItem
+#        fields = ['name', 'vendor_part_number', 'description', 'internal_part_number', 'vendor', 'unit_cost', 'qty']
+#        labels = {
+#         }
        
        
-class AddInvoiceItemRemainderForm(forms.ModelForm):
-    class Meta:
-        model = InvoiceItem
-        fields = ['vendor_part_number', 'description', 'unit_cost', 'qty']
-        labels = {
-        } 
+# class AddInvoiceItemRemainderForm(forms.ModelForm):
+#     class Meta:
+#         model = InvoiceItem
+#         fields = ['vendor_part_number', 'description', 'unit_cost', 'qty']
+#         labels = {
+#         } 
 
 # class VendorItemRemainderForm(forms.ModelForm):
 #     class Meta:

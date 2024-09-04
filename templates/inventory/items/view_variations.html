@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+Items with variations
+<p>
+    {% for x in unique_list %}
+    <a href='{{ x.get_absolute_url }}'>{{ x.id }} -- {{ x.inventory.name }} -- {{ x.variation.name }} -- {{ x.variation.measurement }} -- {{ x.variation_qty }}</a>
+    {% endfor %}
+
+
+    
+{% endblock %}

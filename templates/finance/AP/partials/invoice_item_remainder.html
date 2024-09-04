@@ -1,3 +1,4 @@
+{% load static %}
 <form action='/finance/ap/invoice_detail/{{ invoice }}/' method="POST">
     
     {% csrf_token %}
@@ -8,10 +9,27 @@
     </br>
     Description: <input type="text" value="{{ description }}" name="description">
     </br>
-    Unit Cost: <input type="text" name="unit_cost">
+    Primary Base Unit: {{ primary_base_unit }}
     </br>
-    Qty: <input type="text" name="qty">
+</br>
+    <div id="item_variation">
+    Variation: <select class="custom-select mb-4" id="variation" name="variation">
 
+        
+            {% for x in variations %}
+              <option value="{{ x.id }}">{{ x.variation.name }} -- {{ x.variation_qty }}</option>
+            {% endfor %}
+        </select>
+        
+    
+    <button  class="btn btn-primary-outline" hx-get="{% url 'controls:add_item_variation' %}" hx-target="#item_variation"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">Add Item variation</button>
+    </br>
+    
+        
+    </div>
+    Unit Cost: <input type="text" name="invoice_unit_cost"> - <input type="checkbox" id="ppm" name="ppm" value="1"><label for="ppm">Priced / M</label><br>
+    </br>
+    Qty: <input type="text" name="invoice_qty">
 
 
 

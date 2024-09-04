@@ -1,13 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.utils import timezone
 from django.db.models import Q
+from django.contrib import messages
 from datetime import datetime
-from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPriceCategoryForm
+from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPriceCategoryForm, AddInventoryPricingGroupForm
 from .models import SetPriceCategory, SubCategory, Category
 from workorders.models import Workorder
 from customers.models import Customer, ShipTo
-from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail
+from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail, InventoryPricingGroup, ItemPricingGroup, InventoryQtyVariations
+from controls.models import Measurement
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -364,8 +366,8 @@ def cust_wo_address(request):
 
 #Create master inventory item from items already in inventory list
 def create_inventory_from_inventory(request):
-    inventory = Inventory.objects.all()[:80]
-
+    #inventory = Inventory.objects.all()[:120]
+    inventory = Inventory.objects.all()
     print(inventory)
     for x in inventory:
         if not x.internal_part_number:
@@ -377,7 +379,8 @@ def create_inventory_from_inventory(request):
             m = x.price_per_m
             if not unit_cost:
                 unit_cost=0
-            item = InventoryMaster(name=name, description=description, supplies=1, retail=1, primary_vendor_part_number=p_vpn, measurement=measurement, unit_cost=unit_cost, price_per_m=m)
+            item = InventoryMaster(name=name, description=description, supplies=1, retail=1, primary_vendor_part_number=p_vpn, primary_base_unit=measurement, unit_cost=unit_cost, price_per_m=m)
+            print(x.pk)
             item.save()
             print('saved')
             print(item.pk)
@@ -408,16 +411,193 @@ def add_primary_vendor(request):
     }
     return render (request, "controls/add_primary_vendor.html", context)
 
-def add_units_per_package(request):
+def add_primary_baseunit(request):
+    if request.method =="POST":
+        unit = request.POST.get('unit')
+        qty = request.POST.get('qty')
+        #unit = int(unit)
+        id_list = request.POST.getlist('item')
+        print(unit)
+        print(qty)
+        for x in id_list:
+            InventoryMaster.objects.filter(pk=x).update(primary_base_unit=unit, units_per_base_unit=qty)
+            variation = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=x), variation=Measurement.objects.get(id=unit), variation_qty=qty)
+            #variation.variation = unit
+            variation.save()
+            print(variation.pk)
+            #variation=Measurement.objects.get(pk=unit), variation_qty=100
+
+            #This could be changed to add primary unit to vendor detail if needed
+            # i = InventoryMaster.objects.get(pk=x)
+            # n = InventoryMaster.objects.filter(pk=x)
+            # #print(n.id)
+            # print(i.name)
+            # item = VendorItemDetail(internal_part_number=InventoryMaster.objects.get(pk=x), vendor=i.primary_vendor, name=i.name, vendor_part_number=i.primary_vendor_part_number, description=i.description, supplies=i.supplies, retail=i.retail, non_inventory=i.non_inventory, created=datetime.now(), updated=datetime.now(), high_price=i.high_price)
+            # item.save()
+    units = Measurement.objects.all
+    items = InventoryMaster.objects.all
+    context = {
+        'items':items,
+        'units':units,
+    }
+    return render (request, "controls/add_primary_baseunit.html", context)
+
+def add_units_per_base_unit(request):
     if request.method =="POST":
         units = request.POST.get('qty')
         id_list = request.POST.getlist('item')
         print(units)
         for x in id_list:
-            InventoryMaster.objects.filter(pk=x).update(units_per_package=units)
+            InventoryMaster.objects.filter(pk=x).update(units_per_base_unit=units)
     items = InventoryMaster.objects.all
     context = {
         'items':items,
     }
-    return render (request, "controls/add_units_per_package.html", context)
+    return render (request, "controls/add_units_per_base_unit.html", context)
 
+
+def view_price_groups(request):
+    group = ItemPricingGroup.objects.all().order_by('name')
+    # group = InventoryPricingGroup.objects.all().order_by('group')
+    # unique_list = []
+    # list = []
+    # for x in group:
+    #     # check if exists in unique_list or not
+    #     if x.group not in list:
+    #         unique_list.append(x)
+    #         list.append(x.group)
+    # print(unique_list)
+    context = {
+        'group':group,
+        #'unique_list':unique_list
+    }
+    return render (request, "controls/view_price_groups.html", context)
+
+
+def view_price_group_detail(request, id=None):
+    print(id)
+    group_id = ItemPricingGroup.objects.get(pk=id)
+    #item = InventoryMaster.objects.get(pk=51)
+    #group = InventoryPricingGroup.objects.filter(inventory=item)
+    group = InventoryPricingGroup.objects.filter(group=id)
+    print(group)
+    for x in group:
+        print(x)
+        print(x.id)
+    context = {
+        'group_id':group_id,
+        'group':group
+    }
+    return render (request, "controls/view_price_group_detail.html", context)
+
+def add_price_group(request):
+    if request.method =="POST":
+        group = request.POST.get('group_name')
+        obj = ItemPricingGroup(name=group)
+        obj.save()
+        return redirect ('controls:view_price_groups')
+    return render (request, "controls/add_price_group.html")
+
+def add_price_group_item(request):
+    groups = ItemPricingGroup.objects.all().order_by('name')
+    items = InventoryMaster.objects.all().exclude(not_grouped=1)
+    if request.method == "POST":
+        notgrouped = request.POST.get('notgrouped')
+        if notgrouped:
+            id_list = request.POST.getlist('item')
+            for x in id_list:
+                InventoryMaster.objects.filter(pk=x).update(not_grouped=1)
+            context = {
+                'items':items,
+                'groups':groups,
+                #'form':form,
+            }
+            return render (request, "controls/add_price_group_item.html", context)
+        group = request.POST.get('group')
+        group_id = group
+        print(group)
+        id_list = request.POST.getlist('item')
+        # if not group:
+        #     #messages.success(request, ("Please select a group"))
+        #     groups = ItemPricingGroup.objects.all().order_by('name')
+        #     message = "Please select a group"
+        #     context = {
+        #         'groups':groups,
+        #         'message':message,
+        #     }
+        #     return redirect("controls:view_price_groups", context)
+        for x in id_list:
+            item = InventoryMaster.objects.get(pk=x)
+            group = ItemPricingGroup.objects.get(pk=group_id)
+            #obj = InventoryPricingGroup(inventory=InventoryMaster.objects.get(pk=x), group=ItemPricingGroup.objects.get(pk=group))
+            obj = InventoryPricingGroup(inventory=item, group=group)
+            try:
+                unique = get_object_or_404(InventoryPricingGroup, inventory=item, group=group)
+                print('exists')
+            except:
+                obj.save()
+        return redirect('controls:view_price_group_detail', id=group_id)
+    context = {
+        'items':items,
+        'groups':groups,
+        #'form':form,
+    }
+    return render (request, "controls/add_price_group_item.html", context)
+
+def add_item_variation(request):
+    #items = InventoryMaster.objects.all
+    units = Measurement.objects.all()
+    context = {
+        #'items':items,
+        'units':units,
+    }
+    return render (request, "controls/partials/add_item_variation.html", context )
+
+
+
+
+# def add_primary_vendor(request):
+#     if request.method =="POST":
+#         vendor = request.POST.get('vendor')
+#         id_list = request.POST.getlist('item')
+#         print(vendor)
+#         for x in id_list:
+#             InventoryMaster.objects.filter(pk=x).update(primary_vendor=vendor)
+#             i = InventoryMaster.objects.get(pk=x)
+#             n = InventoryMaster.objects.filter(pk=x)
+#             #print(n.id)
+#             print(i.name)
+#             item = VendorItemDetail(internal_part_number=InventoryMaster.objects.get(pk=x), vendor=i.primary_vendor, name=i.name, vendor_part_number=i.primary_vendor_part_number, description=i.description, supplies=i.supplies, retail=i.retail, non_inventory=i.non_inventory, created=datetime.now(), updated=datetime.now(), high_price=i.high_price)
+#             item.save()
+#     items = InventoryMaster.objects.all
+#     vendors = Vendor.objects.all
+#     context = {
+#         'items':items,
+#         'vendors':vendors,
+#     }
+#     return render (request, "controls/add_primary_vendor.html", context)
+
+
+
+
+#form = AddInventoryPricingGroupForm()
+
+
+# @login_required
+# def add_setprice_item(request):
+#     form = AddSetPriceItemForm()
+#     updated = timezone.now()
+#     if request.method =="POST":
+#         form = AddSetPriceItemForm(request.POST)
+#         cat = 3
+#         if form.is_valid():
+#             obj = form.save(commit=False)
+#             obj.updated = updated
+#             obj.save()
+#             return HttpResponse(status=204, headers={'HX-Trigger': 'TemplateListChanged', 'category':'3'})
+#         else:
+#             print(form.errors)
+#     context = {
+#         'form': form,
+#     }
+#     # return render (request, "pricesheet/modals/add_setprice_item.html", context)

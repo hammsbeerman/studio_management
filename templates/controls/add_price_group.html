@@ -1,0 +1,23 @@
+
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+Add Pricing Group
+<p>
+  
+<form action='/controls/add_price_group/' method="POST">
+{% csrf_token %}
+
+<label for="group_name">Group Name</label><br>
+<input type="text" id="group_name" name="group_name"><br>
+
+    <button type="submit">Create Pricing Group</button>
+</form>
+
+
+
+
+
+  {% endblock content %}

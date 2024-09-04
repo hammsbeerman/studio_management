@@ -11,13 +11,13 @@ from decimal import Decimal
 import logging
 from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm
-from retail.forms import AddInvoiceItemForm, RetailInventoryMasterForm
-from finance.forms import AddInvoiceForm
+from retail.forms import RetailInventoryMasterForm
+from finance.forms import AddInvoiceForm, AddInvoiceItemForm
 from finance.models import InvoiceItem
 from customers.models import Customer
 from workorders.models import Workorder
-from controls.models import PaymentType
-from inventory.models import Vendor, InventoryMaster, VendorItemDetail
+from controls.models import PaymentType, Measurement
+from inventory.models import Vendor, InventoryMaster, VendorItemDetail, InventoryQtyVariations
 from inventory.forms import InventoryMasterForm, VendorItemDetailForm
 
 logger = logging.getLogger(__file__)
@@ -926,6 +926,31 @@ def invoice_detail(request, id=None):
     if request.method == "POST":
         # invoice = request.POST.get('invoice')
         vendor = request.POST.get('vendor')
+        variation = request.POST.get('variation')
+        ipn = request.POST.get('internal_part_number')
+        ppm = request.POST.get('ppm')
+        print('ppm')
+        print(ppm)
+        unit = request.POST.get('unit')
+        item_qty = request.POST.get('variation_qty')
+        if unit:
+            variation_qty = item_qty
+            variation = unit
+            variation_qty = int(variation_qty)
+            var = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=ipn), variation=Measurement.objects.get(pk=variation) , variation_qty=variation_qty) 
+            var.save()
+            print('var saved')
+            print(var.pk)
+            var = var.pk
+        else:
+            var = ''
+            v = InventoryQtyVariations.objects.get(id=variation)
+            variation_qty = v.variation_qty
+        # print(variation)
+        # print(ipn)
+        
+        # print('v')
+        # print(v)
         #vendor = int(vendor)
         invoice = id
         print('id')
@@ -933,57 +958,37 @@ def invoice_detail(request, id=None):
         form = AddInvoiceItemForm(request.POST)
         if form.is_valid():
             print(invoice)
+            qty = form.instance.invoice_qty * variation_qty
+            if form.instance.invoice_unit_cost:
+                if ppm == '1':
+                    price_ea = form.instance.invoice_unit_cost / 1000
+                    print('price each ppm')
+                    print(price_ea)
+                else:
+                    ppm = '0'
+                    price_ea = form.instance.invoice_unit_cost / variation_qty
+                    print('price each')
+                    print(price_ea)
+            else:
+                price_ea = 0
+                ppm = 0
+            form.instance.qty = qty
+            form.instance.unit_cost = price_ea
             form.instance.invoice_id = invoice
+            if var:
+                form.instance.invoice_unit = InventoryQtyVariations.objects.get(pk=var)
+            else:
+                form.instance.invoice_unit = InventoryQtyVariations.objects.get(id=variation)
+            #form.instance.invoice_unit = v
+            form.instance.ppm = ppm
+            line_total = qty * price_ea
+            form.instance.line_total = line_total
+            #form.instance.variation_qty = v.variation_qty
             form.save()
             name = form.instance.name
             print(name)
             print(vendor)
             print('here')
-            #item = RetailVendorItemDetail.objects.get(name=name, vendor_id=vendor)
-            ##
-            # try:
-            #     item = RetailVendorItemDetail.objects.get(name=name, vendor_id=vendor)
-            #     print(item)
-            # except:
-            #     print('No Item')
-            # if item:
-            #     print(item.pk)
-            #     high_price = item.high_price
-            #     print(high_price)
-            #     current_price = form.instance.unit_cost
-            #     print(current_price)
-            #     if high_price:
-            #         high_price = int(high_price)
-            #     if current_price:
-            #         if not high_price:
-            #             high_price = 0
-            #             current_price = Decimal(current_price)
-            #             RetailVendorItemDetail.objects.filter(pk=item.pk).update(high_price=current_price, updated=datetime.now())
-            #             print(3)
-            #         current_price = int(current_price)
-            #         if current_price > high_price:
-            #             current_price = Decimal(current_price)
-            #             RetailVendorItemDetail.objects.filter(pk=item.pk).update(high_price=current_price)
-            #             print(4)       
-            # #     
-                # if high_price == 'None':
-                #     high_price = 0
-                # if current_price == 'None':
-                #     current_price = 0
-                # if not high_price:
-                    
-                
-                    
-            # if not item:
-            #     print(vendor)
-            #     RetailVendorItemDetail.objects.create(
-            #         vendor_id = vendor,
-            #         name=name,
-            #         vendor_part_number = form.instance.vendor_part_number,
-            #         description = form.instance.description,
-            #         internal_part_number = form.instance.internal_part_number,
-            #         high_price = form.instance.unit_cost
-            #         )
         else:
             print(form.errors)
         invoice = get_object_or_404(AccountsPayable, id=invoice)
@@ -991,12 +996,6 @@ def invoice_detail(request, id=None):
         print(invoice)
         items = InvoiceItem.objects.filter(invoice_id = invoice)
         print(items)
-        #items = 
-        #print(vendor)
-        # context = {
-        #     'invoice': invoice,
-        #     'items': items,
-        # }
         return redirect ('finance:invoice_detail', id=id)
     invoice = get_object_or_404(AccountsPayable, id=id)
     vendor = Vendor.objects.get(id=invoice.vendor.id)
@@ -1014,15 +1013,25 @@ def add_invoice_item(request, invoice=None, vendor=None):
     if vendor:
         item_id = request.GET.get('name')
         if item_id:
+            print('hello')
             # print(item_id)
             # print(vendor)
             try:
                 item = get_object_or_404(VendorItemDetail, internal_part_number=item_id, vendor=vendor)
+                try:
+                    variations = InventoryQtyVariations.objects.filter(inventory=item_id).order_by('variation_qty')
+                except:
+                    variations = ''
                 name = item.name
                 ipn = item_id
                 vpn = item.vendor_part_number
                 description = item.description
+                primary_base_unit = item.internal_part_number.primary_base_unit
+                if not primary_base_unit:
+                    primary_base_unit = 'No Primary Base Unit'
                 context = {
+                    'primary_base_unit':primary_base_unit,
+                    'variations':variations,
                     'name': name,
                     'vpn': vpn,
                     'ipn': ipn,
@@ -1030,9 +1039,10 @@ def add_invoice_item(request, invoice=None, vendor=None):
                     'vendor':vendor,
                     'invoice':invoice,
                 }
+
                 return render (request, "finance/AP/partials/invoice_item_remainder.html", context)
             except:
-                # print('sorry')
+                print('sorry')
                 item = ''
                 form = ''
                 vendor = ''
@@ -1144,8 +1154,14 @@ def edit_invoice_item(request, invoice=None, id=None):
             
             messages.success(request, "Name, Unit Cost, and Qty are required")
             return redirect ('finance:invoice_detail', id=invoice)
-
+    ipn = item.internal_part_number.id
+    try:
+        variations = InventoryQtyVariations.objects.filter(inventory=ipn)
+    except:
+        variations = ''
     name = item.name
+    variation = item.variation
+    variation_qty = item.variation_qty
     vpn = item.vendor_part_number
     description = item.description
     unit_cost = item.unit_cost
@@ -1153,6 +1169,7 @@ def edit_invoice_item(request, invoice=None, id=None):
     pk = item.pk
     ipn = item.internal_part_number.id
     vendor = item.vendor.id
+    print(variation)
     #form = AddInvoiceItemForm(instance=item)
     # if request.method == "POST":
     #     invoice = request.POST.get('invoice')
@@ -1190,8 +1207,11 @@ def edit_invoice_item(request, invoice=None, id=None):
     item = InvoiceItem.objects.filter(id=id)
     print(item)
     context = {
+        'variations':variations,
         'item':item,
         'name':name,
+        'variation':variation,
+        'variation_qty':variation_qty,
         'vendor':vendor,
         'vpn':vpn,
         'description':description,

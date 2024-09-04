@@ -21,7 +21,13 @@ from .views import (
     cust_wo_address,
     create_inventory_from_inventory,
     add_primary_vendor,
-    add_units_per_package,
+    add_units_per_base_unit,
+    view_price_groups,
+    view_price_group_detail,
+    add_price_group,
+    add_price_group_item,
+    add_primary_baseunit,
+    add_item_variation,
     #setprice_list,
 )
 
@@ -46,6 +52,12 @@ urlpatterns = [
     path('cust_wo_address/', cust_wo_address, name='cust_wo_address'),
     path('create_inventory_from_inventory/', create_inventory_from_inventory, name='create_inventory_from_inventory'),
     path('add_primary_vendor/', add_primary_vendor, name='add_primary_vendor'),
-    path('add_units_per_package/', add_units_per_package, name='add_units_per_package'),
+    path('add_units_per_base_unit/', add_units_per_base_unit, name='add_units_per_base_unit'),
+    path('view_price_groups/', view_price_groups, name='view_price_groups'),
+    path('view_price_group_detail/<int:id>/', view_price_group_detail, name='view_price_group_detail'),
+    path('add_price_group/', add_price_group, name='add_price_group'),
+    path('add_price_group_item/', add_price_group_item, name='add_price_group_item'),
+    path('add_primary_baseunit/', add_primary_baseunit, name='add_primary_baseunit'),
+    path('add_item_variation/', add_item_variation, name='add_item_variation'),
     #path('setprice_list/', setprice_list, name='setprice_list'),
 ]

@@ -21,11 +21,14 @@
         <thead>
           <tr>
             <th scope="col" class="">Name</th>
-            <th scope="col" class="">Vendor Part Number</th>
             <th scope="col" class="">Description</th>
-            <th scope="col" class="">Internal Part Number</th>
+            <th scope="col" class="">Vendor Part Number</th>
+            <th scope="col" class="">Invoice Qty</th>
+            <th scope="col" class="">Invoice Unit</th>
+            <th scope="col" class="">Invoice Unit Price</th>
             <th scope="col" class="">Unit Cost</th>
             <th scope="col" class="">Qty</th>
+            <th scope="col" class="">Line Total</th>
             <th scope="col" class=""></th>
           </tr>
         </thead>
@@ -33,11 +36,15 @@
             {% for x in items %}
             <tr>
                 <td>{{ x.name }}</td>
-                <td>{{ x.vendor_part_number }}</td>
                 <td>{{ x.description }}</td>
-                <td>{{ x.internal_part_number }}</td>
+                <td>{{ x.vendor_part_number }}</td>
+                <td>{{ x.invoice_qty }}</td>
+                <td>{{ x.invoice_unit.variation.name }} / {{ x.invoice_unit.variation_qty }}</td>
+                <td>{% if x.invoice_unit_cost %}${{ x.invoice_unit_cost }}{% if x.ppm %} / M {% endif %}{% endif %}</td>
                 <td>{{ x.unit_cost }}</td>
                 <td>{{ x.qty }}</td>
+                <td>{{ x.line_total }}</td>
+                <td></td>
                 <td>
                     <button hx-trigger="click" hx-get="{% url 'finance:edit_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Edit</button>
                     <!-- <button hx-trigger="click" hx-get="{% url 'finance:delete_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Delete</button>

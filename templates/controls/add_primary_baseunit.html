@@ -4,14 +4,19 @@
 
 
 {% block content %}
-Items without unit per package
+Items without a primary base unit
 <p>
 
-<form action='/controls/add_units_per_package/' method="POST">
+<form action='/controls/add_primary_baseunit/' method="POST">
 {% csrf_token %}
 
-<label for="qty">Qty per Package</label><br>
-<input type="text" id="qty" name="qty"><br>
+    <select class="custom-select mb-4" id="unit" name="unit">
+        <option selected>Select Base Unit</option>
+        {% for x in units %}
+            <option value="{{ x.id }}">{{ x.name }} </option>
+        {% endfor %} 
+    </select>
+Number per unit: <input type="text" name="qty">
     <br/>
     <table class="table table-bordered">
         <thead>
@@ -22,7 +27,7 @@ Items without unit per package
             </tr>
         </thead>
         {% for x in items %}
-            {% if not x.units_per_package %}
+            {% if not x.primary_base_unit %}
             <tr>
                 <td>{{x.name}}</td>
                 <td>{{x.description}}</td>
@@ -32,7 +37,7 @@ Items without unit per package
         {% endfor %}
     </table>
 
-    <button type="submit">Update Vendors</button>
+    <button type="submit">Update Base Unit</button>
 </form>
 <p>
     <table class="table table-bordered">
@@ -40,15 +45,17 @@ Items without unit per package
             <tr>
                 <td>Name</td>
                 <td>Description</td>
-                <td>Primary Vendor</td>
+                <td>Base Unit</td>
+                <td>Units per base unit</td>
             </tr>
         </thead>
         {% for x in items %}
-            {% if x.units_per_package %}
+            {% if x.primary_base_unit %}
             <tr>
                 <td>{{x.name}}</td>
                 <td>{{x.description}}</td>
-                <td>{{x.units_per_package}}</td>
+                <td>{{x.primary_base_unit}}</td>
+                <td>{{x.units_per_base_unit}}</td>
             </tr>
             {% endif %}
         {% endfor %}

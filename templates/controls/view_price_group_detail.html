@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+<H1>Group Items</h1>
+<p>
+    <h3>{{ group_id.name }}</h3>
+    
+    
+    <div id="pricegroup">
+        <button  class="btn btn-primary-outline" hx-get="{% url 'controls:add_price_group_item' %}" hx-target="#pricegroup">Add New Item<img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
+    <br/>
+    </div>
+
+
+    <hr>
+    {% for x in group %}
+        {{ x.id }} - {{x.inventory}} - {{x.inventory.primary_vendor_part_number }}<br/>
+    {% endfor %}
+    
+
+    
+
+
+
+
+
+{% endblock content %}

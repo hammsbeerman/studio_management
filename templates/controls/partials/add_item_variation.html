@@ -1,0 +1,7 @@
+<select class="custom-select mb-4" id="unit" name="unit">
+    <option selected>Select Base Unit</option>
+    {% for x in units %}
+        <option value="{{ x.id }}">{{ x.name }} </option>
+    {% endfor %} 
+</select>
+Units / Primary Base Unit: <input type="text" name="variation_qty">

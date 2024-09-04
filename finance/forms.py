@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import ModelForm
 from django.urls import reverse_lazy
-from .models import Payments, AccountsPayable, DailySales, Appliedother#, WorkorderPayment
+from .models import Payments, AccountsPayable, DailySales, Appliedother, InvoiceItem
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 
@@ -49,3 +49,18 @@ class AddInvoiceForm(forms.ModelForm):
        fields = ['invoice_date', 'invoice_number', 'description', 'vendor', 'total', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method', 'retail_invoice', 'supplies_invoice', 'order_out']
        labels = {
         }
+       
+class AddInvoiceItemForm(forms.ModelForm):
+   class Meta:
+       model = InvoiceItem
+       fields = ['name', 'vendor_part_number', 'description', 'internal_part_number', 'vendor', 'invoice_unit_cost', 'invoice_qty']
+       labels = {
+        }
+       
+       
+class AddInvoiceItemRemainderForm(forms.ModelForm):
+    class Meta:
+        model = InvoiceItem
+        fields = ['vendor_part_number', 'description', 'invoice_unit_cost', 'invoice_qty']
+        labels = {
+        } 

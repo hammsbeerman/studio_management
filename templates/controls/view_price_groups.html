@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+<H1>Price Groups</h1>
+<p>
+    {% for x in group %}
+    <a href='{{ x.get_absolute_url }}'>{{x.name}}</a><br/>
+    {% endfor %}
+    <br/>
+    
+    <div id="pricegroup">
+        <button  class="btn btn-primary-outline" hx-get="{% url 'controls:add_price_group' %}" hx-target="#pricegroup">Add New PriceGroup<img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
+    <br/>
+    </div>
+
+
+    <hr>
+    
+
+    
+
+
+
+
+
+{% endblock content %}

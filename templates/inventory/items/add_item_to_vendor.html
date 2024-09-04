@@ -18,6 +18,8 @@ Add Item to Vendor:
       <option value="{{ object.id }}">{{ object.name }}</option>
     {% endfor %}
 </select>
+<p>
+<br/>
 <button  class="btn btn-primary-outline" hx-get="{% url 'finance:add_item_to_vendor' vendor=vendor invoice=invoice %}" hx-target="#remainder">Add New part<img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
 </form>
 

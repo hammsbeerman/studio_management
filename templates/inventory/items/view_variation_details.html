@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+Items variations
+<p>
+    
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Variation</td>
+                <td>Qty</td>
+                <td></td>
+            </tr>
+        </thead>
+        {% for x in variations %}
+            <tr>
+                <td>{{x.variation.name}}</td>
+                <td>{{x.variation_qty}}</td>
+                <td>Edit | Remove</td>
+            </tr>
+        {% endfor %}
+    </table>
+    
+{% endblock %}

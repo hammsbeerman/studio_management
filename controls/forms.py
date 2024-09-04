@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from django.urls import reverse_lazy
 from .models import SubCategory, Category, SetPriceCategory, SetPriceItemPrice
+from inventory.models import InventoryPricingGroup
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 
@@ -33,4 +34,10 @@ class AddSetPriceItemForm(forms.ModelForm):
             'name':'Group',
 
         }
+       
+class AddInventoryPricingGroupForm(forms.ModelForm):
+    class Meta:
+        model = InventoryPricingGroup
+        fields = ['inventory', 'group']
+
 
