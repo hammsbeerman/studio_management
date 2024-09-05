@@ -416,7 +416,7 @@ def add_primary_vendor(request):
             item = VendorItemDetail(internal_part_number=InventoryMaster.objects.get(pk=x), vendor=i.primary_vendor, name=i.name, vendor_part_number=i.primary_vendor_part_number, description=i.description, supplies=i.supplies, retail=i.retail, non_inventory=i.non_inventory, created=datetime.now(), updated=datetime.now(), high_price=i.high_price)
             item.save()
     items = InventoryMaster.objects.all
-    vendors = Vendor.objects.all
+    vendors = Vendor.objects.all().order_by('name')
     context = {
         'items':items,
         'vendors':vendors,
@@ -568,7 +568,8 @@ def add_item_variation(request):
     return render (request, "controls/partials/add_item_variation.html", context )
 
 def add_base_qty_variation(request):
-    items = InventoryMaster.objects.all()[:20]
+    #items = InventoryMaster.objects.all()[:60]
+    items = InventoryMaster.objects.all()
     for x in items:
         print(x.pk)
         variation = InventoryQtyVariations.objects.filter(inventory=x.pk)

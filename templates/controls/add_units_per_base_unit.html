@@ -22,7 +22,7 @@ Items without unit per package
             </tr>
         </thead>
         {% for x in items %}
-            {% if not x.units_per_package %}
+            {% if not x.units_per_base_unit %}
             <tr>
                 <td>{{x.name}}</td>
                 <td>{{x.description}}</td>
