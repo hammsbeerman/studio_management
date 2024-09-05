@@ -390,6 +390,18 @@ def create_inventory_from_inventory(request):
             #Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
     return render (request, "controls/specialized_tools.html")
 
+
+
+
+
+
+
+
+
+
+
+
+
 def add_primary_vendor(request):
     if request.method =="POST":
         vendor = request.POST.get('vendor')
@@ -424,7 +436,9 @@ def add_primary_baseunit(request):
             variation = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=x), variation=Measurement.objects.get(id=unit), variation_qty=qty)
             #variation.variation = unit
             variation.save()
+            print('variation')
             print(variation.pk)
+            print('variation')
             #variation=Measurement.objects.get(pk=unit), variation_qty=100
 
             #This could be changed to add primary unit to vendor detail if needed
@@ -552,6 +566,24 @@ def add_item_variation(request):
         'units':units,
     }
     return render (request, "controls/partials/add_item_variation.html", context )
+
+def add_base_qty_variation(request):
+    items = InventoryMaster.objects.all()[:20]
+    for x in items:
+        print(x.pk)
+        variation = InventoryQtyVariations.objects.filter(inventory=x.pk)
+        if variation:
+            print('exists')
+        else:
+            if x.primary_base_unit and x.units_per_base_unit:
+                print(x.primary_base_unit)
+                print(x.units_per_base_unit)
+                # base = x.primary_base_unit
+                # unit = x.units_per_base_unit
+                var = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=x.pk), variation=Measurement.objects.get(id=x.primary_base_unit.id), variation_qty=x.units_per_base_unit)
+                var.save()
+    return redirect ('controls:utilities')
+        
 
 
 

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics, viewsets
 from decimal import Decimal
 from .forms import AddVendorForm
-from .models import Vendor, Inventory, InventoryQtyVariations
+from .models import Vendor, InventoryQtyVariations, InventoryMaster
 from .serializers import InventorySerializer
 #from inventory.models import Inventory
 
@@ -152,6 +152,20 @@ def item_variation_details(request, id=None):
     }
     return render(request, 'inventory/items/view_variation_details.html', context)
 
+# def item_detail(request):
+#     items = InventoryMaster.objects.all()
+#     context = {
+#         'items':items,
+#     }
+#     return render(request, 'inventory/items/item_details', context)
+
+def item_details(request, id=None):
+    items = InventoryMaster.objects.all()
+    context = {
+        'items':items,
+    }
+    return render(request, 'inventory/items/item_details', context)
+
 
 
 
@@ -254,7 +268,7 @@ def item_variation_details(request, id=None):
 #@api_view(['GET', 'POST'])
 def inventory_list(request):
     if request.method == 'GET':
-        inventory = Inventory.objects.all()
+        inventory = InventoryMaster.objects.all()
         serializer = InventorySerializer(inventory, many=True)
         #return JsonResponse(serializer.data, safe=False)
         return JsonResponse({'inventory': serializer.data})

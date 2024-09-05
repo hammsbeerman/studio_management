@@ -18,7 +18,9 @@ from .views import (
     # InventoryDetailAPIView,
     # InventoryViewSet,
     item_variations,
-    item_variation_details
+    item_variation_details,
+    #item_detail_select,
+    item_details,
 )
 
 app_name='inventory'
@@ -34,6 +36,8 @@ urlpatterns = [
     path('inventory_list/', inventory_list, name='inventory_list'),
     path('item_variations/', item_variations, name='item_variations'),
     path('item_variation_details/<int:id>/', item_variation_details, name='item_variation_details'),
+    path('item_details/<int:id>/', item_details, name='item_details'),
+    #path('item_detail_select/', item_detail_select, name='item_detail_select'),
     # path('inventory_create/', InventoryCreate.as_view(), name='inventory_create'),
     # path('inventory_prud/<int:pk>', InventoryPRUD.as_view(), name='inventory_prud'),
     # path('inventory_listapi/', InventoryListAPIView.as_view(), name='inventory_listapi'),

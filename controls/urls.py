@@ -28,6 +28,7 @@ from .views import (
     add_price_group_item,
     add_primary_baseunit,
     add_item_variation,
+    add_base_qty_variation,
     #setprice_list,
 )
 
@@ -59,5 +60,6 @@ urlpatterns = [
     path('add_price_group_item/', add_price_group_item, name='add_price_group_item'),
     path('add_primary_baseunit/', add_primary_baseunit, name='add_primary_baseunit'),
     path('add_item_variation/', add_item_variation, name='add_item_variation'),
+    path('add_base_qty_variation/', add_base_qty_variation, name='add_base_qty_variation'),
     #path('setprice_list/', setprice_list, name='setprice_list'),
 ]

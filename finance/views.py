@@ -1240,6 +1240,7 @@ def delete_invoice_item(request, id=None, invoice=None):
 def add_item_to_vendor(request, vendor=None, invoice=None):
     print('vendor')
     print(vendor)
+    print('something')
     if request.method == "POST":
         print('something')
         form = VendorItemDetailForm(request.POST)
@@ -1262,16 +1263,17 @@ def add_item_to_vendor(request, vendor=None, invoice=None):
     items = InventoryMaster.objects.all()
     list = []
     #Go through inventory. If not matched with a vendor, add to select list
+    print('lookup1')
     for x in items:
         try:
-            print('part number')
+            #print('lookup1')
             obj = get_object_or_404(VendorItemDetail, internal_part_number=x.pk, vendor=vendor)
-            print(obj)
+            #print(obj)
         except:
             list.append(x)
-            print('except')
-            print(x.pk)
-    print(list)
+            #print('except')
+            #print(x.pk)
+    #print(list)
     context = {
         'form':form,
         'vendor': vendor,
@@ -1289,12 +1291,17 @@ def add_inventory_item(request, vendor=None, invoice=None):
         if request.method == "POST":
             form = InventoryMasterForm(request.POST)
             if form.is_valid():
-                print(form.data)
+                #print(form.data)
+                print('yippie')
                 #vendor = request.POST.get('primary_vendor')
                 #form.instance.primary_vendor = vendor
                 form.save()
                 pk = form.instance.pk
                 item = InventoryMaster.objects.get(pk=pk)
+                primary_unit = item.primary_base_unit.id
+                units_per_base = item.units_per_base_unit
+                variation = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=pk), variation=Measurement.objects.get(id=primary_unit), variation_qty=units_per_base)
+                variation.save()
                 print(item.pk)
                 vendor = item.primary_vendor
                 name = item.name

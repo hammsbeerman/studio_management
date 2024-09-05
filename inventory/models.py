@@ -73,7 +73,7 @@ class InventoryMaster(models.Model):
     primary_vendor_part_number = models.CharField('Primary Vendor Part Number', max_length=100, blank=True, null=True)
     primary_base_unit = models.ForeignKey(Measurement, null=True, on_delete=models.SET_NULL)
     #measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING)
-    units_per_base_unit = models.DecimalField('Units per base unit', max_digits=15, decimal_places=4, blank=True, null=True)
+    units_per_base_unit = models.DecimalField('Units per base unit (almost always 1)', max_digits=15, decimal_places=4, blank=True, null=True)
     unit_cost = models.DecimalField('Unit Cost', max_digits=15, decimal_places=4, blank=True, null=True)
     price_per_m = models.DecimalField('Price Per M', max_digits=15, decimal_places=4, blank=True, null=True)
     pricing_group = models.ManyToManyField(ItemPricingGroup, through='InventoryPricingGroup')
@@ -89,6 +89,7 @@ class InventoryMaster(models.Model):
 
     def __str__(self):
         return self.name 
+    
     
 class InventoryPricingGroup(models.Model):
     inventory = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
@@ -120,8 +121,8 @@ class InventoryQtyVariations(models.Model):
     
 @receiver(post_save, sender=InventoryMaster)  
 def Unit_Cost_Handler(sender, instance, created, *args, **kwargs):
-    print(args, kwargs)
-    print(instance.pk)
+    #print(args, kwargs)
+    #print(instance.pk)
     if instance.high_price:
         if instance.units_per_base_unit:
             unit_cost = Decimal(instance.high_price) / instance.units_per_base_unit
@@ -294,10 +295,10 @@ class Photography(models.Model):
 #Add item to inventory if added to inventorymaster
 @receiver(post_save, sender=InventoryMaster)  
 def Inventory_Master_Handler(sender, instance, created, *args, **kwargs):
-    print(args, kwargs)
+    #print(args, kwargs)
     try:
         obj = get_object_or_404(Inventory, internal_part_number=instance.pk)
-        print(obj)
+        #print(obj)
         print('found')
     except:
         print('not found')
