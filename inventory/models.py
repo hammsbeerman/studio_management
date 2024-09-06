@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from datetime import datetime
 from customers.models import Customer
 from workorders.models import Workorder
-from controls.models import SubCategory, Measurement, InventoryCategory
+from controls.models import SubCategory, Measurement, InventoryCategory, PriceGroupCategory
 from decimal import Decimal
 
 from django.dispatch import receiver
@@ -28,6 +28,8 @@ class Vendor(models.Model):
     website = models.URLField('Website', max_length=100, blank=True, null=True)
     supplier = models.BooleanField('Supplier', blank=False, null=False, default=True)
     retail_vendor = models.BooleanField('Retail Vendor', blank=False, null=False, default=True)
+    inventory_vendor = models.BooleanField('Inventory Vendor', blank=False, null=False, default=True)
+    non_inventory_vendor = models.BooleanField('Non Inventory Vendor', blank=False, null=False, default=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     #inventorydetails = models.ManyToManyField(Inventory, through="InventoryDetail")
@@ -35,6 +37,9 @@ class Vendor(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        ordering = ('name',)
 
     def get_absolute_url(self):
         return reverse("inventory:vendor_detail", kwargs={"id": self.id})
@@ -76,16 +81,19 @@ class InventoryMaster(models.Model):
     units_per_base_unit = models.DecimalField('Units per base unit (almost always 1)', max_digits=15, decimal_places=4, blank=True, null=True)
     unit_cost = models.DecimalField('Unit Cost', max_digits=15, decimal_places=4, blank=True, null=True)
     price_per_m = models.DecimalField('Price Per M', max_digits=15, decimal_places=4, blank=True, null=True)
-    pricing_group = models.ManyToManyField(ItemPricingGroup, through='InventoryPricingGroup')
+    #pricing_group = models.ManyToManyField(PriceGroupCategory, through='InventoryPricingGroup')
     # qty_variations = models.ManyToManyField(ItemQtyVariations, through='InventoryQtyVariations')
     #price_per_sqft = models.DecimalField('Price Per SqFt', max_digits=15, decimal_places=4, blank=True, null=True)
     supplies = models.BooleanField('Supply Item', blank=False, null=False, default=True)
     retail = models.BooleanField('Retail Item', blank=False, null=False, default=True)
-    non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False, default=False)
+    non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False)
     not_grouped = models.BooleanField('Not Price Grouped', blank=False, null=False, default=False)
+    grouped = models.BooleanField('In price group', blank=False, null=False, default=False)
+    price_group = models.ManyToManyField(PriceGroupCategory, blank=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
+
 
     def __str__(self):
         return self.name 
@@ -93,7 +101,7 @@ class InventoryMaster(models.Model):
     
 class InventoryPricingGroup(models.Model):
     inventory = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
-    group = models.ForeignKey(ItemPricingGroup, on_delete=models.CASCADE)
+    group = models.ForeignKey(PriceGroupCategory, on_delete=models.CASCADE)
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
 
     def __str__(self):
@@ -194,9 +202,9 @@ class VendorItemDetail(models.Model):
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     #internal_part_number = models.CharField('Internal Part Number', max_length=100, blank=True, null=True)
     internal_part_number = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
-    supplies = models.BooleanField('Supply Item', blank=False, null=False, default=True)
-    retail = models.BooleanField('Retail Item', blank=False, null=False, default=True)
-    non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False, default=False)
+    supplies = models.BooleanField('Supply Item', blank=False, null=False)
+    retail = models.BooleanField('Retail Item', blank=False, null=False)
+    non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False)
     #internal_part_number = models.ManyToManyField(RetailInventoryMaster)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)

@@ -10,7 +10,7 @@
     
     
     <div id="pricegroup">
-        <button  class="btn btn-primary-outline" hx-get="{% url 'controls:add_price_group_item' %}" hx-target="#pricegroup">Add New Item<img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
+        <button  class="btn btn-primary-outline" hx-get="{% url 'controls:add_price_group_item' id=group_id.id %}" hx-target="#pricegroup">Add New Item<img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
     <br/>
     </div>
 

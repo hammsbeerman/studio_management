@@ -34,6 +34,15 @@ class InventoryCategory(models.Model):
     def __str__(self):
         return self.name
     
+class PriceGroupCategory(models.Model):
+    name = models.CharField('Name', max_length=100)
+
+    def __str__(self):
+        return self.name
+    
+    def get_absolute_url(self):
+        return reverse("controls:view_price_group_detail", kwargs={"id": self.id})
+    
 class Category(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)

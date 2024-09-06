@@ -3,39 +3,49 @@
 {% load static %}
 
 
+
+
 {% block content %}
 {% if message %}{{ message }}{% endif %}
+<form action='/controls/add_price_group_item/' method="POST">
+    {% csrf_token %}
+<button  class="btn btn-secondary" hx-get="{% url 'controls:add_price_group_item' id=group_id list='all' %}" hx-target="#itemdisplay">Items not in a group or removed from grouping</button>
+<button  class="btn btn-secondary" hx-get="{% url 'controls:add_price_group_item' id=group_id list='group' %}" hx-target="#itemdisplay">Items in a group</button>
+<button  class="btn btn-secondary" hx-get="{% url 'controls:add_price_group_item' id=group_id list='nogroup' %}" hx-target="#itemdisplay">Items removed from grouping</button>
+Remove item from grouping: <input name="notgrouped" type="checkbox" value="1">
+
+<p>
+<br/>
+
 Add Pricing Group Item
 <p>
+<div id="itemdisplay">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Name</td>
+                <td>Description</td>
+                <td></td>
+                <td>Grouped</td>
+                <td>Not Grouped</td>
+                
+            </tr>
+        </thead>
+        {% for x in items %}
+            {% if not x.grouped and not x.not_grouped %}
+            <tr>
+                <td>{{x.name}}</td>
+                <td>{{x.description}}</td>
+                <td><input name="item" type="checkbox" value="{{ x.id }}" /></td>
+                <td>{% if x.grouped %}G{% endif %}</td>
+                <td>{% if x.not_grouped %}N{% endif %}</td>
+            </tr>
+            {% endif %}
+        {% endfor %}
+    </table>
+</div>
 
-<form action='/controls/add_price_group_item/' method="POST">
-{% csrf_token %}
-
-<select class="custom-select mb-4" id="group" name="group">
-    <option value = '' selected>Select Group</option>
-    {% for x in groups %}
-        <option value="{{ x.id }}">{{ x.name }} </option>
-    {% endfor %} 
-</select>
-Not Grouped: <input name="notgrouped" type="checkbox" value="1">
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <td>Name</td>
-            <td>Description</td>
-            <td></td>
-        </tr>
-    </thead>
-    {% for x in items %}
-        <tr>
-            <td>{{x.name}}</td>
-            <td>{{x.description}}</td>
-            <td><input name="item" type="checkbox" value="{{ x.id }}" /></td>
-        </tr>
-    {% endfor %}
-</table>
-
-<input type="hidden" id="group_id" name="group_id" value="{{ invoice }}">
+<input type="hidden" id="group_id" name="group_id" value="{{ group_id }}">
 
     <button type="submit">Add Item to group</button>
 </form>
@@ -45,3 +55,31 @@ Not Grouped: <input name="notgrouped" type="checkbox" value="1">
 
 
   {% endblock content %}
+
+
+  {% block scripts %}
+
+<script>
+
+    $(document).ready(function () {
+      $("#id_vendor").select2();
+      $('#id_vendor').on('select2:select', (e) => {
+        htmx.trigger("#id_vendor", "change")
+      });
+    })
+
+    $(function () {
+        $("#chkgrouped").click(function () {
+            if ($(this).is(":checked")) {
+                $("#grouped").hide();
+            } else {
+                $("#grouped").show();
+            }
+        });
+    });
+
+    
+
+</script>
+
+{% endblock %}

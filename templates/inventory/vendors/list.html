@@ -23,6 +23,8 @@ List of vendors
     <button hx-trigger="click" hx-get="{% url 'inventory:vendor_list' vendor='All' %}" hx-target="#vendors" class="btn btn-secondary">All Vendors</button>
     <button hx-trigger="click" hx-get="{% url 'inventory:vendor_list' vendor='Retail' %}" hx-target="#vendors" class="btn btn-secondary">Retail Vendors</button>
     <button hx-trigger="click" hx-get="{% url 'inventory:vendor_list' vendor='Supply' %}" hx-target="#vendors" class="btn btn-secondary">Supplier Vendors</button>
+    <button hx-trigger="click" hx-get="{% url 'inventory:vendor_list' vendor='Inventory' %}" hx-target="#vendors" class="btn btn-secondary">Inventory Vendors</button>
+    <button hx-trigger="click" hx-get="{% url 'inventory:vendor_list' vendor='NonInventory' %}" hx-target="#vendors" class="btn btn-secondary">Non-Inventory Vendors</button>
     <button hx-trigger="click" hx-get="{% url 'inventory:vendor_list' vendor='Other' %}" hx-target="#vendors" class="btn btn-secondary">Other Vendors</button>
 
 {% endblock content %}

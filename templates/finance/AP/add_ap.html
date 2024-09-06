@@ -63,4 +63,21 @@
 
 
 
+{% endblock content %}
+
+{% block scripts %}
+
+<script>
+
+    $(document).ready(function () {
+      $("#id_vendor").select2();
+      $('#id_vendor').on('select2:select', (e) => {
+        htmx.trigger("#id_vendor", "change")
+      });
+    })
+
+    
+
+</script>
+
 {% endblock %}

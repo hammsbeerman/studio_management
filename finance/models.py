@@ -106,6 +106,10 @@ class Appliedother(models.Model):
     def __str__(self):
         return self.customer.company_name
     
+# class NonInventoryItem(models.Model):
+#     name = 
+#     description = 
+    
 class InvoiceItem(models.Model):
     vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
     invoice = models.ForeignKey(AccountsPayable, blank=True, null=True, on_delete=models.CASCADE)

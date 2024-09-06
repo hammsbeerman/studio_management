@@ -1,0 +1,23 @@
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <td>Name</td>
+            <td>Description</td>
+            <td></td>
+            <td>Grouped</td>
+            <td>Not Grouped</td>
+            
+        </tr>
+    </thead>
+    {% for x in items %}
+        {% if x.grouped %}
+        <tr>
+            <td>{{x.name}}</td>
+            <td>{{x.description}}</td>
+            <td><input name="item" type="checkbox" value="{{ x.id }}" /></td>
+            <td>{% if x.grouped %}G{% endif %}</td>
+            <td>{% if x.not_grouped %}N{% endif %}</td>
+        </tr>
+        {% endif %}
+    {% endfor %}
+</table>

@@ -73,6 +73,7 @@ urlpatterns = [
     #path('ap/edit_invoice/<int:invoice>', edit_invoice, name='edit_invoice'),
     path('ap/invoice_detail/', invoice_detail, name='invoice_detail'),
     path('ap/invoice_detail/<int:id>/', invoice_detail, name='invoice_detail'),
+    path('ap/add_invoice_item/<int:invoice>/<int:vendor>/<int:type>', add_invoice_item, name='add_invoice_item'),
     path('ap/add_invoice_item/<int:invoice>/<int:vendor>', add_invoice_item, name='add_invoice_item'),
     path('ap/add_invoice_item/<int:invoice>/', add_invoice_item, name='add_invoice_item'),
     path('ap/add_invoice_item/', add_invoice_item, name='add_invoice_item'),

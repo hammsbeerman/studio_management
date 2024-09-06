@@ -853,6 +853,8 @@ def add_invoice(request):
         # context = {
         #     'invoices': invoices,
         # }
+    #Limit vendors, but this is currently not being used
+    #vendors = Vendors.objects.filter(supplier=1)
     bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')   
     context = {
         'form': form,
@@ -1009,7 +1011,7 @@ def invoice_detail(request, id=None):
     }
     return render(request, 'finance/AP/invoice_detail.html', context)
 
-def add_invoice_item(request, invoice=None, vendor=None):
+def add_invoice_item(request, invoice=None, vendor=None, type=None):
     if vendor:
         item_id = request.GET.get('name')
         if item_id:
@@ -1060,7 +1062,11 @@ def add_invoice_item(request, invoice=None, vendor=None):
     vendor = vendor.vendor.id
     # print(vendor)
     #items = RetailInvoiceItem.objects.filter(vendor=vendor)
-    items = VendorItemDetail.objects.filter(vendor=vendor)
+    print(type)
+    if type == 1:
+        items = VendorItemDetail.objects.filter(vendor=vendor, non_inventory=1)
+    else:
+        items = VendorItemDetail.objects.filter(vendor=vendor, non_inventory=0)
     form = AddInvoiceItemForm
     context = {
         'items': items,
@@ -1069,6 +1075,8 @@ def add_invoice_item(request, invoice=None, vendor=None):
         'form': form,
     }
     return render (request, "finance/AP/partials/add_invoice_item.html", context)
+
+
 
 
 def edit_invoice_item(request, invoice=None, id=None):
@@ -1307,9 +1315,12 @@ def add_inventory_item(request, vendor=None, invoice=None):
                 name = item.name
                 vpn = item.primary_vendor_part_number
                 description = item.description
+                supplies = item.supplies
+                retail = item.retail
+                non_inventory = item.non_inventory
                 invoice = request.POST.get('invoice')
                 print(vendor)
-                item = VendorItemDetail(vendor=vendor, name=name, vendor_part_number=vpn, description=description, internal_part_number_id=item.pk )
+                item = VendorItemDetail(vendor=vendor, name=name, vendor_part_number=vpn, description=description, supplies=supplies, retail=retail, non_inventory=non_inventory, internal_part_number_id=item.pk )
                 item.save()
                 if invoice is None:
                     return redirect ('finance:invoice_detail', id=invoice)

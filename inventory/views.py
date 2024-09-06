@@ -77,8 +77,12 @@ def vendor_list(request, vendor=None):
             vendor = Vendor.objects.filter(retail_vendor=1).order_by("name")
         elif vendor == 'Supply':
             vendor = Vendor.objects.filter(supplier=1).order_by("name")
+        elif vendor == 'Inventory':
+            vendor = Vendor.objects.filter(inventory_vendor=1).order_by("name")
+        elif vendor == 'NonInventory':
+            vendor = Vendor.objects.filter(non_inventory_vendor=1).order_by("name")
         elif vendor == 'Other':
-            vendor = Vendor.objects.filter(supplier=0, retail_vendor=0).order_by("name")
+            vendor = Vendor.objects.filter(supplier=0, retail_vendor=0, inventory_vendor=0, non_inventory_vendor=0).order_by("name")
         print('vendors')
         context = {
             'vendors': vendor,
@@ -96,7 +100,17 @@ def vendor_detail(request, id):
         retail = 'True'
     else:
         retail = 'False'
+    if vendor.inventory_vendor == 1:
+        inventory_vendor = 'True'
+    else:
+        inventory_vendor = 'False'
+    if vendor.non_inventory_vendor == 1:
+        non_inventory_vendor = 'True'
+    else:
+        non_inventory_vendor = 'False'
     context = {
+        'non_inventory_vendor': non_inventory_vendor,
+        'inventory_vendor': inventory_vendor,
         'retail': retail,
         'supplier':supplier,
         'vendor': vendor,

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Inventory, Vendor, OrderOut, SetPrice, InventoryCategory, InventoryMaster, VendorItemDetail, ItemPricingGroup, InventoryPricingGroup, InventoryQtyVariations #ItemQtyVariations
+from .models import Inventory, Vendor, OrderOut, SetPrice, InventoryCategory, InventoryMaster, VendorItemDetail, InventoryPricingGroup, InventoryQtyVariations #ItemQtyVariations
 from import_export.admin import ImportExportModelAdmin
 
 
@@ -64,4 +64,4 @@ admin.site.register(InventoryPricingGroup)
 
 # admin.site.register(ItemQtyVariations)
 
-admin.site.register(ItemPricingGroup)
+#admin.site.register(ItemPricingGroup)

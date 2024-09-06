@@ -8,8 +8,8 @@ from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPri
 from .models import SetPriceCategory, SubCategory, Category
 from workorders.models import Workorder
 from customers.models import Customer, ShipTo
-from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail, InventoryPricingGroup, ItemPricingGroup, InventoryQtyVariations
-from controls.models import Measurement
+from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail, InventoryPricingGroup, InventoryQtyVariations
+from controls.models import Measurement, PriceGroupCategory
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -471,7 +471,7 @@ def add_units_per_base_unit(request):
 
 
 def view_price_groups(request):
-    group = ItemPricingGroup.objects.all().order_by('name')
+    group = PriceGroupCategory.objects.all().order_by('name')
     # group = InventoryPricingGroup.objects.all().order_by('group')
     # unique_list = []
     # list = []
@@ -489,15 +489,15 @@ def view_price_groups(request):
 
 
 def view_price_group_detail(request, id=None):
-    print(id)
-    group_id = ItemPricingGroup.objects.get(pk=id)
+    #print(id)
+    group_id = PriceGroupCategory.objects.get(pk=id)
     #item = InventoryMaster.objects.get(pk=51)
     #group = InventoryPricingGroup.objects.filter(inventory=item)
     group = InventoryPricingGroup.objects.filter(group=id)
-    print(group)
-    for x in group:
-        print(x)
-        print(x.id)
+    #print(group)
+    #for x in group:
+        #print(x)
+        #print(x.id)
     context = {
         'group_id':group_id,
         'group':group
@@ -507,42 +507,51 @@ def view_price_group_detail(request, id=None):
 def add_price_group(request):
     if request.method =="POST":
         group = request.POST.get('group_name')
-        obj = ItemPricingGroup(name=group)
+        #obj = ItemPricingGroup(name=group)
+        obj = PriceGroupCategory(name=group)
         obj.save()
         return redirect ('controls:view_price_groups')
     return render (request, "controls/add_price_group.html")
 
-def add_price_group_item(request):
-    groups = ItemPricingGroup.objects.all().order_by('name')
-    items = InventoryMaster.objects.all().exclude(not_grouped=1)
+def add_price_group_item(request, id=None, list=None):
+    if id:
+        group_id=id
+    groups = PriceGroupCategory.objects.all().order_by('name')
+    items = InventoryMaster.objects.all()
+    if list == 'all':
+        items = InventoryMaster.objects.all()
+    if list == 'nogroup':
+        items = InventoryMaster.objects.filter(not_grouped=1)
+    if list == 'group':
+        items = InventoryMaster.objects.filter(grouped=1)
+    notgrouped = request.POST.get('notgrouped')
+    print(notgrouped)
     if request.method == "POST":
         notgrouped = request.POST.get('notgrouped')
+        group_id = request.POST.get('group_id')
         if notgrouped:
             id_list = request.POST.getlist('item')
             for x in id_list:
                 InventoryMaster.objects.filter(pk=x).update(not_grouped=1)
             context = {
+                'group_id':group_id,
                 'items':items,
                 'groups':groups,
                 #'form':form,
             }
-            return render (request, "controls/add_price_group_item.html", context)
-        group = request.POST.get('group')
-        group_id = group
-        print(group)
+            print(group_id)
+            print(items)
+            print(groups)
+            return redirect ('controls:view_price_groups')
+            #return render (request, "controls/add_price_group_item.html", context)
+        # group = request.POST.get('group_id')
+        #group_id = group
+        #print(group)
         id_list = request.POST.getlist('item')
-        # if not group:
-        #     #messages.success(request, ("Please select a group"))
-        #     groups = ItemPricingGroup.objects.all().order_by('name')
-        #     message = "Please select a group"
-        #     context = {
-        #         'groups':groups,
-        #         'message':message,
-        #     }
-        #     return redirect("controls:view_price_groups", context)
         for x in id_list:
+            InventoryMaster.objects.filter(pk=x).update(grouped=1)
             item = InventoryMaster.objects.get(pk=x)
-            group = ItemPricingGroup.objects.get(pk=group_id)
+            group = PriceGroupCategory.objects.get(pk=group_id)
             #obj = InventoryPricingGroup(inventory=InventoryMaster.objects.get(pk=x), group=ItemPricingGroup.objects.get(pk=group))
             obj = InventoryPricingGroup(inventory=item, group=group)
             try:
@@ -550,12 +559,24 @@ def add_price_group_item(request):
                 print('exists')
             except:
                 obj.save()
+            groups = InventoryPricingGroup.objects.filter(inventory=item)
+            for x in groups:
+                #InventoryMaster.price_group.add(x.group)
+                #Item comes from line 537
+                item.price_group.add(x.group)
         return redirect('controls:view_price_group_detail', id=group_id)
     context = {
+        'group_id':group_id,
         'items':items,
         'groups':groups,
         #'form':form,
     }
+    if list == 'all':
+        return render (request, "controls/partials/price_group_all.html", context)
+    if list == 'nogroup':
+        return render (request, "controls/partials/price_group_notgrouped.html", context)
+    if list == 'group':
+        return render (request, "controls/partials/price_group_grouped.html", context)
     return render (request, "controls/add_price_group_item.html", context)
 
 def add_item_variation(request):
