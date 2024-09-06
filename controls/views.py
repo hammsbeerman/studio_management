@@ -9,7 +9,7 @@ from .models import SetPriceCategory, SubCategory, Category
 from workorders.models import Workorder
 from customers.models import Customer, ShipTo
 from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail, InventoryPricingGroup, InventoryQtyVariations
-from controls.models import Measurement, PriceGroupCategory
+from controls.models import Measurement, GroupCategory
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -471,7 +471,7 @@ def add_units_per_base_unit(request):
 
 
 def view_price_groups(request):
-    group = PriceGroupCategory.objects.all().order_by('name')
+    group = GroupCategory.objects.all().order_by('name')
     # group = InventoryPricingGroup.objects.all().order_by('group')
     # unique_list = []
     # list = []
@@ -490,7 +490,7 @@ def view_price_groups(request):
 
 def view_price_group_detail(request, id=None):
     #print(id)
-    group_id = PriceGroupCategory.objects.get(pk=id)
+    group_id = GroupCategory.objects.get(pk=id)
     #item = InventoryMaster.objects.get(pk=51)
     #group = InventoryPricingGroup.objects.filter(inventory=item)
     group = InventoryPricingGroup.objects.filter(group=id)
@@ -508,7 +508,7 @@ def add_price_group(request):
     if request.method =="POST":
         group = request.POST.get('group_name')
         #obj = ItemPricingGroup(name=group)
-        obj = PriceGroupCategory(name=group)
+        obj = GroupCategory(name=group)
         obj.save()
         return redirect ('controls:view_price_groups')
     return render (request, "controls/add_price_group.html")
@@ -516,7 +516,7 @@ def add_price_group(request):
 def add_price_group_item(request, id=None, list=None):
     if id:
         group_id=id
-    groups = PriceGroupCategory.objects.all().order_by('name')
+    groups = GroupCategory.objects.all().order_by('name')
     items = InventoryMaster.objects.all()
     if list == 'all':
         items = InventoryMaster.objects.all()
@@ -551,7 +551,7 @@ def add_price_group_item(request, id=None, list=None):
         for x in id_list:
             InventoryMaster.objects.filter(pk=x).update(grouped=1)
             item = InventoryMaster.objects.get(pk=x)
-            group = PriceGroupCategory.objects.get(pk=group_id)
+            group = GroupCategory.objects.get(pk=group_id)
             #obj = InventoryPricingGroup(inventory=InventoryMaster.objects.get(pk=x), group=ItemPricingGroup.objects.get(pk=group))
             obj = InventoryPricingGroup(inventory=item, group=group)
             try:

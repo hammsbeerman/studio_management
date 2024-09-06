@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('controls', '0036_rename_groupcategory_pricegroupcategory'),
+        ('controls', '0036_rename_groupcategory_GroupCategory'),
         ('inventory', '0056_alter_inventorymaster_price_group'),
     ]
 
@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='inventorypricinggroup',
             name='group',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='controls.pricegroupcategory'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='controls.GroupCategory'),
         ),
     ]

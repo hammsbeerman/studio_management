@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from datetime import datetime
 from customers.models import Customer
 from workorders.models import Workorder
-from controls.models import SubCategory, Measurement, InventoryCategory, PriceGroupCategory
+from controls.models import SubCategory, Measurement, InventoryCategory, GroupCategory
 from decimal import Decimal
 
 from django.dispatch import receiver
@@ -81,7 +81,7 @@ class InventoryMaster(models.Model):
     units_per_base_unit = models.DecimalField('Units per base unit (almost always 1)', max_digits=15, decimal_places=4, blank=True, null=True)
     unit_cost = models.DecimalField('Unit Cost', max_digits=15, decimal_places=4, blank=True, null=True)
     price_per_m = models.DecimalField('Price Per M', max_digits=15, decimal_places=4, blank=True, null=True)
-    #pricing_group = models.ManyToManyField(PriceGroupCategory, through='InventoryPricingGroup')
+    #pricing_group = models.ManyToManyField(GroupCategory, through='InventoryPricingGroup')
     # qty_variations = models.ManyToManyField(ItemQtyVariations, through='InventoryQtyVariations')
     #price_per_sqft = models.DecimalField('Price Per SqFt', max_digits=15, decimal_places=4, blank=True, null=True)
     supplies = models.BooleanField('Supply Item', blank=False, null=False, default=True)
@@ -89,7 +89,7 @@ class InventoryMaster(models.Model):
     non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False)
     not_grouped = models.BooleanField('Not Price Grouped', blank=False, null=False, default=False)
     grouped = models.BooleanField('In price group', blank=False, null=False, default=False)
-    price_group = models.ManyToManyField(PriceGroupCategory, blank=True)
+    price_group = models.ManyToManyField(GroupCategory, blank=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
@@ -101,7 +101,7 @@ class InventoryMaster(models.Model):
     
 class InventoryPricingGroup(models.Model):
     inventory = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
-    group = models.ForeignKey(PriceGroupCategory, on_delete=models.CASCADE)
+    group = models.ForeignKey(GroupCategory, on_delete=models.CASCADE)
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
 
     def __str__(self):

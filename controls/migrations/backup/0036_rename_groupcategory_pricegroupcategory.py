@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RenameModel(
             old_name='GroupCategory',
-            new_name='PriceGroupCategory',
+            new_name='GroupCategory',
         ),
     ]
