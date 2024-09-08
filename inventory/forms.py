@@ -25,7 +25,7 @@ class InventoryMasterForm(forms.ModelForm):
 class VendorItemDetailForm(forms.ModelForm):
     class Meta:
         model = VendorItemDetail
-        fields = ['name', 'vendor_part_number', 'description', 'internal_part_number']
+        fields = ['name', 'vendor_part_number', 'description', 'internal_part_number', 'supplies', 'retail', 'non_inventory']
         labels = {
         } 
 
