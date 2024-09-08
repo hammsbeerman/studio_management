@@ -8,9 +8,9 @@
 <h1>Add Bill Payable</h1>
 <br/>
 
-<div class="container">
+<div class="container-fluid">
     <div class="row">
-      <div class="col-sm-4">
+      <div class="col-sm-3">
         <p>
           <p>
             <form method="POST" action="{% url 'finance:add_invoice' %}">
@@ -30,7 +30,7 @@
 
             </form>
       </div>
-      <div class="col-sm-8">
+      <div class="col-sm-9">
             <table class="table">
               <thead>
                 <tr>
@@ -38,6 +38,7 @@
                   <th scope="col" class="">Date</th>
                   <th scope="col" class="">Amount</th>
                   <th scope="col" class="">Total</th>
+                  <th scope="col" class="">Calculated Total</th>
                   <th scope="col" class="">Invoice #</th>
                   <th scope="col" class="">Date Due</th>
                   <th scope="col" class=""></th>
@@ -51,6 +52,7 @@
                     <td>{{ x.invoice_date }}</td>
                     <td>{{ x.amount }}</td>
                     <td>{{ x.total }}</td>
+                    <td>{{ x.calculated_total }}</td>
                     <td>{{ x.invoice_number }}</td>
                     <td>{{ x.date_due }}</td>
                     <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>

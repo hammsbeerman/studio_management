@@ -3,7 +3,7 @@ from django.http import HttpResponse, Http404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
-from django.db.models import Avg, Count, Min, Sum, Subquery, Case, When, Value, DecimalField, OuterRef
+from django.db.models import Avg, Max, Count, Min, Sum, Subquery, Case, When, Value, DecimalField, OuterRef
 from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta, datetime
@@ -17,7 +17,7 @@ from finance.models import InvoiceItem
 from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import PaymentType, Measurement
-from inventory.models import Vendor, InventoryMaster, VendorItemDetail, InventoryQtyVariations
+from inventory.models import Vendor, InventoryMaster, VendorItemDetail, InventoryQtyVariations, InventoryPricingGroup, Inventory
 from inventory.forms import InventoryMasterForm, VendorItemDetailForm
 
 logger = logging.getLogger(__file__)
@@ -935,6 +935,7 @@ def invoice_detail(request, id=None):
         print(ppm)
         unit = request.POST.get('unit')
         item_qty = request.POST.get('variation_qty')
+        edit = request.POST.get('edit')
         if unit:
             variation_qty = item_qty
             variation = unit
@@ -957,7 +958,13 @@ def invoice_detail(request, id=None):
         invoice = id
         print('id')
         print(id)
-        form = AddInvoiceItemForm(request.POST)
+        if edit == '1':
+            pass
+            invoice_item = request.POST.get('pk')
+            obj = InvoiceItem.objects.get(pk=invoice_item)
+            form = AddInvoiceItemForm(request.POST, instance=obj)
+        else:
+            form = AddInvoiceItemForm(request.POST)
         if form.is_valid():
             print(invoice)
             qty = form.instance.invoice_qty * variation_qty
@@ -977,6 +984,9 @@ def invoice_detail(request, id=None):
             form.instance.qty = qty
             form.instance.unit_cost = price_ea
             form.instance.invoice_id = invoice
+            print(qty)
+            print(price_ea)
+            print(invoice)
             if var:
                 form.instance.invoice_unit = InventoryQtyVariations.objects.get(pk=var)
             else:
@@ -1168,8 +1178,8 @@ def edit_invoice_item(request, invoice=None, id=None):
     except:
         variations = ''
     name = item.name
-    variation = item.variation
-    variation_qty = item.variation_qty
+    #variation = item.variation
+    #variation_qty = item.variation_qty
     vpn = item.vendor_part_number
     description = item.description
     unit_cost = item.unit_cost
@@ -1177,7 +1187,7 @@ def edit_invoice_item(request, invoice=None, id=None):
     pk = item.pk
     ipn = item.internal_part_number.id
     vendor = item.vendor.id
-    print(variation)
+    print(variations)
     #form = AddInvoiceItemForm(instance=item)
     # if request.method == "POST":
     #     invoice = request.POST.get('invoice')
@@ -1218,8 +1228,8 @@ def edit_invoice_item(request, invoice=None, id=None):
         'variations':variations,
         'item':item,
         'name':name,
-        'variation':variation,
-        'variation_qty':variation_qty,
+        #'variation':variation,
+        #'variation_qty':variation_qty,
         'vendor':vendor,
         'vpn':vpn,
         'description':description,
@@ -1238,11 +1248,87 @@ def delete_invoice_item(request, id=None, invoice=None):
     print(invoice)
     print('id')
     print(id)
-    try:
-        item = get_object_or_404(InvoiceItem, id=id)
-        item.delete()
-    except:
-        print('fail')
+    item = get_object_or_404(InvoiceItem, id=id)
+    item_delete = item
+    vendor = item.vendor.id
+    print(vendor)
+    internal_part_number = item.internal_part_number.id
+    print(11)
+    print(internal_part_number)
+    # print(vendor)
+    items = InvoiceItem.objects.filter(vendor=vendor, internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
+    print(12)
+    print(items)
+    price = list(items.values())[0]
+    if price:
+        print('1')
+        print(price)
+    else:
+        print('no price')
+    vendorprice = VendorItemDetail.objects.get(vendor=vendor, internal_part_number=internal_part_number)
+    # # print('highprice')
+    print('13')
+    print(vendorprice.high_price)
+    #Lower price for vendor item if highest price was deleted from invoice item
+    if vendorprice.high_price > price:
+         VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
+    #Lower price for inventory master if highest price from any vendor was removed
+    overall_price = InvoiceItem.objects.filter(internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
+    op = list(overall_price.values())[0]
+    master_price = InventoryMaster.objects.get(pk=internal_part_number)
+    master_price = master_price.high_price
+    print('master')
+    print(master_price)
+    print('op')
+    print(op)
+    if master_price > op:
+        m = price * 1000
+        InventoryMaster.objects.filter(pk=internal_part_number).update(high_price=price, unit_cost=price, price_per_m=m, updated=datetime.now())
+        try:
+            Inventory.objects.filter(internal_part_number=internal_part_number).update(unit_cost=price, price_per_m=m, updated=datetime.now())
+        except:
+            pass
+    # # print('hello')
+    groups = InventoryPricingGroup.objects.filter(inventory=internal_part_number)
+    # high_price_list = []
+    # list = []
+    high_price_current = 0
+    for x in groups:
+        print('12')
+        #InventoryPricingGroup.objects.filter(group=x.group).update(high_price=price)
+        group_items = InventoryPricingGroup.objects.filter(group=x.group)
+        for x in group_items:
+            # print('13')
+            price = InvoiceItem.objects.filter(internal_part_number=x.inventory.id).aggregate(Max('unit_cost'))
+            price = list(items.values())[0]
+            # print(price)
+            if price > high_price_current:
+                # print('deleted price')
+                high_price_current = price
+                # print(high_price_current)
+            else:
+                pass
+                # print(price)
+    price = high_price_current
+    groups = InventoryPricingGroup.objects.filter(inventory=internal_part_number)
+    for x in groups:
+        InventoryPricingGroup.objects.filter(group=x.group).update(high_price=price)
+        group_items = InventoryPricingGroup.objects.filter(group=x.group)
+        for x in group_items:
+            y = InventoryMaster.objects.get(pk=x.inventory.id)
+            if y.units_per_base_unit:
+                cost = price / y.units_per_base_unit
+                m = cost * 1000
+            else:
+                cost=0
+                m = 0
+            # print(x.inventory.id)
+            InventoryMaster.objects.filter(pk=x.inventory.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=datetime.now())
+            VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=x.inventory.id).update(high_price=price, updated=datetime.now())
+            Inventory.objects.filter(internal_part_number=x.inventory.id).update(unit_cost=cost, price_per_m=m, updated=datetime.now())
+        print(x.inventory)
+    item_delete.delete()
+ 
     return redirect ('finance:invoice_detail', id=invoice)
 
 def add_item_to_vendor(request, vendor=None, invoice=None):

@@ -1,4 +1,7 @@
-<form action='/finance/ap/edit_invoice_item/{{ pk }}/' method="POST">
+{% load static %}
+<!--<form action='/finance/ap/edit_invoice_item/{{ pk }}/' method="POST">-->
+    <form action='/finance/ap/invoice_detail/{{ invoice }}/' method="POST">
+    
     
     {% csrf_token %}
     
@@ -11,7 +14,7 @@
     Description: <input type="text" value="{{ description }}" name="description">
     </br>
     <br/>
-    Variation: <select class="custom-select mb-4" id="variation" name="variation">
+    <!-- Variation: <select class="custom-select mb-4" id="variation" name="variation">
 
         {% if variation %}
             <option selected value="{{variation}}">{{ variation }} -- {{ variation_qty }}</option>
@@ -22,10 +25,26 @@
               <option value="{{ x.id }}">{{ x.variation.name }} -- {{ x.variation_qty }}</option>
             {% endfor %}
         </select>
-        <br/>
-    Unit Cost: <input type="text" value="{{ unit_cost }}" name="unit_cost">
+        <br/> -->
+        <div id="item_variation">
+            Variation: <select class="custom-select mb-4" id="variation" name="variation">
+        
+                
+                    {% for x in variations %}
+                      <option value="{{ x.id }}">{{ x.variation.name }} -- {{ x.variation_qty }}</option>
+                    {% endfor %}
+                </select>
+                
+            
+            <button  class="btn btn-primary-outline" hx-get="{% url 'controls:add_item_variation' %}" hx-target="#item_variation"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">Add Item variation</button>
+            </br>
+            
+                
+            </div>
+        </br>
+    Unit Cost: <input type="text" value="{{ unit_cost }}" name="invoice_unit_cost"> - <input type="checkbox" id="ppm" name="ppm" value="1"><label for="ppm">Priced / M</label><br>
     </br>
-    Qty: <input type="text" value="{{ qty }}" name="qty">
+    Qty: <input type="text" value="{{ qty }}" name="invoice_qty">
 
 
 
@@ -34,6 +53,9 @@
     <input type="hidden" id="pk" name="pk" value="{{ pk }}">
     <input type="hidden" id="internal_part_number" name="internal_part_number" value="{{ ipn }}">
     <input type="hidden" id="vendor" name="vendor" value="{{ vendor }}">
+    <input type="hidden" id="name" name="name" value="{{ name }}">
+    <input type="hidden" id="edit" name="edit" value="1">
+
     
     </br>
     <button type="submit">Save</button>
