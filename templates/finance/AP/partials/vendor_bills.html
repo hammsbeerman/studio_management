@@ -9,13 +9,13 @@
         <th scope="col" class="">Calculated Total</th>
         <th scope="col" class="">Invoice #</th>
         <th scope="col" class="">Date Due</th>
+        <th scope="col" class="">Paid</th>
         <th scope="col" class=""></th>
         <th scope="col" class=""></th>
       </tr>
     </thead>
     <tbody>
       {% for x in bills %}
-        {% if x.paid is False %}
           <tr>
               <td>{{ x.vendor }}</td>
               <td>{{ x.invoice_date }}</td>
@@ -24,10 +24,9 @@
               <td>{{ x.calculated_total }}</td>
               <td>{{ x.invoice_number }}</td>
               <td>{{ x.date_due }}</td>
+              <td>{% if x.paid %}PD{% endif %}</td>
               <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
               <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
           </tr>
-        {% endif %}
   {% endfor %}
         </table>
-        <hr>
