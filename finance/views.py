@@ -1044,6 +1044,24 @@ def invoice_detail(request, id=None):
             print(name)
             print(vendor)
             print('here')
+
+
+            print('invoice')
+            print(invoice)
+            total = InvoiceItem.objects.filter(invoice=invoice).aggregate(Sum('line_total'))
+            total = list(total.values())[0]
+            total = Decimal(total)
+            AccountsPayable.objects.filter(pk=invoice).update(calculated_total=total)
+            # print('running total')
+            # print(instance.invoice.id)
+            # total = InvoiceItem.objects.filter(invoice=instance.invoice.id).aggregate(Sum('line_total'))
+            # print(total)
+            # total = list(total.values())[0]
+            # total = Decimal(total)
+            # AccountsPayable.objects.filter(pk=instance.invoice.id).update(calculated_total=total)
+
+
+
         else:
             print(form.errors)
         invoice = get_object_or_404(AccountsPayable, id=invoice)

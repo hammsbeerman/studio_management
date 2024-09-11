@@ -161,18 +161,18 @@ def all_invoice_items(sender, instance, *args, **kwargs):
         #inventory=InventoryMaster.objects.get(pk=pk)
         obj.save()    
 
-@receiver(post_save, sender=InvoiceItem)
-def running_total(sender, instance, *args, **kwargs):
-    print('running total')
-    print(instance.invoice.id)
-    total = InvoiceItem.objects.filter(invoice=instance.invoice.id).aggregate(Sum('line_total'))
-    print(total)
-    total = list(total.values())[0]
-    total = Decimal(total)
-    AccountsPayable.objects.filter(pk=instance.invoice.id).update(calculated_total=total)
-    #VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
+# @receiver(post_save, sender=InvoiceItem)
+# def running_total(sender, instance, *args, **kwargs):
+#     print('running total')
+#     print(instance.invoice.id)
+#     total = InvoiceItem.objects.filter(invoice=instance.invoice.id).aggregate(Sum('line_total'))
+#     print(total)
+#     total = list(total.values())[0]
+#     total = Decimal(total)
+#     AccountsPayable.objects.filter(pk=instance.invoice.id).update(calculated_total=total)
+#     #VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
 
-    #total = InvoiceItem.objects.filter(internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
+#     #total = InvoiceItem.objects.filter(internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
 
 @receiver(post_delete, sender=InvoiceItem)
 def running_total(sender, instance, *args, **kwargs):
