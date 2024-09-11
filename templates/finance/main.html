@@ -13,9 +13,11 @@
       <div class="col-sm-3">
         <a href="{% url 'finance:add_invoice' %}">Add Bill to be paid</a><br>
         <a href="{% url 'finance:view_bills_payable' %}">View Bills to be paid</a><br>
+        <a href="{% url 'finance:bills_by_vendor' %}">View Bills by vendor</a><br>
         <a href="{% url 'inventory:add_vendor' %}">Add Vendor</a><br>
         <a href="{% url 'inventory:vendor_list' %}">Vendor List</a><br>
         <a href="{% url 'inventory:item_variations' %}">Item Variations</a><br>
+        <a href="{% url 'inventory:item_details' %}">Item Details</a><br>
       </div>
       <div class="col-sm-3">
         <a href="{% url 'finance:add_daily_sale' %}">Add Daily Sale Record</a><br>

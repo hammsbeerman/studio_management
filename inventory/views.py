@@ -174,11 +174,17 @@ def item_variation_details(request, id=None):
 #     return render(request, 'inventory/items/item_details', context)
 
 def item_details(request, id=None):
+    item = request.GET.get('name')
     items = InventoryMaster.objects.all()
+    if item:
+        context = {
+            
+        }
+        return render (request, "inventory/items/partials/item_details.html", context)
     context = {
         'items':items,
     }
-    return render(request, 'inventory/items/item_details', context)
+    return render(request, 'inventory/items/item_details.html', context)
 
 
 

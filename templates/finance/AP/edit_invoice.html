@@ -5,17 +5,23 @@
 {% block content %}
 
 
-<h1>Add Bill Payable</h1>
+<h1>Edit Bill Payable</h1>
 <br/>
 
 <div class="container">
     <div class="row">
-      <div class="col-sm-4">
+      <div class="col-sm-3">
         <p>
           <p>
             <form method="POST" action="/finance/ap/edit_invoice/{{ pk }}/">
                 {% csrf_token %}
                 {% if message %}<mark class="red">{{ message }}</mark>{% endif %}
+                <select class="custom-select mb-4" id="id_vendor" hx-trigger="change" name="vendor" hx-get="{% url 'finance:bills_by_vendor' %}" hx-target="#vendor_invoices">
+                  <option selected>Select Item</option>
+                  {% for x in vendors %}
+                    <option value="{{ x.id }}">{{ x.name }}</option>
+                  {% endfor %}
+                </select>
                 {{ form.as_p }}
 
                 <!-- <input class="form-control" list="datalistOptions" id="exampleDataList" placeholder="Type to search...">
@@ -30,7 +36,9 @@
 
             </form>
       </div>
-      <div class="col-sm-8">
+      <div class="col-sm-9">
+        <div id="vendor_invoices"></div>
+        
             <table class="table">
               <thead>
                 <tr>
@@ -57,6 +65,16 @@
                     <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
                 </tr>
             {% endfor %}
+          </table>
+          <hr>
+          <select class="custom-select mb-4" id="id_name" hx-trigger="change" name="name" hx-get="{% url 'finance:bills_by_vendor' %}" hx-target="#vendor_invoices">
+            <option selected>Select Item</option>
+            {% for x in vendors %}
+              <option value="{{ x.id }}">{{ x.name }}</option>
+            {% endfor %}
+          </select>
+          <div id="vendor_invoices"></div>
+          <div id="remainder"></div>
       </div>
     </div>
 </div>

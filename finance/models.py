@@ -32,13 +32,13 @@ class AccountsPayable(models.Model):
     payment_method = models.CharField('Payment Method', choices=[('Cash', 'Cash'), ('Check', 'Check'), ('Credit Card', 'Credit Card'), ('Trade', 'Trade'), ('Other', 'Other')], max_length=100, blank=True, null=True)
     retail_invoice = models.BooleanField('Retail Invoice', null=True, default=True)
     supplies_invoice = models.BooleanField('Supplies Invoice', null=True, default=True)
+    non_inventory = models.BooleanField('Non Inventory Invoice', null=True, default=True)
     order_out = models.BooleanField('Order Out', null=True, default=True)
     #workorder = models.ForeignKey(Workorder, blank=False, null=False, on_delete=models.DO_NOTHING)
 
     def get_absolute_url(self):
         return reverse("finance:invoice_detail", kwargs={"id": self.id})
 
-    
 
     def __str__(self):
         #Pulling from Foreign Key

@@ -1,0 +1,50 @@
+<div class="container">
+    <div class="row">
+        <div class="col-sm-3">
+            <h3>Invoice Number: {{ invoice.invoice_number }}</h3>
+            <h4>Date: {{ invoice.invoice_date }}</br>
+                Vendor: {{invoice.vendor.name}}
+            </h4>
+        </div>
+        <div class="col-sm-9">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="">Description</th>
+                        <th scope="col" class="">Total</th>
+                        <th scope="col" class="">Calculated Total</th>
+                        <th scope="col" class="">Date Due</th>
+                        {% if not invoice.paid %}
+                            <th scope="col" class="">Discount</th>
+                            <th scope="col" class="">Discount Due Date</th>
+                        {% endif %}
+                        {% if invoice.paid %}
+                            <th scope="col" class="">Date Paid</th>
+                            <th scope="col" class="">Amount Paid</th>
+                            <th scope="col" class="">Payment Method</th>
+                            <th scope="col" class="">Paid</th>
+                        {% endif %}
+                        <th scope="col" class=""></th>
+                    </tr>
+                </thead>
+                    <tr>
+                        <td>{{ invoice.description }}</td>
+                        <td>{{ invoice.total }}</td>
+                        <td>{{ invoice.calculated_total }}</td>
+                        <td>{{ invoice.date_due }}</td>
+                        {% if not invoice.paid %}
+                            <td>{{ invoice.discount }}</td>
+                            <td>{{ invoice.discount_date_due }}</td>
+                        {% endif %}
+                        {% if invoice.paid %}
+                            <td>{{ invoice.date_paid }}</td>
+                            <td>{{ invoice.amount_paid }}</td>
+                            <td>{{ invoice.payment_method }}</td>
+                            <td>{{ invoice.paid }}</td>
+                        {% endif %}
+                        <td><button hx-get="{% url 'finance:edit_invoice_modal' invoice=invoice.pk %}" hx-target="#dialog" class="btn btn-secondary">Edit</button></td>
+                    </tr>
+            </table>
+        </div>
+    </div>
+</div>

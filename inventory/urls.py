@@ -37,6 +37,7 @@ urlpatterns = [
     path('item_variations/', item_variations, name='item_variations'),
     path('item_variation_details/<int:id>/', item_variation_details, name='item_variation_details'),
     path('item_details/<int:id>/', item_details, name='item_details'),
+    path('item_details/', item_details, name='item_details'),
     #path('item_detail_select/', item_detail_select, name='item_detail_select'),
     # path('inventory_create/', InventoryCreate.as_view(), name='inventory_create'),
     # path('inventory_prud/<int:pk>', InventoryPRUD.as_view(), name='inventory_prud'),

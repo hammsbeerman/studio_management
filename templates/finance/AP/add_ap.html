@@ -16,7 +16,14 @@
             <form method="POST" action="{% url 'finance:add_invoice' %}">
                 {% csrf_token %}
                 {% if message %}<mark class="red">{{ message }}</mark>{% endif %}
+                <select class="custom-select mb-4" id="id_vendor" hx-trigger="change" name="vendor" hx-get="{% url 'finance:bills_by_vendor' %}" hx-target="#vendor_invoices">
+                  <option selected>Select Item</option>
+                  {% for x in vendors %}
+                    <option value="{{ x.id }}">{{ x.name }}</option>
+                  {% endfor %}
+                </select>
                 {{ form.as_p }}
+    
 
                 <!-- <input class="form-control" list="datalistOptions" id="exampleDataList" placeholder="Type to search...">
                 <datalist id="datalistOptions">
@@ -30,7 +37,10 @@
 
             </form>
       </div>
+      
       <div class="col-sm-9">
+        <div id="vendor_invoices"></div>
+        
             <table class="table">
               <thead>
                 <tr>
@@ -47,21 +57,34 @@
               </thead>
               <tbody>
                 {% for x in bills %}
-                <tr>
-                    <td>{{ x.vendor }}</td>
-                    <td>{{ x.invoice_date }}</td>
-                    <td>{{ x.amount }}</td>
-                    <td>{{ x.total }}</td>
-                    <td>{{ x.calculated_total }}</td>
-                    <td>{{ x.invoice_number }}</td>
-                    <td>{{ x.date_due }}</td>
-                    <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
-                    <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
-                </tr>
+                  {% if x.paid is False %}
+                    <tr>
+                        <td>{{ x.vendor }}</td>
+                        <td>{{ x.invoice_date }}</td>
+                        <td>{{ x.amount }}</td>
+                        <td>{{ x.total }}</td>
+                        <td>{{ x.calculated_total }}</td>
+                        <td>{{ x.invoice_number }}</td>
+                        <td>{{ x.date_due }}</td>
+                        <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
+                        <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
+                    </tr>
+                  {% endif %}
             {% endfor %}
+                  </table>
+            <hr>
+            <select class="custom-select mb-4" id="id_name" hx-trigger="change" name="name" hx-get="{% url 'finance:bills_by_vendor' %}" hx-target="#vendor_invoices">
+              <option selected>Select Item</option>
+              {% for x in vendors %}
+                <option value="{{ x.id }}">{{ x.name }}</option>
+              {% endfor %}
+            </select>
+            
+            <div id="remainder"></div>
       </div>
     </div>
 </div>
+
 
 
 

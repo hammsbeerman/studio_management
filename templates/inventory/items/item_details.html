@@ -1,6 +1,12 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
 {% load static %}
 
 {% block content %}
+
+
+<h1>Item details</h1>
+<br/>
 
 <form action='/inventory/item_details' method="POST">
     {% csrf_token %}
@@ -14,19 +20,19 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-10">
-      <select class="custom-select mb-4" id="id_name" hx-trigger="change" name="name" hx-get="{% url 'inventory:item_details' id=id %}" hx-target="#remainder">
+      <select class="custom-select mb-4" id="id_name" hx-trigger="change" name="name" hx-get="{% url 'inventory:item_details' %}" hx-target="#remainder">
         <option selected>Select Item</option>
-        {% for object in items %}
-          <option value="{{ object.internal_part_number.id }}">{{ object.name }} -- {{object.description }} -- {{ object.vendor_part_number }}</option>
+        {% for x in items %}
+          <option value="{{ x.id }}">{{ x.name }}</option>
         {% endfor %}
       </select>
     </div>
     <div class="col-sm-2">  
-      <button  class="btn btn-primary-outline" hx-get="{% url 'finance:add_item_to_vendor' vendor=vendor invoice=invoice %}" hx-target="#remainder"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">Add Item to vendor</button>
+      
     </div>
   </div>
 </div>
-
+<div id="remainder"></div>
 
 
   {% endblock content %}

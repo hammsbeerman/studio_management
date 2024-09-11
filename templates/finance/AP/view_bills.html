@@ -17,16 +17,18 @@
         </tr>
     
 {% for bill in bill_list %}
-    <tr>
-        <td>{{ bill.invoice_date }}</td>
-        <td>{{ bill.vendor }}</td>
-        <td>{{ bill.description }}</td>
-        <td>{{ bill.invoice_number }}</td>
-        <td>{{ bill.amount }}</td>
-        <td>{{ bill.discount }}</td>
-        <td>{{ bill.discount_date_due }}</td>
-        <td><a href='{{ bill.get_absolute_url }}'class="btn btn-secondary" role="button">Edit</a></td>
-    </tr>
+        {% if bill.paid is False %}
+            <tr>
+                <td>{{ bill.invoice_date }}</td>
+                <td>{{ bill.vendor }}</td>
+                <td>{{ bill.description }}</td>
+                <td>{{ bill.invoice_number }}</td>
+                <td>{{ bill.amount }}</td>
+                <td>{{ bill.discount }}</td>
+                <td>{{ bill.discount_date_due }}</td>
+                <td><a href='{{ bill.get_absolute_url }}'class="btn btn-secondary" role="button">Edit</a></td>
+            </tr>
+        {% endif %}
 
     
     

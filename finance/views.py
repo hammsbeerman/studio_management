@@ -12,7 +12,7 @@ import logging
 from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm
 from retail.forms import RetailInventoryMasterForm
-from finance.forms import AddInvoiceForm, AddInvoiceItemForm
+from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm
 from finance.models import InvoiceItem
 from customers.models import Customer
 from workorders.models import Workorder
@@ -840,9 +840,13 @@ def remove_payment(request, pk=None):
 @login_required
 def add_invoice(request):
     form = AddInvoiceForm()
+    vendors = Vendor.objects.all()
     if request.method == "POST":
         form = AddInvoiceForm(request.POST)
         if form.is_valid():
+            vendor = request.POST.get('vendor')
+            #vendor = Vendor.objects.filter(pk=vendor)
+            form.instance.vendor_id = vendor
             form.save()
             invoice = form.instance.pk
             return redirect ('finance:invoice_detail', id=invoice)
@@ -859,13 +863,41 @@ def add_invoice(request):
     context = {
         'form': form,
         'bills':bills,
+        'vendors':vendors,
         #'categories': categories
     }
     return render (request, "finance/AP/add_ap.html", context)
 
-def edit_invoice(request, invoice=None):
+def edit_invoice(request, invoice=None, drop=None):
     print('invoice')
     print(invoice)
+    pk=invoice
+    print(drop)
+    if request.method == "POST":
+        instance = AccountsPayable.objects.get(id=pk)
+        form = EditInvoiceForm(request.POST or None, instance=instance)
+        if form.is_valid():
+            form.save()
+            #InvoiceItem.objects.filter(pk=id).update(name=name, description=description, vendor_part_number=vendor_part_number, unit_cost=unit_cost, qty=qty)
+            
+            return redirect ('finance:add_invoice') 
+            #return HttpResponse(status=204, headers={'HX-Trigger': 'itemChanged'})         
+        else:        
+            messages.success(request, "Something went wrong")
+            return redirect ('finance:add_invoice')
+    obj = get_object_or_404(AccountsPayable, id=invoice)
+    form = EditInvoiceForm(instance=obj)
+    bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')
+    vendors = Vendor.objects.all()
+    context = {
+        'vendors':vendors,
+        'pk':pk,
+        'bills':bills,
+        'form':form
+    }
+    return render (request, "finance/AP/edit_invoice.html", context)
+
+def edit_invoice_modal(request, invoice=None):
     pk=invoice
     if request.method == "POST":
         instance = AccountsPayable.objects.get(id=pk)
@@ -873,8 +905,8 @@ def edit_invoice(request, invoice=None):
         if form.is_valid():
             form.save()
             #InvoiceItem.objects.filter(pk=id).update(name=name, description=description, vendor_part_number=vendor_part_number, unit_cost=unit_cost, qty=qty)
-            
-            return redirect ('finance:add_invoice')         
+            return HttpResponse(status=204, headers={'HX-Trigger': 'itemChanged'}) 
+            #return redirect ('finance:add_invoice')         
         else:        
             messages.success(request, "Something went wrong")
             return redirect ('finance:add_invoice')
@@ -886,7 +918,7 @@ def edit_invoice(request, invoice=None):
         'bills':bills,
         'form':form
     }
-    return render (request, "finance/AP/edit_invoice.html", context)
+    return render (request, "finance/AP/modals/edit_invoice_modal.html", context)
 
 
 
@@ -1020,6 +1052,20 @@ def invoice_detail(request, id=None):
         'items': items,
     }
     return render(request, 'finance/AP/invoice_detail.html', context)
+
+def invoice_detail_highlevel(request, id=None):
+    invoice = get_object_or_404(AccountsPayable, id=id)
+    vendor = Vendor.objects.get(id=invoice.vendor.id)
+    print(vendor)
+    print(vendor.id)
+    items = InvoiceItem.objects.filter(invoice_id = id)
+    context = {
+        'vendor':vendor,
+        'invoice': invoice,
+        'items': items,
+    }
+    return render(request, 'finance/AP/invoice_detail_highlevel.html', context)
+
 
 def add_invoice_item(request, invoice=None, vendor=None, type=None):
     if vendor:
@@ -1457,6 +1503,24 @@ def vendor_item_remainder(request, vendor=None, invoice=None):
         }
         return render (request, "inventory/partials/vendor_item_remainder.html", context)
 
+
+def bills_by_vendor(request):
+    name = request.GET.get('name')
+    vendor = request.GET.get('vendor')
+    if name:
+        vendor = name
+    vendors = Vendor.objects.all()
+    if vendor:
+        bills = AccountsPayable.objects.filter(vendor=vendor).order_by('invoice_date') 
+        context = {
+            'bills':bills,
+        }
+        return render (request, "finance/AP/partials/vendor_bills.html", context)
+    vendors = Vendor.objects.all()
+    context = {
+        'vendors':vendors,
+    }
+    return render (request, "finance/AP/bills_by_vendor.html", context)
 
 
 

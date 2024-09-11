@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+
+<h1>Bills by vendor</h1>
+<br/>
+
+
+
+<select class="custom-select mb-4" id="id_name" hx-trigger="change" name="name" hx-get="{% url 'finance:bills_by_vendor' %}" hx-target="#remainder">
+    <option selected>Select Item</option>
+    {% for x in vendors %}
+      <option value="{{ x.id }}">{{ x.name }}</option>
+    {% endfor %}
+  </select>
+
+
+
+
+
+<div id="remainder"></div>
+
+
+{% endblock content %}
+
+{% block scripts %}
+
+<script>
+
+    $(document).ready(function () {
+      $("#id_name").select2();
+      $('#id_name').on('select2:select', (e) => {
+        htmx.trigger("#id_name", "change")
+      });
+    })
+
+    
+
+</script>
+
+{% endblock %}

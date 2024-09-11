@@ -4,12 +4,10 @@
 
 {% block content %}
 
+<div hx-trigger="load, itemChanged from:body" hx-get="{% url 'finance:invoice_detail_highlevel' id=invoice.pk %}" hx-target="this"></div>
 
-<h3>Invoice Number: {{ invoice.invoice_number }}</h3>
-<h4>Date: {{ invoice.invoice_date }}</br>
-    Vendor: {{invoice.vendor.name}}
-</h4>
-<p>
+
+<div id="edit_invoice"></div>
 
 <div class="container">
     
@@ -80,3 +78,56 @@
 
 
 
+{% block scripts %}
+
+
+<script>
+
+
+    const modal = new bootstrap.Modal(document.getElementById("modal"))
+
+    htmx.on("htmx:afterSwap", (e) => {
+      // Response targeting #dialog => show the modal
+      if (e.detail.target.id == "dialog") {
+        modal.show()
+      }
+    })
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      // Empty response targeting #dialog => hide the modal
+      if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+        modal.hide()
+        e.detail.shouldSwap = false
+      }
+    })
+
+    htmx.on("hidden.bs.modal", () => {
+      document.getElementById("dialog").innerHTML = ""
+    })
+    
+
+    const modal2 = new bootstrap.Modal(document.getElementById("modal2"))
+
+    htmx.on("htmx:afterSwap", (e) => {
+      // Response targeting #dialog => show the modal
+      if (e.detail.target.id == "dialog2") {
+        modal2.show()
+      }
+    })
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      // Empty response targeting #dialog => hide the modal
+      if (e.detail.target.id == "dialog2" && !e.detail.xhr.response) {
+        modal2.hide()
+        e.detail.shouldSwap = false
+      }
+    })
+
+    htmx.on("hidden.bs.modal", () => {
+      document.getElementById("dialog2").innerHTML = ""
+    })
+
+
+</script>
+
+{% endblock %}
