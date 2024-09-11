@@ -33,7 +33,7 @@ class AccountsPayable(models.Model):
     retail_invoice = models.BooleanField('Retail Invoice', null=True, default=True)
     supplies_invoice = models.BooleanField('Supplies Invoice', null=True, default=True)
     non_inventory = models.BooleanField('Non Inventory Invoice', null=True, default=True)
-    order_out = models.BooleanField('Order Out', null=True, default=True)
+    order_out = models.BooleanField('Order Out', null=True, default=False)
     #workorder = models.ForeignKey(Workorder, blank=False, null=False, on_delete=models.DO_NOTHING)
 
     def get_absolute_url(self):
