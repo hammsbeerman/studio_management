@@ -147,7 +147,7 @@ class AllInvoiceItem(models.Model):
     vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        return self.name
+        return self.invoice_item.name
 
 
 
@@ -177,12 +177,15 @@ def running_total(sender, instance, *args, **kwargs):
 @receiver(post_delete, sender=InvoiceItem)
 def running_total(sender, instance, *args, **kwargs):
     print('running total')
-    print(instance.invoice.id)
-    total = InvoiceItem.objects.filter(invoice=instance.invoice.id).aggregate(Sum('line_total'))
-    print(total)
-    total = list(total.values())[0]
-    total = Decimal(total)
-    AccountsPayable.objects.filter(pk=instance.invoice.id).update(calculated_total=total)
+    #print(instance.invoice.id)
+    try:
+        total = InvoiceItem.objects.filter(invoice=instance.invoice.id).aggregate(Sum('line_total'))
+        print(total)
+        total = list(total.values())[0]
+        total = Decimal(total)
+        AccountsPayable.objects.filter(pk=instance.invoice.id).update(calculated_total=total)
+    except:
+        pass
 
 
 
