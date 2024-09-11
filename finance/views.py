@@ -1013,6 +1013,8 @@ def invoice_detail(request, id=None):
             else:
                 price_ea = 0
                 ppm = 0
+            vpn = form.instance.vendor_part_number
+            description = form.instance.description
             form.instance.qty = qty
             form.instance.unit_cost = price_ea
             form.instance.invoice_id = invoice
@@ -1029,6 +1031,15 @@ def invoice_detail(request, id=None):
             form.instance.line_total = line_total
             #form.instance.variation_qty = v.variation_qty
             form.save()
+            invoice_item = request.POST.get('pk')
+            vpn_up = request.POST.get('vpn_update')
+            desc_up = request.POST.get('description_update')
+            print('vpn_update')
+            print(vpn_up)
+            print('desc update')
+            print(desc_up)
+            if vpn_up or desc_up == '1':
+                VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=ipn).update(vendor_part_number=vpn, description=description)
             name = form.instance.name
             print(name)
             print(vendor)
