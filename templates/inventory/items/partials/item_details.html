@@ -1,1 +1,3 @@
-hi
+{% for x in item_history %}
+    {{ x.purchase_date }} -- {{ x.unit_cost }} </br>
+{% endfor %}

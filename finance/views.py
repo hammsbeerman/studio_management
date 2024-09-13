@@ -13,7 +13,7 @@ from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPay
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm
 from retail.forms import RetailInventoryMasterForm
 from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm
-from finance.models import InvoiceItem
+from finance.models import InvoiceItem, AllInvoiceItem
 from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import PaymentType, Measurement
@@ -959,9 +959,12 @@ def edit_invoice_modal(request, invoice=None):
 def invoice_detail(request, id=None):
     if request.method == "POST":
         # invoice = request.POST.get('invoice')
+        invoice_item = request.POST.get('pk')
         vendor = request.POST.get('vendor')
         variation = request.POST.get('variation')
         ipn = request.POST.get('internal_part_number')
+        base_unit = InventoryMaster.objects.get(pk=ipn)
+        base_unit = base_unit.primary_base_unit.id
         ppm = request.POST.get('ppm')
         print('ppm')
         print(ppm)
@@ -1031,6 +1034,7 @@ def invoice_detail(request, id=None):
             form.instance.line_total = line_total
             #form.instance.variation_qty = v.variation_qty
             form.save()
+            invoice_date = form.instance.created
             invoice_item = request.POST.get('pk')
             vpn_up = request.POST.get('vpn_update')
             desc_up = request.POST.get('description_update')
@@ -1044,6 +1048,25 @@ def invoice_detail(request, id=None):
             print(name)
             print(vendor)
             print('here')
+            print(invoice_item)
+            print(variation)
+            item_v = InventoryQtyVariations.objects.get(pk=variation)
+            print(item_v)
+            item_variation = item_v.variation.id
+            print('variation')
+            print(item_variation)
+            invoice_date = AccountsPayable.objects.get(pk=invoice)
+            invoice_date = invoice_date.invoice_date
+            try:
+                item = AllInvoiceItem.objects.filter(invoice_item=invoice_item)
+                print('123')
+            except:
+                
+                obj = AllInvoiceItem(invoice_item=InvoiceItem.objects.get(pk=invoice_item), invoice_id=invoice, internal_part_number=InventoryMaster.objects.get(id=ipn), purchase_date=invoice_date, qty=qty, unit_cost=price_ea, vendor=Vendor.objects.get(pk=vendor), unit=Measurement.objects.get(pk=base_unit), line_total=line_total)
+                #inventory=InventoryMaster.objects.get(pk=pk)
+                obj.save()  
+            if item:
+                AllInvoiceItem.objects.filter(invoice_item=invoice_item).update(invoice_id=invoice, internal_part_number=InventoryMaster.objects.get(id=ipn), purchase_date=invoice_date, qty=qty, unit_cost=price_ea, vendor=Vendor.objects.get(pk=vendor), unit=Measurement.objects.get(pk=base_unit), line_total=line_total)
 
 
             print('invoice')

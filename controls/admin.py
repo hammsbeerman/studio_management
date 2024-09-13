@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Measurement, SetPriceCategory, SetPriceItemPrice, InventoryCategory, JobStatus, UserGroup, PaymentType, RetailInventoryCategory, RetailInventorySubCategory
+from .models import Numbering, FixedCost, Category, SubCategory, DesignType, Measurement, SetPriceCategory, SetPriceItemPrice, InventoryCategory, JobStatus, UserGroup, PaymentType, RetailInventoryCategory, RetailInventorySubCategory, GroupCategory
 from import_export.admin import ImportExportModelAdmin
 from import_export import resources
 from import_export.fields import Field
@@ -52,6 +52,8 @@ admin.site.register(JobStatus)
 admin.site.register(UserGroup)
 
 admin.site.register(PaymentType)
+
+admin.site.register(GroupCategory)
 
 
 

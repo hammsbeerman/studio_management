@@ -10,6 +10,7 @@ from workorders.models import Workorder
 from customers.models import Customer, ShipTo
 from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail, InventoryPricingGroup, InventoryQtyVariations
 from controls.models import Measurement, GroupCategory
+from finance.models import AllInvoiceItem
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -604,6 +605,16 @@ def add_base_qty_variation(request):
                 # unit = x.units_per_base_unit
                 var = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=x.pk), variation=Measurement.objects.get(id=x.primary_base_unit.id), variation_qty=x.units_per_base_unit)
                 var.save()
+    return redirect ('controls:utilities')
+
+def add_internal_part_number(request):
+    items = AllInvoiceItem.objects.all()
+    for x in items:
+        y = x.invoice_item.internal_part_number
+        z = y.primary_base_unit.id
+        # print(y.id)
+        # print(y.primary_base_unit.id)
+        AllInvoiceItem.objects.filter(pk=x.pk).update(internal_part_number=InventoryMaster.objects.get(id=y.id), unit=Measurement.objects.get(id=z))
     return redirect ('controls:utilities')
         
 

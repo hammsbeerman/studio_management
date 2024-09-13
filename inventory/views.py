@@ -10,6 +10,7 @@ from decimal import Decimal
 from .forms import AddVendorForm
 from .models import Vendor, InventoryQtyVariations, InventoryMaster
 from .serializers import InventorySerializer
+from finance.models import AllInvoiceItem
 #from inventory.models import Inventory
 
 # Create your views here.
@@ -176,9 +177,12 @@ def item_variation_details(request, id=None):
 def item_details(request, id=None):
     item = request.GET.get('name')
     items = InventoryMaster.objects.all()
+    print(item)
     if item:
+        item_history = AllInvoiceItem.objects.filter(internal_part_number=item)
+        print(item)
         context = {
-            
+            'item_history':item_history
         }
         return render (request, "inventory/items/partials/item_details.html", context)
     context = {
