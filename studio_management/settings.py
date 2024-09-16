@@ -166,6 +166,32 @@ else:
         }
     }
 
+if not TESTING:
+    #Production Sentry
+    sentry_sdk.init(
+        dsn="https://8180ad13bf40e37b2df3bb08cfa3ecfa@o4507963680096256.ingest.us.sentry.io/4507963733180416",
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for tracing.
+        traces_sample_rate=1.0,
+        # Set profiles_sample_rate to 1.0 to profile 100%
+        # of sampled transactions.
+        # We recommend adjusting this value in production.
+        profiles_sample_rate=1.0,
+    )
+else:
+    #Development Sentry
+    sentry_sdk.init(
+    dsn="https://86f2807741dc55ed2fd9182d9471e38d@o4507963680096256.ingest.us.sentry.io/4507963682324480",
+        # Set traces_sample_rate to 1.0 to capture 100%
+        # of transactions for tracing.
+        traces_sample_rate=1.0,
+        # Set profiles_sample_rate to 1.0 to profile 100%
+        # of sampled transactions.
+        # We recommend adjusting this value in production.
+        profiles_sample_rate=1.0,
+    )
+
+
 
 # DATABASES = {
 #     'default': {
@@ -257,13 +283,3 @@ MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-sentry_sdk.init(
-    dsn="https://86f2807741dc55ed2fd9182d9471e38d@o4507963680096256.ingest.us.sentry.io/4507963682324480",
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for tracing.
-    traces_sample_rate=1.0,
-    # Set profiles_sample_rate to 1.0 to profile 100%
-    # of sampled transactions.
-    # We recommend adjusting this value in production.
-    profiles_sample_rate=1.0,
-)
