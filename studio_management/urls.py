@@ -19,11 +19,16 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
+
 from .views import home_view, search
 
 urlpatterns = [
     path('', home_view, name='home'),
     path('search/', search, name='search'),
+    path('sentry-debug/', trigger_error),
     path('admin/', admin.site.urls),
     path('controls/', include('controls.urls')),
     path('accounts/', include('accounts.urls')),
@@ -38,6 +43,7 @@ urlpatterns = [
     path('retail/', include('retail.urls')),
     #path('vendors/', include('vendors.urls')),
     path('workorders/', include('workorders.urls')),
+    
 
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

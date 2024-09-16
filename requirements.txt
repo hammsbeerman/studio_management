@@ -22,3 +22,4 @@ django-import-export
 xhtml2pdf
 weasyprint
 djangorestframework
+sentry-sdk

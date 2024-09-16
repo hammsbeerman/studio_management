@@ -37,7 +37,6 @@ def home_view(request, id=None):
     #HTML_STRING = render_to_string("home.html", context)
     #return HttpResponse(HTML_STRING)
     #return render(request, 'home.html', context)
-
     if request.user.is_authenticated:
         return redirect('dashboard:dashboard')
     else:
