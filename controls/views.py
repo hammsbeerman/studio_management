@@ -614,7 +614,10 @@ def add_internal_part_number(request):
         z = y.primary_base_unit.id
         # print(y.id)
         # print(y.primary_base_unit.id)
-        AllInvoiceItem.objects.filter(pk=x.pk).update(internal_part_number=InventoryMaster.objects.get(id=y.id), unit=Measurement.objects.get(id=z))
+        qty = x.qty
+        unit_cost = x.unit_cost
+        line = qty * unit_cost
+        AllInvoiceItem.objects.filter(pk=x.pk).update(internal_part_number=InventoryMaster.objects.get(id=y.id), unit=Measurement.objects.get(id=z), line_total=line)
     return redirect ('controls:utilities')
         
 
