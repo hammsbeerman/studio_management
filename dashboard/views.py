@@ -16,9 +16,10 @@ from accounts.models import Profile
 
 @login_required
 def dashboard(request):
-    division_by_zero = 1 / 0
-    print(division_by_zero)
-    print('dklasdak')
+    #used for testing sentry logging
+    # division_by_zero = 1 / 0
+    # print(division_by_zero)
+    # print('dklasdak')
     return redirect('workorders:dashboard')
 
 @login_required
