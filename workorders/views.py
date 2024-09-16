@@ -84,7 +84,8 @@ def create_base(request):
             form.instance.hr_customer = hrcust
             print(cust)
             print(hrcust)
-            shipto = ShipTo.objects.get(customer_id=cust)
+            #shipto = ShipTo.objects.get(customer_id=cust)
+            shipto = ShipTo.objects.filter(customer_id=cust).first()
             print('shipto')
             print(shipto.pk)
             form.instance.ship_to_id = shipto.pk
