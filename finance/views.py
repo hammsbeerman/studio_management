@@ -959,7 +959,9 @@ def edit_invoice_modal(request, invoice=None):
 def invoice_detail(request, id=None):
     if request.method == "POST":
         # invoice = request.POST.get('invoice')
-        invoice_item = request.POST.get('pk')
+        # invoice_item = request.POST.get('pk')
+        # print('invoice_item')
+        # print(invoice_item)
         vendor = request.POST.get('vendor')
         variation = request.POST.get('variation')
         ipn = request.POST.get('internal_part_number')
@@ -1035,7 +1037,9 @@ def invoice_detail(request, id=None):
             #form.instance.variation_qty = v.variation_qty
             form.save()
             invoice_date = form.instance.created
-            invoice_item = request.POST.get('pk')
+            invoice_item = form.instance.pk
+            print('invoice_item')
+            print(invoice_item)
             vpn_up = request.POST.get('vpn_update')
             desc_up = request.POST.get('description_update')
             print('vpn_update')
@@ -1057,14 +1061,18 @@ def invoice_detail(request, id=None):
             print(item_variation)
             invoice_date = AccountsPayable.objects.get(pk=invoice)
             invoice_date = invoice_date.invoice_date
+            print('invoice item')
+            print(invoice_item)
             try:
-                item = AllInvoiceItem.objects.filter(invoice_item=invoice_item)
+                item = get_object_or_404(AllInvoiceItem, invoice_item=invoice_item)
+                #item = AllInvoiceItem.objects.filter(invoice_item=invoice_item)
                 print('123')
+                print(item)
             except:
-                
                 obj = AllInvoiceItem(invoice_item=InvoiceItem.objects.get(pk=invoice_item), invoice_id=invoice, internal_part_number=InventoryMaster.objects.get(id=ipn), purchase_date=invoice_date, qty=qty, unit_cost=price_ea, vendor=Vendor.objects.get(pk=vendor), unit=Measurement.objects.get(pk=base_unit), line_total=line_total)
                 #inventory=InventoryMaster.objects.get(pk=pk)
                 obj.save()  
+                item = ''
             if item:
                 AllInvoiceItem.objects.filter(invoice_item=invoice_item).update(invoice_id=invoice, internal_part_number=InventoryMaster.objects.get(id=ipn), purchase_date=invoice_date, qty=qty, unit_cost=price_ea, vendor=Vendor.objects.get(pk=vendor), unit=Measurement.objects.get(pk=base_unit), line_total=line_total)
 

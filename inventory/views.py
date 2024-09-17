@@ -10,7 +10,7 @@ from decimal import Decimal
 from .forms import AddVendorForm
 from .models import Vendor, InventoryQtyVariations, InventoryMaster
 from .serializers import InventorySerializer
-from finance.models import AllInvoiceItem
+from finance.models import AllInvoiceItem, InvoiceItem
 #from inventory.models import Inventory
 
 # Create your views here.
@@ -179,7 +179,8 @@ def item_details(request, id=None):
     items = InventoryMaster.objects.all()
     print(item)
     if item:
-        item_history = AllInvoiceItem.objects.filter(internal_part_number=item)
+        #item_history = AllInvoiceItem.objects.filter(internal_part_number=item)
+        item_history = AccountsPayable.objects.filter(inter)
         print(item)
         context = {
             'item_history':item_history

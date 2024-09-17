@@ -27,6 +27,7 @@ class Customer(models.Model):
     po_number = models.CharField('PO Number', max_length=100, blank=True, null=False)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+    last_workorder = models.DateTimeField(auto_now = False, blank=True, null=True)
     active = models.BooleanField(default=True)
     customer_number = models.CharField('Customer Number', max_length=100, blank=True, null=False)
     tax_exempt = models.BooleanField('Tax Exempt', default=False, choices=Tax_Exempt)

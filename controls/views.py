@@ -10,7 +10,7 @@ from workorders.models import Workorder
 from customers.models import Customer, ShipTo
 from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail, InventoryPricingGroup, InventoryQtyVariations
 from controls.models import Measurement, GroupCategory
-from finance.models import AllInvoiceItem
+from finance.models import AllInvoiceItem, InvoiceItem
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -608,17 +608,19 @@ def add_base_qty_variation(request):
     return redirect ('controls:utilities')
 
 def add_internal_part_number(request):
-    items = AllInvoiceItem.objects.all()
-    for x in items:
-        y = x.invoice_item.internal_part_number
-        z = y.primary_base_unit.id
-        # print(y.id)
-        # print(y.primary_base_unit.id)
-        qty = x.qty
-        unit_cost = x.unit_cost
-        line = qty * unit_cost
-        AllInvoiceItem.objects.filter(pk=x.pk).update(internal_part_number=InventoryMaster.objects.get(id=y.id), unit=Measurement.objects.get(id=z), line_total=line)
-    return redirect ('controls:utilities')
+    items = InvoiceItem.objects.all()
+    
+    # items = AllInvoiceItem.objects.all()
+    # for x in items:
+    #     y = x.invoice_item.internal_part_number
+    #     z = y.primary_base_unit.id
+    #     # print(y.id)
+    #     # print(y.primary_base_unit.id)
+    #     qty = x.qty
+    #     unit_cost = x.unit_cost
+    #     line = qty * unit_cost
+    #     AllInvoiceItem.objects.filter(pk=x.pk).update(internal_part_number=InventoryMaster.objects.get(id=y.id), unit=Measurement.objects.get(id=z), line_total=line)
+    # return redirect ('controls:utilities')
         
 
 
