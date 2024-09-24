@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics, viewsets
 from decimal import Decimal
 from .forms import AddVendorForm
-from .models import Vendor, InventoryQtyVariations, InventoryMaster
+from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut
 from .serializers import InventorySerializer
 from finance.models import AllInvoiceItem, InvoiceItem
 #from inventory.models import Inventory
@@ -109,7 +109,9 @@ def vendor_detail(request, id):
         non_inventory_vendor = 'True'
     else:
         non_inventory_vendor = 'False'
+    orderout = OrderOut.objects.filter(vendor=id)
     context = {
+        'orderout': orderout,
         'non_inventory_vendor': non_inventory_vendor,
         'inventory_vendor': inventory_vendor,
         'retail': retail,

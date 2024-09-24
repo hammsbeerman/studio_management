@@ -35,4 +35,10 @@
 </div>
 <br>
 <a href="{% url 'inventory:edit_vendor' id=vendor.id %}">Edit  Vendor</a>
+<hr>
+Orderouts
+<br>
+{% for x in orderout %}
+    {{ x.id }} {{ x.dateentered}} {{ x.description }} {{ x.hr_workorder }} {{ x.hr_customer }}</br>
+{% endfor %}
 {% endblock content %}
