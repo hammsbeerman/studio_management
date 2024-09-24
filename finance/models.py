@@ -141,7 +141,7 @@ class InvoiceItem(models.Model):
 class AllInvoiceItem(models.Model):
     invoice_item = models.ForeignKey(InvoiceItem, null=True, on_delete=models.CASCADE)
     internal_part_number = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
-    invoice_id = models.ForeignKey(AccountsPayable, on_delete=models.CASCADE, null=True, blank=True)
+    #invoice_id = models.ForeignKey(AccountsPayable, on_delete=models.CASCADE, null=True, blank=True)
     #invoice_id = models.IntegerField(null=True, blank=True)
     purchase_date = models.DateField(auto_now=False, auto_now_add=False)
     qty = models.DecimalField('Qty', max_digits=8, decimal_places=2, blank=True, null=True)
