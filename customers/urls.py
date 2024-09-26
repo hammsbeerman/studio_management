@@ -51,6 +51,7 @@ urlpatterns = [
     path("edit_shipto/", edit_shipto, name='edit_shipto'),
     path("new_shipto/", new_shipto, name='new_shipto'),
     path("change_shipto/", change_shipto, name='change_shipto'),
+    path("customer_list/<str:customer>/", customer_list, name='customer_list'),
     path("customer_list/", customer_list, name='customer_list'),
     
     

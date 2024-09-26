@@ -647,8 +647,23 @@ def change_shipto(request):
     }
     return render(request, 'customers/modals/change_shipto.html', context)
 
-def customer_list(request):
-    workorders = Workorder.objects.all().exclude(quote=1).order_by("customer_id", "-updated")
+def customer_list(request, customer=None):
+    print(customer)
+    if customer == 'LK':
+        workorders = Workorder.objects.all().exclude(quote=1).exclude(internal_company='Krueger Printing').exclude(internal_company='Office Supplies').order_by("customer_id", "-updated")
+        company = 'LK Design'
+        # print(1)
+        # print(workorders)
+    if customer == 'K':
+        workorders = Workorder.objects.all().exclude(quote=1).exclude(internal_company='LK Design').order_by("customer_id", "-updated")
+        company = 'Krueger Printing'
+        # print(2)
+        # print(workorders)
+    if customer == 'A' or not customer:
+        workorders = Workorder.objects.all().exclude(quote=1).order_by("customer_id", "-updated")
+        company = 'All'
+        # print(3)
+        # print(workorders)
     unique_list = []
     list = []
     for x in workorders:
@@ -657,8 +672,11 @@ def customer_list(request):
             list.append(x.customer)
     context = {
         #'workorders':workorders,
-        'unique_list':unique_list,
+        'unique_list': unique_list,
+        'company': company,
     }
+    if customer:
+        return render(request, 'customers/partials/customer_list.html', context)
     return render(request, 'customers/customer_list.html', context)
 
 
