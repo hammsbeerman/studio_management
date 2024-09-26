@@ -646,3 +646,38 @@ def change_shipto(request):
         'workorder': workorder
     }
     return render(request, 'customers/modals/change_shipto.html', context)
+
+def customer_list(request):
+    workorders = Workorder.objects.all().exclude(quote=1).order_by("customer_id", "-updated")
+    unique_list = []
+    list = []
+    for x in workorders:
+        if x.customer not in list:
+            unique_list.append(x)
+            list.append(x.customer)
+    context = {
+        #'workorders':workorders,
+        'unique_list':unique_list,
+    }
+    return render(request, 'customers/customer_list.html', context)
+
+
+
+
+
+
+# def cust_wo_address(request):
+#     customer = Workorder.objects.all().order_by('hr_customer')
+#     unique_list = []
+#     list = []
+#     for x in customer:
+#         # check if exists in unique_list or not
+#         if x.hr_customer not in list:
+#             unique_list.append(x)
+#             list.append(x.hr_customer)
+#     print(unique_list)
+
+#     context = {
+#         'unique_list':unique_list,
+#     }
+#     return render (request, "controls/customers_without_address.html", context)

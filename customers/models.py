@@ -8,7 +8,6 @@ class Customer(models.Model):
     (True, 'Yes'),
     (False, 'No')
 )
-    
 
     company_name = models.CharField('Company Name', max_length=100, blank=True, null=False)
     first_name = models.CharField('First Name', max_length=100, blank=True, null=False)
