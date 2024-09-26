@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.http import JsonResponse
+from django.db.models import OuterRef, Subquery
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status, generics, viewsets
@@ -10,7 +11,7 @@ from decimal import Decimal
 from .forms import AddVendorForm
 from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut
 from .serializers import InventorySerializer
-from finance.models import AllInvoiceItem, InvoiceItem
+from finance.models import AllInvoiceItem, InvoiceItem, AccountsPayable
 #from inventory.models import Inventory
 
 # Create your views here.
@@ -177,15 +178,50 @@ def item_variation_details(request, id=None):
 #     return render(request, 'inventory/items/item_details', context)
 
 def item_details(request, id=None):
-    item = request.GET.get('name')
+    id = request.GET.get('name')
     items = InventoryMaster.objects.all()
-    print(item)
-    if item:
+    print(id)
+    if id:
         #item_history = AllInvoiceItem.objects.filter(internal_part_number=item)
-        item_history = AccountsPayable.objects.filter(inter)
-        print(item)
+        #item_history = AccountsPayable.objects.filter(inter)
+        #item_history = InvoiceItem.objects.filter(internal_part_number=item)
+        #item = AccountsPayable.objects.filter(invoiceitem__internal_part_number_id=item)
+        #print(item.values_list('invoiceitem__qty'))
+        # print(len(item))
+        # for x in item:
+        #     print(x.invoice_number)
+        #print(item)
+
+        # items = InvoiceItem.objects.filter(internal_part_number_id=item)
+
+        # invoice = AccountsPayable.objects.filter(items=OuterRef('pk')).order_by('-datetime')
+
+        # items = items.annotate(
+        #     invoice_number=Subquery(invoice.values('invoice_number'))
+        # )
+
+        # for x in items:
+        #     print(x.invoice_number)
+
+        item = InvoiceItem.objects.filter(internal_part_number=id).order_by('-invoice__invoice_date')
+        #item2 = item.order_by('invoice.invoice_date')
+        #print(item2)
+        for x in item:
+            print(x.invoice.invoice_number)
+            print(x.invoice.invoice_date)
+        master = InventoryMaster.objects.get(pk=id)
+
+
+
+
+
+
+
+
         context = {
-            'item_history':item_history
+            #'item_history':item_history,
+            'item':item,
+            'master':master,
         }
         return render (request, "inventory/items/partials/item_details.html", context)
     context = {

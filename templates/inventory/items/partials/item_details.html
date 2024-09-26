@@ -1,3 +1,44 @@
-{% for x in item_history %}
-    {{ x.purchase_date }} -- {{ x.unit_cost }} </br>
-{% endfor %}
+
+<h1>Details:</h1></br>
+Internal part number: {{master.pk}}</br>
+Description: {{ master.description }}</br>
+Primary Vendor: {{ master.primary_vendor }}</br>
+Primary Vendor p/n: {{ master.primary_vendor_part_number }}</br>
+Primary Base Unit: {{ master.primary_base_unit }}</br>
+High Price: {{ master.high_price }}</br>
+
+
+
+
+
+<hr>
+Items history
+<p>
+    
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Invoice date</td>
+                <td>Invoice Number</td>
+                <td>Invoice Qty</td>
+                <td>Invoice Unit</td>
+                <td>Invoice Unit Cost</td>
+                <td>Line Total</td>
+                <td>Vendor</td>
+                <td>Vendor Part Number</td>
+            </tr>
+        </thead>
+        {% for x in item %}
+            <tr>
+                <td>{{x.invoice.invoice_date}}</td>
+                <td>{{x.invoice.invoice_number}}</td>
+                <td>{{x.invoice_qty}}</td>
+                <td>{{x.invoice_unit.variation}}</td>
+                <td>{{x.invoice_unit_cost}}</td>
+                <td>{{x.line_total}}</td>
+                <td>{{x.vendor}}</td>
+                <td>{{x.vendor_part_number}}</td>
+            </tr>
+        {% endfor %}
+    </table>

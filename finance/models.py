@@ -111,14 +111,15 @@ class Appliedother(models.Model):
 # class NonInventoryItem(models.Model):
 #     name = 
 #     description = 
+
     
 class InvoiceItem(models.Model):
     vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
-    invoice = models.ForeignKey(AccountsPayable, blank=True, null=True, on_delete=models.CASCADE)
+    invoice = models.ForeignKey(AccountsPayable, blank=True, null=True, on_delete=models.CASCADE, related_name='invoice')
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     vendor_part_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
-    internal_part_number = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
+    internal_part_number = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE, related_name='internal_part_number')
     invoice_unit = models.ForeignKey(InventoryQtyVariations, blank=True, null=True, on_delete=models.CASCADE)
     #invoice_unit = models.CharField('Invoice Unit', max_length=100, blank=True, null=True)
     invoice_unit_cost = models.DecimalField('Invoice Unit Cost', max_digits=15, decimal_places=5, blank=True, null=True)
@@ -141,7 +142,7 @@ class InvoiceItem(models.Model):
 class AllInvoiceItem(models.Model):
     invoice_item = models.ForeignKey(InvoiceItem, null=True, on_delete=models.CASCADE)
     internal_part_number = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
-    #invoice_id = models.ForeignKey(AccountsPayable, on_delete=models.CASCADE, null=True, blank=True)
+    invoice_id = models.ForeignKey(AccountsPayable, on_delete=models.CASCADE, null=True, blank=True)
     #invoice_id = models.IntegerField(null=True, blank=True)
     purchase_date = models.DateField(auto_now=False, auto_now_add=False)
     qty = models.DecimalField('Qty', max_digits=8, decimal_places=2, blank=True, null=True)
