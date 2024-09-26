@@ -10,7 +10,7 @@ from workorders.models import Workorder
 from customers.models import Customer, ShipTo
 from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail, InventoryPricingGroup, InventoryQtyVariations
 from controls.models import Measurement, GroupCategory
-from finance.models import AllInvoiceItem, InvoiceItem
+from finance.models import InvoiceItem
 from django.contrib.auth.decorators import login_required
 
 @login_required

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Payments, Araging, AccountsPayable, WorkorderPayment, InvoiceItem, AllInvoiceItem
+from .models import Payments, Araging, AccountsPayable, WorkorderPayment, InvoiceItem#, AllInvoiceItem
 
 admin.site.register(Payments)
 
@@ -8,7 +8,7 @@ admin.site.register(Araging)
 
 admin.site.register(AccountsPayable)
 
-admin.site.register(AllInvoiceItem)
+#admin.site.register(AllInvoiceItem)
 
 class InvoiceItemAdmin(admin.ModelAdmin):
     readonly_fields=('invoice_unit',)

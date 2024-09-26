@@ -11,7 +11,7 @@ from decimal import Decimal
 from .forms import AddVendorForm
 from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut
 from .serializers import InventorySerializer
-from finance.models import AllInvoiceItem, InvoiceItem, AccountsPayable
+from finance.models import InvoiceItem, AccountsPayable#, AllInvoiceItem
 #from inventory.models import Inventory
 
 # Create your views here.

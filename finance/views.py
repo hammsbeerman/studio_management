@@ -13,7 +13,7 @@ from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPay
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm
 from retail.forms import RetailInventoryMasterForm
 from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm
-from finance.models import InvoiceItem, AllInvoiceItem
+from finance.models import InvoiceItem#, AllInvoiceItem
 from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import PaymentType, Measurement
@@ -1063,18 +1063,18 @@ def invoice_detail(request, id=None):
             invoice_date = invoice_date.invoice_date
             print('invoice item')
             print(invoice_item)
-            try:
-                item = get_object_or_404(AllInvoiceItem, invoice_item=invoice_item)
-                #item = AllInvoiceItem.objects.filter(invoice_item=invoice_item)
-                print('123')
-                print(item)
-            except:
-                obj = AllInvoiceItem(invoice_item=InvoiceItem.objects.get(pk=invoice_item), invoice_id=invoice, internal_part_number=InventoryMaster.objects.get(id=ipn), purchase_date=invoice_date, qty=qty, unit_cost=price_ea, vendor=Vendor.objects.get(pk=vendor), unit=Measurement.objects.get(pk=base_unit), line_total=line_total)
-                #inventory=InventoryMaster.objects.get(pk=pk)
-                obj.save()  
-                item = ''
-            if item:
-                AllInvoiceItem.objects.filter(invoice_item=invoice_item).update(invoice_id=invoice, internal_part_number=InventoryMaster.objects.get(id=ipn), purchase_date=invoice_date, qty=qty, unit_cost=price_ea, vendor=Vendor.objects.get(pk=vendor), unit=Measurement.objects.get(pk=base_unit), line_total=line_total)
+            # try:
+            #     item = get_object_or_404(AllInvoiceItem, invoice_item=invoice_item)
+            #     #item = AllInvoiceItem.objects.filter(invoice_item=invoice_item)
+            #     print('123')
+            #     print(item)
+            # except:
+            #     obj = AllInvoiceItem(invoice_item=InvoiceItem.objects.get(pk=invoice_item), invoice_id=invoice, internal_part_number=InventoryMaster.objects.get(id=ipn), purchase_date=invoice_date, qty=qty, unit_cost=price_ea, vendor=Vendor.objects.get(pk=vendor), unit=Measurement.objects.get(pk=base_unit), line_total=line_total)
+            #     #inventory=InventoryMaster.objects.get(pk=pk)
+            #     obj.save()  
+            #     item = ''
+            # if item:
+            #     AllInvoiceItem.objects.filter(invoice_item=invoice_item).update(invoice_id=invoice, internal_part_number=InventoryMaster.objects.get(id=ipn), purchase_date=invoice_date, qty=qty, unit_cost=price_ea, vendor=Vendor.objects.get(pk=vendor), unit=Measurement.objects.get(pk=base_unit), line_total=line_total)
 
 
             print('invoice')
