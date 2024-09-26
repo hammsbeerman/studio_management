@@ -6,15 +6,6 @@
 {% block content %}
 
 
-{% for x in workorders %}
-    {{ x.hr_customer }} -- {{ x.workorder }} -- {{ x.updated }} -- {{ x.customer.company_name }}</br>
-{% endfor %}
-
-{% for x in unique_list %}
-    {{ x.hr_customer }} -- {{ x.workorder }} -- {{ x.updated }} -- {{ x.customer.company_name }}</br>
-{% endfor %}
-
-
 <table class="table table-bordered">
     <thead>
         <tr>
