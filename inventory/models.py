@@ -77,7 +77,7 @@ class InventoryMaster(models.Model):
     primary_vendor_part_number = models.CharField('Primary Vendor Part Number', max_length=100, blank=True, null=True)
     primary_base_unit = models.ForeignKey(Measurement, null=True, on_delete=models.SET_NULL)
     #measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING)
-    units_per_base_unit = models.DecimalField('Units per base unit (almost always 1)', max_digits=15, decimal_places=4, blank=True, null=True)
+    units_per_base_unit = models.DecimalField('Units per base unit (almost always 1)', max_digits=15, decimal_places=6, blank=True, null=True)
     unit_cost = models.DecimalField('Unit Cost', max_digits=15, decimal_places=4, blank=True, null=True)
     price_per_m = models.DecimalField('Price Per M', max_digits=15, decimal_places=4, blank=True, null=True)
     #pricing_group = models.ManyToManyField(GroupCategory, through='InventoryPricingGroup')
@@ -91,7 +91,7 @@ class InventoryMaster(models.Model):
     price_group = models.ManyToManyField(GroupCategory, blank=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
-    high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
+    high_price = models.DecimalField('High Price', max_digits=15, decimal_places=6, blank=True, null=True)
 
 
     def __str__(self):

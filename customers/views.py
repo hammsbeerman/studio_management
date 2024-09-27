@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Min, Sum
 from django.utils import timezone
 from django.http import HttpResponse
+from datetime import datetime, timedelta
 from .models import Customer, Contact, ShipTo
 from .forms import CustomerForm, ContactForm, CustomerNoteForm, ShipToForm
 from controls.models import Numbering
@@ -651,27 +652,42 @@ def customer_list(request, customer=None):
     print(customer)
     if customer == 'LK':
         workorders = Workorder.objects.all().exclude(quote=1).exclude(internal_company='Krueger Printing').exclude(internal_company='Office Supplies').order_by("customer_id", "-updated")
+        old_workorders = Workorder.objects.all().exclude(quote=1).exclude(internal_company='Krueger Printing').exclude(internal_company='Office Supplies').exclude(date_completed__lt=datetime.now()-timedelta(days=90)).order_by("customer_id", "-updated")
         company = 'LK Design'
         # print(1)
         # print(workorders)
     if customer == 'K':
         workorders = Workorder.objects.all().exclude(quote=1).exclude(internal_company='LK Design').order_by("customer_id", "-updated")
+        old_workorders = Workorder.objects.all().exclude(quote=1).exclude(internal_company='LK Design').exclude(date_completed__lt=datetime.now()-timedelta(days=90)).order_by("customer_id", "-updated")
         company = 'Krueger Printing'
         # print(2)
         # print(workorders)
     if customer == 'A' or not customer:
         workorders = Workorder.objects.all().exclude(quote=1).order_by("customer_id", "-updated")
+        old_workorders = Workorder.objects.all().exclude(quote=1).exclude(date_completed__lt=datetime.now()-timedelta(days=90)).order_by("customer_id", "-updated")
         company = 'All'
         # print(3)
         # print(workorders)
     unique_list = []
     list = []
+    #print(old_workorders)
     for x in workorders:
         if x.customer not in list:
             unique_list.append(x)
             list.append(x.customer)
+    old_wo_unique_list = []
+    old_wo_list = []
+    for x in old_workorders:
+        if x.customer not in old_wo_list:
+            old_wo_unique_list.append(x)
+            old_wo_list.append(x.customer)
+    print(old_wo_unique_list)
+    for x in old_wo_unique_list:
+        print(x.date_completed)
+    #print(unique_list.id)
     context = {
         #'workorders':workorders,
+        'old_wo_unique_list':old_wo_unique_list,
         'unique_list': unique_list,
         'company': company,
     }
