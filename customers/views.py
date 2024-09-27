@@ -678,9 +678,10 @@ def customer_list(request, customer=None):
     old_wo_unique_list = []
     old_wo_list = []
     for x in old_workorders:
-        if x.customer not in old_wo_list:
-            old_wo_unique_list.append(x)
-            old_wo_list.append(x.customer)
+        if x.date_completed:
+            if x.customer not in old_wo_list:
+                old_wo_unique_list.append(x)
+                old_wo_list.append(x.customer)
     print(old_wo_unique_list)
     for x in old_wo_unique_list:
         print(x.date_completed)
