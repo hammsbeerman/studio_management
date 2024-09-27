@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime, date
 
 from django.urls import reverse
 
@@ -45,6 +46,9 @@ class Customer(models.Model):
 
     #def __str__(self):
     #    return self.id
+
+    def older_ninety(self):
+        return (datetime.date.today() - self.last_workorder).days > 90
     
 
     

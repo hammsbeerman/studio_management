@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Min, Sum
 from django.utils import timezone
 from django.http import HttpResponse
+import datetime
 from datetime import datetime, timedelta
 from .models import Customer, Contact, ShipTo
 from .forms import CustomerForm, ContactForm, CustomerNoteForm, ShipToForm
@@ -670,21 +671,44 @@ def customer_list(request, customer=None):
         # print(workorders)
     unique_list = []
     list = []
+    # old_workorder_list = []
     #print(old_workorders)
     for x in workorders:
         if x.customer not in list:
+            # item = Workorder.objects.get(customer=x.customer).order_by('-date_billed')[:1]
+            # x.last_date = item.date_billed
+            # print(x.last_date)
+            # print('item')
+            # print(item)
             unique_list.append(x)
             list.append(x.customer)
+    # for x in unique_list:
+    #     item = Workorder.objects.all()
+    #     print(item.hr_customer)
+    #     x.old = 1
+    #     if x.customer.last_workorder:
+    #         delta=datetime.today() - x.customer.last_workorder
+    #         if delta.days > 2:
+    #             x.old=True
+    #         else:
+    #             x.old=False
+            # else:
+            #     x.old=False
+            # if x.customer.older_ninety:
+            #     print('older')
+            #     #old_workorder_list.append(x)
+    # for x in unique_list:
+    #     print(x.old)
     old_wo_unique_list = []
-    old_wo_list = []
-    for x in old_workorders:
-        if x.date_completed:
-            if x.customer not in old_wo_list:
-                old_wo_unique_list.append(x)
-                old_wo_list.append(x.customer)
-    print(old_wo_unique_list)
-    for x in old_wo_unique_list:
-        print(x.date_completed)
+    # old_wo_list = []
+    # for x in old_workorders:
+    #     if x.date_completed:
+    #         if x.customer not in old_wo_list:
+    #             old_wo_unique_list.append(x)
+    #             old_wo_list.append(x.customer)
+    # print(old_wo_unique_list)
+    # for x in old_wo_unique_list:
+    #     print(x.date_completed)
     #print(unique_list.id)
     context = {
         #'workorders':workorders,

@@ -49,7 +49,8 @@
             <td>Zipcode</td>
         </tr>
     </thead>
-    {% for x in old_wo_unique_list %}
+    {% for x in unique_list %}
+        {% if x.old %}
         <tr>
             <td>{{ x.customer.company_name }}</td>
             <td>{{ x.customer.address1 }}</td>
@@ -57,7 +58,9 @@
             <td>{{ x.customer.city }}</td>
             <td>{{ x.customer.state }}</td>
             <td>{{ x.customer.zipcode }}</td>
+            <td>{{ x.customer.older_ninety }}
         </tr>
+        {% endif %}
     {% endfor %}
 </table>
 
