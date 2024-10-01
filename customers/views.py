@@ -52,7 +52,8 @@ def contacts(request):
 
 @login_required
 def customers(request):
-    customer = Customer.objects.all().order_by('company_name')
+    #customer = Customer.objects.all().order_by('company_name')
+    customer = Customer.objects.filter(active=1).order_by('company_name')
     context = {
         'customers': customer
         }
