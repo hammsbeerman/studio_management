@@ -570,7 +570,7 @@ def view_daily_sales(request):
 
 @login_required
 def view_bills_payable(request):
-    bills_list = AccountsPayable.objects.all()
+    bills_list = AccountsPayable.objects.all().order_by('-invoice_date')
     return render(request, 'finance/AP/view_bills.html',
         {'bill_list': bills_list})
 
