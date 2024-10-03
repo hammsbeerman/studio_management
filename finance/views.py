@@ -859,7 +859,7 @@ def add_invoice(request):
         # }
     #Limit vendors, but this is currently not being used
     #vendors = Vendors.objects.filter(supplier=1)
-    bills = AccountsPayable.objects.filter().order_by('invoice_date')   
+    bills = AccountsPayable.objects.filter().order_by('-invoice_date')   
     context = {
         'form': form,
         'bills':bills,
@@ -1571,7 +1571,7 @@ def bills_by_vendor(request):
         vendor = name
     vendors = Vendor.objects.all()
     if vendor:
-        bills = AccountsPayable.objects.filter(vendor=vendor).order_by('invoice_date') 
+        bills = AccountsPayable.objects.filter(vendor=vendor).order_by('-invoice_date') 
         context = {
             'bills':bills,
         }
