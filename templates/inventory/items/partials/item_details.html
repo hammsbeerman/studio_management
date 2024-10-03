@@ -19,6 +19,7 @@ Items history
     <table class="table table-bordered">
         <thead>
             <tr>
+                <td>PK</td>
                 <td>Invoice date</td>
                 <td>Invoice Number</td>
                 <td>Invoice Qty</td>
@@ -31,6 +32,7 @@ Items history
         </thead>
         {% for x in item %}
             <tr>
+                <td>{{x.pk}}</td>
                 <td>{{x.invoice.invoice_date}}</td>
                 <td>{{x.invoice.invoice_number}}</td>
                 <td>{{x.invoice_qty}}</td>

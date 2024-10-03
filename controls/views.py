@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.contrib import messages
 from datetime import datetime
 from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPriceCategoryForm, AddInventoryPricingGroupForm
@@ -609,6 +609,26 @@ def add_base_qty_variation(request):
 
 def add_internal_part_number(request):
     items = InvoiceItem.objects.all()
+
+
+def get_highest_item_price(request):
+    item = InventoryMaster.objects.filter(pk=201)
+    for x in item:
+        print(x.high_price)
+        try:
+            high_cost = InvoiceItem.objects.filter(internal_part_number=x.pk).aggregate(Max('unit_cost'))
+            high_cost = list(high_cost.values())[0]
+        except:
+            print(error)
+        if high_cost:
+            InventoryMaster.objects.filter(pk=x.pk).update(high_price=high_cost)
+            # Workorder.objects.filter(pk=x.pk).update(checked_and_verified=1)
+        print(x.name)
+        print(high_cost)
+    item = InventoryMaster.objects.get(pk=201)
+    print(item.high_price)
+
+
     
     # items = AllInvoiceItem.objects.all()
     # for x in items:

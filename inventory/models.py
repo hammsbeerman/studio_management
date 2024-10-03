@@ -34,6 +34,7 @@ class Vendor(models.Model):
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     #inventorydetails = models.ManyToManyField(Inventory, through="InventoryDetail")
     active = models.BooleanField(default=True)
+    void = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
