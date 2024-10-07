@@ -225,7 +225,7 @@ class OrderOut(models.Model):
     category = models.CharField('Category', max_length=10, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
 
-    vendor = models.ForeignKey(Vendor, blank=True, null=True, on_delete=models.DO_NOTHING)
+    vendor = models.ForeignKey(Vendor, blank=True, null=True, on_delete=models.SET_NULL)
     purchase_price = models.DecimalField('Purchase Price', max_digits=8, decimal_places=2, blank=True, null=True)
     percent_markup = models.DecimalField('Percent Markup', max_digits=8, decimal_places=2, blank=True, null=True)
     quantity = models.DecimalField('Quantity', max_digits=8, decimal_places=2, blank=True, null=True)

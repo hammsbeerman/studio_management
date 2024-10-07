@@ -17,7 +17,7 @@ from django.db.models.signals import (
 
 class AccountsPayable(models.Model):
     invoice_date = models.DateField(auto_now=False, auto_now_add=False)
-    vendor = models.ForeignKey(Vendor, blank=False, null=False, on_delete=models.DO_NOTHING)
+    vendor = models.ForeignKey(Vendor, blank=False, null=True, on_delete=models.SET_NULL)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     total = models.CharField('Total', max_length=100, blank=True, null=True)
     calculated_total = models.DecimalField('Calculated Total', max_digits=8, decimal_places=2, blank=True, null=True)
