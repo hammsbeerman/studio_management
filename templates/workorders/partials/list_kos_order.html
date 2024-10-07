@@ -9,6 +9,13 @@
             <li><a href='{{ x.get_absolute_url }}'>{{ x.kos_workorder }} -- {{ x.customer.company_name }}</a></li>
             {% endfor %}
             </ul></p>
+        <p>
+            Order Outs
+            <p><ul>
+                {% for x in  orderout %}
+                <li><a href='{{ x.get_absolute_url }}'>{{ x.kos_workorder }} -- {{ x.customer.company_name }}</a></li>
+                {% endfor %}
+            </ul></p>
     </div>
     <div class="col-sm-4">
         Recently Completed
@@ -29,12 +36,7 @@
 </div>
 <div class="row">
     <div class="col-sm-4">
-        Order Outs
-        <p><ul>
-            {% for x in  orderout %}
-            <li><a href='{{ x.get_absolute_url }}'>{{ x.kos_workorder }} -- {{ x.customer.company_name }}</a></li>
-            {% endfor %}
-        </ul></p>
+        
     </div>
     <div class="col-sm-4">
     </div>
