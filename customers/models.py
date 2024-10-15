@@ -147,6 +147,8 @@ class MailingCustomer(models.Model):
 
     #def __str__(self):
     #    return self.id
+    class Meta:
+        ordering = ["company_name", "last_name"]
 
 
     
