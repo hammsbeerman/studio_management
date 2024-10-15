@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Add Mailing List Customer</h1>
+<br/>
+
+<div class="container-fluid">
+    <div class="row">
+      <div class="col-sm-3">
+        <form method='POST'>
+            {% csrf_token %}
+            {{ form.as_p}}
+            <div><button type='submit'>Add Mailing list customer</button></div>
+        </form>
+    </div>
+
+    <div class="col-sm-9">
+        <div id="vendor_invoices">
+        
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col" class="">Company Name</th>
+                  <th scope="col" class="">Address 1</th>
+                  <th scope="col" class="">Address 2</th>
+                  <th scope="col" class="">City</th>
+                  <th scope="col" class="">State</th>
+                  <th scope="col" class="">Zipcode</th>
+                  <th scope="col" class=""></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tbody>
+                    {% for x in mailing_customer %}
+                        <tr>
+                            <td>{{ x.company_name }}</td>
+                            <td>{{ x.address1 }}</td>
+                            <td>{{ x.address2 }}</td>
+                            <td>{{ x.city }}</td>
+                            <td>{{ x.state }}</td>
+                            <td>{{ x.zipcode }}</td>
+                            <td><a href="{% url 'customers:edit_mailing_customer' mailing=x.id %}" class="btn btn-secondary" role="button">Edit</a></td>
+                        </tr>
+                    {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+
+
+{% endblock content %}

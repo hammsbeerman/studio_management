@@ -24,7 +24,7 @@ from krueger.models import KruegerJobDetail, WideFormat
 def invoice_pdf(request, id):
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; attachment; filename=Expenses' + \
+    response['Content-Disposition'] = 'inline; attachment; filename=' + \
         str(datetime.datetime.now())+'.pdf'
     #remove inline to allow direct download
     #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
@@ -297,7 +297,7 @@ def management(request):
 @login_required
 def export_batch_statement_pdf(request):
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; attachment; filename=Expenses' + \
+    response['Content-Disposition'] = 'inline; attachment; filename=' + \
         str(datetime.datetime.now())+'.pdf'
     #remove inline to allow direct download
     #response['Content-Disposition'] = 'attachment; filename=Expenses' + \

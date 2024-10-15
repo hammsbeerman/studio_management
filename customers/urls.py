@@ -24,6 +24,8 @@ from .views import (
     new_shipto,
     change_shipto,
     customer_list,
+    add_mailing_customer,
+    edit_mailing_customer,
 )
 
 app_name='customers'
@@ -53,6 +55,9 @@ urlpatterns = [
     path("change_shipto/", change_shipto, name='change_shipto'),
     path("customer_list/<str:customer>/", customer_list, name='customer_list'),
     path("customer_list/", customer_list, name='customer_list'),
+    path("add_mailing_customer/", add_mailing_customer, name='add_mailing_customer'),
+    path("edit_mailing_customer/<int:mailing>/", edit_mailing_customer, name='edit_mailing_customer'),
+
     
     
     #path("customer_notes/", customer_notes, name='customer_notes'),

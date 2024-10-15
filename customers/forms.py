@@ -1,5 +1,5 @@
 from django import forms
-from .models import Customer, Contact, ShipTo
+from .models import Customer, Contact, ShipTo, MailingCustomer
 from localflavor.us.forms import USStateSelect
 
 class CustomerForm(forms.ModelForm):
@@ -62,3 +62,10 @@ class ShipToForm(forms.ModelForm):
     class Meta:
         model = ShipTo
         fields = ['company_name', 'first_name', 'last_name', 'address1', 'address2', 'city', 'state', 'zipcode', 'phone1', 'phone2', 'email', 'website', 'logo', 'notes']
+
+class MailingCustomerForm(forms.ModelForm):
+    required_css_class = 'required-field'
+    state = forms.CharField(widget=USStateSelect(), initial='WI')
+    class Meta:
+        model = MailingCustomer
+        fields = ['company_name', 'first_name', 'last_name', 'address1', 'address2', 'city', 'state', 'zipcode', 'tax_exempt', 'tax_exempt_number', 'phone1', 'phone2', 'email', 'website', 'active']

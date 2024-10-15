@@ -5,8 +5,8 @@ from django.utils import timezone
 from django.http import HttpResponse
 import datetime
 from datetime import datetime, timedelta
-from .models import Customer, Contact, ShipTo
-from .forms import CustomerForm, ContactForm, CustomerNoteForm, ShipToForm
+from .models import Customer, Contact, ShipTo, MailingCustomer
+from .forms import CustomerForm, ContactForm, CustomerNoteForm, ShipToForm, MailingCustomerForm
 from controls.models import Numbering
 from workorders.models import Workorder
 from workorders.forms import WorkorderForm
@@ -721,7 +721,126 @@ def customer_list(request, customer=None):
         return render(request, 'customers/partials/customer_list.html', context)
     return render(request, 'customers/customer_list.html', context)
 
+@login_required
+def add_mailing_customer(request):
+    if request.method == "POST":
+        form = MailingCustomerForm(request.POST)
+        if form.is_valid():
+            cn = request.POST.get('company_name')
+            fn = request.POST.get('first_name')
+            ln = request.POST.get('last_name')
+            if not cn and not fn and not ln:
+                message = 'Please fill in Company name or Customer Name'
+                context = {
+                    'message': message,
+                    'form': form
+                }
+                return render(request, 'customers/add_mailing_customer.html', context)
+            if not cn:
+                print('Empty string')
+                print(fn)
+                print(ln)
+                form.instance.company_name = fn + ' ' + ln
+                form.save()
+            else:
+                print(cn)
+                form.save()
+    mailing_customer = MailingCustomer.objects.all()
+    form = MailingCustomerForm()
+    context = {
+        'form': form,
+        'mailing_customer': mailing_customer
+    }
+    return render(request, 'customers/add_mailing_customer.html', context)
 
+
+def edit_mailing_customer(request, mailing=None):
+    pk=mailing
+    if request.method == "POST":
+        instance = MailingCustomer.objects.get(id=pk)
+        form = MailingCustomerForm(request.POST or None, instance=instance)
+        if form.is_valid():
+            cn = request.POST.get('company_name')
+            fn = request.POST.get('first_name')
+            ln = request.POST.get('last_name')
+            if not cn and not fn and not ln:
+                message = 'Please fill in Company name or Customer Name'
+                context = {
+                    'message': message,
+                    'form': form
+                }
+                return render(request, 'customers/add_mailing_customer.html', context)
+            if not cn:
+                print('Empty string')
+                print(fn)
+                print(ln)
+                form.instance.company_name = fn + ' ' + ln
+                form.save()
+            else:
+                print(cn)
+                form.save()
+            #InvoiceItem.objects.filter(pk=id).update(name=name, description=description, vendor_part_number=vendor_part_number, unit_cost=unit_cost, qty=qty)
+            
+            return redirect ('customers:add_mailing_customer') 
+            #return HttpResponse(status=204, headers={'HX-Trigger': 'itemChanged'})         
+        else:        
+            messages.success(request, "Something went wrong")
+            return redirect ('customers:add_mailing_customer')
+    obj = get_object_or_404(MailingCustomer, id=mailing)
+    form = MailingCustomerForm(instance=obj)
+    # bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')
+    # vendors = Vendor.objects.all()
+    mailing_customer = MailingCustomer.objects.all()
+    context = {
+        #'vendors':vendors,
+        'pk':pk,
+        #'bills':bills,
+        'form':form,
+        'mailing_customer':mailing_customer
+    }
+    return render (request, "customers/add_mailing_customer.html", context)
+
+
+
+
+
+
+
+
+
+
+
+# @login_required
+# def edit_mailing_customer(request):
+#     if request.method == "POST":
+#         form = MailingCustomerForm(request.POST)
+#         if form.is_valid():
+#             cn = request.POST.get('company_name')
+#             fn = request.POST.get('first_name')
+#             ln = request.POST.get('last_name')
+#             if not cn and not fn and not ln:
+#                 message = 'Please fill in Company name or Customer Name'
+#                 context = {
+#                     'message': message,
+#                     'form': form
+#                 }
+#                 return render(request, 'customers/add_mailing_customer.html', context)
+#             if not cn:
+#                 print('Empty string')
+#                 print(fn)
+#                 print(ln)
+#                 form.instance.company_name = fn + ' ' + ln
+#                 form.save()
+#             else:
+#                 print(cn)
+#                 form.save()
+#     mailing_customer = MailingCustomer.objects.all()
+#     form = MailingCustomerForm()
+#     context = {
+#         'form': form,
+#         'mailing_customer': mailing_customer
+#     }
+#     return render(request, 'customers/add_mailing_customer.html', context)
 
 
 
@@ -741,3 +860,4 @@ def customer_list(request, customer=None):
 #         'unique_list':unique_list,
 #     }
 #     return render (request, "controls/customers_without_address.html", context)
+
