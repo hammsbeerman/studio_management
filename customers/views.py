@@ -735,7 +735,7 @@ def add_mailing_customer(request):
                     'message': message,
                     'form': form
                 }
-                return render(request, 'customers/add_mailing_customer.html', context)
+                return redirect ('customers:add_mailing_customer')
             if not cn:
                 print('Empty string')
                 print(fn)
@@ -745,6 +745,7 @@ def add_mailing_customer(request):
             else:
                 print(cn)
                 form.save()
+            return redirect ('customers:add_mailing_customer')
     mailing_customer = MailingCustomer.objects.all()
     form = MailingCustomerForm()
     context = {
@@ -769,7 +770,7 @@ def edit_mailing_customer(request, mailing=None):
                     'message': message,
                     'form': form
                 }
-                return render(request, 'customers/add_mailing_customer.html', context)
+                return redirect ('customers:add_mailing_customer')
             if not cn:
                 print('Empty string')
                 print(fn)
@@ -799,6 +800,10 @@ def edit_mailing_customer(request, mailing=None):
         'mailing_customer':mailing_customer
     }
     return render (request, "customers/add_mailing_customer.html", context)
+
+def delete_mailing_customer(request, mailing=None):
+    MailingCustomer.objects.filter(id=mailing).delete()
+    return redirect ('customers:add_mailing_customer') 
 
 
 
