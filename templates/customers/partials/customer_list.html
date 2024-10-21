@@ -21,6 +21,16 @@
             <td>{{ x.customer.zipcode }}</td>
         </tr>
     {% endfor %}
+    {% for x in mailing %}
+    <tr>
+        <td>{{ x.company_name }}</td>
+        <td>{{ x.customer.address1 }}</td>
+        <td>{{ x.customer.address2 }}</td>
+        <td>{{ x.customer.city }}</td>
+        <td>{{ x.customer.state }}</td>
+        <td>{{ x.customer.zipcode }}</td>
+    </tr>
+    {% endfor %}
 </table>
 
 <p>
@@ -52,4 +62,38 @@
                 </tr>
                 {% endif %}
             {% endfor %}
+
         </table>
+{% if mailing %}
+        <p>
+            <p>
+                Customers to follow up with
+        
+        
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <td>Company Name</td>
+                            <td>Address 1</td>
+                            <td>Address 2</td>
+                            <td>City</td>
+                            <td>State</td>
+                            <td>Zipcode</td>
+                        </tr>
+                    </thead>
+                    {% for x in unique_list %}
+                        {% if x.old %}
+                        <tr>
+                            <td>{{ x.customer.company_name }}</td>
+                            <td>{{ x.customer.address1 }}</td>
+                            <td>{{ x.customer.address2 }}</td>
+                            <td>{{ x.customer.city }}</td>
+                            <td>{{ x.customer.state }}</td>
+                            <td>{{ x.customer.zipcode }}</td>
+                            <td>{{ x.customer.older_ninety }}
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+        
+                </table>
+{% endif %}

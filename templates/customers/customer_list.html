@@ -8,9 +8,11 @@
 <button hx-trigger="click" hx-get="{% url 'customers:customer_list' customer='A'%}" hx-target="#customers" class="btn btn-secondary">All Customers</button>
 <button hx-trigger="click" hx-get="{% url 'customers:customer_list' customer='LK' %}" hx-target="#customers" class="btn btn-secondary">LK Customers</button>
 <button hx-trigger="click" hx-get="{% url 'customers:customer_list' customer='K' %}" hx-target="#customers" class="btn btn-secondary">Krueger Customers</button>
+<button hx-trigger="click" hx-get="{% url 'customers:customer_list' customer='M' %}" hx-target="#customers" class="btn btn-secondary">Mailing List Addons</button>
 
 <div id="customers">
 <h1>All Customers</h1>
+
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -61,6 +63,16 @@
             <td>{{ x.customer.older_ninety }}
         </tr>
         {% endif %}
+    {% endfor %}
+    {% for x in mailing %}
+    <tr>
+        <td>{{ x.company_name }}</td>
+        <td>{{ x.customer.address1 }}</td>
+        <td>{{ x.customer.address2 }}</td>
+        <td>{{ x.customer.city }}</td>
+        <td>{{ x.customer.state }}</td>
+        <td>{{ x.customer.zipcode }}</td>
+    </tr>
     {% endfor %}
 </table>
 

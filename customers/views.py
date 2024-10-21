@@ -652,6 +652,7 @@ def change_shipto(request):
 
 def customer_list(request, customer=None):
     print(customer)
+    mailing=''
     if customer == 'LK':
         workorders = Workorder.objects.all().exclude(quote=1).exclude(internal_company='Krueger Printing').exclude(internal_company='Office Supplies').order_by("customer_id", "-updated")
         old_workorders = Workorder.objects.all().exclude(quote=1).exclude(internal_company='Krueger Printing').exclude(internal_company='Office Supplies').exclude(date_completed__lt=datetime.now()-timedelta(days=90)).order_by("customer_id", "-updated")
@@ -664,10 +665,15 @@ def customer_list(request, customer=None):
         company = 'Krueger Printing'
         # print(2)
         # print(workorders)
+    if customer == 'M':
+        mailing = MailingCustomer.objects.all()
+        workorders = ''
+        company = 'Mailing List Add-ons'
     if customer == 'A' or not customer:
         workorders = Workorder.objects.all().exclude(quote=1).order_by("customer_id", "-updated")
         old_workorders = Workorder.objects.all().exclude(quote=1).exclude(date_completed__lt=datetime.now()-timedelta(days=90)).order_by("customer_id", "-updated")
         company = 'All'
+        mailing = MailingCustomer.objects.all()
         # print(3)
         # print(workorders)
     unique_list = []
@@ -683,6 +689,8 @@ def customer_list(request, customer=None):
             # print(item)
             unique_list.append(x)
             list.append(x.customer)
+    for x in mailing:
+        print(x.company_name)
     # for x in unique_list:
     #     item = Workorder.objects.all()
     #     print(item.hr_customer)
@@ -713,6 +721,7 @@ def customer_list(request, customer=None):
     #print(unique_list.id)
     context = {
         #'workorders':workorders,
+        'mailing':mailing,
         'old_wo_unique_list':old_wo_unique_list,
         'unique_list': unique_list,
         'company': company,
