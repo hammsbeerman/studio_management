@@ -48,6 +48,7 @@ app_name='finance'
 urlpatterns = [
     path('', finance_main, name='finance'),
     path('add_inventory_item/<int:vendor>/<int:invoice>', add_inventory_item, name='add_inventory_item'),
+    path('add_inventory_item/<int:baseitem>', add_inventory_item, name='add_inventory_item'),
     path('add_inventory_item/', add_inventory_item, name='add_inventory_item'),
     path('add_item_to_vendor/<int:vendor>/<int:invoice>', add_item_to_vendor, name='add_item_to_vendor'),
     path('add_item_to_vendor/', add_item_to_vendor, name='add_item_to_vendor'),

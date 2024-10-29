@@ -29,7 +29,9 @@ class Vendor(models.Model):
     supplier = models.BooleanField('Supplier', blank=False, null=False, default=True)
     retail_vendor = models.BooleanField('Retail Vendor', blank=False, null=False, default=True)
     inventory_vendor = models.BooleanField('Inventory Vendor', blank=False, null=False, default=True)
+    online_store_vendor = models.BooleanField('Online Store Vendor', blank=False, null=False, default=False)
     non_inventory_vendor = models.BooleanField('Non Inventory Vendor', blank=False, null=False, default=True)
+
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     #inventorydetails = models.ManyToManyField(Inventory, through="InventoryDetail")
@@ -87,6 +89,7 @@ class InventoryMaster(models.Model):
     supplies = models.BooleanField('Supply Item', blank=False, null=False, default=True)
     retail = models.BooleanField('Retail Item', blank=False, null=False, default=True)
     non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False)
+    online_store = models.BooleanField('Online Store Item', blank=False, null=False, default=True)
     not_grouped = models.BooleanField('Not Price Grouped', blank=False, null=False, default=False)
     grouped = models.BooleanField('In price group', blank=False, null=False, default=False)
     price_group = models.ManyToManyField(GroupCategory, blank=True)
@@ -129,6 +132,7 @@ class InventoryQtyVariations(models.Model):
     
 @receiver(post_save, sender=InventoryMaster)  
 def Unit_Cost_Handler(sender, instance, created, *args, **kwargs):
+    print('adklasdklamdklamdlkamdalksdmalkdmalkdmalkdmasklmalksdmalkdmamkadmaskdlmalkdlkedmaeiliiliiiiefkasdlfasdlkasjmkdl')
     #print(args, kwargs)
     #print(instance.pk)
     if instance.high_price:
@@ -138,6 +142,7 @@ def Unit_Cost_Handler(sender, instance, created, *args, **kwargs):
             m = unit_cost * 1000
             unit_cost = round(unit_cost, 6)
             m = round(m, 6)
+            print('adklasdklamdklamdlkamdalksdmalkdmalkdmalkdmasklmalksdmalkdmamkadmaskdlmalkdlkedmaeiliiliiiiefkasdlfasdlkasjmkdl')
             InventoryMaster.objects.filter(pk=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
             Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
     
@@ -205,13 +210,14 @@ class VendorItemDetail(models.Model):
     supplies = models.BooleanField('Supply Item', blank=False, null=False)
     retail = models.BooleanField('Retail Item', blank=False, null=False)
     non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False)
+    online_store = models.BooleanField('Online Store Item', blank=False, null=False)
     #internal_part_number = models.ManyToManyField(RetailInventoryMaster)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return self.name + ' -- ' + self.vendor.name
     
     
 

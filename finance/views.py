@@ -1485,7 +1485,8 @@ def add_item_to_vendor(request, vendor=None, invoice=None):
         return render (request, "inventory/items/add_item_to_vendor.html", context)
     return render (request, "inventory/partials/add_item_to_vendor.html", context)
 
-def add_inventory_item(request, vendor=None, invoice=None):
+def add_inventory_item(request, vendor=None, invoice=None, baseitem=None):
+    print(baseitem)
     form = InventoryMasterForm
     if not invoice:
         if request.method == "POST":
@@ -1510,10 +1511,19 @@ def add_inventory_item(request, vendor=None, invoice=None):
                 supplies = item.supplies
                 retail = item.retail
                 non_inventory = item.non_inventory
+                online_store = item.online_store
                 invoice = request.POST.get('invoice')
                 print(vendor)
-                item = VendorItemDetail(vendor=vendor, name=name, vendor_part_number=vpn, description=description, supplies=supplies, retail=retail, non_inventory=non_inventory, internal_part_number_id=item.pk )
+                item = VendorItemDetail(vendor=vendor, name=name, vendor_part_number=vpn, description=description, supplies=supplies, retail=retail, non_inventory=non_inventory, online_store=online_store, internal_part_number_id=item.pk )
                 item.save()
+                baseitem = request.POST.get('baseitem')
+                print(baseitem)
+                print('123')
+                if baseitem:
+                    print('dsajk')
+                    messages.success(request, ("Item has been added"))
+                    return redirect ('finance:add_inventory_item', baseitem=1)
+                    #return redirect ('finance:invoice_detail', id=invoice)
                 if invoice is None:
                     return redirect ('finance:invoice_detail', id=invoice)
                 #return redirect ('finance:retail_inventory_list')
@@ -1524,11 +1534,19 @@ def add_inventory_item(request, vendor=None, invoice=None):
         }
         print('test')
         #return redirect ('finance:view_bills_payable')
+        if baseitem:
+            print(baseitem)
+            return render (request, "inventory/items/add_inventory_item.html", context)
         return render (request, "inventory/partials/add_inventory_item.html", context)
     context = {
         'form':form,
         'invoice':invoice
     }
+    print(baseitem)
+    if baseitem:
+        print(baseitem)
+        return render (request, "inventory/items/add_inventory_item.html", context)
+    print(baseitem)
     return render (request, "inventory/partials/add_inventory_item.html", context)
 
 

@@ -8,11 +8,30 @@ Add Inventory Item:
 <p>
     <form action='/finance/add_inventory_item/' method="POST">
           {% csrf_token %}
-            {{ form.as_p }}   
+ 
+            {{ form.name|as_crispy_field }}
+
+            {{ form.description|as_crispy_field }}
+
+            {{ form.primary_vendor|as_crispy_field }}
+
+            {{ form.primary_vendor_part_number|as_crispy_field }}
+
+            {{ form.primary_base_unit|as_crispy_field }}
+
+            {{ form.units_per_base_unit|as_crispy_field }}
+
+            {{ form.supplies|as_crispy_field }}
+
+            {{ form.retail|as_crispy_field }}
+
+            {{ form.non_inventory|as_crispy_field }}
+
+            {{ form.online_store|as_crispy_field }}
+
             
             <input type="hidden" id="invoice" name="invoice" value="{{ invoice }}">
-                  
-              sdfasfadfad
+            <input type="hidden" id="baseitem" name="baseitem" value="1">
             
         <button type="submit">Save</button>
  
