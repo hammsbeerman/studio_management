@@ -19,6 +19,7 @@ from workorders.models import Workorder
 from controls.models import PaymentType, Measurement
 from inventory.models import Vendor, InventoryMaster, VendorItemDetail, InventoryQtyVariations, InventoryPricingGroup, Inventory
 from inventory.forms import InventoryMasterForm, VendorItemDetailForm
+from onlinestore.models import StoreItemDetails
 
 logger = logging.getLogger(__file__)
 
@@ -596,6 +597,7 @@ def complete_not_billed(request):
 
 @login_required
 def ar_aging(request):
+    #Most of this function was moved to a cronjob
     update_ar = request.GET.get('up')
     print('update')
     print(update_ar)
@@ -604,75 +606,75 @@ def ar_aging(request):
     customers = Customer.objects.all()
     ar = Araging.objects.all()
     workorders = Workorder.objects.filter().exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1)
-    for x in workorders:
-        #print(x.id)
-        if not x.date_billed:
-            x.date_billed = today
-        age = x.date_billed - today
-        age = abs((age).days)
-        print(age)
-        Workorder.objects.filter(pk=x.pk).update(aging = age)
+    # for x in workorders:
+    #     #print(x.id)
+    #     if not x.date_billed:
+    #         x.date_billed = today
+    #     age = x.date_billed - today
+    #     age = abs((age).days)
+    #     print(age)
+    #     Workorder.objects.filter(pk=x.pk).update(aging = age)
     total_balance = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-    for x in customers:
-        try:
-            #Get the Araging customer and check to see if aging has been updated today
-            modified = Araging.objects.get(customer=x.id)
-            print(x.company_name)
-            day = today.strftime('%Y-%m-%d')
-            day = str(day)
-            date = str(modified.date)
-            print(day)
-            print(date)
-            if day == date:
-                #Don't update, as its been done today
-                print('today')
-                update = 0
-                if update_ar == '1':
-                    print('update')
-                    update = 1
-            else:
-                update = 1
-        except:
-            update = 1
-        #Update the Araging that needs to be done
-        if update == 1:
-            if Workorder.objects.filter(customer_id = x.id).exists():
-                current = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
-                try:
-                    current = list(current.values())[0]
-                except:
-                    current = 0
-                thirty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
-                try: 
-                    thirty = list(thirty.values())[0]
-                except:
-                    thirty = 0
-                sixty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
-                try:
-                    sixty = list(sixty.values())[0]
-                except:
-                    sixty = 0
-                ninety = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
-                try:
-                    ninety = list(ninety.values())[0]
-                except:
-                    ninety = 0
-                onetwenty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
-                try:
-                    onetwenty = list(onetwenty.values())[0]
-                except:
-                    onetwenty = 0
-                total = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-                try:
-                    total = list(total.values())[0]
-                except:
-                    total = 0
-                try: 
-                    obj = Araging.objects.get(customer_id=x.id)
-                    Araging.objects.filter(customer_id=x.id).update(hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-                except:
-                    obj = Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-                    obj.save()
+    # for x in customers:
+    #     try:
+    #         #Get the Araging customer and check to see if aging has been updated today
+    #         modified = Araging.objects.get(customer=x.id)
+    #         print(x.company_name)
+    #         day = today.strftime('%Y-%m-%d')
+    #         day = str(day)
+    #         date = str(modified.date)
+    #         print(day)
+    #         print(date)
+    #         if day == date:
+    #             #Don't update, as its been done today
+    #             print('today')
+    #             update = 0
+    #             if update_ar == '1':
+    #                 print('update')
+    #                 update = 1
+    #         else:
+    #             update = 1
+    #     except:
+    #         update = 1
+    #     #Update the Araging that needs to be done
+    #     if update == 1:
+    #         if Workorder.objects.filter(customer_id = x.id).exists():
+    #             current = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
+    #             try:
+    #                 current = list(current.values())[0]
+    #             except:
+    #                 current = 0
+    #             thirty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
+    #             try: 
+    #                 thirty = list(thirty.values())[0]
+    #             except:
+    #                 thirty = 0
+    #             sixty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
+    #             try:
+    #                 sixty = list(sixty.values())[0]
+    #             except:
+    #                 sixty = 0
+    #             ninety = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
+    #             try:
+    #                 ninety = list(ninety.values())[0]
+    #             except:
+    #                 ninety = 0
+    #             onetwenty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
+    #             try:
+    #                 onetwenty = list(onetwenty.values())[0]
+    #             except:
+    #                 onetwenty = 0
+    #             total = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
+    #             try:
+    #                 total = list(total.values())[0]
+    #             except:
+    #                 total = 0
+    #             try: 
+    #                 obj = Araging.objects.get(customer_id=x.id)
+    #                 Araging.objects.filter(customer_id=x.id).update(hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
+    #             except:
+    #                 obj = Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
+    #                 obj.save()
     ar = Araging.objects.all().order_by('hr_customer')
     #total_current = Araging.objects.filter().aggregate(Sum('current'))
     total_current = ar.filter().aggregate(Sum('current'))
@@ -1181,6 +1183,8 @@ def add_invoice_item(request, invoice=None, vendor=None, type=None):
     print(type)
     if type == 1:
         items = VendorItemDetail.objects.filter(vendor=vendor, non_inventory=1)
+    if type == 2:
+        items = VendorItemDetail.objects.filter(vendor=vendor, online_store=1)
     else:
         items = VendorItemDetail.objects.filter(vendor=vendor, non_inventory=0)
     form = AddInvoiceItemForm
@@ -1512,10 +1516,17 @@ def add_inventory_item(request, vendor=None, invoice=None, baseitem=None):
                 retail = item.retail
                 non_inventory = item.non_inventory
                 online_store = item.online_store
+                if online_store:
+                    print('Online Store')
+                    print(online_store)
+                print('Online Store Above')
                 invoice = request.POST.get('invoice')
                 print(vendor)
                 item = VendorItemDetail(vendor=vendor, name=name, vendor_part_number=vpn, description=description, supplies=supplies, retail=retail, non_inventory=non_inventory, online_store=online_store, internal_part_number_id=item.pk )
                 item.save()
+                if online_store:
+                    store_item = StoreItemDetails(item=InventoryMaster.objects.get(pk=pk))
+                    store_item.save()
                 baseitem = request.POST.get('baseitem')
                 print(baseitem)
                 print('123')

@@ -7,6 +7,7 @@ from inventory.models import Vendor, InventoryMaster, VendorItemDetail, Inventor
 from workorders.models import Workorder
 from controls.models import PaymentType
 from customers.models import Customer
+from onlinestore.models import StoreItemDetails
 
 from django.dispatch import receiver
 from django.db.models.signals import (
@@ -313,6 +314,10 @@ def highprice_handler(sender, instance, created, *args, **kwargs):
         InventoryMaster.objects.filter(pk=internal_part_number.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=datetime.now())
         try:
             Inventory.objects.filter(internal_part_number=internal_part_number.id).update(unit_cost=cost, price_per_m=m, updated=datetime.now())
+        except:
+            pass
+        try:
+            StoreItemDetails.objects.filter(item=internal_part_number.id).update(high_cost=price, updated=datetime.now())
         except:
             pass
         groups = InventoryPricingGroup.objects.filter(inventory=internal_part_number.id)

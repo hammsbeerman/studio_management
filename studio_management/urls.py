@@ -37,6 +37,7 @@ urlpatterns = [
     path('inventory/', include('inventory.urls')),
     path('finance/', include('finance.urls')),
     path('krueger/', include('krueger.urls')),
+    path('onlinestore/', include('onlinestore.urls')),
     path('pdf/', include('pdf.urls')),
     path('pricesheet/', include('pricesheet.urls')),
     path('printleader/', include('printleader.urls')),

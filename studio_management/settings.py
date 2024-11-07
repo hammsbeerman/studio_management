@@ -84,6 +84,7 @@ THIRD_PARTY_APPS = [
     'crispy_bootstrap5',
     'import_export',
     'rest_framework',
+    'django_crontab',
 ]
 
 LOCAL_APPS = [
@@ -95,6 +96,7 @@ LOCAL_APPS = [
     'inventory',
     'finance',
     'krueger',
+    'onlinestore',
     'pdf',
     'pricesheet',
     'printleader',
@@ -283,3 +285,6 @@ MEDIA_URL = '/media/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+CRONJOBS = [
+    ('*/5 * * * *', 'finance.cron.ar_aging')
+]

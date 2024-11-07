@@ -62,6 +62,7 @@
 
 <div id="invoices">
     {% if vendor.supplier %}<button hx-trigger="click" hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id %}" hx-target="#remainder" class="btn btn-danger">Add Invoice Item</button>{% endif %}
+    {% if vendor.online_store_vendor %}<button hx-trigger="click" hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id type=2 %}" hx-target="#remainder" class="btn btn-danger">Add Online Store Item</button>{% endif %}
     <button hx-trigger="click" hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id type=1 %}" hx-target="#remainder" class="btn btn-danger">Add Non Inventory Item</button>
     <!-- {% if vendor.supplier %}<button hx-trigger="click" hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id %}" hx-target="#remainder" class="btn btn-danger">Add Supply Item</button>{% endif %}
     <button hx-trigger="click" hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id %}" hx-target="#remainder" class="btn btn-danger">Add Non Inventory Item</button> -->
