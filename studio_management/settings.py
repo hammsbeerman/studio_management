@@ -183,7 +183,8 @@ if not TESTING:
 else:
     #Development Sentry
     sentry_sdk.init(
-    dsn="https://86f2807741dc55ed2fd9182d9471e38d@o4507963680096256.ingest.us.sentry.io/4507963682324480",
+    #Uncomment next line to allow for Sentry data
+    #dsn="https://86f2807741dc55ed2fd9182d9471e38d@o4507963680096256.ingest.us.sentry.io/4507963682324480",
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for tracing.
         traces_sample_rate=1.0,

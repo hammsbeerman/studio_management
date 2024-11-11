@@ -34,10 +34,12 @@ class StoreItemVariation(models.Model):
 def markup_handler(sender, instance, created, *args, **kwargs):
       high_cost = instance.high_cost
       current_price = instance.online_store_price
+      if not high_cost:
+            high_cost = 0
       oneforty = high_cost * 1.4
       try:
            actual = current_price / high_cost
       except:
-           actual = '30'
+           actual = '0'
       StoreItemDetails.objects.filter(pk=instance.pk).update(oneforty_percent=oneforty, actual_markup=actual)
 
