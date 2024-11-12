@@ -619,7 +619,7 @@ def get_highest_item_price(request):
             high_cost = InvoiceItem.objects.filter(internal_part_number=x.pk).aggregate(Max('unit_cost'))
             high_cost = list(high_cost.values())[0]
         except:
-            print(error)
+            print('error')
         if high_cost:
             InventoryMaster.objects.filter(pk=x.pk).update(high_price=high_cost)
             # Workorder.objects.filter(pk=x.pk).update(checked_and_verified=1)
@@ -627,6 +627,14 @@ def get_highest_item_price(request):
         print(high_cost)
     item = InventoryMaster.objects.get(pk=201)
     print(item.high_price)
+
+
+def items_missing_details(request):
+    items = VendorItemDetail.objects.all()
+    context = {
+        'items':items,
+    }
+    return render (request, "controls/items_missing_details.html", context )
 
 # def vendor_children(request):
 #     vendor = 

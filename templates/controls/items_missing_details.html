@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+<H1>Items missing details</h1>
+
+
+Missing Vendor:
+{% for x in items %}
+    {% if not x.vendor %}
+        {{ x.pk }}</br>
+    {% endif %}
+{% endfor %}
+<p>
+</br>
+<p>
+Missing Item:
+    {% for x in items %}
+        {% if not x.vendor %}
+            {{ x.pk }}</br>
+        {% endif %}
+    {% endfor %}
+
+
+
+{% endblock content %}
