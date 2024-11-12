@@ -31,6 +31,7 @@ class AccountsPayable(models.Model):
     date_paid = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
     amount_paid = models.DecimalField('Amount Paid', blank=True, null=True, max_digits=10, decimal_places=2)
     payment_method = models.CharField('Payment Method', choices=[('Cash', 'Cash'), ('Check', 'Check'), ('Credit Card', 'Credit Card'), ('ACH', 'ACH'), ('Trade', 'Trade'), ('Other', 'Other')], max_length=100, blank=True, null=True)
+    check_number = models.CharField('Check Number', max_length=30, blank=True, null=False)
     retail_invoice = models.BooleanField('Retail Invoice', null=True, default=True)
     supplies_invoice = models.BooleanField('Supplies Invoice', null=True, default=True)
     non_inventory = models.BooleanField('Non Inventory Invoice', null=True, default=True)

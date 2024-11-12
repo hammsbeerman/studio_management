@@ -46,14 +46,14 @@ class AppliedElsewhereForm(forms.ModelForm):
 class AddInvoiceForm(forms.ModelForm):
    class Meta:
        model = AccountsPayable
-       fields = ['invoice_date', 'invoice_number', 'description', 'total', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method', 'retail_invoice', 'supplies_invoice', 'non_inventory', 'order_out']
+       fields = ['invoice_date', 'invoice_number', 'description', 'total', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method', 'check_number']
        labels = {
         }
        
 class EditInvoiceForm(forms.ModelForm):
    class Meta:
        model = AccountsPayable
-       fields = ['invoice_date', 'invoice_number', 'description', 'vendor', 'total', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method', 'retail_invoice', 'supplies_invoice', 'non_inventory', 'order_out']
+       fields = ['invoice_date', 'invoice_number', 'description', 'vendor', 'total', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method', 'check_number']
        labels = {
         }
        
