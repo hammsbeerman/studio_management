@@ -15,16 +15,16 @@ def store_items(request):
     for x in items:
         high_cost = x.high_cost
         current_price = x.online_store_price
-
-        oneforty = high_cost * Decimal(str(1.4))
-        print(high_cost)
-        print(current_price)
-        print(oneforty)
-        try:
-           actual = current_price / high_cost
-        except:
-           actual = '30'
-        StoreItemDetails.objects.filter(pk=x.pk).update(oneforty_percent=oneforty, actual_markup=actual)
+        if high_cost:
+            oneforty = high_cost * Decimal(str(1.4))
+            print(high_cost)
+            print(current_price)
+            print(oneforty)
+            try:
+                actual = current_price / high_cost
+            except:
+                actual = '0'
+            StoreItemDetails.objects.filter(pk=x.pk).update(oneforty_percent=oneforty, actual_markup=actual)
     items = StoreItemDetails.objects.all()
     context = {
         'items':items,

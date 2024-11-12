@@ -201,7 +201,7 @@ class Inventory(models.Model):
         return self.name
 
 class VendorItemDetail(models.Model):
-    vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
+    vendor = models.ForeignKey(Vendor, null=True, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     vendor_part_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)

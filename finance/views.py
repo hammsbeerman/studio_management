@@ -1181,12 +1181,18 @@ def add_invoice_item(request, invoice=None, vendor=None, type=None):
     # print(vendor)
     #items = RetailInvoiceItem.objects.filter(vendor=vendor)
     print(type)
+    print(vendor)
     if type == 1:
+        print('hello')
         items = VendorItemDetail.objects.filter(vendor=vendor, non_inventory=1)
-    if type == 2:
+    elif type == 2:
+        print('hello2')
         items = VendorItemDetail.objects.filter(vendor=vendor, online_store=1)
     else:
+        print('hello3')
         items = VendorItemDetail.objects.filter(vendor=vendor, non_inventory=0)
+    for x in items:
+        print(x)
     form = AddInvoiceItemForm
     context = {
         'items': items,
