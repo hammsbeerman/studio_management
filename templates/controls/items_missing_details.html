@@ -10,7 +10,7 @@
 Missing Vendor:
 {% for x in items %}
     {% if not x.vendor %}
-        {{ x.pk }}</br>
+        {{ x.pk }} -- {{ x.vendor.name }}</br>
     {% endif %}
 {% endfor %}
 <p>
@@ -18,7 +18,7 @@ Missing Vendor:
 <p>
 Missing Item:
     {% for x in items %}
-        {% if not x.vendor %}
+        {% if not x.name %}
             {{ x.pk }}</br>
         {% endif %}
     {% endfor %}
