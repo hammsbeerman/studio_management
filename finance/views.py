@@ -840,7 +840,7 @@ def remove_payment(request, pk=None):
 #############################################
 
 @login_required
-def add_invoice(request):
+def add_invoice(request, vendor=None):
     form = AddInvoiceForm()
     vendors = Vendor.objects.all()
     if request.method == "POST":
@@ -861,7 +861,10 @@ def add_invoice(request):
         # }
     #Limit vendors, but this is currently not being used
     #vendors = Vendors.objects.filter(supplier=1)
-    bills = AccountsPayable.objects.filter().order_by('-invoice_date')   
+    if vendor:
+        bills = AccountsPayable.objects.filter().exclude(vendor=23).order_by('-invoice_date')
+    else:
+        bills = AccountsPayable.objects.filter().order_by('-invoice_date')   
     context = {
         'form': form,
         'bills':bills,

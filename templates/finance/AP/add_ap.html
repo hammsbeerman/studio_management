@@ -41,7 +41,7 @@
       
       <div class="col-sm-9">
         <div id="vendor_invoices">
-        
+          <a href="{% url 'finance:add_invoice' %}">All Bills</a> | <a href="{% url 'finance:add_invoice' vendor=1 %}">All Bills except Essendant</a><br>
             <table class="table">
               <thead>
                 <tr>

@@ -73,6 +73,7 @@ urlpatterns = [
 
     # path('add_item_to_vendor/<int:vendor>/<int:invoice>', add_item_to_vendor, name='add_item_to_vendor'),
     path('ap/bill_list/', bill_list, name='bill_list'),
+    path('ap/add_invoice/<int:vendor>/', add_invoice, name='add_invoice'),
     path('ap/add_invoice/', add_invoice, name='add_invoice'),
     path('ap/edit_invoice/<int:invoice>/<int:drop>/', edit_invoice, name='edit_invoice'),
     path('ap/edit_invoice/<int:invoice>/', edit_invoice, name='edit_invoice'),
