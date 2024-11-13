@@ -867,8 +867,8 @@ def add_invoice(request, vendor=None):
         calculated_total = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('calculated_total'))
     else:
         bills = AccountsPayable.objects.filter().exclude(vendor=23).order_by('-invoice_date') 
-        balance = AccountsPayable.objects.filter().exclude(paid=1, vendor=23).aggregate(Sum('total'))
-        calculated_total = AccountsPayable.objects.filter().exclude(paid=1, vendor=23).aggregate(Sum('calculated_total'))  
+        balance = AccountsPayable.objects.filter().exclude(paid=1).exclude(vendor=23).aggregate(Sum('total'))
+        calculated_total = AccountsPayable.objects.filter().exclude(paid=1).exclude(vendor=23).aggregate(Sum('calculated_total'))  
     context = {
         'balance': balance,
         'calculated_total': calculated_total,
