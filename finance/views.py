@@ -863,9 +863,15 @@ def add_invoice(request, vendor=None):
     #vendors = Vendors.objects.filter(supplier=1)
     if vendor:
         bills = AccountsPayable.objects.filter().order_by('-invoice_date')
+        balance = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('total'))
+        calculated_total = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('calculated_total'))
     else:
-        bills = AccountsPayable.objects.filter().exclude(vendor=23).order_by('-invoice_date')   
+        bills = AccountsPayable.objects.filter().exclude(vendor=23).order_by('-invoice_date') 
+        balance = AccountsPayable.objects.filter().exclude(paid=1, vendor=23).aggregate(Sum('total'))
+        calculated_total = AccountsPayable.objects.filter().exclude(paid=1, vendor=23).aggregate(Sum('calculated_total'))  
     context = {
+        'balance': balance,
+        'calculated_total': calculated_total,
         'form': form,
         'bills':bills,
         'vendors':vendors,
@@ -893,8 +899,12 @@ def edit_invoice(request, invoice=None, drop=None):
     obj = get_object_or_404(AccountsPayable, id=invoice)
     form = EditInvoiceForm(instance=obj)
     bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')
+    balance = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('total'))
+    calculated_total = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('calculated_total'))
     vendors = Vendor.objects.all()
     context = {
+        'balance': balance,
+        'calculated_total': calculated_total,
         'vendors':vendors,
         'pk':pk,
         'bills':bills,
@@ -1609,9 +1619,13 @@ def bills_by_vendor(request):
         vendor = name
     vendors = Vendor.objects.all()
     if vendor:
-        bills = AccountsPayable.objects.filter(vendor=vendor).order_by('-invoice_date') 
+        bills = AccountsPayable.objects.filter(vendor=vendor).order_by('-invoice_date')
+        balance = AccountsPayable.objects.filter(vendor=vendor).exclude(paid=1).aggregate(Sum('total'))
+        calculated_total = AccountsPayable.objects.filter(vendor=vendor).exclude(paid=1).aggregate(Sum('calculated_total'))
         context = {
             'bills':bills,
+            'balance': balance,
+            'calculated_total': calculated_total,
         }
         return render (request, "finance/AP/partials/vendor_bills.html", context)
     vendors = Vendor.objects.all()
@@ -1619,9 +1633,6 @@ def bills_by_vendor(request):
         'vendors':vendors,
     }
     return render (request, "finance/AP/bills_by_vendor.html", context)
-
-
-
 
 
 

@@ -71,15 +71,26 @@
                         <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
                     </tr>
                   {% endif %}
-            {% endfor %}
+                {% endfor %}
+                    <tr>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>{{ balance.total__sum|floatformat:2 }}</td>
+                      <td>{{ calculated_total.calculated_total__sum|floatformat:2 }}</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                    </tr>
                   </table>
                 </div>
-            <select class="custom-select mb-4" id="id_name" hx-trigger="change" name="name" hx-get="{% url 'finance:bills_by_vendor' %}" hx-target="#vendor_invoices">
+           <!-- <select class="custom-select mb-4" id="id_name" hx-trigger="change" name="name" hx-get="{% url 'finance:bills_by_vendor' %}" hx-target="#vendor_invoices">
               <option selected>Select Item</option>
               {% for x in vendors %}
                 <option value="{{ x.id }}">{{ x.name }}</option>
               {% endfor %}
-            </select>
+            </select> -->
             
             <div id="remainder"></div>
       </div>

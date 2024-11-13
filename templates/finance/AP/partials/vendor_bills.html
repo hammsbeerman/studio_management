@@ -28,5 +28,16 @@
               <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
               <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
           </tr>
-  {% endfor %}
+      {% endfor %}
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>{{ balance.total__sum|floatformat:2 }}</td>
+            <td>{{ calculated_total.calculated_total__sum|floatformat:2 }}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
         </table>
