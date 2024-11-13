@@ -898,13 +898,13 @@ def edit_invoice(request, invoice=None, drop=None):
             return redirect ('finance:add_invoice')
     obj = get_object_or_404(AccountsPayable, id=invoice)
     form = EditInvoiceForm(instance=obj)
-    bills = AccountsPayable.objects.filter().exclude(paid=1).order_by('invoice_date')
-    balance = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('total'))
-    calculated_total = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('calculated_total'))
+    bills = AccountsPayable.objects.filter(pk=invoice).exclude(paid=1).order_by('invoice_date')
+    #balance = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('total'))
+    #calculated_total = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('calculated_total'))
     vendors = Vendor.objects.all()
     context = {
-        'balance': balance,
-        'calculated_total': calculated_total,
+        #'balance': balance,
+        #'calculated_total': calculated_total,
         'vendors':vendors,
         'pk':pk,
         'bills':bills,
