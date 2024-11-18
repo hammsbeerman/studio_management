@@ -1654,6 +1654,7 @@ def bulk_edit_invoices(request, vendor=None):
                 print(invoice.total)
                 amount = invoice.total
                 AccountsPayable.objects.filter(pk=x).update(paid=True, amount_paid=amount, payment_method=payment, check_number=check, date_paid=date)
+            return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderInfoChanged'})
     invoices = AccountsPayable.objects.filter(vendor=vendor).exclude(paid=1).order_by('-invoice_date')
     form = BulkEditInvoiceForm
     context = {
