@@ -31,5 +31,7 @@ $( function() {
 } );
 
 $( function() {
-  $( "#id_date_paid" ).datepicker();
+  $( "#date_paid" ).datepicker();
 } );
+
+Test

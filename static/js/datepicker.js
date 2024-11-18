@@ -33,3 +33,5 @@ $( function() {
 $( function() {
   $( "#date_paid" ).datepicker();
 } );
+
+Test

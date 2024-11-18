@@ -1,5 +1,6 @@
 {% load widget_tweaks %}
 {% load crispy_forms_tags %}
+{% with WIDGET_ERROR_CLASS='is-invalid' %}
 {% load static %}
 <script src="{% static 'js/datepicker.js' %}"></script>
 
@@ -15,9 +16,9 @@
             <p style="color:red">{{ message }}</p>
             <div class="row">
               <div class="col-sm">
-                date: <input type="text" name="id_date" class="hasDatepicker" /></p>
-                Date: {{form.date_paid|as_crispy_field}}
-                {{ form.as_p }}
+                Date:<input type="text" name="date" class="dateinput form-control date" required="" id="id_date">
+                {{form.payment_method|as_crispy_field}}
+                {{form.check_number|as_crispy_field}}
               </div>
               <div class="col-sm">
                 <table class="table">
@@ -50,3 +51,5 @@
       </div>
       <input type="hidden" id="vendor" name="vendor" value="{{ vendor }}">
     </form>
+
+    {% endwith %}

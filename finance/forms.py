@@ -60,7 +60,7 @@ class EditInvoiceForm(forms.ModelForm):
 class BulkEditInvoiceForm(forms.ModelForm):
    class Meta:
        model = AccountsPayable
-       fields = ['paid', 'date_paid', 'payment_method', 'check_number']
+       fields = ['date_paid', 'payment_method', 'check_number']
        labels = {
         }
        

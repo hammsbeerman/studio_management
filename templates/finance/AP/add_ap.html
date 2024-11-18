@@ -55,7 +55,7 @@
                   <th scope="col" class="">Date Due</th>
                   <th scope="col" class=""></th>
                   <th scope="col" class=""></th>
-                  <th scope="col" class=""></th>
+                  <th scope="col" class="">Bulk Edit</th>
                 </tr>
               </thead>
               <tbody>
@@ -71,7 +71,7 @@
                         <td>{{ x.date_due }}</td>
                         <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
                         <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
-                        <td><button  class="btn btn-primary-outline" hx-get="{% url 'finance:bulk_edit_invoices' vendor=x.vendor.id %}" hx-target="#dialog"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button></td>
+                        <td><button  class="btn btn-primary-outline" hx-get="{% url 'finance:bulk_edit_invoices' vendor=x.vendor.id %}" hx-target="#dialog"><img src="{% static 'img/site/bulk-edit.svg' %}" style="width:20px;height:20px;"></button></td>
                     </tr>
                   {% endif %}
                 {% endfor %}

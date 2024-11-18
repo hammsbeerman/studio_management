@@ -1639,19 +1639,21 @@ def bulk_edit_invoices(request, vendor=None):
     if request.method == "POST":
         form = BulkEditInvoiceForm(request.POST)
         if form.is_valid():
-            date = form.instance.date_paid
             payment = form.instance.payment_method
             check = form.instance.check_number
             if not check:
                 check = ''
             vendor = request.POST.get('vendor')
+            date = request.POST.get('date')
+            date = datetime.strptime(date, '%m/%d/%Y')
+            print(date)
             id_list = request.POST.getlist('payment')
             for x in id_list:
                 print(x)
                 invoice = AccountsPayable.objects.get(pk=x)
                 print(invoice.total)
                 amount = invoice.total
-                AccountsPayable.objects.filter(pk=x).update(paid=True, amount=amount, payment_method=payment, check_number=check)
+                AccountsPayable.objects.filter(pk=x).update(paid=True, amount=amount, payment_method=payment, check_number=check, date_paid=date)
     invoices = AccountsPayable.objects.filter(vendor=vendor).exclude(paid=1).order_by('-invoice_date')
     form = BulkEditInvoiceForm
     context = {

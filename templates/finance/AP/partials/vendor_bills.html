@@ -1,3 +1,4 @@
+{% load static %}
 <a href="{% url 'finance:add_invoice' %}">All Bills except Essendant</a> | <a href="{% url 'finance:add_invoice' vendor=1 %}">Show Essendant Bills</a><br>
 <table class="table">
     <thead>
@@ -28,7 +29,7 @@
               <td>{% if x.paid %}PD{% endif %}</td>
               <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
               <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
-              <td>Bulk Edit</td>
+              <td><button  class="btn btn-primary-outline" hx-get="{% url 'finance:bulk_edit_invoices' vendor=x.vendor.id %}" hx-target="#dialog"><img src="{% static 'img/site/bulk-edit.svg' %}" style="width:20px;height:20px;"></button></td>
           </tr>
       {% endfor %}
           <tr>
