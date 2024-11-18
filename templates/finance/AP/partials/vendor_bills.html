@@ -5,7 +5,7 @@
       <tr>
         <th scope="col" class="">Vendor</th>
         <th scope="col" class="">Date</th>
-        <th scope="col" class="">Amount</th>
+        <th scope="col" class="">Amount Paid</th>
         <th scope="col" class="">Total</th>
         <th scope="col" class="">Calculated Total</th>
         <th scope="col" class="">Invoice #</th>
@@ -21,7 +21,7 @@
           <tr>
               <td>{{ x.vendor }}</td>
               <td>{{ x.invoice_date }}</td>
-              <td>{{ x.amount }}</td>
+              <td>{% if x.amount_paid %}{{ x.amount_paid }}{% else%}$0.00{% endif %}</td>
               <td>{{ x.total }}</td>
               <td>{{ x.calculated_total }}</td>
               <td>{{ x.invoice_number }}</td>
