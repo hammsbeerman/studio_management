@@ -52,6 +52,7 @@
                   <th scope="col" class="">Date Due</th>
                   <th scope="col" class=""></th>
                   <th scope="col" class=""></th>
+                  <th scope="col" class=""></th>
                 </tr>
               </thead>
               <tbody>
@@ -66,6 +67,7 @@
                     <td>{{ x.date_due }}</td>
                     <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
                     <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
+                    <td>Bulk Edit</td>
                 </tr>
             {% endfor %}
           </table>

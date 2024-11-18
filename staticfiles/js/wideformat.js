@@ -211,6 +211,19 @@ $(document).ready(function(){
         var h_marg = $('#id_print_h_margin').val();
         h_marg = Number(h_marg);
 
+        if (height < usable_width) {
+          if (height < width) {
+             height = height
+          } else {
+            x = height
+            y = width
+            height = y
+            width = x
+          }
+           
+        }
+
+
         var print_width = width + w_marg + w_marg
         var print_height = height + h_marg + h_marg
         var ovarall_print = print_width * print_height

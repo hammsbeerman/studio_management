@@ -29,3 +29,7 @@ $( function() {
 $( function() {
   $( "#id_date_due" ).datepicker();
 } );
+
+$( function() {
+  $( "#date_paid" ).datepicker();
+} );

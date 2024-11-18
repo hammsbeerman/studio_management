@@ -1,0 +1,24 @@
+<div class="container">
+    <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col" class="">Item</th>
+                    <th scope="col" class="">High Cost</th>
+                    <th scope="col" class="">140%</th>
+                    <th scope="col" class="">Online Price</th>
+                    <th scope="col" class="">Actual Percent</th>
+                    <th scope="col" class="">Date online price changed</th>
+                </tr>
+            </thead>
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.high_cost }}</td>
+                    <td>{{ item.oneforty_percent }}</td>
+                    <td>{{ item.online_store_price }}</td>
+                    <td>{{ item.actual_markup }}</td>
+                    <td>{{ item.date_last_price_change }}</td>
+                </tr>
+        </table>
+    </div>
+</div>

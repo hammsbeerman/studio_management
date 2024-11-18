@@ -30,3 +30,27 @@ def store_items(request):
         'items':items,
     }
     return render (request, "onlinestore/store_items.html", context)
+
+@login_required
+def store_item_detail(request):
+    item = request.GET.get('item')
+    items = StoreItemDetails.objects.all()
+    print(item)
+    item = StoreItemDetails.objects.get(pk=item)
+    high_cost = item.high_cost
+    current_price = item.online_store_price
+    if high_cost:
+        oneforty = high_cost * Decimal(str(1.4))
+        print(high_cost)
+        print(current_price)
+        print(oneforty)
+        try:
+            actual = current_price / high_cost
+        except:
+            actual = '0'
+        StoreItemDetails.objects.filter(pk=item.pk).update(oneforty_percent=oneforty, actual_markup=actual)
+    context = {
+        'item':item,
+        'items':items,
+    }
+    return render (request, "onlinestore/partials/store_items_detail.html", context)

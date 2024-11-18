@@ -40,7 +40,8 @@ from .views import (
     edit_invoice,
     bills_by_vendor,
     edit_invoice_modal,
-    invoice_detail_highlevel
+    invoice_detail_highlevel,
+    bulk_edit_invoices
 )
 
 app_name='finance'
@@ -78,6 +79,8 @@ urlpatterns = [
     path('ap/edit_invoice/<int:invoice>/<int:drop>/', edit_invoice, name='edit_invoice'),
     path('ap/edit_invoice/<int:invoice>/', edit_invoice, name='edit_invoice'),
     path('ap/edit_invoice_modal/<int:invoice>/', edit_invoice_modal, name='edit_invoice_modal'),
+    path('ap/bulk_edit_invoices/<int:vendor>/', bulk_edit_invoices, name='bulk_edit_invoices'),
+    path('ap/bulk_edit_invoices/', bulk_edit_invoices, name='bulk_edit_invoices'),
     #path('ap/edit_invoice/<int:invoice>', edit_invoice, name='edit_invoice'),
     path('ap/invoice_detail/', invoice_detail, name='invoice_detail'),
     path('ap/invoice_detail/<int:id>/', invoice_detail, name='invoice_detail'),

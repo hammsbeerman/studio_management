@@ -12,7 +12,7 @@ import logging
 from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm
 from retail.forms import RetailInventoryMasterForm
-from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm
+from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm, BulkEditInvoiceForm
 from finance.models import InvoiceItem#, AllInvoiceItem
 from customers.models import Customer
 from workorders.models import Workorder
@@ -1635,10 +1635,69 @@ def bills_by_vendor(request):
     return render (request, "finance/AP/bills_by_vendor.html", context)
 
 
+def bulk_edit_invoices(request, vendor=None):
+    if request.method == "POST":
+        form = BulkEditInvoiceForm(request.POST)
+        if form.is_valid():
+            date = form.instance.date_paid
+            payment = form.instance.payment_method
+            check = form.instance.check_number
+            if not check:
+                check = ''
+            vendor = request.POST.get('vendor')
+            id_list = request.POST.getlist('payment')
+            for x in id_list:
+                print(x)
+                invoice = AccountsPayable.objects.get(pk=x)
+                print(invoice.total)
+                amount = invoice.total
+                AccountsPayable.objects.filter(pk=x).update(paid=True, amount=amount, payment_method=payment, check_number=check)
+    invoices = AccountsPayable.objects.filter(vendor=vendor).exclude(paid=1).order_by('-invoice_date')
+    form = BulkEditInvoiceForm
+    context = {
+        'invoices':invoices,
+        'form':form,
+        'vendor':vendor,
+    }
+    return render (request, "finance/AP/modals/bulk_edit_invoices.html", context)
+
+#     if request.method == "POST":
+#             modal = request.POST.get('modal')
+#             id_list = request.POST.getlist('payment')
+#             payment_total = 0
+#             for x in id_list:
+#                 print('payment total')
+#                 print(payment_total)
+#                 t = Workorder.objects.get(pk=int(x))
+#                 balance = t.open_balance
+#                 payment_total = payment_total + balance
 
 
+# @login_required
+# def open_invoices_recieve_payment(request, pk, msg=None):
+#     if msg:
+#        message = "The payment amount is less than the workorders selected"
+#     else:
+#        message = ''
+#     workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('workorder')
+#     total_balance = workorders.filter().aggregate(Sum('open_balance'))
+#     #total_balance = total_balance.total
+#     #print(total_balance)
+#     customer = Customer.objects.get(id=pk)
+#     #customer = 
+#     paymenttype = PaymentType.objects.all()
+#     form = PaymentForm
 
+#     context = {
+#         'total_balance':total_balance,
+#         'workorders':workorders,
+#         'paymenttype':paymenttype,
+#         'customer':customer,
+#         'form': form,
+#         'message': message,
 
+#     }
+#     return render(request, 'finance/reports/modals/open_invoice_recieve_payment.html', context)
 
 
 

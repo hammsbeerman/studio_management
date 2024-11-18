@@ -1,0 +1,52 @@
+{% load widget_tweaks %}
+{% load crispy_forms_tags %}
+{% load static %}
+<script src="{% static 'js/datepicker.js' %}"></script>
+
+<div class="modal-content">
+    
+    <form hx-post="{% url 'finance:bulk_edit_invoices' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">Bulk Update Invoices</h5>
+      </div>
+      <div class="modal-body">
+        
+        <div class="container">
+            <p style="color:red">{{ message }}</p>
+            <div class="row">
+              <div class="col-sm">
+                date: <input type="text" name="id_date" class="hasDatepicker" /></p>
+                Date: {{form.date_paid|as_crispy_field}}
+                {{ form.as_p }}
+              </div>
+              <div class="col-sm">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </thead>
+                {% for x in invoices %}
+                <tr>
+                    <td>{{ x.invoice_number }}</td>
+                    <td>{{ x.amount }}</td>
+                    <td>{{ x.invoice_date }}</td>
+                    <td>{{ x.date_due }}</td>
+                    <td><input name="payment" type="checkbox" value="{{ x.id }}" /></td>
+                </tr>
+                {% endfor %}
+                </table>
+              </div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit">Save</button>
+      </div>
+      <input type="hidden" id="vendor" name="vendor" value="{{ vendor }}">
+    </form>

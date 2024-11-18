@@ -5,30 +5,56 @@
 {% block content %}
 
 <div class="container">
-    <div class="row">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col" class="">Item</th>
-                    <th scope="col" class="">High Cost</th>
-                    <th scope="col" class="">140%</th>
-                    <th scope="col" class="">Online Price</th>
-                    <th scope="col" class="">Actual Percent</th>
-                    <th scope="col" class="">Date online price changed</th>
-                </tr>
-            </thead>
-                {% for x in items %}
-                <tr>
-                    <td>{{ x.item }}</td>
-                    <td>{{ x.high_cost }}</td>
-                    <td>{{ x.oneforty_percent }}</td>
-                    <td>{{ x.online_store_price }}</td>
-                    <td>{{ x.actual_markup }}</td>
-                    <td>{{ x.date_last_price_change }}</td>
-                </tr>
-                {% endfor %}
-        </table>
+    <select class="custom-select mb-4" id="item" hx-trigger="change, itemListChanged from:body" name="item" hx-get="{% url 'onlinestore:store_item_detail' %}" hx-target="#items">
+        <option value="{{ item.id}}" selected>Select Item</option>
+            {% for x in items %}
+              <option value="{{ x.id }}">{{ x.item }}</option>
+            {% endfor %}
+        </select>
+    <div id="items">
+        <div class="row">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col" class="">Item</th>
+                        <th scope="col" class="">High Cost</th>
+                        <th scope="col" class="">140%</th>
+                        <th scope="col" class="">Online Price</th>
+                        <th scope="col" class="">Actual Percent</th>
+                        <th scope="col" class="">Date online price changed</th>
+                    </tr>
+                </thead>
+                    {% for x in items %}
+                    <tr>
+                        <td>{{ x.item }}</td>
+                        <td>{{ x.high_cost }}</td>
+                        <td>{{ x.oneforty_percent }}</td>
+                        <td>{{ x.online_store_price }}</td>
+                        <td>{{ x.actual_markup }}</td>
+                        <td>{{ x.date_last_price_change }}</td>
+                    </tr>
+                    {% endfor %}
+            </table>
+        </div>
     </div>
 </div>
 
 {% endblock %}
+
+{% block scripts %}
+    
+<script>
+
+
+    $(document).ready(function () {
+      $("#item").select2();
+      $('#item').on('select2:select', (e) => {
+        htmx.trigger("#item", "change")
+      });
+    })
+  
+  
+  
+  </script>
+    
+    {% endblock %}

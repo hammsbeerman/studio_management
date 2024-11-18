@@ -17,3 +17,19 @@ $( function() {
 $( function() {
   $( "#id_deadline" ).datepicker();
 } );
+
+$( function() {
+  $( "#id_invoice_date" ).datepicker();
+} );
+
+$( function() {
+  $( "#id_invoice_date" ).datepicker();
+} );
+
+$( function() {
+  $( "#id_date_due" ).datepicker();
+} );
+
+$( function() {
+  $( "#id_date_paid" ).datepicker();
+} );

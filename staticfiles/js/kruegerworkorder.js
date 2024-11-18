@@ -1,85 +1,174 @@
 $(document).ready(function(){
 
     //Hide job steps until needed
-      $('#perf-row').hide()
+      //$('#perf-row').hide()
+      if ($("#id_step_perf_price").val() > .01){
+        $('#perf-row').show()
+      } else {
+        $('#perf-row').hide()
+      }
 
       $('#show-perf').click(function(){
       $('#perf-row').slideToggle(200)
       });
 
-      $('#numbering-row').hide()
+      //$('#numbering-row').hide()
+      if ($("#id_step_number_price").val() > .01){
+        $('#numbering-row').show()
+      } else {
+        $('#numbering-row').hide()
+      }
 
       $('#show-numbering').click(function(){
       $('#numbering-row').slideToggle(200)
       });
 
-      $('#wrap-row').hide()
+      //$('#wrap-row').hide()
+      if ($("#id_step_insert_frontback_cover_price").val() > .01 || $("#id_step_insert_wrap_around_price").val() > .01 || $("#id_step_insert_chip_divider_price").val() > .01){
+        $('#wrap-row').show()
+      } else {
+        $('#wrap-row').hide()
+      }
 
       $('#show-wraparound').click(function(){
       $('#wrap-row').slideToggle(200)
       });
 
-      $('#mailmerge-row').hide()
+      //$('#mailmerge-row').hide()
+      if ($("#id_step_print_mailmerge_price").val() > .01){
+        $('#mailmerge-row').show()
+      } else {
+        $('#mailmerge-row').hide()
+      }
 
       $('#show-mailmerge').click(function(){
       $('#mailmerge-row').slideToggle(200)
       });
 
-      $('#padding-row').hide()
+      //$('#padding-row').hide()
+      if ($("#id_step_NCR_compound_price").val() > .01 || $("#id_step_white_compound_price").val() > .01){
+        $('#padding-row').show()
+      } else {
+        $('#padding-row').hide()
+      }
 
       $('#show-padding').click(function(){
       $('#padding-row').slideToggle(200)
       });
 
-      $('#drill-row').hide()
+      //$('#drill-row').hide()
+      if ($("#id_step_set_to_drill_price").val() > .01 || $("#id_step_drill_price").val() > .01){
+        $('#drill-row').show()
+      } else {
+        $('#drill-row').hide()
+      }
 
       $('#show-drill').click(function(){
       $('#drill-row').slideToggle(200)
       });
 
       $('#staple-row').hide()
+      if ($("#id_step_staple_price").val() > .01){
+        $('#staple-row').show()
+      } else {
+        $('#staple-row').hide()
+      }
 
       $('#show-staple').click(function(){
       $('#staple-row').slideToggle(200)
       });
 
-      $('#fold-row').hide()
+      //$('#fold-row').hide()
+      if ($("#id_step_fold_price").val() > .01){
+        $('#fold-row').show()
+      } else {
+        $('#fold-row').hide()
+      }
 
       $('#show-fold').click(function(){
       $('#fold-row').slideToggle(200)
       });
 
-      $('#tab-row').hide()
+      //$('#tab-row').hide()
+      if ($("#id_step_tab_price").val() > .01){
+        $('#tab-row').show()
+      } else {
+        $('#tab-row').hide()
+      }
 
       $('#show-tab').click(function(){
       $('#tab-row').slideToggle(200)
       });
 
-      $('#bulkmail-row').hide()
+      //$('#bulkmail-row').hide()
+      if ($("#id_step_bulk_mail_tray_sort_paperwork_price").val() > .01){
+        $('#bulkmail-row').show()
+      } else {
+        $('#bulkmail-row').hide()
+      }
 
       $('#show-bulkmail').click(function(){
       $('#bulkmail-row').slideToggle(200)
       });
 
-      $('#misc1-row').hide()
+      if ($("#id_step_duplo_price").val() > .01)  {
+        $('#duplo-row').show()
+      //if ($("#id_misc1_description").val()){
+        //$('#misc1-row').show()
+      } else {
+        $('#duplo-row').hide()
+        //alert( "Handler for `keyup` called." );
+      }
+
+      $('#show-duplo').click(function(){
+        $('#duplo-row').slideToggle(200)
+        });
+
+
+      if (($("#id_misc1_price").val() > .01) || ($("#id_misc1_description").val()))  {
+        $('#misc1-row').show()
+      //if ($("#id_misc1_description").val()){
+        //$('#misc1-row').show()
+      } else {
+        $('#misc1-row').hide()
+        //alert( "Handler for `keyup` called." );
+      }
+
+      if ($("#id_misc2_price").val() > .01 || ($("#id_misc2_description").val())){
+        $('#misc2-row').show()
+      } else {
+        $('#misc2-row').hide()
+      }
+
+      //$('#misc1-row').hide()
 
       $('#show-misc1').click(function(){
       $('#misc1-row').slideToggle(200)
       });
 
-      $('#misc2-row').hide()
+      //$('#misc2-row').hide()
 
       $('#show-misc2').click(function(){
       $('#misc2-row').slideToggle(200)
       });
 
-      $('#misc3-row').hide()
+      //$('#misc3-row').hide()
+      if ($("#id_misc3_price").val() > .01 || ($("#id_misc3_description").val())){
+        $('#misc3-row').show()
+      } else {
+        $('#misc3-row').hide()
+      }
 
       $('#show-misc3').click(function(){
       $('#misc3-row').slideToggle(200)
       });
 
-      $('#misc4-row').hide()
+      //$('#misc4-row').hide()
+      if ($("#id_misc4_price").val() > .01 || ($("#id_misc4_description").val())){
+        $('#misc4-row').show()
+      } else {
+        $('#misc4-row').hide()
+      }
 
       $('#show-misc4').click(function(){
       $('#misc4-row').slideToggle(200)
@@ -156,13 +245,28 @@ $(document).ready(function(){
         $('#id_step_print_cost_side_2_price').val(clickcost2);
 
         //$('#id_mailmerge_qty').val(sheet_qty)
-        $('#id_perf_number_of_pieces').val(sheet_qty)
-        $('#id_fold_number_to_fold').val(sheet_qty)
-        $('#id_number_number_of_pieces').val(sheet_qty)
+        //$('#id_perf_number_of_pieces').val(sheet_qty)
+        //$('#id_fold_number_to_fold').val(sheet_qty)
+        //$('#id_number_number_of_pieces').val(sheet_qty)
         //Insert number to drill after it gets added to form
-        $('#id_staple_number_of_pieces').val(qty)
-        $('#id_tabs_number_of_pieces').val(qty)
+        //$('#id_staple_number_of_pieces').val(qty)
+        //$('#id_tabs_number_of_pieces').val(qty)
         
+
+        //Fill in pricing sheet on side
+        document.getElementById("id_price_qty").innerHTML = qty;
+        document.getElementById("id_pages_qty").innerHTML = pages_per_book;
+        document.getElementById("id_press_per_parent").innerHTML = press_sheet_per_parent;
+        document.getElementById("id_gangup_cnt").innerHTML = gangup;
+        document.getElementById("id_overage_cnt").innerHTML = overage;
+        document.getElementById("id_parent_output").innerHTML = output;
+        document.getElementById("id_parent_required").innerHTML = parent;
+        document.getElementById("id_clicks_one").innerHTML = click1;
+        document.getElementById("id_clicks_two").innerHTML = click2;
+        document.getElementById("id_side_one_charge").innerHTML = clickcost1;
+        document.getElementById("id_side_two_charge").innerHTML = clickcost2;
+
+
     
       });
   
@@ -206,6 +310,10 @@ $(document).ready(function(){
 
           $('#id_material_cost').val(paper_cost);
 
+
+          document.getElementById("id_paper_price").innerHTML = price_per_m;
+          document.getElementById("id_material_costs").innerHTML = paper_cost;
+
       });
 
     //Material Markup. Needs to use same handler as material cost when that is discovered
@@ -221,6 +329,8 @@ $(document).ready(function(){
       
       
       var material_markup_percentage = Number(material_markup_percentage);
+      document.getElementById("id_markup_percent").innerHTML = material_markup_percentage;
+
       var price_per_m = Number(price_per_m);
       var sheets = Number(sheets);
 
@@ -242,6 +352,8 @@ $(document).ready(function(){
       markup = markup.toFixed(2);
 
       $('#id_material_markup').val(markup);
+
+      
     });
 
 
@@ -282,12 +394,21 @@ $(document).ready(function(){
     });
 
     $('#id_container').on("click change",function(){
+      var setup = $('#id_step_set_to_number_price').val();
+
       //alert( "Handler for `keyup` called." );
       var price = $('#id_number_price_to_number').val();
       var qty = $('#id_number_number_of_pieces').val();
 
-      var total = qty * price
-      total = total.toFixed(2);
+      var pcs = qty * price
+      pcs = pcs.toFixed(2);
+      pcs = Number(pcs)
+
+      setup = Number(setup)
+
+      total = pcs + setup
+      total = total.toFixed(2)
+
 
       $('#id_step_number_price').val(total);
   
@@ -360,6 +481,28 @@ $(document).ready(function(){
       total = total.toFixed(2);
 
       $('#id_step_tab_price').val(total);
+  
+  
+    });
+
+    $('#id_container').on("click change",function(){
+      //alert( "Handler for `keyup` called." );
+      var run_through_duplo = $('#id_step_run_through_duplo').val();
+      var price = $('#id_step_duplo_price_per_task').val();
+      var qty = $('#id_step_duplo_tasks').val();
+      var pieces = $('#id_duplo_number_of_pieces').val();
+
+      var total = qty * price * pieces
+      total = total.toFixed(2);
+
+      total = Number(total)
+      run_through_duplo = Number(run_through_duplo)
+
+      price = total + run_through_duplo
+
+      price = price.toFixed(2);
+
+      $('#id_step_duplo_price').val(price);
   
   
     });
@@ -511,6 +654,12 @@ $(document).ready(function(){
         var tray = 0;
       }
 
+      if ($("#id_step_duplo_price").length){
+        var duplo = $('#id_step_duplo_price').val();
+      } else {
+        var duplo = 0;
+      }
+
       if ($("#id_misc1_price").length){
         var misc1 = $('#id_misc1_price').val();
       } else {
@@ -625,6 +774,7 @@ $(document).ready(function(){
       fold = Number(fold)
       tab = Number(tab)
       tray = Number(tray)
+      duplo = Number(duplo)
       misc1 = Number(misc1)
       misc2 = Number(misc2)
       misc3 = Number(misc3)
@@ -636,7 +786,7 @@ $(document).ready(function(){
 
 
       var total = workorder + reclaim + send_to_press + mailmerge+ material_cost + markup + side1 + side2 + trim + wear + print_mailmerge + ncr + white + perf + number + insert_cover + insert + insert_chip + set_drill + 
-      drill + staple + fold + tab + tray + misc1 + misc2 + misc3 + misc4 + count + package + deliver + packing_slip
+      drill + staple + fold + tab + tray + duplo + misc1 + misc2 + misc3 + misc4 + count + package + deliver + packing_slip
 
       //var total = workorder + reclaim + send_to_press + mailmerge + material_cost + markup + side1 + side2 + trim
       total = total.toFixed(2);
@@ -654,6 +804,18 @@ $(document).ready(function(){
 
       $('#price_ea').val(price_ea);
       document.getElementById("id_price_ea").innerHTML = price_ea;
+
+      
+
+
+      document.getElementById("id_price_ea").innerHTML = price_ea;
+      document.getElementById("id_count_x").innerHTML = count;
+      document.getElementById("id_delivery").innerHTML = deliver;
+      document.getElementById("id_packing_slip").innerHTML = packing_slip;
+      document.getElementById("id_total").innerHTML = total;
+
+
+
 
 
   
