@@ -1653,7 +1653,7 @@ def bulk_edit_invoices(request, vendor=None):
                 invoice = AccountsPayable.objects.get(pk=x)
                 print(invoice.total)
                 amount = invoice.total
-                AccountsPayable.objects.filter(pk=x).update(paid=True, amount=amount, payment_method=payment, check_number=check, date_paid=date)
+                AccountsPayable.objects.filter(pk=x).update(paid=True, amount_paid=amount, payment_method=payment, check_number=check, date_paid=date)
     invoices = AccountsPayable.objects.filter(vendor=vendor).exclude(paid=1).order_by('-invoice_date')
     form = BulkEditInvoiceForm
     context = {

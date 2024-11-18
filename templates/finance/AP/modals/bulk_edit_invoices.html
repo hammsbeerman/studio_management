@@ -24,17 +24,17 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td>Invoice</td>
+                            <td>Amount</td>
+                            <td>Invoice Date</td>
+                            <td>Date Due</td>
                             <td></td>
                         </tr>
                     </thead>
                 {% for x in invoices %}
                 <tr>
                     <td>{{ x.invoice_number }}</td>
-                    <td>{{ x.amount }}</td>
+                    <td>{{ x.total }}</td>
                     <td>{{ x.invoice_date }}</td>
                     <td>{{ x.date_due }}</td>
                     <td><input name="payment" type="checkbox" value="{{ x.id }}" /></td>
