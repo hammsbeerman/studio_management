@@ -20,6 +20,7 @@
             <th scope="col" class="">Description</th>
             <th scope="col" class="">Customer</th>
             <th scope="col" class="">Open Balance</th>
+            <th scope="col" class="">Invoice Date</th>
           </tr>
         </thead>
         <tbody>
@@ -30,6 +31,7 @@
                 <td>{{ x.description }}</td>
                 <td>{{ x.hr_customer }}</td>
                 <td>{{ x.open_balance }}</td>
+                <td>{{ x.created }}</td>
               </tr>
           {% endfor %}
         </tbody>
