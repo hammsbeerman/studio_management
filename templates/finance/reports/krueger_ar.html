@@ -31,7 +31,7 @@
                 <td>{{ x.description }}</td>
                 <td>{{ x.hr_customer }}</td>
                 <td>{{ x.open_balance }}</td>
-                <td>{{ x.created }}</td>
+                <td>{{ x.created|date:"F j, Y" }}</td>
               </tr>
           {% endfor %}
         </tbody>
