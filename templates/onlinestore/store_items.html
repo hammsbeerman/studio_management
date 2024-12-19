@@ -8,36 +8,61 @@
     <select class="custom-select mb-4" id="item" hx-trigger="change, itemListChanged from:body" name="item" hx-get="{% url 'onlinestore:store_item_detail' %}" hx-target="#items">
         <option value="{{ item.id}}" selected>Select Item</option>
             {% for x in items %}
-              <option value="{{ x.id }}">{{ x.item }}</option>
+              <option value="{{ x.id }}">{{ x.item }} -- {{x.item.primary_vendor_part_number }}</option>
             {% endfor %}
         </select>
     <div id="items">
         <div class="row">
+            <tbody hx-trigger="load, ItemPriceChanged from:body" hx-get="{% url 'onlinestore:store_items' %}" hx-target="this">
             <table class="table">
-                <thead>
-                    <tr>
-                        <th scope="col" class="">Item</th>
-                        <th scope="col" class="">High Cost</th>
-                        <th scope="col" class="">140%</th>
-                        <th scope="col" class="">Online Price</th>
-                        <th scope="col" class="">Actual Percent</th>
-                        <th scope="col" class="">Date online price changed</th>
-                    </tr>
-                </thead>
-                    {% for x in items %}
-                    <tr>
-                        <td>{{ x.item }}</td>
-                        <td>{{ x.high_cost }}</td>
-                        <td>{{ x.oneforty_percent }}</td>
-                        <td>{{ x.online_store_price }}</td>
-                        <td>{{ x.actual_markup }}</td>
-                        <td>{{ x.date_last_price_change }}</td>
-                    </tr>
-                    {% endfor %}
-            </table>
+              <thead>
+                  <tr>
+                      <th scope="col" class="">Item</th>
+                      <th scope="col" class="">High Cost</th>
+                      <th scope="col" class="">140%</th>
+                      <th scope="col" class="">Online Price</th>
+                      <th scope="col" class="">Retail Store Price</th>
+                      <th scope="col" class="">Actual Percent</th>
+                      <th scope="col" class="">Date online price changed</th>
+                      <th scope="col" class=""></th>
+                  </tr>
+              </thead>
+                  {% for x in items %}
+                  <tr>
+                      <td>{{ x.item }}</td>
+                      <td>{{ x.high_cost }}</td>
+                      <td>{{ x.oneforty_percent }}</td>
+                      <td>{{ x.online_store_price }}</td>
+                      <td>{{ x.retail_store_price }}</td>
+                      <td>{{ x.actual_markup }}</td>
+                      <td>{{ x.date_last_price_change }}</td>
+                      <td><button hx-get="{% url 'onlinestore:edit_store_item' %}?item={{ x.id }}" hx-target="#dialog">Edit</button></td>
+                  </tr>
+                  {% endfor %}
+                </table>
+          </tbody>
+
+
+
+
+
+
+
+
+
+
+
+
+
+            
         </div>
     </div>
 </div>
+
+<div id="modal" class="modal fade" >
+    <div id="dialog" class="modal-dialog" hx-target="this"></div>
+</div>
+
 
 {% endblock %}
 
@@ -52,8 +77,28 @@
         htmx.trigger("#item", "change")
       });
     })
-  
-  
+
+
+    const modal = new bootstrap.Modal(document.getElementById("modal"))
+
+    htmx.on("htmx:afterSwap", (e) => {
+      // Response targeting #dialog => show the modal
+      if (e.detail.target.id == "dialog") {
+        modal.show()
+      }
+    })
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      // Empty response targeting #dialog => hide the modal
+      if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+        modal.hide()
+        e.detail.shouldSwap = false
+      }
+    })
+
+    htmx.on("hidden.bs.modal", () => {
+      document.getElementById("dialog").innerHTML = ""
+    })
   
   </script>
     

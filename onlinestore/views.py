@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, Http404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal
+from datetime import timedelta, datetime
 from .models import StoreItemDetails
+from .forms import StoreItemDetailForm
 
 
 @login_required
@@ -21,7 +24,7 @@ def store_items(request):
             print(current_price)
             print(oneforty)
             try:
-                actual = current_price / high_cost
+                actual = current_price / high_cost * 100
             except:
                 actual = '0'
             StoreItemDetails.objects.filter(pk=x.pk).update(oneforty_percent=oneforty, actual_markup=actual)
@@ -54,3 +57,37 @@ def store_item_detail(request):
         'items':items,
     }
     return render (request, "onlinestore/partials/store_items_detail.html", context)
+
+@login_required
+def edit_store_item(request, detail=None):
+    if request.method == "POST":
+        form = StoreItemDetailForm(request.POST)
+        if form.is_valid():
+            online = form.instance.online_store_price
+            retail = form.instance.retail_store_price
+            item = request.POST.get('item')
+            item = int(item)
+            detail = request.POST.get('detail')
+            print(item)
+            date = request.POST.get('date')
+            date = datetime.strptime(date, '%m/%d/%Y')
+            current_price = StoreItemDetails.objects.get(id=item)
+            if not online:
+                online = current_price.online_store_price
+            if not retail:
+                retail = current_price.retail_store_price
+            print(date)
+            print(online)
+            print(retail)
+            StoreItemDetails.objects.filter(pk=item).update(online_store_price=online, retail_store_price=retail, date_last_price_change=date)
+            if detail:
+                return redirect('finance:open_invoices_recieve_payment', item=item)
+            return HttpResponse(status=204, headers={'HX-Trigger': 'ItemPriceChanged'})
+    item = request.GET.get('item')
+    item = StoreItemDetails.objects.get(pk=item)
+    form = StoreItemDetailForm
+    context = {
+        'item':item,
+        'form':form,
+    }
+    return render (request, "onlinestore/modals/edit_store_item.html", context)
