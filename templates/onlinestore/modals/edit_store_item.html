@@ -24,10 +24,9 @@
                 <table class="table">
                     <thead>
                         <tr>
-                            <td>Invoice</td>
-                            <td>Amount</td>
-                            <td>Invoice Date</td>
-                            <td>Date Due</td>
+                            <td>Date</td>
+                            <td>Online</td>
+                            <td>Retail</td>
                             <td></td>
                         </tr>
                     </thead>
@@ -36,8 +35,6 @@
                     <td>{{ x.invoice_number }}</td>
                     <td>{{ x.total }}</td>
                     <td>{{ x.invoice_date }}</td>
-                    <td>{{ x.date_due }}</td>
-                    <td><input name="payment" type="checkbox" value="{{ x.id }}" /></td>
                 </tr>
                 {% endfor %}
                 </table>

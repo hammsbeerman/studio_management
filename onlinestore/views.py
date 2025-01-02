@@ -4,7 +4,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 from datetime import timedelta, datetime
-from .models import StoreItemDetails
+from .models import StoreItemDetails, StoreItemDetailHistory
+from inventory.models import InventoryMaster
 from .forms import StoreItemDetailForm
 
 
@@ -80,8 +81,16 @@ def edit_store_item(request, detail=None):
             print(online)
             print(retail)
             StoreItemDetails.objects.filter(pk=item).update(online_store_price=online, retail_store_price=retail, date_last_price_change=date)
+            master = StoreItemDetails.objects.get(pk=item)
+            masterpart = master.item.id
+            print('master part number')
+            print(masterpart)
+            StoreItemDetailHistory.objects.create(item=InventoryMaster.objects.get(pk=masterpart), online_store_price=online, retail_store_price=retail, date_last_price_change=date)
             if detail:
+                print("detail")
+                print(detail)
                 return redirect('finance:open_invoices_recieve_payment', item=item)
+            print('hello')
             return HttpResponse(status=204, headers={'HX-Trigger': 'ItemPriceChanged'})
     item = request.GET.get('item')
     item = StoreItemDetails.objects.get(pk=item)

@@ -30,6 +30,16 @@ class StoreItemVariation(models.Model):
       var_online_price = models.DecimalField('Online Store Price', max_digits=15, decimal_places=5, blank=True, null=True)
       var_multiplier = models.DecimalField('Multiplier from Base Unit', max_digits=15, decimal_places=5, blank=True, null=True)
       var_markup = models.DecimalField('Markup', max_digits=15, decimal_places=5, blank=True, null=True)
+
+class StoreItemDetailHistory(models.Model):
+    item = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False) 
+    online_store_price = models.DecimalField('Online Store Price', max_digits=15, decimal_places=5, blank=True, null=True)
+    retail_store_price = models.DecimalField('Retail Store Price', max_digits=15, decimal_places=5, blank=True, null=True)
+    date_last_price_change = models.DateTimeField(auto_now = False, blank=True, null=True)
+
+    
     
 # @receiver(post_save, sender=StoreItemDetails)   
 # def markup_handler(sender, instance, created, *args, **kwargs):

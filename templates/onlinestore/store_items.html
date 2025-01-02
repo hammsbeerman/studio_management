@@ -35,7 +35,7 @@
                       <td>{{ x.online_store_price }}</td>
                       <td>{{ x.retail_store_price }}</td>
                       <td>{{ x.actual_markup }}</td>
-                      <td>{{ x.date_last_price_change }}</td>
+                      <td>{{ x.date_last_price_change|date:"M d, Y"}}</td>
                       <td><button hx-get="{% url 'onlinestore:edit_store_item' %}?item={{ x.id }}" hx-target="#dialog">Edit</button></td>
                   </tr>
                   {% endfor %}
