@@ -1,5 +1,6 @@
 {% load static %}
 <a href="{% url 'finance:add_invoice' %}">All Bills except Essendant</a> | <a href="{% url 'finance:add_invoice' vendor=1 %}">Show Essendant Bills</a><br>
+{% if open_bills %}
 <table class="table">
     <thead>
       <tr>
@@ -17,7 +18,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for x in bills %}
+      {% for x in open_bills %}
           <tr>
               <td>{{ x.vendor }}</td>
               <td>{{ x.invoice_date }}</td>
@@ -44,3 +45,46 @@
             <td></td>
           </tr>
         </table>
+      
+        
+        {% endif %}
+        {% if open_bills and paid_bills %}
+        <hr>
+        {% endif %}
+
+    {% if paid_bills %}
+    <B>Paid Bills</b>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col" class="">Vendor</th>
+              <th scope="col" class="">Date</th>
+              <th scope="col" class="">Amount Paid</th>
+              <th scope="col" class="">Total</th>
+              <th scope="col" class="">Calculated Total</th>
+              <th scope="col" class="">Invoice #</th>
+              <th scope="col" class="">Date Due</th>
+              <th scope="col" class="">Paid</th>
+              <th scope="col" class=""></th>
+              <th scope="col" class=""></th>
+              <th scope="col" class=""></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for x in paid_bills %}
+                <tr>
+                    <td>{{ x.vendor }}</td>
+                    <td>{{ x.invoice_date }}</td>
+                    <td>{% if x.amount_paid %}{{ x.amount_paid }}{% else%}$0.00{% endif %}</td>
+                    <td>{{ x.total }}</td>
+                    <td>{{ x.calculated_total }}</td>
+                    <td>{{ x.invoice_number }}</td>
+                    <td>{{ x.date_due }}</td>
+                    <td>{% if x.paid %}PD{% endif %}</td>
+                    <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
+                    <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
+                    <td><button  class="btn btn-primary-outline" hx-get="{% url 'finance:bulk_edit_invoices' vendor=x.vendor.id %}" hx-target="#dialog"><img src="{% static 'img/site/bulk-edit.svg' %}" style="width:20px;height:20px;"></button></td>
+                </tr>
+            {% endfor %}
+              </table>
+        {% endif %}

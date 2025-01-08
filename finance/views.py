@@ -1521,6 +1521,11 @@ def add_inventory_item(request, vendor=None, invoice=None, baseitem=None):
                 #form.instance.primary_vendor = vendor
                 form.save()
                 pk = form.instance.pk
+                unit_cost = form.instance.unit_cost
+                price_per_m = unit_cost * 1000
+                print('Cost per M')
+                print(price_per_m)
+                InventoryMaster.objects.filter(pk=pk).update(high_price=unit_cost, price_per_m=price_per_m)
                 item = InventoryMaster.objects.get(pk=pk)
                 primary_unit = item.primary_base_unit.id
                 units_per_base = item.units_per_base_unit
@@ -1619,11 +1624,13 @@ def bills_by_vendor(request):
         vendor = name
     vendors = Vendor.objects.all()
     if vendor:
-        bills = AccountsPayable.objects.filter(vendor=vendor).order_by('-invoice_date')
+        open_bills = AccountsPayable.objects.filter(vendor=vendor).order_by('-invoice_date').exclude(paid=1)
+        paid_bills = AccountsPayable.objects.filter(vendor=vendor).order_by('-invoice_date').exclude(paid=0)
         balance = AccountsPayable.objects.filter(vendor=vendor).exclude(paid=1).aggregate(Sum('total'))
         calculated_total = AccountsPayable.objects.filter(vendor=vendor).exclude(paid=1).aggregate(Sum('calculated_total'))
         context = {
-            'bills':bills,
+            'open_bills':open_bills,
+            'paid_bills':paid_bills,
             'balance': balance,
             'calculated_total': calculated_total,
         }
