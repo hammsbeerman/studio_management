@@ -62,13 +62,14 @@ def customers(request):
     #print(contacts)
     return render(request, 'customers/partials/customers.html', context)
 
-@login_required
-def customer_list(request):
-    customer = Customer.objects.all().order_by('company_name')
-    context = {
-        'customers': customer
-        }
-    return render(request, 'customers/list.html', context)
+#This is a duplicate, not sure what this does
+# @login_required
+# def customer_list(request):
+#     customer = Customer.objects.all().order_by('company_name')
+#     context = {
+#         'customers': customer
+#         }
+#     return render(request, 'customers/list.html', context)
 
 
 @login_required

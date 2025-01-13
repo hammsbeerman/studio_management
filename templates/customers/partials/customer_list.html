@@ -24,11 +24,11 @@
     {% for x in mailing %}
     <tr>
         <td>{{ x.company_name }}</td>
-        <td>{{ x.customer.address1 }}</td>
-        <td>{{ x.customer.address2 }}</td>
-        <td>{{ x.customer.city }}</td>
-        <td>{{ x.customer.state }}</td>
-        <td>{{ x.customer.zipcode }}</td>
+        <td>{{ x.address1 }}</td>
+        <td>{{ x.address2 }}</td>
+        <td>{{ x.city }}</td>
+        <td>{{ x.state }}</td>
+        <td>{{ x.zipcode }}</td>
     </tr>
     {% endfor %}
 </table>
