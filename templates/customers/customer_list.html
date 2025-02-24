@@ -22,6 +22,8 @@
             <td>City</td>
             <td>State</td>
             <td>Zipcode</td>
+            <td>Tax Exempt</td>
+            <td>Bad Address</td>
         </tr>
     </thead>
     {% for x in unique_list %}
@@ -32,6 +34,8 @@
             <td>{{ x.customer.city }}</td>
             <td>{{ x.customer.state }}</td>
             <td>{{ x.customer.zipcode }}</td>
+            <td>{% if x.customer.tax_exempt %}NT{% endif %}</td>
+            <td>{% if x.customer.mail_bounced_back %}Bad Address{% endif %}</td>
         </tr>
     {% endfor %}
 </table>

@@ -8,7 +8,11 @@ class Customer(models.Model):
     Tax_Exempt = (
     (True, 'Yes'),
     (False, 'No')
-)
+    )
+    Mail_Bounced_Back = (
+    (True, 'Yes'),
+    (False, 'No')
+    )
 
     company_name = models.CharField('Company Name', max_length=100, blank=True, null=False)
     first_name = models.CharField('First Name', max_length=100, blank=True, null=False)
@@ -37,6 +41,7 @@ class Customer(models.Model):
     open_balance = models.DecimalField('Open Balance', max_digits=8, decimal_places=2, blank=True, null=True)
     high_balance = models.DecimalField('High Balance', max_digits=8, decimal_places=2, blank=True, null=True)
     avg_days_to_pay = models.CharField('Avg Days to Pay', max_length=100, blank=True, null=False)
+    mail_bounced_back = models.BooleanField('Mail Bounced Back', default=False)
     
     def get_absolute_url(self):
         return reverse("customers:expanded_details", kwargs={"id": self.id})

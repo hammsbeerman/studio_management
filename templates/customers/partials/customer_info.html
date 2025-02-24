@@ -7,6 +7,7 @@
                     <div class="card-body" id="custinfo" hx-trigger="CustomerEdit from:body" hx-target="this" >
                         <h5 class="card-title">{% if customer.company_name %}{{ customer.company_name }}</h5>
             <p class="card-text">
+                {% if customer.mail_bounced_back %}<h4><span style="color:red;">Need New Address</span></h4><br/>{% endif %}
                 {% if not customer.active %}<h3><span style="color:red;">Inactive</span></h3><br/>{% endif %}
                 {% if customer.address1 %} Address: {{ customer.address1 }} <br/>
                 {% if customer.address2 %}{{customer.address2}}{% endif %}<br/>
