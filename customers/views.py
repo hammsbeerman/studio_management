@@ -41,7 +41,7 @@ def contacts(request):
     print(customer)
     contact = Contact.objects.filter(customer=customer)
     #history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:10].exclude(workorder=1111)
-    history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:10]
+    history = Workorder.objects.filter(customer_id=customer).order_by("-workorder")[:20]
     context = {
         'customer': customer,
         'contacts': contact,
