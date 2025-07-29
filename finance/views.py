@@ -131,7 +131,8 @@ def recieve_payment(request):
                 print('Payment ID')
                 payment_id = obj.pk
                 remainder = amount
-                date = date.date()
+                payment_date = date.date()
+                print(date)
                 print(amount)
                 for x in id_list:
                     #Workorder.objects.filter(pk=pk).update(open_balance = open, amount_paid = paid, paid_in_full = full_payment, date_paid = date)
@@ -140,14 +141,17 @@ def recieve_payment(request):
                     date_billed = amount.date_billed
                     date_billed = date_billed.replace(tzinfo=None)
                     date_billed = date_billed.date()
-                    days_to_pay = date - date_billed
+                    days_to_pay = payment_date - date_billed
+                    print(payment_date)
                     days_to_pay = abs((days_to_pay).days)
                     Workorder.objects.filter(pk=int(x)).update(paid_in_full=1, date_paid=date, open_balance=0, amount_paid = amount.total_balance, days_to_pay = days_to_pay, payment_id = payment_id)
                     remainder = remainder - amount.open_balance
                     print('Remainder')
                     print(remainder)
                     #Save Payment History
-                    p = WorkorderPayment(workorder_id=int(x), payment_id=payment_id, payment_amount=amount.total_balance, date=date)
+                    p = WorkorderPayment(workorder_id=int(x), payment_id=payment_id, payment_amount=amount.total_balance, date=payment_date)
+                    print()
+                    print(payment_date)
                     p.save()
                 print(remainder)
                 Payments.objects.filter(pk=payment_id).update(available=remainder)
@@ -692,7 +696,7 @@ def ar_aging(request):
         'total_ninety':total_ninety,
         'total_onetwenty':total_onetwenty,
         'total_balance':total_balance,
-        'ar': ar
+        'ar': ar,
     }
     return render(request, 'finance/reports/ar_aging.html', context)
 

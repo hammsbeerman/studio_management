@@ -4,6 +4,7 @@ from .views import (
     invoice_pdf,
     lineitem_pdf,
     ticket_pdf,
+    statement_pdf,
     #
 
     ####### These aren't currently used
@@ -25,6 +26,7 @@ urlpatterns = [
     #path('', views.newjob, name='krueger-print'),
     path('invoice_pdf/<int:id>/', invoice_pdf, name='invoice_pdf'),
     path('lineitem_pdf/<int:id>/', lineitem_pdf, name='lineitem_pdf'),
+    path('statement_pdf/<int:id>/', statement_pdf, name='statement_pdf'),
     path('ticket_pdf/<int:id>/', ticket_pdf, name='ticket_pdf'),
     ###### These aren't currently used
     path('', CustomerListView.as_view(), name='customer-list-view'),

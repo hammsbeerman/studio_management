@@ -136,6 +136,123 @@ def invoice_pdf(request, id):
 
     return response
 
+@login_required
+def statement_pdf(request, id):
+    print(id)
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; attachment; filename=' + \
+        str(datetime.datetime.now())+'.pdf'
+    #remove inline to allow direct download
+    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
+        
+    response['Content-Transfer-Encoding'] = 'binary'
+
+    items = WorkorderItem.objects.filter(workorder=id)
+    item_length = len(items)
+
+    
+    workorder = Workorder.objects.get(id=id)
+    payment = workorder.amount_paid
+    open_bal = workorder.open_balance
+    total_bal = workorder.total_balance
+    date = workorder.date_billed
+    if not workorder.date_billed:
+        workorder.date_billed = timezone.now()
+        date = workorder.date_billed
+        workorder.billed = 1
+        workorder.save()
+    customer = Customer.objects.get(id=workorder.customer.id)
+    print(workorder.contact)
+    try:
+        contact = Contact.objects.get(id = workorder.contact.id)
+    except:
+        contact = ''
+    print(contact)
+    #print(customer.company_name)
+    #date = datetime.date.today()
+    subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
+    tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
+    total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
+    l = len(items)
+
+    if item_length > 15:
+        items = WorkorderItem.objects.filter(workorder=id)[:15]
+        items2 = WorkorderItem.objects.filter(workorder=id)[15:30]
+        rows2 = ''
+        n = 60
+        for x in range(n):
+            string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
+            #string = 'hello<br/>'
+            #print('test')
+            rows2 += string
+    else:
+        items2=''
+        rows2 = ''
+    print(l)
+    n = 40 - l
+    print(n)
+    rows = ''
+    for x in range(n):
+        string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
+        #string = 'hello<br/>'
+        #print('test')
+        rows += string
+    #print(rows)
+
+    if payment:
+        total_bal = open_bal
+    print('payment')
+    print(payment)
+    context = {
+        'items':items,
+        'items2':items2,
+        'workorder':workorder,
+        'customer':customer,
+        'payment':payment,
+        'contact':contact,
+        'date':date,
+        'subtotal':subtotal,
+        'tax':tax, 
+        'total':total,
+        'total_bal':total_bal,
+        'rows': rows,
+        'rows2': rows2
+    }
+
+    if workorder.internal_company == 'LK Design':
+        # i = len(items)
+        # print('list length')
+        # print(i)
+        if item_length < 15:
+            if workorder.quote == '0':
+                html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
+            else:
+                html_string=render_to_string('pdf/weasyprint/lk_quote.html', context)
+        else:
+            if workorder.quote == '0':
+                html_string=render_to_string('pdf/weasyprint/lk_invoice_long.html', context)
+            else:
+                html_string=render_to_string('pdf/weasyprint/lk_quote_long.html', context)
+    else:
+        if workorder.quote == '0':
+            html_string=render_to_string('pdf/weasyprint/krueger_invoice.html', context)
+        else:
+            html_string=render_to_string('pdf/weasyprint/krueger_quote.html', context)
+
+    html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
+
+    result = html.write_pdf()
+
+    with tempfile.NamedTemporaryFile(delete=True) as output:
+        output.write(result)
+        output.flush()
+        #rb stands for read binary
+        output=open(output.name,'rb')
+        response.write(output.read())
+
+    return response
+
 
 @login_required
 def lineitem_pdf(request, id):
@@ -471,6 +588,291 @@ def pdf_report_create(request):
 
 #     html_string=render_to_string('pdf/weasyprint/pdf-output.html', {'items':items, 'total':0})
 #     html = HTML(string=html_string)
+
+#     result = html.write_pdf()
+
+#     with tempfile.NamedTemporaryFile(delete=True) as output:
+#         output.write(result)
+#         output.flush()
+#         #rb stands for read binary
+#         output=open(output.name,'rb')
+#         response.write(output.read())
+
+#     return response
+
+@login_required
+def statement_pdf(request, id):
+    print(id)
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; attachment; filename=' + \
+        str(datetime.datetime.now())+'.pdf'
+    #remove inline to allow direct download
+    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
+        
+    response['Content-Transfer-Encoding'] = 'binary'
+
+    workorders = Workorder.objects.filter(customer=id).exclude(internal_company='LK Design').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(workorder_total=0).order_by('workorder')
+    print(workorders)
+    #payments = Payments.objects.filter(customer=pk).exclude(available = None).exclude(void = 1)
+    total_balance = workorders.filter().aggregate(Sum('open_balance'))
+    # total_balance=Sum('total_balance')
+    # total_balance = workorders.filter().aggregate(Sum('open_balance'))
+
+    # total_invoice = WorkorderItem.objects.filter(workorder_id=workorder).exclude(billable=0).exclude(parent=1).aggregate(
+    #         sum=Sum('total_with_tax'),
+    #         tax=Sum('tax_amount'),
+    #         abs=Sum('absolute_price')
+    #         )
+    #credits = Customer.objects.get(pk=pk)
+    #credits = credits.credit
+    #print(credits)
+    #customer = pk
+    print(total_balance)
+
+    # items = WorkorderItem.objects.filter(workorder=id)
+    item_length = len(workorders)
+    print(item_length)
+    
+    customer = Customer.objects.get(id=id)
+    print(customer)
+    # payment = workorder.amount_paid
+    # open_bal = workorder.open_balance
+    # total_bal = workorder.total_balance
+    # date = workorder.date_billed
+    # if not workorder.date_billed:
+    #     workorder.date_billed = timezone.now()
+    #     date = workorder.date_billed
+    #     workorder.billed = 1
+    #     workorder.save()
+    todays_date = timezone.now()
+    # customer = Customer.objects.get(id=workorder.customer.id)
+    # print(customer)
+    # print(workorder.contact)
+    try:
+        contact = Contact.objects.get(id = customer.contact.id)
+    except:
+        contact = ''
+    print(contact)
+    #print(customer.company_name)
+    date = datetime.date.today()
+    # subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
+    # tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
+    # total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
+    l = item_length
+
+    if item_length > 15:
+        items = Workorder.objects.filter(customer=id)[:15]
+        items2 = Workorder.objects.filter(customer=id)[15:30]
+        rows2 = ''
+        n = 60
+        for x in range(n):
+            string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
+            #string = 'hello<br/>'
+            #print('test')
+            rows2 += string
+    else:
+        items = WorkorderItem.objects.filter(workorder=id)[:15]
+        items2=''
+        rows2 = ''
+    print(l)
+    n = 40 - l
+    print(n)
+    rows = ''
+    for x in range(n):
+        string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
+        #string = 'hello<br/>'
+        #print('test')
+        rows += string
+    #print(rows)
+
+    # if payment:
+    #     total_bal = open_bal
+    # print('payment')
+    # print(payment)
+    context = {
+        'items':items,
+        'items2':items2,
+        # 'workorder':workorder,
+        'workorders':workorders,
+        'customer':customer,
+        # 'payment':payment,
+        'contact':contact,
+        'date':date,
+        'todays_date':todays_date,
+        # 'subtotal':subtotal,
+        # 'tax':tax, 
+        # 'total':total,
+        # 'total_bal':total_bal,
+        'rows': rows,
+        'rows2': rows2,
+        # 'total_balance':total_balance
+        'total_balance':total_balance,
+    }
+
+    # if workorder.internal_company == 'LK Design':
+    #     # i = len(items)
+    #     # print('list length')
+    #     # print(i)
+    #     if item_length < 15:
+    #         if workorder.quote == '0':
+    #             html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
+    #         else:
+    #             html_string=render_to_string('pdf/weasyprint/lk_quote.html', context)
+    #     else:
+    #         if workorder.quote == '0':
+    #             html_string=render_to_string('pdf/weasyprint/lk_invoice_long.html', context)
+    #         else:
+    #             html_string=render_to_string('pdf/weasyprint/lk_quote_long.html', context)
+    # else:
+    #     if workorder.quote == '0':
+    #         html_string=render_to_string('pdf/weasyprint/krueger_invoice.html', context)
+        # else:
+    html_string=render_to_string('pdf/weasyprint/krueger_statement.html', context)
+
+    html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
+
+    result = html.write_pdf()
+
+    with tempfile.NamedTemporaryFile(delete=True) as output:
+        output.write(result)
+        output.flush()
+        #rb stands for read binary
+        output=open(output.name,'rb')
+        response.write(output.read())
+
+    return response
+
+
+
+
+# workorders = Workorder.objects.filter(customer=pk).exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(workorder_total=0).order_by('workorder')
+#    payments = Payments.objects.filter(customer=pk).exclude(available = None).exclude(void = 1)
+#    total_balance = workorders.filter().aggregate(Sum('open_balance'))
+#    credits = Customer.objects.get(pk=pk)
+#    credits = credits.credit
+#    print(credits)
+#    customer = pk
+#    if msg:
+#        message = "Please select a different payment"
+#    else:
+#        message = ''
+#    context = {
+#        'message':message,
+#        'payments':payments,
+#        'customer':customer,
+#        'total_balance':total_balance,
+#        'credit':credits,
+#        'workorders':workorders,
+#    }
+#    return render(request, 'finance/reports/modals/open_invoices.html', context)
+
+
+# @login_required
+# def statement_pdf(request, id):
+#     print(id)
+    
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = 'inline; attachment; filename=' + \
+#         str(datetime.datetime.now())+'.pdf'
+#     #remove inline to allow direct download
+#     #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
+        
+#     response['Content-Transfer-Encoding'] = 'binary'
+
+#     items = WorkorderItem.objects.filter(workorder=id)
+#     item_length = len(items)
+
+    
+#     workorder = Workorder.objects.get(id=id)
+#     payment = workorder.amount_paid
+#     open_bal = workorder.open_balance
+#     total_bal = workorder.total_balance
+#     date = workorder.date_billed
+#     if not workorder.date_billed:
+#         workorder.date_billed = timezone.now()
+#         date = workorder.date_billed
+#         workorder.billed = 1
+#         workorder.save()
+#     customer = Customer.objects.get(id=workorder.customer.id)
+#     print(workorder.contact)
+#     try:
+#         contact = Contact.objects.get(id = workorder.contact.id)
+#     except:
+#         contact = ''
+#     print(contact)
+#     #print(customer.company_name)
+#     #date = datetime.date.today()
+#     subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
+#     tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
+#     total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
+#     l = len(items)
+
+#     if item_length > 15:
+#         items = WorkorderItem.objects.filter(workorder=id)[:15]
+#         items2 = WorkorderItem.objects.filter(workorder=id)[15:30]
+#         rows2 = ''
+#         n = 60
+#         for x in range(n):
+#             string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
+#             #string = 'hello<br/>'
+#             #print('test')
+#             rows2 += string
+#     else:
+#         items2=''
+#         rows2 = ''
+#     print(l)
+#     n = 40 - l
+#     print(n)
+#     rows = ''
+#     for x in range(n):
+#         string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
+#         #string = 'hello<br/>'
+#         #print('test')
+#         rows += string
+#     #print(rows)
+
+#     if payment:
+#         total_bal = open_bal
+#     print('payment')
+#     print(payment)
+#     context = {
+#         'items':items,
+#         'items2':items2,
+#         'workorder':workorder,
+#         'customer':customer,
+#         'payment':payment,
+#         'contact':contact,
+#         'date':date,
+#         'subtotal':subtotal,
+#         'tax':tax, 
+#         'total':total,
+#         'total_bal':total_bal,
+#         'rows': rows,
+#         'rows2': rows2
+#     }
+
+#     if workorder.internal_company == 'LK Design':
+#         # i = len(items)
+#         # print('list length')
+#         # print(i)
+#         if item_length < 15:
+#             if workorder.quote == '0':
+#                 html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
+#             else:
+#                 html_string=render_to_string('pdf/weasyprint/lk_quote.html', context)
+#         else:
+#             if workorder.quote == '0':
+#                 html_string=render_to_string('pdf/weasyprint/lk_invoice_long.html', context)
+#             else:
+#                 html_string=render_to_string('pdf/weasyprint/lk_quote_long.html', context)
+#     else:
+#         if workorder.quote == '0':
+#             html_string=render_to_string('pdf/weasyprint/krueger_invoice.html', context)
+#         else:
+#             html_string=render_to_string('pdf/weasyprint/krueger_quote.html', context)
+
+#     html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
 
 #     result = html.write_pdf()
 

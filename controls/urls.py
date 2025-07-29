@@ -33,6 +33,7 @@ from .views import (
     get_highest_item_price,
     items_missing_details,
     high_price_item,
+    krueger_statements,
     #setprice_list,
 )
 
@@ -73,4 +74,5 @@ urlpatterns = [
     path('items_missing_details/', items_missing_details, name='items_missing_details'),
     path('high_price_item/', high_price_item, name='high_price_item'),
     #path('setprice_list/', setprice_list, name='setprice_list'),
+    path('krueger_statements/', krueger_statements, name='krueger_statements'),
 ]

@@ -80,7 +80,7 @@ class WorkorderPayment(models.Model):
     workorder = models.ForeignKey(Workorder, null=True, on_delete=models.SET_NULL)
     payment = models.ForeignKey(Payments, null=True, on_delete=models.SET_NULL)
     payment_amount = models.DecimalField('Payment Amount', max_digits=10, decimal_places=2, default=None, null=True)
-    date= models.DateField(auto_now=True, auto_now_add=False, blank=False, null=False)
+    date= models.DateField(auto_now=False, auto_now_add=False, blank=False, null=False)
     void = models.BooleanField('Void Payment', default=False, blank=False, null=False)
 
     def __str__(self):
