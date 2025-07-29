@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<center><h4>Krueger Statements</h4></center>
+<center><h4>A/R Aging</h4></center>
     
     
     
@@ -23,7 +23,6 @@
             <th scope="col" class="">61-90</th>
             <th scope="col" class="">> 90</th>
             <th scope="col" class="">Total</th>
-            <th scope="col" class="">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -32,17 +31,19 @@
           
 
 
-          {% for x in statement %}
+          
+          {% for x in ar %}
+            {% if x.total %}
               <tr>
-                <td>{{x.hr_customer}}</td>
+                <td><u><div style="color:Blue;" hx-get="{% url 'finance:open_invoices' pk=x.customer_id %} " hx-target="#dialog2">{{ x.hr_customer }}</div></u></td>
                 <td>{{ x.current|floatformat:2 }}</td>
                 <td>{{ x.thirty|floatformat:2 }}</td>
                 <td>{{ x.sixty|floatformat:2 }}</td>
                 <td>{{ x.ninety|floatformat:2 }}</td>
                 <td>{{ x.onetwenty|floatformat:2 }}</td>
                 <td>{{ x.total|floatformat:2 }}</td>
-                <td><a href="{% url 'pdf:statement_pdf' id=x.customer.id %}" class="btn btn-primary" target="_blank">Create Statement</a></td>
               </tr>
+            {% endif %}
           {% endfor %}
               <tr>
                 <td><b>Totals:</b></td>

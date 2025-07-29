@@ -10,7 +10,7 @@ from workorders.models import Workorder
 from customers.models import Customer, ShipTo
 from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail, InventoryPricingGroup, InventoryQtyVariations
 from controls.models import Measurement, GroupCategory
-from finance.models import InvoiceItem, Araging
+from finance.models import InvoiceItem, Araging, Krueger_Araging
 from django.contrib.auth.decorators import login_required
 
 @login_required
@@ -728,10 +728,14 @@ def krueger_statements(request):
     #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
     today = timezone.now()
     customers = Customer.objects.all()
-    ar = Araging.objects.all()
-    workorders = Workorder.objects.filter().exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1)
-    # for x in workorders:
-    #     #print(x.id)
+    # ar = Araging.objects.all()
+    ar = Krueger_Araging.objects.filter
+    workorders = Workorder.objects.filter().exclude(billed=0).exclude(internal_company='LK Design').exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).values('hr_customer').distinct()
+    statement = Krueger_Araging.objects.filter(hr_customer__in=workorders)
+    #workorders = Workorder.objects.filter(customer_id__in=need_statement)
+    print(customers)
+    for x in statement:
+         print(f"ID: {x.customer.id}")
     #     if not x.date_billed:
     #         x.date_billed = today
     #     age = x.date_billed - today
@@ -799,7 +803,7 @@ def krueger_statements(request):
     #             except:
     #                 obj = Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
     #                 obj.save()
-    ar = Araging.objects.all().order_by('hr_customer')
+    ar = Krueger_Araging.objects.all().order_by('hr_customer')
     #total_current = Araging.objects.filter().aggregate(Sum('current'))
     total_current = ar.filter().aggregate(Sum('current'))
     total_thirty = ar.filter().aggregate(Sum('thirty'))
@@ -817,5 +821,7 @@ def krueger_statements(request):
         'total_onetwenty':total_onetwenty,
         'total_balance':total_balance,
         'ar': ar,
+        'workorders': workorders,
+        'statement': statement,
     }
     return render(request, 'finance/reports/krueger_statements.html', context)

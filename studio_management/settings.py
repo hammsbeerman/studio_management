@@ -287,5 +287,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CRONJOBS = [
-    ('*/5 * * * *', 'finance.cron.ar_aging')
+    ('*/5 * * * *', 'finance.cron.ar_aging'),
+    ('*/5 * * * *', 'finance.cron.krueger_ar_aging')
 ]

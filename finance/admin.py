@@ -1,10 +1,12 @@
 from django.contrib import admin
 
-from .models import Payments, Araging, AccountsPayable, WorkorderPayment, InvoiceItem#, AllInvoiceItem
+from .models import Payments, Araging, AccountsPayable, WorkorderPayment, InvoiceItem, Krueger_Araging #, AllInvoiceItem
 
 admin.site.register(Payments)
 
 admin.site.register(Araging)
+
+admin.site.register(Krueger_Araging)
 
 admin.site.register(AccountsPayable)
 
