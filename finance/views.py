@@ -719,7 +719,11 @@ def krueger_ar_aging(request):
     #     age = abs((age).days)
     #     print(age)
     #     Workorder.objects.filter(pk=x.pk).update(aging = age)
-    total_balance = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).exclude(internal_company='LK Design').aggregate(Sum('open_balance'))
+    total_balance = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).filter(internal_company='Krueger Printing').aggregate(Sum('open_balance'))
+    print(total_balance['open_balance__sum'] or 0)
+    invoices = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).filter(internal_company='Krueger Printing')
+    for x in invoices:
+        print(x.id)
     # for x in customers:
     #     try:
     #         #Get the Araging customer and check to see if aging has been updated today
