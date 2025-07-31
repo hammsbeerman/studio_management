@@ -314,7 +314,7 @@ display: flex;
 			      {% for item in workorders %}
               <tr>
                 <td>{{ item.date_billed|date:"m/d/Y" }}</td>
-                <td>{{ item.workorder }}</td>
+                <td>{{ item.printleader_workorder }}</td>
                 <td>{% if item.description%}{{ item.description }}{% else%} {% endif %}</td>
                 <td>{{ item.total_balance }}</td>
                 <td>{{ item.open_balance }}</td>          
