@@ -727,7 +727,7 @@ def krueger_statements(request):
     print(update_ar)
     #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
     today = timezone.now()
-    customers = Customer.objects.all()
+    customers = Customer.objects.all().order_by('company_name')
     # ar = Araging.objects.all()
     ar = Krueger_Araging.objects.filter
     workorders = Workorder.objects.filter().exclude(billed=0).exclude(internal_company='LK Design').exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).values('hr_customer').distinct()
