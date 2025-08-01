@@ -638,12 +638,12 @@ def statement_pdf(request, id):
     customer = Customer.objects.get(id=id)
     print(customer)
 
-    customers = Customer.objects.all()[:5]
-    ar = Krueger_Araging.objects.all()
-    for x in customers:
-        id=x.id
-        workorders = Workorder.objects.filter(customer=id).exclude(internal_company='LK Design').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(workorder_total=0).order_by('workorder')
-        print(workorders)
+    # customers = Customer.objects.all()
+    # ar = Krueger_Araging.objects.all()
+    # for x in customers:
+    #     id=x.id
+    #     workorders = Workorder.objects.filter(customer=id).exclude(internal_company='LK Design').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(workorder_total=0).order_by('workorder')
+    #     print(workorders)
     # payment = workorder.amount_paid
     # open_bal = workorder.open_balance
     # total_bal = workorder.total_balance
@@ -716,7 +716,7 @@ def statement_pdf(request, id):
         'rows2': rows2,
         # 'total_balance':total_balance
         'total_balance':total_balance,
-        'customers':customers,
+        # 'customers':customers,
 
     }
 
