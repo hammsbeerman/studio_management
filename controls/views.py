@@ -832,7 +832,7 @@ def krueger_ar_aging(request):
     # print(update_ar)
     # #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
     today = timezone.now()
-    customers = Customer.objects.all()
+    customers = Customer.objects.all().order_by('company_name')
     ar = Krueger_Araging.objects.all()
     workorders = Workorder.objects.filter().exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(internal_company='LK Design')
     for x in workorders:

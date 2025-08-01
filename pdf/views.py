@@ -769,7 +769,7 @@ def statement_pdf_bulk(request):
 
 
     #customers = Customer.objects.all()[:5]
-    customers = Customer.objects.filter(id__in=Krueger_Araging.objects.values('customer'))
+    customers = Customer.objects.filter(id__in=Krueger_Araging.objects.values('customer')).order_by('company_name')
     
     customer_data = []
     for customer in customers:
