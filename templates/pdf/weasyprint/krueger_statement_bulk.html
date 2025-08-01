@@ -1,4 +1,4 @@
-{% for x in customers %}
+{% for entry in customer_data %}
   <!DOCTYPE html>
   <html lang="en">
     <head>
@@ -260,7 +260,7 @@
       <div class="single_header  invoice_header_r">
         <table width="90%" style="float: right;">
           <tr><td>Statement Date:</td><td>{{todays_date|date:"M d, Y"}}</td></tr>
-          <tr><td>Customer#:</td><td>{{customer.id}}</td></tr>
+          <tr><td>Customer#:</td><td>{{entry.customer.id}}</td></tr>
           <tr><td>Terms:</td><td>Net 30 Days</td></tr>
           <tr><td>Range:</td><td>All Invoices</td></tr>
         </table>
@@ -271,10 +271,10 @@
       <div class="single_header header_left">
       <div class="header_title">BILL TO:</div>
       <table style="width:100%;">
-          <tr><td>{{customer.company_name}}</td></tr>
-          <tr><td>{{customer.address1}}</td></tr>
-          {% if customer.address2 is not None %}<tr><td>{{customer.address2}}</td></tr>{% endif %}
-          <tr><td>{{customer.city}}, {{customer.state}} {{customer.zipcode}}</td></tr>
+          <tr><td>{{entry.customer.company_name}}</td></tr>
+          <tr><td>{{entry.customer.address1}}</td></tr>
+          {% if entry.customer.address2 is not None %}<tr><td>{{entry.customer.address2}}</td></tr>{% endif %}
+          <tr><td>{{entry.customer.city}}, {{entry.customer.state}} {{entry.customer.zipcode}}</td></tr>
         </table>
       </div>
 
@@ -312,7 +312,16 @@
               </tr>
             </thead>
             <tbody>
-              {% for item in workorders %}
+              <!-- {% for item in workorders %}
+                <tr>
+                  <td>{{ item.date_billed|date:"m/d/Y" }}</td>
+                  <td>{{ item.printleader_workorder }}</td>
+                  <td>{% if item.description%}{{ item.description }}{% else%} {% endif %}</td>
+                  <td>{{ item.total_balance }}</td>
+                  <td>{{ item.open_balance }}</td>          
+                </tr>
+              {% endfor %} -->
+              {% for item in entry.workorders %}
                 <tr>
                   <td>{{ item.date_billed|date:"m/d/Y" }}</td>
                   <td>{{ item.printleader_workorder }}</td>
@@ -356,7 +365,8 @@
           <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
           <span>{{workorder.tax}}</span> 
           </td>-->
-          <td>{{total_balance.open_balance__sum|floatformat:2}}</td>
+          <td>{{entry.total_open_balance.open_balance__sum|floatformat:2}}</td>
+          
         </tr>
       </tbody>
     </table>

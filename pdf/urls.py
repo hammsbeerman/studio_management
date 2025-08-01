@@ -5,6 +5,7 @@ from .views import (
     lineitem_pdf,
     ticket_pdf,
     statement_pdf,
+    statement_pdf_bulk,
     #
 
     ####### These aren't currently used
@@ -27,6 +28,7 @@ urlpatterns = [
     path('invoice_pdf/<int:id>/', invoice_pdf, name='invoice_pdf'),
     path('lineitem_pdf/<int:id>/', lineitem_pdf, name='lineitem_pdf'),
     path('statement_pdf/<int:id>/', statement_pdf, name='statement_pdf'),
+    path('statement_pdf/', statement_pdf_bulk, name='statement_pdf_bulk'),
     path('ticket_pdf/<int:id>/', ticket_pdf, name='ticket_pdf'),
     ###### These aren't currently used
     path('', CustomerListView.as_view(), name='customer-list-view'),
