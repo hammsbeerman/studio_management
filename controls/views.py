@@ -731,7 +731,7 @@ def krueger_statements(request):
     # ar = Araging.objects.all()
     ar = Krueger_Araging.objects.filter
     workorders = Workorder.objects.filter().exclude(billed=0).exclude(internal_company='LK Design').exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).values('hr_customer').distinct()
-    statement = Krueger_Araging.objects.filter(hr_customer__in=workorders)
+    statement = Krueger_Araging.objects.filter(hr_customer__in=workorders).order_by('hr_customer')
     #workorders = Workorder.objects.filter(customer_id__in=need_statement)
     print(customers)
     for x in statement:
@@ -811,7 +811,7 @@ def krueger_statements(request):
     total_ninety = ar.filter().aggregate(Sum('ninety'))
     total_onetwenty = ar.filter().aggregate(Sum('onetwenty'))
     print(total_current)
-    
+
     #print(ar)
     context = {
         'total_current':total_current,

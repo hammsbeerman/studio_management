@@ -42,7 +42,8 @@ from .views import (
     bills_by_vendor,
     edit_invoice_modal,
     invoice_detail_highlevel,
-    bulk_edit_invoices
+    bulk_edit_invoices,
+    payment_history,
 )
 
 app_name='finance'
@@ -106,6 +107,7 @@ urlpatterns = [
     path('ar/recieve_payment/payment_history/', payment_history, name='payment_history'),
     path('ar/remove_payment/<int:pk>/', remove_payment, name='remove_payment'),
     path('ar/remove_payment/', remove_payment, name='remove_payment'),
+    path('ar/payment_history/', payment_history, name='payment_history'),
 
     #path('open_invoices/', open_invoices, name='open_invoices'),
 

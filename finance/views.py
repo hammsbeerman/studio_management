@@ -1780,6 +1780,16 @@ def bulk_edit_invoices(request, vendor=None):
     }
     return render (request, "finance/AP/modals/bulk_edit_invoices.html", context)
 
+
+
+
+def payment_history(request):
+    payments = Payments.objects.all().order_by('-date')
+    context = {
+        'payments':payments,
+    }
+    return render (request, "finance/AR/payment_history.html", context)
+
 #     if request.method == "POST":
 #             modal = request.POST.get('modal')
 #             id_list = request.POST.getlist('payment')
