@@ -1803,7 +1803,7 @@ def sales_tax_payable(request):
             print("Start:", start_date)
             print("End:", end_date)
 
-        workorders = Workorder.objects.filter(date_billed__range=(start_date, end_date)).order_by('date_billed')
+        workorders = Workorder.objects.filter(date_billed__range=(start_date, end_date), internal_company='Krueger Printing', completed='1').order_by('date_billed')
         total_tax = workorders.aggregate(Sum('tax'))['tax__sum'] or 0
         invoice_total = workorders.aggregate(Sum('workorder_total'))['workorder_total__sum'] or 0
         invoice_subtotal = workorders.aggregate(Sum('subtotal'))['subtotal__sum'] or 0
