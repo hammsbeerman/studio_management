@@ -79,7 +79,7 @@ Exemptions:
       <th>Invoice Total</th>
     </tr>
     {% for x in workorders %}
-      {% if not x.tax %}
+      {% if not x.tax or x.tax <= 0 %}
     <tr>
       <td>{{ x.date_billed|date:"M d, Y"}}</td>
       <td>{{ x.hr_customer }}</td>
