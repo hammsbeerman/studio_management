@@ -78,3 +78,7 @@ class AddInvoiceItemRemainderForm(forms.ModelForm):
         fields = ['vendor_part_number', 'description', 'invoice_unit_cost', 'invoice_qty']
         labels = {
         } 
+
+class DateRangeForm(forms.Form):
+    start_date = forms.DateField(widget=forms.TextInput(attrs={'class': 'datepicker'}))
+    end_date = forms.DateField(widget=forms.TextInput(attrs={'class': 'datepicker'}))

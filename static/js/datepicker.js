@@ -34,4 +34,12 @@ $( function() {
   $( "#date_paid" ).datepicker();
 } );
 
+$( function() {
+  $( "#start_date" ).datepicker();
+} );
+
+$( function() {
+  $( "#end_date" ).datepicker();
+} );
+
 Test

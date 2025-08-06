@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+<script src="{% static 'js/datepicker.js' %}"></script>
+
+
+{% block content %}
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-family: sans-serif;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 12px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f2f2f2;
+  }
+
+  td {
+    background-color: #fafafa;
+  }
+</style>
+
+<form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit</button>
+</form>
+<p>
+  <table>
+    <tr>
+      <th>Invoice Total</th>
+      <th>Tax recieved</th>
+      <th>Tax recieved</th>
+      <th>Exempt sales</th>
+    </tr>
+    <tr>
+      <td>{{ invoice_total|floatformat:2}}</td>
+      <td>{{ total_tax|floatformat:2 }}</td>
+      <td>{{ total_taxs|floatformat:2 }}</td>
+      <td>{{ exemptions|floatformat:2 }}</td>
+    </tr>
+  </table>
+  <table>
+    <tr>
+      <th>Date Billed</th>
+      <th>Workorder #</th>
+      <th>Subtotal</th>
+      <th>Tax</th>
+      <th>Invoice Total</th>
+    </tr>
+    {% for x in workorders %}
+    <tr>
+      <td>{{ x.date_billed}}</td>
+      <td>{{ x.workorder }}</td>
+      <td>{{ x.subtotal|floatformat:2 }}</td>
+      <td>{{ x.tax|floatformat:2 }}</td>
+      <td>{{ x.workorder_total|floatformat:2 }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+
+
+
+<div id="modal" class="modal fade">
+  <div id="dialog" class="modal-dialog" hx-target="this"></div>
+</div>
+
+<div id="modal2" class="modal fade">
+  <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
+</div>
+
+
+{% endblock content %}
+
+{% block scripts %}
+
+<script>
+        $(function() {
+            $(".datepicker").datepicker({
+                dateFormat: "yy-mm-dd"
+            });
+        });
+    </script>
+
+<script>
+
+
+    $(document).ready(function () {
+      $("#customer").select2();
+      $('#customer').on('select2:select', (e) => {
+        htmx.trigger("#customer", "change")
+      });
+    })
+
+    const modal = new bootstrap.Modal(document.getElementById("modal"))
+
+    htmx.on("htmx:afterSwap", (e) => {
+      // Response targeting #dialog => show the modal
+      if (e.detail.target.id == "dialog") {
+        modal.show()
+      }
+    })
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      // Empty response targeting #dialog => hide the modal
+      if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
+        modal.hide()
+        e.detail.shouldSwap = false
+      }
+    })
+
+    htmx.on("hidden.bs.modal", () => {
+      document.getElementById("dialog").innerHTML = ""
+    })
+    
+
+    const modal2 = new bootstrap.Modal(document.getElementById("modal2"))
+
+    htmx.on("htmx:afterSwap", (e) => {
+      // Response targeting #dialog => show the modal
+      if (e.detail.target.id == "dialog2") {
+        modal2.show()
+      }
+    })
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      // Empty response targeting #dialog => hide the modal
+      if (e.detail.target.id == "dialog2" && !e.detail.xhr.response) {
+        modal2.hide()
+        e.detail.shouldSwap = false
+      }
+    })
+
+    htmx.on("hidden.bs.modal", () => {
+      document.getElementById("dialog2").innerHTML = ""
+    })
+
+
+
+</script>
+
+{% endblock %}

@@ -10,7 +10,7 @@ from datetime import timedelta, datetime
 from decimal import Decimal
 import logging
 from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment, Krueger_Araging
-from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm
+from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm, DateRangeForm
 from retail.forms import RetailInventoryMasterForm
 from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm, BulkEditInvoiceForm
 from finance.models import InvoiceItem#, AllInvoiceItem
@@ -1788,7 +1788,51 @@ def payment_history(request):
     context = {
         'payments':payments,
     }
-    return render (request, "finance/AR/payment_history.html", context)
+    return render (request, "finance/reports/payment_history.html", context)
+
+
+def sales_tax_payable(request):
+    form = DateRangeForm()
+
+    if request.method == 'POST':
+        form = DateRangeForm(request.POST)
+        if form.is_valid():
+            start_date = form.cleaned_data['start_date']
+            end_date = form.cleaned_data['end_date']
+
+            print("Start:", start_date)
+            print("End:", end_date)
+
+        workorders = Workorder.objects.filter(date_billed__range=(start_date, end_date)).order_by('date_billed')
+        total_tax = workorders.aggregate(Sum('tax'))['tax__sum'] or 0
+        invoice_total = workorders.aggregate(Sum('workorder_total'))['workorder_total__sum'] or 0
+        invoice_subtotal = workorders.aggregate(Sum('subtotal'))['subtotal__sum'] or 0
+        
+        taxable_workorders = workorders.exclude(tax__isnull=True).exclude(tax=0)
+        total_taxs = taxable_workorders.aggregate(Sum('tax'))['tax__sum'] or 0
+        taxable_total = taxable_workorders.aggregate(Sum('workorder_total'))['workorder_total__sum'] or 0
+        
+        exemptions = invoice_total - taxable_total
+
+        context = {
+            'form':form,
+            'start_date':start_date,
+            'workorders':workorders,
+            'total_tax':total_tax,
+            'total_taxs':total_taxs,
+            'invoice_total':invoice_total,
+            'invoice_subtotoal':invoice_subtotal,
+            'exemptions':exemptions,
+        }
+
+        return render (request, "finance/reports/sales_tax_payable.html", context)
+
+    context = {
+            'form':form,
+        }
+
+    return render (request, "finance/reports/sales_tax_payable.html", context)
+
 
 #     if request.method == "POST":
 #             modal = request.POST.get('modal')
