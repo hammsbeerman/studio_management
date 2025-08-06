@@ -51,6 +51,7 @@
   <table>
     <tr>
       <th>Date Billed</th>
+      <th>Customer</th>
       <th>Workorder #</th>
       <th>Subtotal</th>
       <th>Tax</th>
@@ -58,12 +59,36 @@
     </tr>
     {% for x in workorders %}
     <tr>
-      <td>{{ x.date_billed}}</td>
-      <td>{{ x.workorder }}</td>
+      <td>{{ x.date_billed|date:"M d, Y"}}</td>
+      <td>{{ x.hr_customer }}</td>
+      <td>{{ x.printleader_workorder }}</td>
       <td>{{ x.subtotal|floatformat:2 }}</td>
       <td>{{ x.tax|floatformat:2 }}</td>
       <td>{{ x.workorder_total|floatformat:2 }}</td>
     </tr>
+    {% endfor %}
+  </table>
+Exemptions:
+  <table>
+    <tr>
+      <th>Date Billed</th>
+      <th>Customer</th>
+      <th>Workorder #</th>
+      <th>Subtotal</th>
+      <th>Tax</th>
+      <th>Invoice Total</th>
+    </tr>
+    {% for x in workorders %}
+      {% if not x.tax %}
+    <tr>
+      <td>{{ x.date_billed|date:"M d, Y"}}</td>
+      <td>{{ x.hr_customer }}</td>
+      <td>{{ x.printleader_workorder }}</td>
+      <td>{{ x.subtotal|floatformat:2 }}</td>
+      <td>{{ x.tax|floatformat:2 }}</td>
+      <td>{{ x.workorder_total|floatformat:2 }}</td>
+    </tr>
+      {% endif %}
     {% endfor %}
   </table>
 
