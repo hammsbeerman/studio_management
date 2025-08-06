@@ -1809,20 +1809,20 @@ def sales_tax_payable(request):
         invoice_subtotal = workorders.aggregate(Sum('subtotal'))['subtotal__sum'] or 0
         
         taxable_workorders = workorders.exclude(tax__isnull=True).exclude(tax=0)
-        total_taxs = taxable_workorders.aggregate(Sum('tax'))['tax__sum'] or 0
         taxable_total = taxable_workorders.aggregate(Sum('workorder_total'))['workorder_total__sum'] or 0
         
         exemptions = invoice_total - taxable_total
+        taxable = invoice_subtotal - exemptions
 
         context = {
             'form':form,
             'start_date':start_date,
             'workorders':workorders,
             'total_tax':total_tax,
-            'total_taxs':total_taxs,
             'invoice_total':invoice_total,
             'invoice_subtotoal':invoice_subtotal,
             'exemptions':exemptions,
+            'taxable':taxable,
         }
 
         return render (request, "finance/reports/sales_tax_payable.html", context)

@@ -37,14 +37,14 @@
   <table>
     <tr>
       <th>Invoice Total</th>
-      <th>Tax recieved</th>
+      <th>Taxable sales</th>
       <th>Tax recieved</th>
       <th>Exempt sales</th>
     </tr>
     <tr>
       <td>{{ invoice_total|floatformat:2}}</td>
+      <td>{{ taxable|floatformat:2}}</td>
       <td>{{ total_tax|floatformat:2 }}</td>
-      <td>{{ total_taxs|floatformat:2 }}</td>
       <td>{{ exemptions|floatformat:2 }}</td>
     </tr>
   </table>
