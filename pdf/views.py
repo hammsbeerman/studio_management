@@ -788,51 +788,12 @@ def statement_pdf_bulk(request):
                 'total_open_balance': total_open_balance,
             })
         
-
-
-
-
-    # workorders = Workorder.objects.filter(customer=id).exclude(internal_company='LK Design').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(workorder_total=0).order_by('workorder')
-    # print(workorders)
-    #payments = Payments.objects.filter(customer=pk).exclude(available = None).exclude(void = 1)
-    # total_balance = workorders.filter().aggregate(Sum('open_balance'))
-    # total_balance=Sum('total_balance')
-    # total_balance = workorders.filter().aggregate(Sum('open_balance'))
-
-    # total_invoice = WorkorderItem.objects.filter(workorder_id=workorder).exclude(billable=0).exclude(parent=1).aggregate(
-    #         sum=Sum('total_with_tax'),
-    #         tax=Sum('tax_amount'),
-    #         abs=Sum('absolute_price')
-    #         )
-    #credits = Customer.objects.get(pk=pk)
-    #credits = credits.credit
-    #print(credits)
-    #customer = pk
-    #print(total_balance)
-
-    # items = WorkorderItem.objects.filter(workorder=id)
     item_length = len(workorders)
     print(item_length)
     
-    # customer = Customer.objects.get(id=id)
-    # print(customer)
-
-    
     ar = Krueger_Araging.objects.all()
     
-    # payment = workorder.amount_paid
-    # open_bal = workorder.open_balance
-    # total_bal = workorder.total_balance
-    # date = workorder.date_billed
-    # if not workorder.date_billed:
-    #     workorder.date_billed = timezone.now()
-    #     date = workorder.date_billed
-    #     workorder.billed = 1
-    #     workorder.save()
     todays_date = timezone.now()
-    # customer = Customer.objects.get(id=workorder.customer.id)
-    # print(customer)
-    # print(workorder.contact)
     try:
         contact = Contact.objects.get(id = customer.contact.id)
     except:
@@ -840,9 +801,6 @@ def statement_pdf_bulk(request):
     print(contact)
     #print(customer.company_name)
     date = datetime.date.today()
-    # subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
-    # tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
-    # total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
     l = item_length
 
     if item_length > 15:
@@ -898,25 +856,6 @@ def statement_pdf_bulk(request):
     }
 
 
-
-    # if workorder.internal_company == 'LK Design':
-    #     # i = len(items)
-    #     # print('list length')
-    #     # print(i)
-    #     if item_length < 15:
-    #         if workorder.quote == '0':
-    #             html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
-    #         else:
-    #             html_string=render_to_string('pdf/weasyprint/lk_quote.html', context)
-    #     else:
-    #         if workorder.quote == '0':
-    #             html_string=render_to_string('pdf/weasyprint/lk_invoice_long.html', context)
-    #         else:
-    #             html_string=render_to_string('pdf/weasyprint/lk_quote_long.html', context)
-    # else:
-    #     if workorder.quote == '0':
-    #         html_string=render_to_string('pdf/weasyprint/krueger_invoice.html', context)
-        # else:
     html_string=render_to_string('pdf/weasyprint/krueger_statement_bulk.html', context)
 
     html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))

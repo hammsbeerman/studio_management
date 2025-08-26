@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Statements</title>
+</head>
+<body>
+    <h1>Available Statements</h1>
+    <ul>
+        {% for file in files %}
+            <li>
+                <a href="{{ file.url }}" target="_blank">{{ file.name }}</a>
+            </li>
+        {% empty %}
+            <li>No statements found.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
+{% endblock %}

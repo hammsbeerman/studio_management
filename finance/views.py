@@ -1,3 +1,5 @@
+import os
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.contrib import messages
@@ -1832,6 +1834,21 @@ def sales_tax_payable(request):
         }
 
     return render (request, "finance/reports/sales_tax_payable.html", context)
+
+
+def monthly_statements(request):
+    statements_dir = os.path.join(settings.MEDIA_ROOT, "statements")
+    files = []
+
+    if os.path.exists(statements_dir):
+        for f in sorted(os.listdir(statements_dir), reverse=True):
+            if f.endswith(".pdf"):
+                files.append({
+                    "name": f,
+                    "url": settings.MEDIA_URL + "statements/" + f,
+                })
+
+    return render(request, "finance/monthly_statements.html", {"files": files})
 
 
 #     if request.method == "POST":

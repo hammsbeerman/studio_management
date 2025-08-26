@@ -44,7 +44,8 @@ from .views import (
     invoice_detail_highlevel,
     bulk_edit_invoices,
     payment_history,
-    sales_tax_payable
+    sales_tax_payable,
+    monthly_statements,
 )
 
 app_name='finance'
@@ -110,6 +111,7 @@ urlpatterns = [
     path('ar/remove_payment/<int:pk>/', remove_payment, name='remove_payment'),
     path('ar/remove_payment/', remove_payment, name='remove_payment'),
     path('ar/payment_history/', payment_history, name='payment_history'),
+    path("monthly_statements/", monthly_statements, name="monthly_statements"),
 
 
     #path('open_invoices/', open_invoices, name='open_invoices'),
