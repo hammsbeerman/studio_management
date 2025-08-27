@@ -241,10 +241,29 @@ display: flex;
 		<div class="single_header header_mid">***PACKING SLIP***</div>
 		<div class="single_header  invoice_header_r">
 			<table width="90%" style="float: right;">
-				<tr><td>Page:</td><td>1 of 1</td></tr>
-				<tr><td>Order #:</td><td>28478</td></tr>
-				<tr><td>Order Date:</td><td>12/29/2023</td></tr>
-				<tr><td>Customer#:</td><td>00615</td></tr>
+        <tr>
+          <td colspan="2">Job Date:</td>
+          <td colspan="2">{{workorder.created|date:"M d, Y"}}</td>
+        <tr>
+          <td colspan="2">Customer#:</td>
+          <td colspan="2">{{ customer.id }}</td>
+        </tr>
+        <tr>
+          <td colspan="2">Invoice#:</td>
+          <td colspan="2">{{workorder.workorder}}{% if workorder.printleader_workorder %} / {{workorder.printleader_workorder }}{%endif %}</td>
+        </tr>
+        <tr>{% if workorder.po_number %}
+          <td colspan="2">Customer PO#:</td>
+          <td colspan="2">{{ workorder.po_number }}</td>
+        </tr>{% endif %}
+        <tr>
+          <td colspan="2">Shipping:</td>
+          <td>{{ workorder.delivery_pickup }}</td>
+        </tr>
+        <tr>
+          <td colspan="2">Customer#:</td>
+          <td colspan="2">{{ customer.id }}</td>
+        </tr>
 			</table>
 		</div>
 	</div>
@@ -253,10 +272,10 @@ display: flex;
 		<div class="single_header header_left">
 		<div class="header_title">Bill TO:</div>
 		<table style="width:100%;">
-				<tr><td>Contact:</td><td>Demo Dest</td></tr>
-				<tr><td>Phone:</td><td>0123456789</td></tr>
-				<tr><td>Fax:</td><td>0123456789</td></tr>
-				<tr><td>Sales Rep:</td><td>House Account</td></tr>
+				{{customer.company_name}}<br/>
+          {% if customer.address1 %}{{customer.address1}}<br/>{% else %} <p>{% endif %}
+          {% if customer.address2 is not None %}{{customer.address2}}<br/>{% else %} <p>{% endif %}
+          {% if customer.city %}{{customer.city}}, {{customer.state}} {{customer.zipcode}}<br/>{% else %} <p>{% endif %}
 			</table>
 		
 		
@@ -267,10 +286,10 @@ display: flex;
 			<div class="header_title">SHIP TO:</div>
 			<table style="width:100%;">
 			
-				<tr><td>Contact:</td><td>Demo Dest</td></tr>
-				<tr><td>Phone:</td><td>0123456789</td></tr>
-				<tr><td>Fax:</td><td>0123456789</td></tr>
-				<tr><td>Sales Rep:</td><td>House Account</td></tr>
+				{{customer.company_name}}<br/>
+          {% if customer.address1 %}{{customer.address1}}<br/>{% endif %}
+          {% if customer.address2 is not None %}{{customer.address2}}<br/>{% endif %}
+          {% if customer.city %}{{customer.city}}, {{customer.state}} {{customer.zipcode}}{% endif %}<br/>
 			</table>
 		</div>
 	</div>
@@ -284,22 +303,14 @@ display: flex;
 	<table class="last-table">
 		<tbody>
 			<tr>
-			  <th>Customer's PO</th>
-			  <th>Salesperson</th>
-			  <th>CSR Name</th>
-			  <th>Company Contact</th>
-			  <th>Shipping Method</th>
-			  <th>Ship Date</th>
-			  <th>Ship Day</th>
+        <th>Company Contact</th>
+			  <th>Email</th>
+        <th>Phone</th>
 			</tr>	
-			<tr>
-				<td></td>
-				<td>House Account</td>
-				<td>E-Mail</td>
-				<td>Trade Person</td>
-				<td>Delivered</td>
-				<td>01/04/2024</td>
-				<td>Thu</td>
+			<tr>				
+        <td>{{ workorder.contact.fname }} {{ workorder.contact.lname }}</td>
+				<td>{% if workorder.contact.email %}{{ workorder.contact.email }}{% else %}{{ customer.email}}{% endif %}</td>
+        <td>{% if workorder.contact.phone1 %}{{ workorder.contact.phone1 }}{% else %}{{ customer.phone1}}{% endif %}</td>
 			</tr>
 		</tbody>
 	</table>	
@@ -318,36 +329,22 @@ display: flex;
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1</td>
-              <td>Envelopes - #5022C Dual Window</td>
-              <td>500</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>Envelopes - #5022C Dual Window</td>
-              <td>500</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>Envelopes - #5022C Dual Window</td>
-              <td>500</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>Envelopes - #5022C Dual Window</td>
-              <td>500</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>Envelopes - #5022C Dual Window</td>
-              <td>500</td>
-              <td></td>
-            </tr>
+            {% for item in items %}
+              {% if item.child == 0 %}
+              <tr style="height: 45px;">
+                <td>{{ forloop.counter }}</td>
+                <td>{% if item.description%}{{item.description}}{% endif %}</td>
+                <td>{% if item.quantity%}{% if item.show_qty_on_wo %}{{item.quantity}}{% endif %}{% endif %}</td>
+                <td style="text-align: left;">_________</td>        
+              </tr>
+              {% if item.show_notes %}
+              <tr>
+                <td colspan='5'>{{item.notes}}</td>
+              </tr>
+              {% endif %}
+              <tr></tr>
+              {% endif %}
+            {% endfor %}
 
 
 			

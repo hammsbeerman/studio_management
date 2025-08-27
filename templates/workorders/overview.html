@@ -24,6 +24,9 @@
       <div id="workorder-info-card" class="card" hx-trigger="WorkorderInfoChanged from:body" hx-get="{% url 'workorders:workorder_info'  %}?workorder={{workorder.id}}" hx-target="this">
         {% include 'workorders/partials/workorder_info.html' %}
       </div>
+      <div id="ship-status" hx-get="{% url 'workorders:shiptype' id=workorder.id %}" hx-target="this">
+        {% include 'workorders/partials/shiptype.html' %}
+        </div>
   </div>
   <div class="col-md-3">
       <div class="card">
@@ -114,6 +117,9 @@
             {% if workorder.internal_company == 'LK Design' or workorder.checked_and_verified == 1 %}
             <a href="{% url 'pdf:invoice_pdf' id=workid %}" class="btn btn-primary" target="_blank">Create PDF Invoice</a>
             {% endif %}
+        </td>
+        <td>
+          <a href="{% url 'pdf:packing_slip' id=workid %}" class="btn btn-primary" target="_blank">Create Packing Slip</a>
         </td>
          
         <td>

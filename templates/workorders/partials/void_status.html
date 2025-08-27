@@ -3,35 +3,36 @@
    <p> <h1 style="color:red;">Workorder Void</h1>
 {% endif %}
 
-{% if paid is True %}
-   <p> <h1 style="color:green;">Paid</h1>
-   {% for x in payments %}
-      {{ x.date }} : 
-      ${{x.payment_amount}} - {{x.payment.payment_type}} 
-         {% if x.payment.check_number %} - {{ x.payment.check_number }} {% endif %} 
-         {% if x.payment.giftcard_number %} - {{ x.payment.giftcard_number }} {% endif %}
-      <br>
-      {% if x.payment.memo%}Note: {{ x.payment.memo }}<br>{% endif %}
+         {% if paid is True %}
+            <p> <h1 style="color:green;">Paid</h1>
+            {% for x in payments %}
+               {{ x.date }} : 
+               ${{x.payment_amount}} - {{x.payment.payment_type}} 
+                  {% if x.payment.check_number %} - {{ x.payment.check_number }} {% endif %} 
+                  {% if x.payment.giftcard_number %} - {{ x.payment.giftcard_number }} {% endif %}
+               <br>
+               {% if x.payment.memo%}Note: {{ x.payment.memo }}<br>{% endif %}
 
-   {% endfor %}
+            {% endfor %}
 
-{% elif open < total %}
-<br>
-   {% for x in payments %}
-   {{ x.date }} : 
-   ${{x.payment_amount}} - {{x.payment.payment_type}} 
-      {% if x.payment.check_number %} - {{ x.payment.check_number }} {% endif %} 
-      {% if x.payment.giftcard_number %} - {{ x.payment.giftcard_number }} {% endif %}
-   <br>
-   {% if x.payment.memo%}Note: {{ x.payment.memo }}<br>{% endif %}
+         {% elif open < total %}
+         <br>
+            {% for x in payments %}
+            {{ x.date }} : 
+            ${{x.payment_amount}} - {{x.payment.payment_type}} 
+               {% if x.payment.check_number %} - {{ x.payment.check_number }} {% endif %} 
+               {% if x.payment.giftcard_number %} - {{ x.payment.giftcard_number }} {% endif %}
+            <br>
+            {% if x.payment.memo%}Note: {{ x.payment.memo }}<br>{% endif %}
 
-   {% endfor %}
-   <span style="color:red">Open balance: {{ open }}</span>
-{% endif %}
+            {% endfor %}
+            <span style="color:red">Open balance: {{ open }}</span>
+         {% endif %}
 
-{% if paid is not True and billed is True %}
-<p>
-   <p>
-      <button type="button" class="btn btn-info" hx-get="{% url 'finance:open_invoices' pk=customer %}" hx-target="#dialog2">Pay Invoice</button>
-{% endif %}
-</center>
+         {% if paid is not True and billed is True %}
+         <p>
+            <p>
+               <button type="button" class="btn btn-info" hx-get="{% url 'finance:open_invoices' pk=customer %}" hx-target="#dialog2">Pay Invoice</button>
+         {% endif %}
+            </center>
+

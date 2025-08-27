@@ -2070,3 +2070,75 @@ def orderout_wait(request):
         item.updated = timezone.now()
         item.save()
     return redirect("workorders:overview", id=item.workorder)
+
+# @login_required
+# def shiptype(request, ship=None, id=None):
+#     if ship == 'Delivery':
+#         print('Delivery')
+#         shiptype = Workorder.objects.get(id=id)
+#         shiptype.delivery_pickup = 'Delivery'
+#         shiptype.save()
+#         ship = 'Pickup' 
+#         context = {
+#             'ship': ship,
+#             'id':id,
+#         }
+#     else:
+#         print('Pickup')
+#         shiptype = Workorder.objects.get(id=id)
+#         shiptype.delivery_pickup = 'Pickup'
+#         shiptype.save()
+#         ship = 'Delivery' 
+#         context = {
+#             'ship': ship,
+#             'id':id,
+#         }
+#     return render(request, 'workorders/partials/shiptype.html', context)
+
+# @login_required
+# def shipping_status(request):
+#     pk = request.GET.get('workorder')
+#     print('workorder')
+#     print(pk)
+#     pk = int(pk)
+#     obj = Workorder.objects.get(id=pk)
+#     print(obj.delivery_pickup)
+#     ship = obj.delivery_pickup
+#     print(ship)
+#     context = {
+#         'ship':ship,
+#         'id':pk,
+#     }
+#     return render(request, 'workorders/partials/shipping_status.html', context)
+
+def shiptype(request, id):
+    #pk = 243
+    # pk = request.GET.get('id')
+
+    # Convert to integer safely
+    # try:
+    #     workorder_id = int(pk)
+    # except (TypeError, ValueError):
+    #     return render(request, 'workorders/partials/shiptype.html', {
+    #         'error': 'Invalid workorder ID'
+    #     })
+
+    # Get the workorder
+    workorder = get_object_or_404(Workorder, id=id)
+
+    # Toggle the status
+    if workorder.delivery_pickup == 'Delivery':
+        workorder.delivery_pickup = 'Pickup'
+    else:
+        workorder.delivery_pickup = 'Delivery'
+
+    print("Toggling:", workorder.id, "Old:", workorder.delivery_pickup)
+    workorder.save()
+    print("Saved:", Workorder.objects.get(id=workorder.id).delivery_pickup)
+    print('hhhhhh')
+    print(workorder.id)
+    # Render the partial with updated info
+    context = {
+        'workorder': workorder
+    }
+    return render(request, 'workorders/partials/shiptype.html', context)

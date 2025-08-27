@@ -48,6 +48,8 @@ from .views import (
     verify,
     invoice_sent,
     orderout_wait,
+    shiptype,
+    #shipping_status,
     # removed,
 )
 
@@ -104,6 +106,10 @@ urlpatterns = [
     path('verify/<int:pk>/', verify, name='verify'),
     path('invoice_sent/<int:pk>/', invoice_sent, name='invoice_sent'),
     path('orderout_wait/', orderout_wait, name='orderout_wait'),
+    #path("shiptype/<str:ship>/<int:id>/", shiptype, name='shiptype'),
+    path("shiptype/<int:id>", shiptype, name='shiptype'),
+    #path("shipping_status/", shipping_status, name='shipping_status'),
+
 
 
     # path('removed/', removed, name='removed')

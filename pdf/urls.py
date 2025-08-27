@@ -16,6 +16,7 @@ from .views import (
     pdf_report_create,
     management,
     export_batch_statement_pdf,
+    packing_slip,
     
 )
 
@@ -40,4 +41,5 @@ urlpatterns = [
     path('management/', management, name='management'),
     
     path('export_batch_statement_pdf/', export_batch_statement_pdf, name='export_batch_statement_pdf'),
+    path('packing_slip/<int:id>/', packing_slip, name='packing_slip'),
 ]

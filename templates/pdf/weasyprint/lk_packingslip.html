@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>LK invoice</title>
+    <!-- paper.css -->
+    <style>
+@font-face {
+    
+    font-weight: normal;
+    font-style: normal;
+
+}	
+	
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+		box-sizing: border-box;
+      }
+      @page {
+        margin: 0;
+      }
+      body {
+        margin: 0;
+		color: #000;
+        font-family: 'mission_gothiclight';
+        font-size: 13px;
+      }
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+}	  
+	  
+      .sheet {
+        margin: 0;
+        overflow: hidden;
+        position: relative;
+        box-sizing: border-box;
+        page-break-after: always;
+      }
+
+      /** Paper sizes **/
+      body.A4 .sheet {
+       /* width: 210mm;
+        height: 296mm;*/
+        width: 8.5in;
+        height: 11in;
+      }
+
+      /** Padding area **/
+      .sheet.padding-10mm {
+        padding: 10mm;
+      }
+
+      /** For screen preview **/
+      @media screen {
+        body {background: #e0e0e0;}
+        .sheet {background: white;box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3);}
+      }
+
+      /** Fix for Chrome issue #273306 **/
+      @media print {
+        body {
+          * {-webkit-print-color-adjust: exact !important;color-adjust: exact !important;print-color-adjust: exact !important;}
+        }
+
+        body.A4 {width: 8.5in;}
+      }
+
+      /*Main Style here*/
+      @page {size: 8.5in 11in;}
+
+.fix{overflow:hidden;}
+table{border-collapse: collapse;}
+/*header*/
+.header{overflow: hidden;overflow: hidden;}
+.header img{max-width:100%;}
+.address {text-align: center;margin-bottom: 30px;overflow: hidden;}
+
+
+/*Order-Info*/
+.order-info {display: flex;justify-content: space-between;align-items: flex-start;margin-top:20px;margin-bottom:20px;overflow: hidden;}
+.order-left {width: 287px; height: 137px;border: 1px solid #000;padding: 8px;} 
+.order-left p {margin: 0;padding: 0;}
+
+.order-right {width: 404px;text-align: center;}
+.order-right table {width: 100%;border-collapse: collapse;}
+table.ordert-first {margin-bottom: 11px;}
+
+.order-right table tr td, .order-right table tr th {border: 1px solid #000; border-collapse: collapse;padding:6px 5px;}
+
+.single_header { width: 33%;}
+.header_mid {
+    text-align: center;
+    font-size: 14pt;
+    font-weight: bold;
+}	    
+
+/*items area*/
+.items-area {overflow: hidden;    border: 1px solid #000;height: 425px;}
+.items-area table {width: 100%;border-collapse: collapse;margin-bottom:10px;}
+.items-area tr td {text-align: center;padding: 5px;line-height: normal;}
+.items-area table tr th, .items-area table tr td {border: 1px solid #000;}
+.items-area table tr td {border-top: 0 !important; border-bottom: 0 !important;}
+.items-area table tr th{text-align:center;text-transform:uppercase;padding:8px 0;font-weight:normal;}
+/*.items-area tr:last-child td{border-bottom: 1px solid #ddd !important;}*/
+.items-area tr td:nth-child(2) {text-align: left;}
+
+
+/*Last Table*/
+.last-table{width:100%;text-align:center;}
+.last-table tr td{    padding: 10px;/* border: 1px solid #ddd;*/}
+
+
+
+
+
+
+    </style>
+  </head>
+  <body class="A4">
+    <section class="sheet padding-10mm">
+	<!-- Header -->
+	
+	<div class="header fix" spellcheck="false" contenteditable="false">
+	<img src="https://i.postimg.cc/fT4tNLcK/Invoice-Header-2024-1.jpg" alt="" />
+	</div>
+	<div class="address fix">170 E. Main Street, Reedsburg, WI 53959  •  608 768 0092  lindsey@lkdesignstudio.com  •  www.lkdesignstudio.com</div>
+	
+	
+
+
+<!-- Order info -->
+      <div class="order-info fix">
+        <div class="order-left">
+          {{customer.company_name}}<br/>
+          {% if customer.address1 %}{{customer.address1}}<br/>{% endif %}
+          {% if customer.address2 is not None %}{{customer.address2}}<br/>{% endif %}
+          {% if customer.city %}{{customer.city}}, {{customer.state}} {{customer.zipcode}}{% endif %}<br/>
+        </div>
+        <div class="order-right">
+          <table class="ordert-first">
+            <tr>
+				<th>DATE</th>
+				<th>INVOICE#</th>
+				<th>P.O.#</th>
+                <th>Shipping:</th>
+            </tr>
+            <tr>
+              <td>{{workorder.created|date:"M d, Y"}}</td>
+              <td>{{workorder.workorder}}{% if workorder.lk_workorder %}_{{workorder.lk_workorder }}{%endif %}</td>
+              <td>{{workorder.po_number}}</td>
+              <td>{{ workorder.delivery_pickup }}</td>
+            </tr>
+          </table>
+          <table>
+            <tr>
+				<th style="width: 50%;">CONTACT</th>
+				<th>PHONE</th>
+            </tr>
+            <tr>
+              <td>{{contact.fname}} {{contact.lname}}</td>
+              <td>{{contact.phone1}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+
+
+<!-- main table -->
+
+      <div class="items-area fix">
+        <table style="border-collapse: collapse; width: 100%; table-layout: fixed;">
+  <thead>
+    <tr>
+      <th style="border: 1px solid black; padding: 4px 8px; width:10%;">Item Number</th>
+      <th style="border: 1px solid black; padding: 4px 8px; width:50%;">Description</th>
+      <th style="border: 1px solid black; padding: 4px 8px; width:20%;">Qty Ordered</th>
+      <th style="border: 1px solid black; padding: 4px 8px; width:20%;">Qty Packed</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+      {% if item.child == 0 %}
+      <tr style="height: 45px;">
+        <td style="border: 1px solid black; padding: 4px 8px;">{{ forloop.counter }}</td>
+        <td style="border: 1px solid black; padding: 4px 8px;">{% if item.description %}{{ item.description }}{% endif %}</td>
+        <td style="border: 1px solid black; padding: 4px 8px;">{% if item.quantity and item.show_qty_on_wo %}{{ item.quantity }}{% endif %}</td>
+        <td style="border: 1px solid black; padding: 4px 8px;">_________</td>
+      </tr>
+
+      {% if item.show_notes %}
+      <tr>
+        <td colspan="4" style="border-top: 1px solid black; border-bottom: 1px solid black; border-left: none; border-right: none; padding: 4px 8px; text-align: left;">
+          {{ item.notes }}
+        </td>
+      </tr>
+      {% endif %}
+      {% endif %}
+    {% endfor %}
+    {% autoescape off %}
+                {{ packingslip_rows }}
+            {% endautoescape %}
+  </tbody>
+</table>
+      </div>
+
+{% if workorder.show_notes %}
+    <span style ='color:red'>{{ workorder.notes }}</span>
+    {% endif %}
+<!-- Total table -->
+
+
+</div>
+
+<div class="single_header header_mid">***PACKING SLIP***</div>
+
+	  
+	  
+    </section>
+  </body>
+</html>

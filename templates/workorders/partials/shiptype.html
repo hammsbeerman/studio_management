@@ -1,0 +1,13 @@
+
+<center>
+
+<div id="ship-status">
+    <button class="btn btn-primary btn-sm"
+            hx-get="{% url 'workorders:shiptype' id=workorder.id %}"
+            hx-target="#ship-status">
+        {{ workorder.delivery_pickup|default:"Delivery" }}
+    </button>
+</div>
+
+ 
+            </center>
