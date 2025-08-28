@@ -14,6 +14,7 @@
                 {{ customer.city }}, {{customer.state}} {{customer.zipcode }}<br/>{% endif %}
                 {% if customer.phone1 %} Phone: {{ customer.phone1 }}<br/>{% endif %}
                 {% if customer.email %}Email: {{ customer.email }}<br/>{% endif %}
+                {% if customer.tax_exempt_paperwork %}<a href="{{ customer.tax_exempt_paperwork.url }}" target="_blank">Tax Exempt Paperwork</a>{% endif %}
                 {% endif %}
                     </div>
                     <div class="card-footer">

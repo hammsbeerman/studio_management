@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -75,7 +76,35 @@ def customers(request):
 @login_required
 def new_customer(request):
     if request.method == "POST":
-        form = CustomerForm(request.POST)
+        form = CustomerForm(request.POST, request.FILES)
+        print("FILES:", request.FILES)
+        c = request.POST.get('customer')
+        cn = request.POST.get('company_name')
+        fn = request.POST.get('first_name')
+        ln = request.POST.get('last_name')
+        print('customer?')
+        print(c)
+         # check if a new file was uploaded
+        if request.FILES.get("tax_exempt_paperwork"):
+            uploaded_file = request.FILES["tax_exempt_paperwork"]
+
+            # build new filename
+            base, ext = os.path.splitext(uploaded_file.name)
+            if not cn:
+                print('Empty string') 
+                print(fn)
+                print(ln)
+                form.instance.company_name = fn + ' ' + ln
+                cn = form.instance.company_name
+                #print(obj.company_name)
+                new_name = f"{cn}_{base}{ext}"
+                # assign new name
+                uploaded_file.name = new_name
+            if cn:
+                print(cn)
+                new_name = f"{cn}_{base}{ext}"
+                # assign new name
+                uploaded_file.name = new_name
         if form.is_valid():
             ##Increase workorder numbering
             n = Numbering.objects.get(pk=2)
@@ -232,11 +261,36 @@ def edit_customer(request):
         obj = get_object_or_404(Customer, pk=company_num)
         print('hello')
         form = CustomerForm(request.POST, request.FILES, instance=obj)
+        print("FILES:", request.FILES)
+        c = request.POST.get('customer')
+        cn = request.POST.get('company_name')
+        fn = request.POST.get('first_name')
+        ln = request.POST.get('last_name')
+        print('customer?')
+        print(c)
+         # check if a new file was uploaded
+        if request.FILES.get("tax_exempt_paperwork"):
+            uploaded_file = request.FILES["tax_exempt_paperwork"]
+
+            # build new filename
+            base, ext = os.path.splitext(uploaded_file.name)
+            if not cn:
+                print('Empty string') 
+                print(fn)
+                print(ln)
+                form.instance.company_name = fn + ' ' + ln
+                cn = form.instance.company_name
+                #print(obj.company_name)
+                new_name = f"{cn}_{base}_{obj.id}{ext}"
+                # assign new name
+                uploaded_file.name = new_name
+            if cn:
+                print(cn)
+                new_name = f"{cn}_{base}_{obj.id}{ext}"
+                # assign new name
+                uploaded_file.name = new_name
+
         if form.is_valid():
-            c = request.POST.get('customer')
-            cn = request.POST.get('company_name')
-            fn = request.POST.get('first_name')
-            ln = request.POST.get('last_name')
             if not cn and not fn and not ln:
                 message = 'Please fill in Company name or Customer Name'
                 context = {

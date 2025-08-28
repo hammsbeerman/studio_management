@@ -6,7 +6,10 @@
         <h5 class="modal-title">Edit Customer</h5>
       </div>
       <div class="modal-body">
-        <form hx-post="{% url 'customers:edit_customer' %}"> 
+        <form hx-post="{% url 'customers:edit_customer' %}" 
+              method="post" 
+              enctype="multipart/form-data"
+              hx-encoding="multipart/form-data"> 
           {% csrf_token %}
           {{message}}
         {{ form|crispy }}

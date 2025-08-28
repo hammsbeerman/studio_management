@@ -36,7 +36,7 @@ class Customer(models.Model):
     customer_number = models.CharField('Customer Number', max_length=100, blank=True, null=False)
     tax_exempt = models.BooleanField('Tax Exempt', default=False, choices=Tax_Exempt)
     tax_exempt_number = models.CharField('Tax ID Number', max_length=100, blank=True, null=True)
-    tax_exempt_paperwork = models.ImageField(upload_to="tax_exempt_form/", blank=True, null=True)
+    tax_exempt_paperwork = models.FileField(upload_to="tax_exempt_form/", blank=True, null=True)
     credit = models.DecimalField('Credits', max_digits=8, decimal_places=2, blank=True, null=True)
     open_balance = models.DecimalField('Open Balance', max_digits=8, decimal_places=2, blank=True, null=True)
     high_balance = models.DecimalField('High Balance', max_digits=8, decimal_places=2, blank=True, null=True)
