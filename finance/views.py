@@ -1786,7 +1786,7 @@ def bulk_edit_invoices(request, vendor=None):
 
 
 def payment_history(request):
-    payments = Payments.objects.all().order_by('-date')
+    payments = WorkorderPayment.objects.all().order_by('-date')
     context = {
         'payments':payments,
     }

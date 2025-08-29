@@ -11,8 +11,9 @@
     {% for x in payments %}      
     <tr>
             <td>{{x.date}}</td>
-            <td>{{x.customer}}</td>
-            <td>{{x.amount}}</td>
+            <td><a href="{% url 'workorders:overview' x.workorder %}">{{ x.workorder }}</a></td>
+            <td>{{x.workorder.customer}}</td>
+            <td>{{x.payment_amount}}</td>
           </tr>
     {% endfor %}
 </table>
