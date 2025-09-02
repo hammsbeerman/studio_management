@@ -57,7 +57,7 @@ class Command(BaseCommand):
         os.makedirs(SAVE_DIR, exist_ok=True)
 
         # Base name like "August_2025"
-        base_name = datetime.date.today().strftime("%B_%Y")
+        base_name = datetime.date.today().strftime("%Y_%B_%d")
         filename = f"{base_name}.pdf"
         filepath = os.path.join(SAVE_DIR, filename)
 
