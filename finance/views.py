@@ -1841,12 +1841,22 @@ def monthly_statements(request):
     files = []
 
     if os.path.exists(statements_dir):
-        for f in sorted(os.listdir(statements_dir), reverse=True):
-            if f.endswith(".pdf"):
-                files.append({
-                    "name": f,
-                    "url": settings.MEDIA_URL + "statements/" + f,
-                })
+        pdfs = [
+            f for f in os.listdir(statements_dir)
+            if f.endswith(".pdf")
+        ]
+
+        # sort by file modified time, newest first
+        pdfs.sort(
+            key=lambda f: os.path.getmtime(os.path.join(statements_dir, f)),
+            reverse=True
+        )
+
+        for f in pdfs:
+            files.append({
+                "name": f,
+                "url": settings.MEDIA_URL + "statements/" + f,
+            })
 
     return render(request, "finance/monthly_statements.html", {"files": files})
 
