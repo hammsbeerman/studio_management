@@ -59,7 +59,7 @@
       {% include 'customers/partials/icon_legend.html' %}
       <hr>
       <div class="row">
-          <div class="col-sm-4">
+          <div class="col-sm-3">
               Active Workorders
               <p><table>
                   {% for x in  workorders %}
@@ -71,35 +71,6 @@
                   {% endfor %}
                   </table>
                   </p>
-          </div>
-          <div class="col-sm-4">
-              Recently Completed
-              <p><table>
-                  {% for x in  completed %}
-                  <tr>
-                    <td>
-                      <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a>
-                    </td>
-                    <td>
-                  {% if x.billed %}
-                      {% if x.paid_in_full %}           
-                        <img src="{% static 'img/site/paidbill-50.png' %}" style="width:20px;height:20px;" title="Paid in Full">
-                      {% elif x.aging > 30 %}
-                      {{ x.aging }}
-                        <img src="{% static 'img/site/overduebill-50.png' %}" style="width:20px;height:20px;" title="Past 30 Days">
-                      {% else %}
-                      <img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;" title="Billed Out">
-                      {% endif %}
-                      {{ x.workorder_total }}
-                  {% endif %}
-                    </td>
-                    <!-- Temporarily disabled -->
-                    <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
-                  </tr>
-                  {% endfor %}
-                </table></p>
-          </div>
-          <div class="col-sm-4">
               Quotes
               <p><table>
                   {% for x in  quote %}
@@ -108,6 +79,44 @@
                       <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a>
                     </td>
                     <td>{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
+                  </tr>
+                  {% endfor %}
+                </table></p>
+          </div>
+          <div class="col-sm-9">
+              Recently Completed
+              <p><table style="border: 1px solid black; border-collapse: collapse; width: 100%;">
+                <th style="border: 1px solid black; border-collapse: collapse;">Workorder</th>
+                <th style="border: 1px solid black; border-collapse: collapse;">Date</th>
+                <th style="border: 1px solid black; border-collapse: collapse;">Days Past Due</th>
+                <th style="border: 1px solid black; border-collapse: collapse;">Paid</th>
+                <th style="border: 1px solid black; border-collapse: collapse;">Amount</th>
+                  {% for x in  completed %}
+                  <tr>
+                    <td style="border: 1px solid black; padding: 5px;">
+                      <a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.description }}</a>
+                    </td>
+                    <td style="border: 1px solid black; padding: 5px;">
+                      {{ x.date_completed|date:"M d, Y" }}
+                    </td>
+                    <td style="border: 1px solid black; padding: 5px; text-align: center;">
+                    {% if x.billed %}
+                      {% if x.paid_in_full %} 
+                        <td style="border: 1px solid black; padding: 5px;">          
+                        <img src="{% static 'img/site/paidbill-50.png' %}" style="width:20px;height:20px;" title="Paid in Full"></td>
+                      {% elif x.aging > 30 %}
+                      {{ x.aging }}
+                    </td>
+                    <td style="border: 1px solid black; padding: 5px; ">
+                        <img src="{% static 'img/site/overduebill-50.png' %}" style="width:20px;height:20px;" title="Past 30 Days">
+                      {% else %}
+                      <img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;" title="Billed Out">
+                      {% endif %}
+                    </td>
+                    <td style="border: 1px solid black; padding: 5px;">
+                      {{ x.workorder_total }}
+                    {% endif %}
+                    </td>
                   </tr>
                   {% endfor %}
                 </table></p>
