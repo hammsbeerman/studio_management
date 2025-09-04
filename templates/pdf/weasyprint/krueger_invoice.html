@@ -289,9 +289,9 @@ margin-top: 25px;
 			<tr>
 				<td>Net 30</td>
 				<td>{{contact.fname}} {{contact.lname}}</td>
-				<td>{{contact.phone1}}</td>
+				<td>{% if contact.phone1 %}{{contact.phone1}}{% else %}{{customer.phone1}}{% endif %}</td>
 				<td>{{workorder.po_number}}</td>
-				<td>{{contact.email}}</td>
+				<td>{% if contact.email %}{{contact.email}}{% else %}{{customer.email}}{% endif %}</td>
 			</tr>
 		</tbody>
 	</table>	
