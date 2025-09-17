@@ -8,8 +8,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status, generics, viewsets
 from decimal import Decimal
+from controls.forms import AddItemtoListForm
 from .forms import AddVendorForm
-from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut
+from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut, Inventory
 from .serializers import InventorySerializer
 from finance.models import InvoiceItem, AccountsPayable#, AllInvoiceItem
 #from inventory.models import Inventory
@@ -180,39 +181,35 @@ def item_variation_details(request, id=None):
 def item_details(request, id=None):
     id = request.GET.get('name')
     items = InventoryMaster.objects.all()
+    if request.method == "POST":
+        id = request.POST.get('master_id')
+        obj = get_object_or_404(Inventory, internal_part_number=id)
+        form = AddItemtoListForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+        item = InvoiceItem.objects.filter(internal_part_number=id).order_by('-invoice__invoice_date')
+        for x in item:
+            print(x.invoice.invoice_number)
+            print(x.invoice.invoice_date)
+        master = InventoryMaster.objects.get(pk=id)
+        context = {
+            'items':items,
+            'form':form,
+            'item':item,
+            'master':master,
+        }
+        return render(request, 'inventory/items/item_details_updated.html', context)
     print(id)
     if id:
-        #item_history = AllInvoiceItem.objects.filter(internal_part_number=item)
-        #item_history = AccountsPayable.objects.filter(inter)
-        #item_history = InvoiceItem.objects.filter(internal_part_number=item)
-        #item = AccountsPayable.objects.filter(invoiceitem__internal_part_number_id=item)
-        #print(item.values_list('invoiceitem__qty'))
-        # print(len(item))
-        # for x in item:
-        #     print(x.invoice_number)
-        #print(item)
-
-        # items = InvoiceItem.objects.filter(internal_part_number_id=item)
-
-        # invoice = AccountsPayable.objects.filter(items=OuterRef('pk')).order_by('-datetime')
-
-        # items = items.annotate(
-        #     invoice_number=Subquery(invoice.values('invoice_number'))
-        # )
-
-        # for x in items:
-        #     print(x.invoice_number)
-
         item = InvoiceItem.objects.filter(internal_part_number=id).order_by('-invoice__invoice_date')
-        #item2 = item.order_by('invoice.invoice_date')
-        #print(item2)
         for x in item:
             print(x.invoice.invoice_number)
             print(x.invoice.invoice_date)
         master = InventoryMaster.objects.get(pk=id)
 
 
-
+        obj = get_object_or_404(Inventory, internal_part_number=id)
+        form = AddItemtoListForm(instance=obj)
 
 
 
@@ -220,6 +217,7 @@ def item_details(request, id=None):
 
         context = {
             #'item_history':item_history,
+            'form':form,
             'item':item,
             'master':master,
         }

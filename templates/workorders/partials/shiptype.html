@@ -1,13 +1,12 @@
 
-<center>
-
-<div id="ship-status">
-    <button class="btn btn-primary btn-sm"
-            hx-get="{% url 'workorders:shiptype' id=workorder.id %}"
-            hx-target="#ship-status">
-        {{ workorder.delivery_pickup|default:"Delivery" }}
-    </button>
-</div>
-
- 
-            </center>
+<form hx-post="{% url 'workorders:shiptype' id=workorder.id %}" 
+      hx-target="#ship-status" hx-swap="innerHTML">
+    {% csrf_token %}
+    <select name="delivery_pickup" class="form-select form-select-sm">
+        <option value="" {% if not workorder.delivery_pickup %}selected{% endif %}>Delivery / Pickup Status</option>
+        <option value="Delivery" {% if workorder.delivery_pickup == "Delivery" %}selected{% endif %}>Delivery</option>
+        <option value="Pickup" {% if workorder.delivery_pickup == "Pickup" %}selected{% endif %}>Pickup</option>
+        <option value="Other" {% if workorder.delivery_pickup == "Other" %}selected{% endif %}>Other</option>
+    </select>
+    <button type="submit" class="btn btn-sm btn-primary mt-2">Save</button>
+</form>

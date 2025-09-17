@@ -403,7 +403,10 @@ def contact_info(request):
         print(shipto)   
         #try:
         #contacts = Contact.objects.get(id=contact)
-        shipto = ShipTo.objects.get(id=shipto)
+        try:
+            shipto = ShipTo.objects.get(id=shipto)
+        except ShipTo.DoesNotExist:
+            shipto = None
         
         #except:
         #    pass

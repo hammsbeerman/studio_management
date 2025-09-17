@@ -134,7 +134,7 @@ class WideFormatForm(forms.ModelForm):
             'weeding_time', 'masking_time', 'machine_rate', 'labor_rate', 'total_sq_ft', 'inkcost_sq_ft', 'price_per_sqft', 
             'step_workorder_price', 'step_reclaim_artwork_price', 'step_send_to_press_price', 'material_cost', 'material_markup_percentage', 'material_markup', 'print_cost_sqft', 
             'print_cost', 'misc1_description', 'misc1_price', 'misc2_description', 'misc2_price', 'misc3_description', 'misc3_price', 'misc4_description', 'misc4_price', 
-            'step_count_package_price', 'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_sqft', 'override_price'
+            'step_count_package_price', 'step_delivery_price', 'step_packing_slip_price', 'price_total', 'price_total_per_sqft', 'override_price', 'single_double_sided'
         ]
 
         widgets = {
@@ -145,4 +145,13 @@ class WideFormatForm(forms.ModelForm):
             'total_sq_ft': forms.TextInput(attrs={'readonly':'readonly'}),
             'inkcost_sq_ft': forms.TextInput(attrs={'readonly':'readonly'}),
             'material_markup': forms.TextInput(attrs={'title': 'BW: .1, Color .15'}),
+            'single_double_sided': forms.RadioSelect(attrs={"class": "form-check-input"})
         }
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            # remove field label
+            self.fields["single_double_sided"].label = ""
+            self.fields['single_double_sided'].empty_label = None
+            # RadioSelect with choices never shows a "None" option
+            # so nothing extra to remove

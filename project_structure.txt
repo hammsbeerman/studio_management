@@ -1,0 +1,919 @@
+.
+├── .env
+├── .gitignore
+├── __pycache__
+│   └── manage.cpython-38.pyc
+├── accounts
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── decorators.cpython-38.pyc
+│   │   ├── forms.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── signals.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── decorators.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── signals.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── bin
+│   ├── Activate.ps1
+│   ├── __pycache__
+│   │   └── runxlrd.cpython-38.pyc
+│   ├── activate
+│   ├── activate.csh
+│   ├── activate.fish
+│   ├── chardetect
+│   ├── csv2ods
+│   ├── django-admin
+│   ├── easy_install
+│   ├── easy_install-3.8
+│   ├── fonttools
+│   ├── gunicorn
+│   ├── mailodf
+│   ├── normalizer
+│   ├── odf2mht
+│   ├── odf2xhtml
+│   ├── odf2xml
+│   ├── odfimgimport
+│   ├── odflint
+│   ├── odfmeta
+│   ├── odfoutline
+│   ├── odfuserfield
+│   ├── pint-convert
+│   ├── pip
+│   ├── pip3
+│   ├── pip3.8
+│   ├── pisa
+│   ├── prichunkpng
+│   ├── pricolpng
+│   ├── priditherpng
+│   ├── priforgepng
+│   ├── prigreypng
+│   ├── pripalpng
+│   ├── pripamtopng
+│   ├── priplan9topng
+│   ├── pripnglsch
+│   ├── pripngtopam
+│   ├── prirowpng
+│   ├── priweavepng
+│   ├── pybidi
+│   ├── pyftmerge
+│   ├── pyftsubset
+│   ├── pyhanko
+│   ├── python -> /usr/bin/python
+│   ├── python3 -> python
+│   ├── qr
+│   ├── runxlrd.py
+│   ├── setup_env_ubuntu.sh
+│   ├── sqlformat
+│   ├── svg2pdf
+│   ├── ttx
+│   ├── weasyprint
+│   ├── xhtml2pdf
+│   └── xml2odf
+├── controls
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── forms.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── customers
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── forms.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── dashboard
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── db.sqlite3
+├── db.sqlite3.backup
+├── finance
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── cron.cpython-38.pyc
+│   │   ├── forms.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── cron.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── fixtures
+│   ├── Controls.json
+│   ├── Customers.json
+│   ├── Inventory.json
+│   ├── Pricesheet.json
+│   └── notused
+│       ├── Measurement.json
+│       ├── SetPriceItem.json
+│       ├── SetPriceItemPrice.json
+│       ├── SetPriceItems.json
+│       ├── controls.json
+│       ├── inventory.json
+│       └── workorders.json
+├── inventory
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── forms.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── serializers.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── serializers.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── krueger
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── forms.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── manage.py
+├── media
+│   ├── icons8-update-30.png
+│   ├── jobstatus
+│   │   ├── complete_48.png
+│   │   ├── delivery_48.png
+│   │   ├── design_50.png
+│   │   ├── estimate-50.png
+│   │   ├── inprogress_48.png
+│   │   ├── pickup_50.png
+│   │   ├── print_50.png
+│   │   ├── product_delivery_58.png
+│   │   └── waiting_50.png
+│   ├── statements
+│   │   ├── August_2025.pdf
+│   │   └── statements_2025-08-26.pdf
+│   └── tax_exempt_form
+│       ├── 941_Pmt-24_203_A1_Movers.pdf
+│       ├── A1_Movers_Becky_Stubs_203.pdf
+│       ├── Alexander_Furnishings_Specialists_Inc._SWT_Pmt-13_207.pdf
+│       ├── Becky_Stubs.pdf
+│       ├── SWT_Pmt-13.pdf
+│       ├── Test_customer_2_SWT_Pmt-13.pdf
+│       └── screenshot.png
+├── onlinestore
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── forms.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── cron.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── pdf
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── management
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   └── __init__.cpython-38.pyc
+│   │   └── commands
+│   │       ├── __init__.py
+│   │       ├── __pycache__
+│   │       │   ├── __init__.cpython-38.pyc
+│   │       │   └── bulk_statements.cpython-38.pyc
+│   │       └── bulk_statements.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── pricesheet
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── forms.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── printleader
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── project_structure.txt
+├── pyvenv.cfg
+├── requirements.txt
+├── retail
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── forms.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.old
+│   ├── models.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+├── share
+│   ├── man
+│   │   └── man1
+│   │       ├── csv2ods.1
+│   │       ├── mailodf.1
+│   │       ├── odf2mht.1
+│   │       ├── odf2xhtml.1
+│   │       ├── odf2xml.1
+│   │       ├── odfimgimport.1
+│   │       ├── odflint.1
+│   │       ├── odfmeta.1
+│   │       ├── odfoutline.1
+│   │       ├── odfuserfield.1
+│   │       ├── qr.1
+│   │       ├── svg2pdf.1
+│   │       ├── ttx.1
+│   │       └── xml2odf.1
+│   └── python-wheels
+│       ├── CacheControl-0.12.6-py2.py3-none-any.whl
+│       ├── appdirs-1.4.3-py2.py3-none-any.whl
+│       ├── certifi-2019.11.28-py2.py3-none-any.whl
+│       ├── chardet-3.0.4-py2.py3-none-any.whl
+│       ├── colorama-0.4.3-py2.py3-none-any.whl
+│       ├── contextlib2-0.6.0-py2.py3-none-any.whl
+│       ├── distlib-0.3.0-py2.py3-none-any.whl
+│       ├── distro-1.4.0-py2.py3-none-any.whl
+│       ├── html5lib-1.0.1-py2.py3-none-any.whl
+│       ├── idna-2.8-py2.py3-none-any.whl
+│       ├── ipaddr-2.2.0-py2.py3-none-any.whl
+│       ├── lockfile-0.12.2-py2.py3-none-any.whl
+│       ├── msgpack-0.6.2-py2.py3-none-any.whl
+│       ├── packaging-20.3-py2.py3-none-any.whl
+│       ├── pep517-0.8.2-py2.py3-none-any.whl
+│       ├── pip-20.0.2-py2.py3-none-any.whl
+│       ├── pkg_resources-0.0.0-py2.py3-none-any.whl
+│       ├── progress-1.5-py2.py3-none-any.whl
+│       ├── pyparsing-2.4.6-py2.py3-none-any.whl
+│       ├── requests-2.22.0-py2.py3-none-any.whl
+│       ├── retrying-1.3.3-py2.py3-none-any.whl
+│       ├── setuptools-44.0.0-py2.py3-none-any.whl
+│       ├── six-1.14.0-py2.py3-none-any.whl
+│       ├── toml-0.10.0-py2.py3-none-any.whl
+│       ├── urllib3-1.25.8-py2.py3-none-any.whl
+│       ├── webencodings-0.5.1-py2.py3-none-any.whl
+│       └── wheel-0.34.2-py2.py3-none-any.whl
+├── static
+│   ├── css
+│   │   └── stylesheet.css
+│   ├── favicon.ico
+│   ├── js
+│   │   ├── cust_dropdown.js
+│   │   ├── date-time-phone
+│   │   │   ├── README.md
+│   │   │   ├── images
+│   │   │   │   └── ui-icons_444444_256x240.png
+│   │   │   ├── jquery-input-mask-phone-number.min.js
+│   │   │   ├── jquery-ui-timepicker-addon.css
+│   │   │   ├── jquery-ui-timepicker-addon.js
+│   │   │   ├── jquery-ui.css
+│   │   │   └── jquery-ui.js
+│   │   ├── datepicker.js
+│   │   ├── dialog.js
+│   │   ├── jquery-3.7.0.min.js
+│   │   ├── jquery-ui-1.13.2
+│   │   │   ├── AUTHORS.txt
+│   │   │   ├── LICENSE.txt
+│   │   │   ├── external
+│   │   │   │   └── jquery
+│   │   │   │       └── jquery.js
+│   │   │   ├── images
+│   │   │   │   ├── ui-icons_444444_256x240.png
+│   │   │   │   ├── ui-icons_555555_256x240.png
+│   │   │   │   ├── ui-icons_777620_256x240.png
+│   │   │   │   ├── ui-icons_777777_256x240.png
+│   │   │   │   ├── ui-icons_cc0000_256x240.png
+│   │   │   │   └── ui-icons_ffffff_256x240.png
+│   │   │   ├── index.html
+│   │   │   ├── jquery-ui.css
+│   │   │   ├── jquery-ui.js
+│   │   │   ├── jquery-ui.min.css
+│   │   │   ├── jquery-ui.min.js
+│   │   │   ├── jquery-ui.structure.css
+│   │   │   ├── jquery-ui.structure.min.css
+│   │   │   ├── jquery-ui.theme.css
+│   │   │   ├── jquery-ui.theme.min.css
+│   │   │   └── package.json
+│   │   ├── kruegerworkorder.js
+│   │   ├── kruegerworkorder.js.bak
+│   │   ├── kruegerworkorder.js.fixed
+│   │   ├── order_out_form.js
+│   │   ├── setprice_form.js
+│   │   ├── wideformat.js
+│   │   ├── wideformat.js.inprogress
+│   │   ├── wideformat.js.old
+│   │   └── widformat.js.old.scrap
+│   └── pdf
+│       ├── Untitled-1.jpg
+│       ├── Untitled-3.jpg
+│       ├── lk_header.jpg
+│       ├── lk_invoice.css
+│       ├── pacifico.ttf
+│       ├── sourcesanspro-bold.otf
+│       ├── sourcesanspro-regular.otf
+│       ├── style.css
+│       └── test.css
+├── staticfiles
+│   ├── admin
+│   │   ├── css
+│   │   │   ├── autocomplete.css
+│   │   │   ├── base.css
+│   │   │   ├── changelists.css
+│   │   │   ├── dark_mode.css
+│   │   │   ├── dashboard.css
+│   │   │   ├── forms.css
+│   │   │   ├── login.css
+│   │   │   ├── nav_sidebar.css
+│   │   │   ├── responsive.css
+│   │   │   ├── responsive_rtl.css
+│   │   │   ├── rtl.css
+│   │   │   └── widgets.css
+│   │   └── js
+│   │       ├── SelectBox.js
+│   │       ├── SelectFilter2.js
+│   │       ├── actions.js
+│   │       ├── admin
+│   │       │   ├── DateTimeShortcuts.js
+│   │       │   └── RelatedObjectLookups.js
+│   │       ├── autocomplete.js
+│   │       ├── calendar.js
+│   │       ├── cancel.js
+│   │       ├── change_form.js
+│   │       ├── collapse.js
+│   │       ├── core.js
+│   │       ├── filters.js
+│   │       ├── inlines.js
+│   │       ├── jquery.init.js
+│   │       ├── nav_sidebar.js
+│   │       ├── popup_response.js
+│   │       ├── prepopulate.js
+│   │       ├── prepopulate_init.js
+│   │       ├── theme.js
+│   │       ├── urlify.js
+│   │       └── vendor
+│   │           ├── jquery
+│   │           │   ├── LICENSE.txt
+│   │           │   ├── jquery.js
+│   │           │   └── jquery.min.js
+│   │           └── xregexp
+│   │               ├── LICENSE.txt
+│   │               ├── xregexp.js
+│   │               └── xregexp.min.js
+│   ├── css
+│   │   └── stylesheet.css
+│   ├── django-htmx.js
+│   ├── favicon.ico
+│   ├── import_export
+│   │   ├── action_formats.js
+│   │   ├── guess_format.js
+│   │   └── import.css
+│   ├── js
+│   │   ├── cust_dropdown.js
+│   │   ├── date-time-phone
+│   │   │   ├── README.md
+│   │   │   ├── images
+│   │   │   │   └── ui-icons_444444_256x240.png
+│   │   │   ├── jquery-input-mask-phone-number.min.js
+│   │   │   ├── jquery-ui-timepicker-addon.css
+│   │   │   ├── jquery-ui-timepicker-addon.js
+│   │   │   ├── jquery-ui.css
+│   │   │   └── jquery-ui.js
+│   │   ├── datepicker.js
+│   │   ├── dialog.js
+│   │   ├── jquery-3.7.0.min.js
+│   │   ├── jquery-ui-1.13.2
+│   │   │   ├── AUTHORS.txt
+│   │   │   ├── LICENSE.txt
+│   │   │   ├── external
+│   │   │   │   └── jquery
+│   │   │   │       └── jquery.js
+│   │   │   ├── images
+│   │   │   │   ├── ui-icons_444444_256x240.png
+│   │   │   │   ├── ui-icons_555555_256x240.png
+│   │   │   │   ├── ui-icons_777620_256x240.png
+│   │   │   │   ├── ui-icons_777777_256x240.png
+│   │   │   │   ├── ui-icons_cc0000_256x240.png
+│   │   │   │   └── ui-icons_ffffff_256x240.png
+│   │   │   ├── index.html
+│   │   │   ├── jquery-ui.css
+│   │   │   ├── jquery-ui.js
+│   │   │   ├── jquery-ui.min.css
+│   │   │   ├── jquery-ui.min.js
+│   │   │   ├── jquery-ui.structure.css
+│   │   │   ├── jquery-ui.structure.min.css
+│   │   │   ├── jquery-ui.theme.css
+│   │   │   ├── jquery-ui.theme.min.css
+│   │   │   └── package.json
+│   │   ├── kruegerworkorder.js
+│   │   ├── kruegerworkorder.js.bak
+│   │   ├── kruegerworkorder.js.fixed
+│   │   ├── order_out_form.js
+│   │   ├── setprice_form.js
+│   │   ├── wideformat.js
+│   │   ├── wideformat.js.inprogress
+│   │   └── widformat.js.old.scrap
+│   ├── pdf
+│   │   ├── Untitled-1.jpg
+│   │   ├── Untitled-3.jpg
+│   │   ├── lk_header.jpg
+│   │   ├── lk_invoice.css
+│   │   ├── pacifico.ttf
+│   │   ├── sourcesanspro-bold.otf
+│   │   ├── sourcesanspro-regular.otf
+│   │   ├── style.css
+│   │   └── test.css
+│   └── rest_framework
+│       ├── css
+│       │   ├── bootstrap-theme.min.css
+│       │   ├── bootstrap-theme.min.css.map
+│       │   ├── bootstrap-tweaks.css
+│       │   ├── bootstrap.min.css
+│       │   ├── bootstrap.min.css.map
+│       │   ├── default.css
+│       │   ├── font-awesome-4.0.3.css
+│       │   └── prettify.css
+│       ├── docs
+│       │   ├── css
+│       │   │   ├── base.css
+│       │   │   ├── highlight.css
+│       │   │   └── jquery.json-view.min.css
+│       │   └── js
+│       │       ├── api.js
+│       │       ├── highlight.pack.js
+│       │       └── jquery.json-view.min.js
+│       ├── fonts
+│       │   ├── fontawesome-webfont.eot
+│       │   ├── fontawesome-webfont.svg
+│       │   ├── fontawesome-webfont.ttf
+│       │   ├── fontawesome-webfont.woff
+│       │   ├── glyphicons-halflings-regular.eot
+│       │   ├── glyphicons-halflings-regular.svg
+│       │   ├── glyphicons-halflings-regular.ttf
+│       │   ├── glyphicons-halflings-regular.woff
+│       │   └── glyphicons-halflings-regular.woff2
+│       └── js
+│           ├── ajax-form.js
+│           ├── bootstrap.min.js
+│           ├── coreapi-0.1.1.js
+│           ├── csrf.js
+│           ├── default.js
+│           ├── jquery-3.7.1.min.js
+│           ├── load-ajax-form.js
+│           └── prettify-min.js
+├── studio_management
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── settings.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   ├── views.cpython-38.pyc
+│   │   └── wsgi.cpython-38.pyc
+│   ├── asgi.py
+│   ├── settings.py
+│   ├── urls.py
+│   ├── views.py
+│   └── wsgi.py
+├── templates
+│   ├── accounts
+│   │   ├── login.html
+│   │   ├── logout.html
+│   │   ├── register.html
+│   │   └── update_password.html
+│   ├── base.html
+│   ├── basepdf.html
+│   ├── controls
+│   │   ├── add_price_group.html
+│   │   ├── add_price_group_item.html
+│   │   ├── add_primary_baseunit.html
+│   │   ├── add_primary_vendor.html
+│   │   ├── add_units_per_base_unit.html
+│   │   ├── customers_with_address.html
+│   │   ├── customers_without_address.html
+│   │   ├── items_missing_details.html
+│   │   ├── missing_workorders.html
+│   │   ├── partials
+│   │   │   ├── add_item_variation.html
+│   │   │   ├── price_group_all.html
+│   │   │   ├── price_group_grouped.html
+│   │   │   └── price_group_notgrouped.html
+│   │   ├── specialized_tools.html
+│   │   ├── utilities.html
+│   │   ├── view_price_group_detail.html
+│   │   ├── view_price_groups.html
+│   │   └── workorder_history.html
+│   ├── customers
+│   │   ├── add_mailing_customer.html
+│   │   ├── customer_list.html
+│   │   ├── dashboard.html
+│   │   ├── detail.html
+│   │   ├── list.html
+│   │   ├── modals
+│   │   │   ├── change_contact.html
+│   │   │   ├── change_shipto.html
+│   │   │   ├── edit_contact.html
+│   │   │   ├── edit_customer.html
+│   │   │   ├── edit_shipto.html
+│   │   │   ├── newcontact_form.html
+│   │   │   ├── newcustomer_form.html
+│   │   │   ├── newshipto_form.html
+│   │   │   └── notes.html
+│   │   ├── partials
+│   │   │   ├── contact_info.html
+│   │   │   ├── contacts.html
+│   │   │   ├── customer_info.html
+│   │   │   ├── customer_info.html.old
+│   │   │   ├── customer_list.html
+│   │   │   ├── customers.html
+│   │   │   ├── details.html
+│   │   │   ├── details.html.old
+│   │   │   ├── details_contact_info.html
+│   │   │   └── icon_legend.html
+│   │   └── search_detail.html
+│   ├── dashboard
+│   │   ├── assigned_items.html
+│   │   ├── employee_dashboard_old.html
+│   │   └── partials
+│   │       ├── assigned_item_list.html
+│   │       ├── group_item_list.html
+│   │       ├── selected_item_list.html
+│   │       └── stale_item_list.html
+│   ├── finance
+│   │   ├── AP
+│   │   │   ├── add_ap.html
+│   │   │   ├── bills_by_vendor.html
+│   │   │   ├── edit_invoice.html
+│   │   │   ├── invoice_detail.html
+│   │   │   ├── invoice_detail_highlevel.html
+│   │   │   ├── modals
+│   │   │   │   ├── bulk_edit_invoices.html
+│   │   │   │   └── edit_invoice_modal.html
+│   │   │   ├── partials
+│   │   │   │   ├── add_inventory_item.html
+│   │   │   │   ├── add_invoice_item.html
+│   │   │   │   ├── add_item_to_vendor.html.old
+│   │   │   │   ├── edit_invoice_item.html
+│   │   │   │   ├── invoice_item_remainder.html
+│   │   │   │   ├── vendor_bills.html
+│   │   │   │   └── vendor_item_remainder.html.old
+│   │   │   └── view_bills.html
+│   │   ├── AR
+│   │   │   ├── ar_dashboard.html
+│   │   │   ├── modals
+│   │   │   │   ├── apply_elsewhere.html
+│   │   │   │   ├── recieve_payment.html
+│   │   │   │   ├── remove_payment.html
+│   │   │   │   └── unrecieve_payment.html.old
+│   │   │   └── partials
+│   │   │       ├── closed_workorder_list.html
+│   │   │       ├── payment_detail.html
+│   │   │       ├── payment_history.html
+│   │   │       └── workorder_list.html
+│   │   ├── main.html
+│   │   ├── monthly_statements.html
+│   │   └── reports
+│   │       ├── add_daily_sale.html
+│   │       ├── all_lk.html
+│   │       ├── all_open_printleader.html
+│   │       ├── all_printleader.html
+│   │       ├── ar_aging.html
+│   │       ├── complete_not_billed.html
+│   │       ├── krueger_ar.html
+│   │       ├── krueger_ar_aging.html
+│   │       ├── krueger_statements.html
+│   │       ├── lk_ar.html
+│   │       ├── modals
+│   │       │   ├── open_invoice_recieve_payment.html
+│   │       │   └── open_invoices.html
+│   │       ├── payment_history.html
+│   │       ├── sales_tax_payable.html
+│   │       └── view_sales.html
+│   ├── home.html
+│   ├── inventory
+│   │   ├── items
+│   │   │   ├── add_inventory_item.html
+│   │   │   ├── add_inventory_item.html.old
+│   │   │   ├── add_item_to_vendor.html
+│   │   │   ├── item_details.html
+│   │   │   ├── item_details_updated.html
+│   │   │   ├── partials
+│   │   │   │   └── item_details.html
+│   │   │   ├── view_variation_details.html
+│   │   │   └── view_variations.html
+│   │   ├── partials
+│   │   │   ├── add_inventory_item.html
+│   │   │   ├── add_item_to_vendor.html
+│   │   │   └── vendor_item_remainder.html
+│   │   ├── vendors
+│   │   │   ├── add_vendor.html
+│   │   │   ├── add_vendor_modal.html
+│   │   │   ├── detail.html
+│   │   │   ├── edit_vendor.html
+│   │   │   ├── list.html
+│   │   │   └── partials
+│   │   │       └── vendor_list.html
+│   │   └── view_variation_details.html
+│   ├── krueger
+│   │   ├── partials
+│   │   │   ├── paperstockprice.html
+│   │   │   ├── pricing.html
+│   │   │   ├── wideformat_laminateprice.html
+│   │   │   ├── wideformat_maskprice.html
+│   │   │   ├── wideformat_paperstockprice.html
+│   │   │   ├── wideformat_pricing.html
+│   │   │   └── wideformat_substrateprice.html
+│   │   └── pricingforms
+│   │       └── bigform.html
+│   ├── navbar.html
+│   ├── onlinestore
+│   │   ├── dashboard.html
+│   │   ├── modals
+│   │   │   └── edit_store_item.html
+│   │   ├── partials
+│   │   │   └── store_items_detail.html
+│   │   └── store_items.html
+│   ├── pdf
+│   │   ├── testing
+│   │   │   ├── customers
+│   │   │   │   ├── main.html
+│   │   │   │   └── pdf2.html
+│   │   │   ├── management.html
+│   │   │   ├── pdf1.html
+│   │   │   ├── test2
+│   │   │   │   ├── pdfreport.html
+│   │   │   │   └── showinfo.html
+│   │   │   ├── user_printer.html
+│   │   │   └── weasyprint
+│   │   │       ├── fiver.html
+│   │   │       ├── fiver2.html
+│   │   │       ├── lk.html
+│   │   │       ├── lk_invoice.css
+│   │   │       ├── lk_invoice.html.old
+│   │   │       ├── lk_invoice_original.html
+│   │   │       ├── pdf-output.html
+│   │   │       └── test.html
+│   │   └── weasyprint
+│   │       ├── jobticket.html
+│   │       ├── jobticket_v1.html
+│   │       ├── jobticket_v2.html
+│   │       ├── krueger_invoice.html
+│   │       ├── krueger_invoice_v1.html
+│   │       ├── krueger_invoice_v2.html
+│   │       ├── krueger_jobticket.html
+│   │       ├── krueger_packingslip.html
+│   │       ├── krueger_packingslip_v1.html
+│   │       ├── krueger_packingslip_v2.html
+│   │       ├── krueger_quote.html
+│   │       ├── krueger_statement.html
+│   │       ├── krueger_statement_bulk.html
+│   │       ├── krueger_statement_test.html
+│   │       ├── krueger_statement_v1.html
+│   │       ├── krueger_statement_v2.html
+│   │       ├── lineitem_pricing.html
+│   │       ├── lineitem_pricingv1.html
+│   │       ├── lk_invoice.html
+│   │       ├── lk_invoice_long.html
+│   │       ├── lk_packingslip.html
+│   │       ├── lk_quote.html
+│   │       ├── lk_quote_long.html
+│   │       ├── lk_statement.html
+│   │       ├── old
+│   │       │   ├── lineitem_pricing.html
+│   │       │   └── lineitem_pricing.html.old
+│   │       └── test.html
+│   ├── pricesheet
+│   │   ├── list.html
+│   │   ├── modals
+│   │   │   ├── add_category.html
+│   │   │   ├── add_setprice_category.html
+│   │   │   ├── add_setprice_item.html
+│   │   │   ├── add_subcategory.html
+│   │   │   ├── add_template.html
+│   │   │   ├── copy_template.html
+│   │   │   ├── edit_item.html
+│   │   │   ├── envelopes.html
+│   │   │   └── subcategory.html
+│   │   ├── partials
+│   │   │   ├── category_list.html
+│   │   │   ├── master_table.html
+│   │   │   ├── subcategory_list.html
+│   │   │   └── template_list.html
+│   │   └── templates
+│   │       ├── envelope.html
+│   │       ├── master.html
+│   │       ├── newtemplate_form.html
+│   │       ├── wideformat.html
+│   │       └── wideformat_template_form.html
+│   ├── printleader
+│   │   ├── partials
+│   │   │   └── printleader_history_detail.html
+│   │   └── printleader_history.html
+│   ├── retail
+│   │   ├── inventory
+│   │   │   ├── add_inventory_item.html
+│   │   │   └── inventory_list.html
+│   │   ├── invoices
+│   │   │   ├── add_invoice.html.old
+│   │   │   ├── detail.html
+│   │   │   ├── list.html
+│   │   │   └── partials
+│   │   │       ├── add_inventory_item.html
+│   │   │       ├── add_invoice_item.html.old
+│   │   │       ├── add_item_to_vendor.html.old
+│   │   │       ├── edit_invoice_item.html.old
+│   │   │       ├── invoice_item_remainder.html.old
+│   │   │       └── vendor_item_remainder.html.old
+│   │   ├── main.html
+│   │   ├── parent.html
+│   │   ├── sub.html
+│   │   └── vendors
+│   │       ├── add_vendor.html
+│   │       ├── detail.html
+│   │       └── list.html
+│   ├── search.html
+│   └── workorders
+│       ├── create.html
+│       ├── list.html
+│       ├── list.html.old
+│       ├── modals
+│       │   ├── copy_item.html
+│       │   ├── custom_item_form.html
+│       │   ├── design_item_form.html
+│       │   ├── edit_workorder.html
+│       │   ├── item_details.html
+│       │   ├── item_status.html
+│       │   ├── modal_item_form.html
+│       │   ├── new_item_form.html
+│       │   ├── notes.html
+│       │   ├── order_out_form.html
+│       │   ├── parent_item_form.html
+│       │   ├── postage_item_form.html
+│       │   ├── set_price_form.html
+│       │   ├── setprice_item_form.html
+│       │   ├── setprices.html
+│       │   ├── setqty.html
+│       │   ├── subcategory.html
+│       │   ├── task_notes.html
+│       │   └── void_workorder_modal.html
+│       ├── overview.html
+│       ├── partials
+│       │   ├── billable.html
+│       │   ├── delivered.html
+│       │   ├── finance.html
+│       │   ├── history_overview.html
+│       │   ├── item_list.html
+│       │   ├── item_list_completed.html
+│       │   ├── list_k_order.html
+│       │   ├── list_kos_order.html
+│       │   ├── list_lk_order.html
+│       │   ├── list_sm_order.html
+│       │   ├── removelineitem.html
+│       │   ├── shiptype.html
+│       │   ├── tax.html
+│       │   ├── void_status.html
+│       │   ├── workorder.html
+│       │   ├── workorder_history.html
+│       │   └── workorder_info.html
+│       └── quotes.html
+├── workorders
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-38.pyc
+│   │   ├── admin.cpython-38.pyc
+│   │   ├── apps.cpython-38.pyc
+│   │   ├── forms.cpython-38.pyc
+│   │   ├── models.cpython-38.pyc
+│   │   ├── urls.cpython-38.pyc
+│   │   └── views.cpython-38.pyc
+│   ├── admin.py
+│   ├── apps.py
+│   ├── forms.py
+│   ├── models.py
+│   ├── test.py
+│   ├── tests.py
+│   ├── urls.py
+│   └── views.py
+└── z_notes
+    ├── aggregate_sum_float
+    ├── categories
+    ├── formatting
+    ├── install and setup
+    ├── move model to new app
+    ├── quote to workorder
+    ├── scratch
+    ├── signals to write
+    ├── todo.txt
+    ├── url types
+    └── weasyprint
+
+132 directories, 784 files

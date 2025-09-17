@@ -7,6 +7,12 @@ from accounts.models import Profile
 
 
 class Workorder(models.Model):
+
+    DELIVERY_CHOICES = [
+        ('Delivery', 'Delivery'),
+        ('Pickup', 'Pickup'),
+        ('Other', 'Other'),
+    ]
     customer = models.ForeignKey(Customer, blank=False, null=True, on_delete=models.SET_NULL, related_name='workorders')
     contact = models.ForeignKey(Contact, blank=True, null=True, on_delete=models.SET_NULL)
     ship_to = models.ForeignKey(ShipTo, blank=True, null=True, on_delete=models.SET_NULL)
@@ -57,8 +63,8 @@ class Workorder(models.Model):
     void_memo = models.CharField('Void Memo', max_length=100, blank=True, null=True)
     checked_and_verified = models.BooleanField('Checked and Verified', blank=False, null=False, default=False)
     invoice_sent = models.BooleanField('Invoice Sent', blank=False, null=False, default=False)
-    delivery_pickup = models.CharField('Delivery or Pickup', choices=[('Delivery', 'Delivery'), ('Pickup', 'Pickup')], max_length=100, blank=False, null=False, default='Delivery')
-    delivered_or_pickedup = models.BooleanField('Delivered or Picked Up', blank=False, null=False, default=False)
+    delivery_pickup = models.CharField('Delivery or Pickup', choices=[('Delivery', 'Delivery'),('Pickup', 'Pickup'),('Other', 'Other'),], max_length=100, blank=True, null=True, default=None)
+    delivered = models.BooleanField('Delivered', default=False)
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})

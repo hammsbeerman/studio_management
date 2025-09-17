@@ -2126,19 +2126,37 @@ def shiptype(request, id):
     # Get the workorder
     workorder = get_object_or_404(Workorder, id=id)
 
-    # Toggle the status
-    if workorder.delivery_pickup == 'Delivery':
-        workorder.delivery_pickup = 'Pickup'
-    else:
-        workorder.delivery_pickup = 'Delivery'
+    
 
-    print("Toggling:", workorder.id, "Old:", workorder.delivery_pickup)
-    workorder.save()
-    print("Saved:", Workorder.objects.get(id=workorder.id).delivery_pickup)
-    print('hhhhhh')
-    print(workorder.id)
-    # Render the partial with updated info
+    if request.method == "POST":
+        value = request.POST.get("delivery_pickup")
+        print("POST value:", value)
+        print("Saved value before render:", workorder.delivery_pickup)
+        if value in ["Delivery", "Pickup", "Other"]:
+            workorder.delivery_pickup = value
+            print(workorder.delivered)
+        else:
+            workorder.delivery_pickup = None
+        if workorder.delivery_pickup != "Delivery":
+            workorder.delivered = False
+            print('hello')
+            print(workorder.delivered)
+        workorder.save()
+
     context = {
-        'workorder': workorder
+        "workorder": workorder,
+        "delivery_choices": Workorder.DELIVERY_CHOICES,  # pass choices explicitly
     }
-    return render(request, 'workorders/partials/shiptype.html', context)
+    return render(request, "workorders/partials/shiptype.html", context)
+
+def delivered(request, id):
+    workorder = get_object_or_404(Workorder, id=id)
+
+    if request.method == "POST":
+        value = request.POST.get("delivered")
+        # Checkbox returns "on" if checked
+        workorder.delivered = True if value == "on" else False
+        workorder.save()
+
+    context = {"workorder": workorder}
+    return render(request, "workorders/partials/delivered.html", context)

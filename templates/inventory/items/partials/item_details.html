@@ -1,14 +1,60 @@
+{% load crispy_forms_tags %}
+{% load static %}
+
 
 <h1>Details:</h1></br>
-Internal part number: {{master.pk}}</br>
-Description: {{ master.description }}</br>
-Primary Vendor: {{ master.primary_vendor }}</br>
-Primary Vendor p/n: {{ master.primary_vendor_part_number }}</br>
-Primary Base Unit: {{ master.primary_base_unit }}</br>
-High Price: {{ master.high_price }}</br>
+<form action="/inventory/item_details/" method="POST">
+  {% csrf_token %}
+  <input type="hidden" name="master_id" value="{{ master.pk }}">
 
+  <table style="width:90%; border-collapse:collapse; border:1px solid #ccc;">
+    <thead>
+      <tr style="background:#f5f5f5;">
+        <th style="border:1px solid #ccc; padding:8px;">Item Info</th>
+        <th style="border:1px solid #ccc; padding:8px;">Item Type</th>
+        <th style="border:1px solid #ccc; padding:8px;">Item Category</th>
+        <th style="border:1px solid #ccc; padding:8px;">Retail Item</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <!-- Item Info sidebar -->
+        <td style="vertical-align:top; border:1px solid #ccc; padding:10px; background:#fafafa;" rowspan="7">
+          <strong>Internal part number:</strong> {{ master.pk }}<br>
+          <strong>Description:</strong> {{ master.description }}<br>
+          <strong>Primary Vendor:</strong> {{ master.primary_vendor }}<br>
+          <strong>Primary Vendor p/n:</strong> {{ master.primary_vendor_part_number }}<br>
+          <strong>Primary Base Unit:</strong> {{ master.primary_base_unit }}<br>
+          <strong>High Price:</strong> {{ master.high_price }}<br>
+        </td>
 
+        <!-- First type -->
+        <td style="border:1px solid #ccc; padding:8px;">{{ form.type_paper|as_crispy_field }}</td>
 
+        <!-- Category + Retail -->
+        <td style="vertical-align:top; border:1px solid #ccc; padding:8px;" rowspan="7">
+          {{ form.inventory_category }}
+          <br>
+          <button type="submit" class="btn btn-secondary" style="margin-top:30px;">
+            Submit
+            </button>
+        </td>
+        <td style="vertical-align:top; border:1px solid #ccc; padding:8px;" rowspan="7">
+          {{ form.retail_item }}
+        </td>
+      </tr>
+
+      <!-- Remaining types -->
+      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_envelope|as_crispy_field }}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_wideformat|as_crispy_field }}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_vinyl|as_crispy_field }}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_mask|as_crispy_field }}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_laminate|as_crispy_field }}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_substrate|as_crispy_field }}</td></tr>
+    </tbody>
+  </table>
+
+</form>
 
 
 <hr>
@@ -44,3 +90,7 @@ Items history
             </tr>
         {% endfor %}
     </table>
+
+    
+
+

@@ -929,3 +929,6 @@ def krueger_ar_aging(request):
         'ar': ar
     }
     return render(request, 'finance/reports/krueger_statements.html', context)
+
+def add_to_item_list(request):
+    pass

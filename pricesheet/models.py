@@ -134,6 +134,12 @@ class PriceSheet(models.Model):
 
 
 class WideFormatPriceSheet(models.Model):
+    ONE = 1
+    TWO = 2
+    SUBSTRATE_SIDES_CHOICES = [
+        (ONE, "Single Sided"),
+        (TWO, "Double Sided"),
+    ]
     category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.SET_NULL)
     subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)
     name = models.CharField('Name', max_length=100, blank=False, null=False)
@@ -143,6 +149,7 @@ class WideFormatPriceSheet(models.Model):
     quantity = models.PositiveIntegerField('Quantity', blank=True, null=True)
     material = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='wf_material')
     substrate = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='wf_substrate')
+    single_double_sided = models.IntegerField(choices=SUBSTRATE_SIDES_CHOICES, default=ONE, null=True, blank=False)
     laminate = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='wf_laminate')
     mask = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='wf_mask')
     media_width = models.CharField('Media Width', max_length=100, blank=True, null=True)

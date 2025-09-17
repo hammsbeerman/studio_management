@@ -1,0 +1,20 @@
+<div id="delivered-status">
+  <form>
+    {% csrf_token %}
+    <div class="form-check">
+      <input class="form-check-input"
+             type="checkbox"
+             name="delivered"
+             id="deliveredCheckbox"
+             {% if workorder.delivered %}checked{% endif %}
+             hx-post="{% url 'workorders:delivered' id=workorder.id %}"
+             hx-trigger="change"
+             hx-target="#delivered-status"
+             hx-include="closest form"
+             hx-swap="innerHTML">
+      <label class="form-check-label" for="deliveredCheckbox">
+        Delivered
+      </label>
+    </div>
+  </form>
+</div>
