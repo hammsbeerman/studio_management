@@ -7,11 +7,5 @@
 {% if paperprice.width %} <input label="Width" type="text" class="no-outline" id="id_width" name="width" value={{ paperprice.width }}>{{paperprice.width}}{% endif %}
   {% endfor %}
   <br>
-                              {% for radio in form.single_double_sided %}
-                                <div class="form-check form-check-inline">
-                                    {{ radio.tag }}
-                                    <label class="form-check-label" for="{{ radio.id_for_label }}">
-                                        {{ radio.choice_label }}
-                                    </label>
-                                </div>
-                            {% endfor %}
+
+                                                      

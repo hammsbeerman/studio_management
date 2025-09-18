@@ -242,8 +242,18 @@ Form for editing wide format item details
                                     <input type="hidden" id="substrate_measurement" name="substrate_measurement" value="{{substrate.measurement}}"> {% endif %}
                                     {% include 'krueger/partials/wideformat_substrateprice.html' %}
                                 </div>
+  
                             </div>
                         </div>
+                    </br>
+                        {% for radio in form.single_double_sided %}
+                            <div class="form-check form-check-inline">
+                                {{ radio.tag }}
+                                <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                    {{ radio.choice_label }}
+                                </label>
+                            </div>
+                        {% endfor %}
                         <hr>
                         <input type="hidden" id="id_inkcost_sq_ft" name="inkcost_sq_ft" value=".11">
                         <div class="row">                            

@@ -6,7 +6,7 @@ $(document).ready(function () {
   const getNum = (id) => Number($(id).val() || 0);
 
   const setText = (id, val) => {
-    document.getElementById(id).innerHTML = val;
+    $(id).text(val);
   };
 
   const setVal = (id, val) => {
@@ -31,53 +31,51 @@ $(document).ready(function () {
     }
   };
 
+  const getSidesMultiplier = () => {
+  const el = $("input[name='single_double_sided']:checked");
+  if (!el.length) return 1;
+  const v = String(el.val()).trim().toLowerCase();
+
+  // numeric values like "1" / "2"
+  const n = Number(v);
+  if (!Number.isNaN(n)) return n >= 2 ? 2 : 1;
+
+  // text values like "single", "double", "double sided", "two-sided"
+  if (/(double|two|2)/.test(v)) return 2;
+  return 1;
+  };
+
   // ----------------------------
-  // Toggle rows
+  // Toggle misc rows
   // ----------------------------
 
-  const toggleRows = [
-    "misc1",
-    "misc2",
-    "misc3",
-    "misc4",
-  ];
+  function initToggleRows() {
+    $(".toggle-row").each(function () {
+      const trigger = $(this);
+      const target = $($(this).data("target"));
+      const priceInput = target.find("input[id$='_price']");
+      const descInput = target.find("input[id$='_description']");
 
-  toggleRows.forEach((name) => {
-    const row = $("#" + name + "-row");
-    const trigger = $("#show-" + name);
-    const priceInput = $(`#id_${name}_price`);
-    const descInput = $(`#id_${name}_description`);
+      const hasPrice = priceInput.length && parseFloat(priceInput.val()) > 0.01;
+      const hasDesc = descInput.length && $.trim(descInput.val()).length > 0;
 
-    const hasPrice =
-    priceInput.length && parseFloat(priceInput.val()) > 0.01;
-  const hasDesc =
-    descInput.length && $.trim(descInput.val()).length > 0;
+      if (hasPrice || hasDesc) {
+        target.show();
+        trigger.prop("checked", true);
+      } else {
+        target.hide();
+        trigger.prop("checked", false);
+      }
 
-  if (hasPrice || hasDesc) {
-    row.show();
-    trigger.prop("checked", true);
-  } else {
-    row.hide();
-    trigger.prop("checked", false);
+      trigger.on("click", () => target.slideToggle(200));
+    });
   }
 
-  // Toggle on click
-  trigger.on("click", () => {
-    if (trigger.is(":checked")) {
-      row.slideDown(200);
-    } else {
-      row.slideUp(200);
-    }
-  });
-});
-
-
-
   // ----------------------------
-  // Cost calculations
+  // Main calculation function
   // ----------------------------
 
-  $("#id_container").on("click change load", function () {
+  function recalc() {
     // --- Admin costs ---
     const admin_cost =
       getNum("#id_step_workorder_price") +
@@ -87,7 +85,7 @@ $(document).ready(function () {
       getNum("#id_step_delivery_price") +
       getNum("#id_step_packing_slip_price");
 
-    setText("admin_cost", admin_cost);
+    setText("#admin_cost", admin_cost);
 
     // --- Misc ---
     const misc =
@@ -105,8 +103,8 @@ $(document).ready(function () {
       (getNum("#id_masking_time") + getNum("#id_weeding_time")) *
       getNum("#id_labor_rate");
 
-    setText("machine_cost", machine_cost);
-    setText("labor_cost", labor_cost);
+    setText("#machine_cost", machine_cost);
+    setText("#labor_cost", labor_cost);
 
     // --- Media calculations ---
     let quantity = getNum("#id_quantity");
@@ -140,28 +138,28 @@ $(document).ready(function () {
     setVal("#id_total_sq_ft", total_sq_ft);
 
     // --- Material costs ---
-    const material_cost = calcCost(
+    let material_cost = calcCost(
       "#id_price_per",
       "#material_measurement",
       total_sq_ft,
       media_length
     );
 
-    const mask_cost = calcCost(
+    let mask_cost = calcCost(
       "#id_mask_price_per",
       "#mask_measurement",
       total_sq_ft,
       media_length
     );
 
-    const laminate_cost = calcCost(
+    let laminate_cost = calcCost(
       "#id_laminate_price_per",
       "#laminate_measurement",
       total_sq_ft,
       media_length
     );
 
-    const substrate_cost = calcCost(
+    let substrate_cost = calcCost(
       "#id_substrate_price_per",
       "#substrate_measurement",
       total_sq_ft,
@@ -169,7 +167,16 @@ $(document).ready(function () {
       quantity
     );
 
-    const ink_cost = getNum("#id_inkcost_sq_ft") * total_sq_ft;
+    let ink_cost = getNum("#id_inkcost_sq_ft") * total_sq_ft;
+
+    // --- Double-sided multiplier ---
+    const sideMult = getSidesMultiplier();
+      material_cost *= sideMult;
+      mask_cost     *= sideMult;
+      laminate_cost *= sideMult;
+      ink_cost      *= sideMult;
+
+
 
     let total_material_cost =
       material_cost + mask_cost + laminate_cost + substrate_cost + ink_cost;
@@ -196,22 +203,40 @@ $(document).ready(function () {
 
     // --- Fill side sheet ---
     [
-      ["quantity", quantity],
-      ["width", width],
-      ["height", height],
-      ["print_width", print_width],
-      ["print_height", print_height],
-      ["media_width", media_width],
-      ["usable_width", usable_width],
-      ["prints_per_row", prints_per_row],
-      ["number_of_rows", number_of_rows],
-      ["media_length", media_length],
-      ["material_cost", material_cost.toFixed(2)],
-      ["mask_cost", mask_cost.toFixed(2)],
-      ["laminate_cost", laminate_cost.toFixed(2)],
-      ["substrate_cost", substrate_cost.toFixed(2)],
-      ["ink_cost", ink_cost.toFixed(2)],
-      ["total_material_cost", total_material_cost.toFixed(2)],
+      ["#quantity", quantity],
+      ["#width", width],
+      ["#height", height],
+      ["#print_width", print_width],
+      ["#print_height", print_height],
+      ["#media_width", media_width],
+      ["#usable_width", usable_width],
+      ["#prints_per_row", prints_per_row],
+      ["#number_of_rows", number_of_rows],
+      ["#media_length", media_length],
+      ["#material_cost", material_cost.toFixed(2)],
+      ["#mask_cost", mask_cost.toFixed(2)],
+      ["#laminate_cost", laminate_cost.toFixed(2)],
+      ["#substrate_cost", substrate_cost.toFixed(2)],
+      ["#ink_cost", ink_cost.toFixed(2)],
+      ["#total_material_cost", total_material_cost.toFixed(2)],
     ].forEach(([id, val]) => setText(id, val));
-  });
+  }
+
+  // ----------------------------
+  // Init
+  // ----------------------------
+
+  initToggleRows();       // setup misc row toggles
+  $(document).ready(recalc); // initial calculation
+
+  // Recalc whenever any input/select changes inside container
+  $("#id_container").on("input change", "input, select", recalc);
+
+  // Recalc when single/double sided radios change
+  $("input[name='single_double_sided']").on("change", recalc);
+
+  $(document).on("change", "input[name='single_double_sided']", recalc);
+
+  console.log("sides:", $("input[name='single_double_sided']:checked").val(),
+            "mult:", getSidesMultiplier());
 });
