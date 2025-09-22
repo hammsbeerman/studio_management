@@ -10,10 +10,4 @@ class Migration(migrations.Migration):
         ('controls', '0037_alter_groupcategory_name'), # ensure GroupCategory exists
     ]
 
-    operations = [
-        migrations.AddField(
-            model_name='inventorymaster',
-            name='price_group',
-            field=models.ManyToManyField(to='controls.GroupCategory', blank=True),
-        ),
-    ]
+    operations = []  # No-op: the M2M table was created in 0055

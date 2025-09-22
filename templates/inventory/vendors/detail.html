@@ -1,44 +1,71 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
 {% load static %}
-
 {% block content %}
 
+<h3 class="mb-3">{{ vendor.name }}</h3>
 
-<h3>{{ vendor.name }}</h3>
-<p>
+<div class="row g-3">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-3">Address</dt>
+          <dd class="col-sm-9">
+            {{ vendor.address1|default:"—" }}{% if vendor.address2 %}<br>{{ vendor.address2 }}{% endif %}<br>
+            {% if vendor.city %}{{ vendor.city }}, {% endif %}{{ vendor.state|default:"" }} {{ vendor.zipcode|default:"" }}
+          </dd>
 
-<div class="container">
-    Name: {% if vendor.name %}{{vendor.name}}{% endif %}
-    <br/>
-    Address 1:  {% if vendor.address1 %}{{vendor.address1}}{% endif %}
-    <br/>
-    Address 2: {% if vendor.address2 %}{{vendor.address2}}{% endif %}
-    <br>
-    City: {% if vendor.city %}{{vendor.city}}{% endif %}
-    <br/>
-    State: {% if vendor.state %}{{vendor.state}}{% endif %}
-    <br/>
-    Zipcode: {% if vendor.zipcode %}{{vendor.zipcode}}{% endif %}
-    <br/>
-    Phone 1: {% if vendor.phone1 %}{{vendor.phone1}}{% endif %}
-    <br/>
-    Phone 2: {% if vendor.phone2 %}{{vendor.phone2}}{% endif %}
-    <br>
-    Email: {% if vendor.email %}{{vendor.email}}{% endif %}
-    <br>
-    Website: {% if vendor.website %}{{vendor.website}}{% endif %}
-    <br>
-    Supplier: {{ supplier }}
-    <br>
-    Retail Vendor: {{ retail }}
+          <dt class="col-sm-3">Phone</dt>
+          <dd class="col-sm-9">
+            {% if vendor.phone1 %}<a href="tel:{{ vendor.phone1 }}">{{ vendor.phone1 }}</a>{% else %}—{% endif %}
+            {% if vendor.phone2 %} · <a href="tel:{{ vendor.phone2 }}">{{ vendor.phone2 }}</a>{% endif %}
+          </dd>
+
+          <dt class="col-sm-3">Email</dt>
+          <dd class="col-sm-9">{% if vendor.email %}<a href="mailto:{{ vendor.email }}">{{ vendor.email }}</a>{% else %}—{% endif %}</dd>
+
+          <dt class="col-sm-3">Website</dt>
+          <dd class="col-sm-9">{% if vendor.website %}<a href="{{ vendor.website }}" target="_blank" rel="noopener">{{ vendor.website }}</a>{% else %}—{% endif %}</dd>
+
+          <dt class="col-sm-3">Types</dt>
+          <dd class="col-sm-9">
+            {% if vendor.supplier %}<span class="badge bg-secondary">Supplier</span>{% endif %}
+            {% if vendor.retail_vendor %}<span class="badge bg-secondary">Retail</span>{% endif %}
+            {% if vendor.inventory_vendor %}<span class="badge bg-secondary">Inventory</span>{% endif %}
+            {% if vendor.non_inventory_vendor %}<span class="badge bg-secondary">Non-Inventory</span>{% endif %}
+          </dd>
+        </dl>
+      </div>
+      <div class="card-footer">
+        <a href="{% url 'inventory:edit_vendor' id=vendor.id %}" class="btn btn-primary btn-sm">Edit Vendor</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">Recent Order Outs</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr><th>ID</th><th>Date</th><th>WO</th><th>Customer</th></tr>
+          </thead>
+          <tbody>
+            {% for x in orderout %}
+              <tr>
+                <td>{{ x.id }}</td>
+                <td>{{ x.dateentered|date:"Y-m-d" }}</td>
+                <td>{{ x.hr_workorder|default:"—" }}</td>
+                <td>{{ x.hr_customer|default:"—" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-muted text-center">No records</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
-<br>
-<a href="{% url 'inventory:edit_vendor' id=vendor.id %}">Edit  Vendor</a>
-<hr>
-Orderouts
-<br>
-{% for x in orderout %}
-    {{ x.id }} {{ x.dateentered}} {{ x.description }} {{ x.hr_workorder }} {{ x.hr_customer }}</br>
-{% endfor %}
-{% endblock content %}
+
+{% endblock %}

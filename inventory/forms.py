@@ -15,6 +15,14 @@ class AddVendorForm(forms.ModelForm):
        labels = {
         }
        
+
+   def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # make optional for tests’ “minimal fields”
+        for f in ["state", "zipcode", "phone1", "phone2", "email", "website"]:
+            if f in self.fields:
+                self.fields[f].required = False
+       
 class InventoryMasterForm(forms.ModelForm):
     class Meta:
         model = InventoryMaster

@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.http import JsonResponse
 from django.db.models import OuterRef, Subquery
-from django.views.generic import ListView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status, generics, viewsets
@@ -18,47 +17,51 @@ from finance.models import InvoiceItem, AccountsPayable#, AllInvoiceItem
 
 # Create your views here.
 
-class VendorListView(ListView):
-    model = Vendor
-    template_name = "inventory/vendors/list.html"
-    context_object_name = "vendors"
-
-    def get_queryset(self):
-        kind = self.kwargs.get("vendor")  # None | 'All' | 'Retail' | ...
-        return Vendor.objects.by_kind(kind)
-
-    def get_template_names(self):
-        # use partial if a specific kind was requested (matches your current behavior)
-        return (["inventory/vendors/partials/vendor_list.html"]
-                if self.kwargs.get("vendor")
-                else [self.template_name])
-
 @login_required
 def list(request):
     pass
 
-
+@login_required
 def add_vendor(request):
-    form = AddVendorForm(request.POST or None)
-
-    # HTMX GET -> modal
-    if request.htmx and request.method == "GET":
-        pk = request.GET.get("item")
-        cat = request.GET.get("cat")
-        return render(
-            request,
-            "inventory/vendors/add_vendor_modal.html",
-            {"form": form, "pk": pk, "cat": cat},
-        )
-
-    # Normal POST -> save and render list
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        vendors = Vendor.objects.ordered()
-        return render(request, "inventory/vendors/list.html", {"vendors": vendors})
-
-    # Normal GET -> full page form
-    return render(request, "inventory/vendors/add_vendor.html", {"form": form})
+    form = AddVendorForm()
+    if request.htmx:
+        if request.method == "POST":
+            form = AddVendorForm(request.POST)
+            pk = request.POST.get('item')
+            cat = request.POST.get('cat')
+            if form.is_valid():
+                form.save()
+                context = {
+                    'pk': pk,
+                    'cat': cat,
+                }
+                return redirect('workorders:edit_orderout_item', pk=pk, cat=cat)
+        pk = request.GET.get('item')
+        cat = request.GET.get('cat')
+        print(pk)
+        print(cat)
+        context = {
+                'form': form,
+                'pk': pk,
+                'cat': cat,
+                #'categories': categories
+            }
+        return render (request, "inventory/vendors/add_vendor_modal.html", context)
+    if request.method == "POST":
+        form = AddVendorForm(request.POST)
+        if form.is_valid():
+            form.save()
+        vendors = Vendor.objects.all().order_by('name')
+        #print(vendor)
+        context = {
+            'vendors': vendors,
+        }
+        return render (request, "inventory/vendors/list.html", context)
+    context = {
+        'form': form,
+        #'categories': categories
+    }
+    return render (request, "inventory/vendors/add_vendor.html", context)
 
 
 @login_required
@@ -89,32 +92,75 @@ def vendor_list(request, vendor=None):
         }
         return render(request, 'inventory/vendors/partials/vendor_list.html', context)
 
+@login_required
 def vendor_detail(request, id):
     vendor = get_object_or_404(Vendor, id=id)
-    orderout = OrderOut.objects.for_vendor(vendor).order_by("-dateentered")
-    return render(request, "inventory/vendors/detail.html", {
-        "vendor": vendor,
-        "orderout": orderout,
-    })
+    if vendor.supplier == 1:
+        supplier = 'True'
+    else:
+        supplier = 'False'
+    if vendor.retail_vendor == 1:
+        retail = 'True'
+    else:
+        retail = 'False'
+    if vendor.inventory_vendor == 1:
+        inventory_vendor = 'True'
+    else:
+        inventory_vendor = 'False'
+    if vendor.non_inventory_vendor == 1:
+        non_inventory_vendor = 'True'
+    else:
+        non_inventory_vendor = 'False'
+    orderout = OrderOut.objects.filter(vendor=id)
+    context = {
+        'orderout': orderout,
+        'non_inventory_vendor': non_inventory_vendor,
+        'inventory_vendor': inventory_vendor,
+        'retail': retail,
+        'supplier':supplier,
+        'vendor': vendor,
+    }
+    return render(request, 'inventory/vendors/detail.html', context)
 
+@login_required
 def edit_vendor(request, id):
-    vendor = get_object_or_404(Vendor, id=id)
-    form = AddVendorForm(request.POST or None, instance=vendor)
-
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        vendors = Vendor.objects.ordered()
-        return render(request, "inventory/vendors/list.html", {"vendors": vendors})
-
-    return render(request, "inventory/vendors/edit_vendor.html", {
-        "form": form,
-        "vendor": vendor.id,
-    })
+    if request.method == "POST":
+        vendor = Vendor.objects.get(id=id)
+        print(id)
+        form = AddVendorForm(request.POST, instance=vendor)
+        if form.is_valid():
+            form.save()
+        vendors = Vendor.objects.all().order_by('name')
+        #print(vendor)
+        context = {
+            'vendors': vendors,
+        }
+        return render (request, "inventory/vendors/list.html", context)
+    obj = get_object_or_404(Vendor, id=id)
+    form = AddVendorForm(instance=obj)
+    vendor = id
+    context = {
+        'form':form,
+        'vendor':vendor,
+    }
+    return render(request, 'inventory/vendors/edit_vendor.html', context)
 
 
 def item_variations(request):
-    unique_list = InventoryQtyVariations.objects.distinct_inventories()
-    return render(request, "inventory/items/view_variations.html", {"unique_list": unique_list})
+    items = InventoryQtyVariations.objects.all()
+    unique_list = []
+    list = []
+    for x in items:
+        # check if exists in unique_list or not
+        if x.inventory not in list:
+            unique_list.append(x)
+            list.append(x.inventory)
+    print(unique_list)
+    context = {
+        #'group':group,
+        'unique_list':unique_list
+    }
+    return render(request, 'inventory/items/view_variations.html', context)
 
 def item_variation_details(request, id=None):
     print(id)
@@ -133,28 +179,53 @@ def item_variation_details(request, id=None):
 #     return render(request, 'inventory/items/item_details', context)
 
 def item_details(request, id=None):
-    master_id = id or request.GET.get("name")
+    id = request.GET.get('name')
     items = InventoryMaster.objects.all()
+    if request.method == "POST":
+        id = request.POST.get('master_id')
+        obj = get_object_or_404(Inventory, internal_part_number=id)
+        form = AddItemtoListForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+        item = InvoiceItem.objects.filter(internal_part_number=id).order_by('-invoice__invoice_date')
+        for x in item:
+            print(x.invoice.invoice_number)
+            print(x.invoice.invoice_date)
+        master = InventoryMaster.objects.get(pk=id)
+        context = {
+            'items':items,
+            'form':form,
+            'item':item,
+            'master':master,
+        }
+        return render(request, 'inventory/items/item_details_updated.html', context)
+    print(id)
+    if id:
+        item = InvoiceItem.objects.filter(internal_part_number=id).order_by('-invoice__invoice_date')
+        for x in item:
+            print(x.invoice.invoice_number)
+            print(x.invoice.invoice_date)
+        master = InventoryMaster.objects.get(pk=id)
 
-    if not master_id:
-        return render(request, "inventory/items/item_details.html", {"items": items})
 
-    master = get_object_or_404(InventoryMaster, pk=master_id)
-    inv = get_object_or_404(Inventory, internal_part_number=master_id)
+        obj = get_object_or_404(Inventory, internal_part_number=id)
+        form = AddItemtoListForm(instance=obj)
 
-    form = AddItemtoListForm(request.POST or None, instance=inv)
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        template = "inventory/items/item_details_updated.html"
-    else:
-        template = "inventory/items/partials/item_details.html"
 
-    return render(request, template, {
-        "items": items,
-        "form": form,
-        "item": master.purchase_history(),
-        "master": master,
-    })
+
+
+
+        context = {
+            #'item_history':item_history,
+            'form':form,
+            'item':item,
+            'master':master,
+        }
+        return render (request, "inventory/items/partials/item_details.html", context)
+    context = {
+        'items':items,
+    }
+    return render(request, 'inventory/items/item_details.html', context)
 
 
 

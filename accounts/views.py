@@ -1,72 +1,48 @@
-from django import forms
-from .forms import ChangePasswordForm
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from .decorators import unauthenticated_user, allowed_users
+from django.shortcuts import render, redirect
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.conf import settings
+
+from .decorators import unauthenticated_user
+from .forms import LoginForm, ChangePasswordForm
 
 @unauthenticated_user
 def login_view(request):
+    next_url = request.GET.get("next") or request.POST.get("next")
     if request.method == "POST":
-        # form = AuthenticationForm(request, data=request.POST)
-        # if form.is_valid():
-        #     user = form.get_user()
-        #     login(request, user)
-        #     return redirect('/')
-        # #print(user)
-        username = request.POST["username"]
-        password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)
-            messages.success(request, ("You have been logged in"))
-            return redirect('/')
-        else:
-            messages.success(request, ("There was an error"))
-            return redirect('accounts:login')
+        form = LoginForm(request, data=request.POST)
+        if form.is_valid():
+            login(request, form.get_user())
+            # Respect ?next= if safe; otherwise go to dashboard
+            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+            messages.success(request, "You have been logged in.")
+            return redirect("dashboard:dashboard")
+        messages.error(request, "Invalid username or password.")
     else:
-        form = AuthenticationForm(request)
-    context = {
-        "form": form
-    }
-    return render(request, "accounts/login.html", context)
+        form = LoginForm(request)
+    return render(request, "accounts/login.html", {"form": form, "next": next_url})
 
+@login_required
 def logout_view(request):
+    # Accept POST for safety; optionally allow GET to show a confirmation page
     if request.method == "POST":
         logout(request)
+        messages.success(request, "You have been logged out.")
         return redirect("accounts:login")
     return render(request, "accounts/logout.html", {})
 
 @login_required
-def register_view(request):
-    form = UserCreationForm(request.POST or None)
-    if form.is_valid():
-        user_obj = form.save()
-        return redirect("accounts:login")
-    context = {"form": form}
-    return render(request, "accounts/register.html", context)
-
 def update_password(request):
-    if request.user.is_authenticated:
-        current_user = User.objects.get(id=request.user.id)
-        if request.method == 'POST':
-            form = ChangePasswordForm(current_user, request.POST)
-            if form.is_valid():
-                form.save()
-                messages.success(request, "Your password has been changed")
-                #relogin user after password change
-                login(request, current_user)
-                return redirect('/')
-            else:
-                for error in list(form.errors.values()):
-                    messages.error(request, error)
-                    return redirect('accounts:update_password')
-        else:
-            form = ChangePasswordForm(current_user)
-            return render(request, 'accounts/update_password.html', {'form':form})
+    if request.method == "POST":
+        form = ChangePasswordForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # keep user logged in
+            messages.success(request, "Your password has been changed.")
+            return redirect("dashboard:dashboard")
     else:
-        messages.success(request, "You must be logged in")
-        return redirect('home')
+        form = ChangePasswordForm(user=request.user)
+    return render(request, "accounts/update_password.html", {"form": form})

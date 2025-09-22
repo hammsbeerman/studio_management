@@ -1,241 +1,169 @@
-from typing import Optional
-from datetime import datetime, timedelta
-from decimal import Decimal
-from django.utils import timezone
-from django.apps import apps
-
 from django.db import models
-from django.db.models import Min
 from django.urls import reverse
 from django.shortcuts import get_object_or_404
-
+from datetime import datetime
 from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import SubCategory, Measurement, InventoryCategory, GroupCategory
+from decimal import Decimal
 
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import (
+    post_save,
+    #post_delete
+)
+    
 
-
-# -----------------------------
-# QuerySets / Managers
-# -----------------------------
-class VendorQuerySet(models.QuerySet):
-    def ordered(self):               return self.order_by("name")
-    def retail(self):                return self.filter(retail_vendor=True)
-    def supply(self):                return self.filter(supplier=True)
-    def inventory_vendors(self):     return self.filter(inventory_vendor=True)
-    def non_inventory(self):         return self.filter(non_inventory_vendor=True)
-    def other(self):
-        return self.filter(
-            supplier=False,
-            retail_vendor=False,
-            inventory_vendor=False,
-            non_inventory_vendor=False,
-        )
-
-    def by_kind(self, kind: Optional[str] = None):
-        if not kind or kind.lower() == "all":
-            return self.ordered()
-        m = {
-            "retail": self.retail,
-            "supply": self.supply,
-            "inventory": self.inventory_vendors,
-            "noninventory": self.non_inventory,
-            "other": self.other,
-        }
-        return m.get(kind.lower(), self.ordered)()
-
-
-VendorManager = models.Manager.from_queryset(VendorQuerySet)
-
-
-class InventoryQtyVariationsQuerySet(models.QuerySet):
-    def distinct_inventories(self):
-        sub = (self.values('inventory_id')
-                  .annotate(min_pk=Min('pk'))
-                  .values_list('min_pk', flat=True))
-        return self.filter(pk__in=sub)
-
-
-InventoryQtyVariationsManager = models.Manager.from_queryset(InventoryQtyVariationsQuerySet)
-
-
-class OrderOutQuerySet(models.QuerySet):
-    def for_vendor(self, vendor_or_id):
-        vid = getattr(vendor_or_id, "id", vendor_or_id)
-        return self.filter(vendor_id=vid)
-
-    def for_customer(self, customer_or_id):
-        cid = getattr(customer_or_id, "id", customer_or_id)
-        return self.filter(customer_id=cid)
-
-    def open(self):   return self.filter(billed=False)
-    def billed(self): return self.filter(billed=True)
-
-    def recent(self, days=30):
-        return self.filter(dateentered__gte=timezone.now() - timezone.timedelta(days=days))
-
-OrderOutManager = models.Manager.from_queryset(OrderOutQuerySet)
-
-
-# -----------------------------
-# Models
-# -----------------------------
+    
 class Vendor(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     address1 = models.CharField('Address 1', max_length=100, blank=True, null=True)
     address2 = models.CharField('Adddress 2', max_length=100, blank=True, null=True)
     city = models.CharField('City', max_length=100, blank=True, null=True)
-    state = models.CharField('State', max_length=100, blank=True, null=True)
+    state = models.CharField('State', max_length=100, null=True)
     zipcode = models.CharField('Zipcode', max_length=100, blank=True, null=True)
     phone1 = models.CharField('Phone 1', max_length=100, blank=True, null=True)
     phone2 = models.CharField('Phone 2', max_length=100, blank=True, null=True)
     email = models.EmailField('Email', max_length=100, blank=True, null=True)
     website = models.URLField('Website', max_length=100, blank=True, null=True)
-    supplier = models.BooleanField('Supplier', default=True)
-    retail_vendor = models.BooleanField('Retail Vendor', default=True)
-    inventory_vendor = models.BooleanField('Inventory Vendor', default=True)
-    online_store_vendor = models.BooleanField('Online Store Vendor', default=False)
-    non_inventory_vendor = models.BooleanField('Non Inventory Vendor', default=True)
+    supplier = models.BooleanField('Supplier', blank=False, null=False, default=True)
+    retail_vendor = models.BooleanField('Retail Vendor', blank=False, null=False, default=True)
+    inventory_vendor = models.BooleanField('Inventory Vendor', blank=False, null=False, default=True)
+    online_store_vendor = models.BooleanField('Online Store Vendor', blank=False, null=False, default=False)
+    non_inventory_vendor = models.BooleanField('Non Inventory Vendor', blank=False, null=False, default=True)
 
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    updated = models.DateTimeField(auto_now=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+    #inventorydetails = models.ManyToManyField(Inventory, through="InventoryDetail")
     active = models.BooleanField(default=True)
     void = models.BooleanField(default=False)
 
-    objects = VendorManager()
-
-    class Meta:
-        ordering = ("name",)
-
     def __str__(self):
         return self.name
+    
+    class Meta:
+        ordering = ('name',)
 
     def get_absolute_url(self):
         return reverse("inventory:vendor_detail", kwargs={"id": self.id})
+
+    # def get_hx_url(self):
+    #     return reverse("vendors:hx-detail", kwargs={"id": self.id})
+
+    # def get_edit_url(self): #reference these, that way changes are only made one place
+    #     return reverse("vendors:update", kwargs={"id": self.id})
     
-class VendorContact(models.Model):
-    vendor = models.ForeignKey(
-        Vendor,
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name="contacts",     # <— nice to have
-    )
-    fname = models.CharField('First Name', max_length=100, blank=True, null=True)
-    lname = models.CharField('Last Name', max_length=100, blank=True, null=True)
-    phone1 = models.CharField('Phone', max_length=100, blank=True, null=True)
-    email = models.EmailField('Email', max_length=100, blank=True, null=True)
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        ordering = ("lname", "fname")
-
-    def __str__(self):
-        return f"{self.fname or ''} {self.lname or ''}".strip() or "Contact"
-
-
+    # def get_contacts_children(self):
+    #     return self.vendorcontact_set.all()
+    
 class ItemPricingGroup(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False)
 
     def __str__(self):
         return self.name
-
+    
     def get_absolute_url(self):
         return reverse("controls:view_price_group_detail", kwargs={"id": self.id})
 
+# class ItemQtyVariations(models.Model):
+#     name = models.CharField('Name', max_length=100, blank=False, null=False)
+#     measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING)
 
+
+#     def __str__(self):
+#         return self.name
+    
 class InventoryMaster(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
-    primary_vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
+    primary_vendor =  models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
     primary_vendor_part_number = models.CharField('Primary Vendor Part Number', max_length=100, blank=True, null=True)
     primary_base_unit = models.ForeignKey(Measurement, null=True, on_delete=models.SET_NULL)
+    #measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING)
     units_per_base_unit = models.DecimalField('Units per base unit (almost always 1)', max_digits=15, decimal_places=6, blank=True, null=True)
     unit_cost = models.DecimalField('Unit Cost', max_digits=15, decimal_places=4, blank=True, null=True)
     price_per_m = models.DecimalField('Price Per M', max_digits=15, decimal_places=4, blank=True, null=True)
-    supplies = models.BooleanField('Supply Item', default=True)
-    retail = models.BooleanField('Retail Item', default=True)
-    non_inventory = models.BooleanField('Non Inventory Item', default=False)
-    online_store = models.BooleanField('Online Store Item', default=True)
-    not_grouped = models.BooleanField('Not Price Grouped', default=False)
-    grouped = models.BooleanField('In price group', default=False)
+    #pricing_group = models.ManyToManyField(GroupCategory, through='InventoryPricingGroup')
+    # qty_variations = models.ManyToManyField(ItemQtyVariations, through='InventoryQtyVariations')
+    #price_per_sqft = models.DecimalField('Price Per SqFt', max_digits=15, decimal_places=4, blank=True, null=True)
+    supplies = models.BooleanField('Supply Item', blank=False, null=False, default=True)
+    retail = models.BooleanField('Retail Item', blank=False, null=False, default=True)
+    non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False)
+    online_store = models.BooleanField('Online Store Item', blank=False, null=False, default=True)
+    not_grouped = models.BooleanField('Not Price Grouped', blank=False, null=False, default=False)
+    grouped = models.BooleanField('In price group', blank=False, null=False, default=False)
     price_group = models.ManyToManyField(GroupCategory, blank=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    updated = models.DateTimeField(auto_now=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=6, blank=True, null=True)
 
+
     def __str__(self):
-        return self.name
-
-    # used by item_details view
-    def purchase_history(self):
-        from finance.models import InvoiceItem
-        return (
-            InvoiceItem.objects
-            .filter(internal_part_number=self.pk)
-            .select_related("invoice")
-            .order_by("-invoice__invoice_date")
-        )
-
-
+        return self.name 
+    
+    
 class InventoryPricingGroup(models.Model):
     inventory = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
     group = models.ForeignKey(GroupCategory, on_delete=models.CASCADE)
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['inventory', 'group'], name='uniq_inventory_group')
-        ]
-        indexes = [
-            models.Index(fields=['group']),
-        ]
-
     def __str__(self):
         return self.group.name
-
+    
     def get_absolute_url(self):
         return reverse("controls:view_price_group_detail", kwargs={"id": self.group.id})
 
-
 class InventoryQtyVariations(models.Model):
     inventory = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
+    # variation = models.ForeignKey(ItemQtyVariations, on_delete=models.CASCADE)
     variation = models.ForeignKey(Measurement, null=True, on_delete=models.SET_NULL)
     variation_qty = models.DecimalField('Variation Qty', max_digits=15, decimal_places=4, blank=False, null=False)
 
-    objects = InventoryQtyVariationsManager()
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['inventory']),
-            models.Index(fields=['variation']),
-        ]
-
     def __str__(self):
         variation_qty = str(self.variation_qty)
-        return f"{self.inventory.name} -- {self.variation.name} -- {variation_qty}"
-
+        return self.inventory.name + ' -- ' +self.variation.name + ' -- ' + variation_qty 
+    
     def get_absolute_url(self):
         return reverse("inventory:item_variation_details", kwargs={"id": self.inventory.id})
+    
 
-
-@receiver(post_save, sender=InventoryMaster)
+    
+     
+    
+@receiver(post_save, sender=InventoryMaster)  
 def Unit_Cost_Handler(sender, instance, created, *args, **kwargs):
-    if instance.high_price and instance.units_per_base_unit:
-        unit_cost = Decimal(instance.high_price) / instance.units_per_base_unit
-        m = unit_cost * 1000
-        unit_cost = round(unit_cost, 6)
-        m = round(m, 6)
-        InventoryMaster.objects.filter(pk=instance.pk).update(
-            unit_cost=unit_cost, price_per_m=m, updated=timezone.now()
-        )
-        Inventory.objects.filter(internal_part_number=instance.pk).update(
-            unit_cost=unit_cost, price_per_m=m, updated=timezone.now()
-        )
+    print('adklasdklamdklamdlkamdalksdmalkdmalkdmalkdmasklmalksdmalkdmamkadmaskdlmalkdlkedmaeiliiliiiiefkasdlfasdlkasjmkdl')
+    #print(args, kwargs)
+    #print(instance.pk)
+    if instance.high_price:
+        if instance.units_per_base_unit:
+            unit_cost = Decimal(instance.high_price) / instance.units_per_base_unit
+            print(unit_cost)
+            m = unit_cost * 1000
+            unit_cost = round(unit_cost, 6)
+            m = round(m, 6)
+            print('adklasdklamdklamdlkamdalksdmalkdmalkdmalkdmasklmalksdmalkdmamkadmaskdlmalkdlkedmaeiliiliiiiefkasdlfasdlkasjmkdl')
+            InventoryMaster.objects.filter(pk=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
+            Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
+    
 
+
+# class InventoryDetail(models.Model):
+#     invoice_date = models.DateField('Invoice Date', blank=True, null=True)
+#     item = models.ForeignKey(Inventory, null=True, on_delete=models.SET_NULL)
+#     vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
+#     vendor_item_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
+#     invoice_number = models.CharField('Invoice Number', max_length=100, blank=True, null=True)
+#     shipped_uom = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='shipped_uom')
+#     shipped_qty = models.CharField('Qty', max_length=100, blank=True, null=True)
+#     internal_uom = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING, related_name='internal_uom')
+#     internal_qty = models.CharField('Qty', max_length=100, blank=True, null=True)
+#     price_per_m = models.CharField('Paper Stock Price per M', max_length=100, blank=True, null=True)
+#     total_price = models.CharField('Total Price', max_length=100, blank=True, null=True)
+#     #test = models.CharField('test', max_length=100, blank=True)
+    
+    # def __str__(self):
+    #     return self.item
 
 class Inventory(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False)
@@ -247,6 +175,8 @@ class Inventory(models.Model):
     price_per_m = models.CharField('Paper Stock Price per M', max_length=100, blank=True, null=True)
     price_per_sqft = models.CharField('Price per SqFt', max_length=100, blank=True, null=True)
     current_stock = models.CharField('Current Stock', max_length=100, blank=True, null=True)
+    #vendor = models.ManyToManyField(Vendor)
+    # vendor_part_number
     color = models.CharField('Color', max_length=100, blank=True, null=True)
     size = models.CharField('Size', max_length=100, blank=True, null=True)
     width = models.CharField('Width', max_length=100, blank=True, null=True)
@@ -262,47 +192,46 @@ class Inventory(models.Model):
     type_laminate = models.BooleanField('Laminate', default=False)
     type_substrate = models.BooleanField('Substrate', default=False)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    updated = models.DateTimeField(auto_now=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     inventory_category = models.ManyToManyField(InventoryCategory)
     retail_item = models.BooleanField('Retail Item', default=True)
+    #retail_category = 
 
     def __str__(self):
         return self.name
-
 
 class VendorItemDetail(models.Model):
     vendor = models.ForeignKey(Vendor, null=True, on_delete=models.CASCADE)
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     vendor_part_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
+    #internal_part_number = models.CharField('Internal Part Number', max_length=100, blank=True, null=True)
     internal_part_number = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
     supplies = models.BooleanField('Supply Item', blank=False, null=False)
     retail = models.BooleanField('Retail Item', blank=False, null=False)
     non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False)
     online_store = models.BooleanField('Online Store Item', blank=False, null=False)
+    #internal_part_number = models.ManyToManyField(RetailInventoryMaster)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    updated = models.DateTimeField(auto_now=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.name} -- {self.vendor.name}"
-
+        return self.name + ' -- ' + self.vendor.name
+    
+    
 
 class OrderOut(models.Model):
     workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.CASCADE)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=True, null=True)
-    internal_company = models.CharField(
-        'Internal Company',
-        choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing'), ('Office Supplies', 'Office Supplies')],
-        max_length=100, blank=False, null=False
-    )
-    customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_NULL)
+    internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing'), ('Office Supplies', 'Office Supplies')], max_length=100, blank=False, null=False)
+    customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_DEFAULT, default=2)
     hr_customer = models.CharField('Customer Name', max_length=100, blank=True, null=True)
     category = models.CharField('Category', max_length=10, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
 
-    vendor = models.ForeignKey('Vendor', blank=True, null=True, on_delete=models.SET_NULL)
+    vendor = models.ForeignKey(Vendor, blank=True, null=True, on_delete=models.SET_NULL)
     purchase_price = models.DecimalField('Purchase Price', max_digits=8, decimal_places=2, blank=True, null=True)
     percent_markup = models.DecimalField('Percent Markup', max_digits=8, decimal_places=2, blank=True, null=True)
     quantity = models.DecimalField('Quantity', max_digits=8, decimal_places=2, blank=True, null=True)
@@ -313,34 +242,18 @@ class OrderOut(models.Model):
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
     notes = models.TextField('Notes:', blank=True, null=False)
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    billed = models.BooleanField('Billed', default=False)
-    edited = models.BooleanField('Edited', default=False)
-
-    objects = OrderOutManager()
-
-    class Meta:
-        # FKs (vendor, customer) already get indexes automatically.
-        indexes = [
-            models.Index(fields=['billed']),
-            models.Index(fields=['dateentered']),
-            # if you often do: .filter(vendor=...).order_by('-dateentered')
-            models.Index(fields=['vendor', 'dateentered']),
-        ]
+    billed = models.BooleanField('Billed', blank=False, null=False, default=False)
+    edited = models.BooleanField('Edited', blank=False, null=False, default=False)
 
     def __str__(self):
         return self.workorder.workorder
-
-
+    
 class SetPrice(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.CASCADE)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=True, null=True)
-    internal_company = models.CharField(
-        'Internal Company',
-        choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing'), ('Office Supplies', 'Office Supplies')],
-        max_length=100, blank=False, null=False
-    )
+    internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing'), ('Office Supplies', 'Office Supplies')], max_length=100, blank=False, null=False)
     customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_DEFAULT, default=2)
     hr_customer = models.CharField('Customer Name', max_length=100, blank=True, null=True)
     category = models.CharField('Category', max_length=10, blank=True, null=True)
@@ -351,16 +264,8 @@ class SetPrice(models.Model):
     total_pieces = models.CharField('Total pieces', max_length=10, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     paper_stock = models.ForeignKey(Inventory, blank=True, null=True, on_delete=models.SET_NULL)
-    side_1_inktype = models.CharField(
-        'Side 1 Ink',
-        choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')],
-        max_length=100, blank=True, null=True
-    )
-    side_2_inktype = models.CharField(
-        'Side 2 Ink',
-        choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')],
-        max_length=100, blank=True, null=True
-    )
+    side_1_inktype = models.CharField('Side 1 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=True, null=True)
+    side_2_inktype = models.CharField('Side 2 Ink', choices=[('B/W', 'B/W'), ('Color', 'Color'), ('None', 'None'), ('Vivid', 'Vivid'), ('Vivid Plus', 'Vivid Plus')], max_length=100, blank=True, null=True)
     quantity = models.PositiveIntegerField('Quantity', blank=True, null=True)
     unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)
@@ -369,22 +274,17 @@ class SetPrice(models.Model):
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
     notes = models.TextField('Notes:', blank=True, null=False)
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    billed = models.BooleanField('Billed', default=False)
-    edited = models.BooleanField('Edited', default=False)
+    billed = models.BooleanField('Billed', blank=False, null=False, default=False)
+    edited = models.BooleanField('Edited', blank=False, null=False, default=False)
 
     def __str__(self):
         return self.workorder.workorder
-
 
 class Photography(models.Model):
     workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.CASCADE)
     hr_workorder = models.CharField('Human Readable Workorder', max_length=100, blank=True, null=True)
     workorder_item = models.CharField('Workorder Item', max_length=100, blank=True, null=True)
-    internal_company = models.CharField(
-        'Internal Company',
-        choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing'), ('Office Supplies', 'Office Supplies')],
-        max_length=100, blank=False, null=False
-    )
+    internal_company = models.CharField('Internal Company', choices=[('LK Design', 'LK Design'), ('Krueger Printing', 'Krueger Printing'), ('Office Supplies', 'Office Supplies')], max_length=100, blank=False, null=False)
     customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_DEFAULT, default=2)
     hr_customer = models.CharField('Customer Name', max_length=100, blank=True, null=True)
     category = models.CharField('Category', max_length=10, blank=True, null=True)
@@ -399,31 +299,86 @@ class Photography(models.Model):
     last_item_price = models.CharField('Original Item Price', max_length=100, blank=True, null=True)
     notes = models.TextField('Notes:', blank=True, null=False)
     dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    billed = models.BooleanField('Billed', default=False)
-    edited = models.BooleanField('Edited', default=False)
+    billed = models.BooleanField('Billed', blank=False, null=False, default=False)
+    edited = models.BooleanField('Edited', blank=False, null=False, default=False)
 
 
-# Keep your second signal: create Inventory row when an InventoryMaster is saved
-@receiver(post_save, sender=InventoryMaster)
+
+
+
+#Add item to inventory if added to inventorymaster
+@receiver(post_save, sender=InventoryMaster)  
 def Inventory_Master_Handler(sender, instance, created, *args, **kwargs):
+    #print(args, kwargs)
     try:
-        get_object_or_404(Inventory, internal_part_number=instance.pk)
-    except Exception:
+        obj = get_object_or_404(Inventory, internal_part_number=instance.pk)
+        #print(obj)
+        print('found')
+    except:
+        print('not found')
         name = instance.name
         description = instance.description
-        unit_cost = instance.unit_cost or 0
+        unit_cost = instance.unit_cost
         m = instance.price_per_m
         measurement = instance.primary_base_unit
         retail = instance.retail
-        item = Inventory(
-            name=name,
-            description=description,
-            internal_part_number=InventoryMaster.objects.get(pk=instance.pk),
-            unit_cost=unit_cost,
-            price_per_m=m,
-            measurement=measurement,
-            retail_item=retail,
-            created=timezone.now(),
-            updated=timezone.now(),
-        )
+        if not unit_cost:
+            unit_cost=0
+        item = Inventory(name=name, description=description, internal_part_number=InventoryMaster.objects.get(pk=instance.pk), unit_cost=unit_cost, price_per_m=m , measurement=measurement, retail_item=retail, created=datetime.now(), updated=datetime.now())
         item.save()
+
+
+        
+
+
+###################Not used yet
+
+class VendorContact(models.Model):
+    vendor = models.ForeignKey(Vendor, blank=True, null=True, on_delete=models.SET_NULL)
+    #company = models.OneToOneField(Customer, on_delete=models.SET_NULL, blank=True, null=True)
+    fname = models.CharField('First Name', max_length=100, blank=True, null=True)
+    lname = models.CharField('Last Name', max_length=100, blank=True, null=True)
+    phone1 = models.CharField('Phone', max_length=100, blank=True, null=True)
+    email = models.EmailField('Email', max_length=100, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# #Create master inventory item from items already in inventory list
+# def create_inventory_from_inventory(request):
+#     inventory = Inventory.objects.all()[:120]
+#     print(inventory)
+#     for x in inventory:
+#         if not x.internal_part_number:
+#             name = x.name
+#             description = x.description
+#             p_vpn = x.vendor_part_number
+#             measurement = x.measurement
+#             unit_cost = x.unit_cost
+#             m = x.price_per_m
+#             if not unit_cost:
+#                 unit_cost=0
+#             item = InventoryMaster(name=name, description=description, supplies=1, retail=1, primary_vendor_part_number=p_vpn, primary_base_unit=measurement, unit_cost=unit_cost, price_per_m=m)
+#             item.save()
+#             print('saved')
+#             print(item.pk)
+#             ipn = Inventory.objects.filter(pk=x.pk).update(internal_part_number=item.pk)
+#             print('IPN')
+#             print(ipn)
+#             #Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
+#     return render (request, "controls/specialized_tools.html")
+
+
+    

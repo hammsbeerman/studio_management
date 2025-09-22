@@ -7,4 +7,4 @@ class AccountsConfig(AppConfig):
 
 
     def ready(self):
-        import accounts.signals
+        from . import signals  # noqa: F401

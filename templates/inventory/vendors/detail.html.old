@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+
+
+<h3>{{ vendor.name }}</h3>
+<p>
+
+<div class="container">
+    Name: {% if vendor.name %}{{vendor.name}}{% endif %}
+    <br/>
+    Address 1:  {% if vendor.address1 %}{{vendor.address1}}{% endif %}
+    <br/>
+    Address 2: {% if vendor.address2 %}{{vendor.address2}}{% endif %}
+    <br>
+    City: {% if vendor.city %}{{vendor.city}}{% endif %}
+    <br/>
+    State: {% if vendor.state %}{{vendor.state}}{% endif %}
+    <br/>
+    Zipcode: {% if vendor.zipcode %}{{vendor.zipcode}}{% endif %}
+    <br/>
+    Phone 1: {% if vendor.phone1 %}{{vendor.phone1}}{% endif %}
+    <br/>
+    Phone 2: {% if vendor.phone2 %}{{vendor.phone2}}{% endif %}
+    <br>
+    Email: {% if vendor.email %}{{vendor.email}}{% endif %}
+    <br>
+    Website: {% if vendor.website %}{{vendor.website}}{% endif %}
+    <br>
+    Supplier: {{ supplier }}
+    <br>
+    Retail Vendor: {{ retail }}
+</div>
+<br>
+<a href="{% url 'inventory:edit_vendor' id=vendor.id %}">Edit  Vendor</a>
+<hr>
+Orderouts
+<br>
+{% for x in orderout %}
+    {{ x.id }} {{ x.dateentered}} {{ x.description }} {{ x.hr_workorder }} {{ x.hr_customer }}</br>
+{% endfor %}
+{% endblock content %}
