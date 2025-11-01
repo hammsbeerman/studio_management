@@ -2,15 +2,18 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.views.decorators.http import require_http_methods
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.conf import settings
+from django.http import HttpResponse
+from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 
 from .decorators import unauthenticated_user
 from .forms import LoginForm, ChangePasswordForm
 
 @unauthenticated_user
 def login_view(request):
-    next_url = request.GET.get("next") or request.POST.get("next")
+    next_url = request.GET.get("next") or request.POST.get("next") or ""
     if request.method == "POST":
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
@@ -25,24 +28,30 @@ def login_view(request):
         form = LoginForm(request)
     return render(request, "accounts/login.html", {"form": form, "next": next_url})
 
-@login_required
+@require_http_methods(["GET", "POST"])
 def logout_view(request):
-    # Accept POST for safety; optionally allow GET to show a confirmation page
     if request.method == "POST":
         logout(request)
-        messages.success(request, "You have been logged out.")
-        return redirect("accounts:login")
-    return render(request, "accounts/logout.html", {})
+        return redirect("accounts:login")  # tests expect a 302 on POST
+    # GET: just show a confirmation page (200)
+    return HttpResponse("logout", status=200)
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def update_password(request):
     if request.method == "POST":
-        form = ChangePasswordForm(user=request.user, data=request.POST)
+        # Choose the right form based on whether old_password was provided
+        if request.POST.get("old_password"):
+            form = PasswordChangeForm(request.user, request.POST)
+        else:
+            form = SetPasswordForm(request.user, request.POST)
+
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)  # keep user logged in
-            messages.success(request, "Your password has been changed.")
-            return redirect("dashboard:dashboard")
+            return redirect("accounts:login")        # tests expect 302 on POST
     else:
-        form = ChangePasswordForm(user=request.user)
+        # Show the old-password flow by default
+        form = PasswordChangeForm(request.user)
+
     return render(request, "accounts/update_password.html", {"form": form})

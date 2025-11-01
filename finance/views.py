@@ -4,12 +4,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Avg, Max, Count, Min, Sum, Subquery, Case, When, Value, DecimalField, OuterRef
 from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta, datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 import logging
 from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment, Krueger_Araging
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm, DateRangeForm
@@ -19,7 +19,7 @@ from finance.models import InvoiceItem#, AllInvoiceItem
 from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import PaymentType, Measurement
-from inventory.models import Vendor, InventoryMaster, VendorItemDetail, InventoryQtyVariations, InventoryPricingGroup, Inventory
+from inventory.models import Vendor, InventoryMaster, VendorItemDetail, InventoryQtyVariations, InventoryPricingGroup, Inventory, Measurement
 from inventory.forms import InventoryMasterForm, VendorItemDetailForm
 from onlinestore.models import StoreItemDetails
 
@@ -1173,7 +1173,7 @@ def invoice_detail(request, id=None):
             print('desc update')
             print(desc_up)
             if vpn_up or desc_up == '1':
-                VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=ipn).update(vendor_part_number=vpn, description=description)
+                VendorItemDetail.objects.filter(vendor=vendor, master_id=ipn).update(vendor_part_number=vpn, description=description)
             name = form.instance.name
             print(name)
             print(vendor)
@@ -1261,7 +1261,7 @@ def add_invoice_item(request, invoice=None, vendor=None, type=None):
             # print(item_id)
             # print(vendor)
             try:
-                item = get_object_or_404(VendorItemDetail, internal_part_number=item_id, vendor=vendor)
+                item = get_object_or_404(VendorItemDetail, master_id=item_id, vendor=vendor)
                 try:
                     variations = InventoryQtyVariations.objects.filter(inventory=item_id).order_by('variation_qty')
                 except:
@@ -1619,81 +1619,163 @@ def add_item_to_vendor(request, vendor=None, invoice=None):
         return render (request, "inventory/items/add_item_to_vendor.html", context)
     return render (request, "inventory/partials/add_item_to_vendor.html", context)
 
+# def add_inventory_item(request, vendor=None, invoice=None, baseitem=None):
+#     print(baseitem)
+#     form = InventoryMasterForm
+#     if not invoice:
+#         if request.method == "POST":
+#             form = InventoryMasterForm(request.POST)
+#             if form.is_valid():
+#                 #print(form.data)
+#                 print('yippie')
+#                 #vendor = request.POST.get('primary_vendor')
+#                 #form.instance.primary_vendor = vendor
+#                 form.save()
+#                 pk = form.instance.pk
+#                 unit_cost = form.instance.unit_cost
+#                 price_per_m = unit_cost * 1000
+#                 print('Cost per M')
+#                 print(price_per_m)
+#                 InventoryMaster.objects.filter(pk=pk).update(high_price=unit_cost, price_per_m=price_per_m)
+#                 item = InventoryMaster.objects.get(pk=pk)
+#                 primary_unit = item.primary_base_unit.id
+#                 units_per_base = item.units_per_base_unit
+#                 variation = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=pk), variation=Measurement.objects.get(id=primary_unit), variation_qty=units_per_base)
+#                 variation.save()
+#                 print(item.pk)
+#                 vendor = item.primary_vendor
+#                 name = item.name
+#                 vpn = item.primary_vendor_part_number
+#                 description = item.description
+#                 supplies = item.supplies
+#                 retail = item.retail
+#                 non_inventory = item.non_inventory
+#                 online_store = item.online_store
+#                 if online_store:
+#                     print('Online Store')
+#                     print(online_store)
+#                 print('Online Store Above')
+#                 invoice = request.POST.get('invoice')
+#                 print(vendor)
+#                 item = VendorItemDetail(vendor=vendor, name=name, vendor_part_number=vpn, description=description, supplies=supplies, retail=retail, non_inventory=non_inventory, online_store=online_store, internal_part_number_id=item.pk )
+#                 item.save()
+#                 if online_store:
+#                     store_item = StoreItemDetails(item=InventoryMaster.objects.get(pk=pk))
+#                     store_item.save()
+#                 baseitem = request.POST.get('baseitem')
+#                 print(baseitem)
+#                 print('123')
+#                 if baseitem:
+#                     print('dsajk')
+#                     messages.success(request, ("Item has been added"))
+#                     return redirect ('finance:add_inventory_item', baseitem=1)
+#                     #return redirect ('finance:invoice_detail', id=invoice)
+#                 if invoice is None:
+#                     return redirect ('finance:invoice_detail', id=invoice)
+#                 #return redirect ('finance:retail_inventory_list')
+#                 return redirect ('finance:invoice_detail', id=invoice)
+#         context = {
+#         'form':form,
+#         'invoice':invoice
+#         }
+#         print('test')
+#         #return redirect ('finance:view_bills_payable')
+#         if baseitem:
+#             print(baseitem)
+#             return render (request, "inventory/items/add_inventory_item.html", context)
+#         return render (request, "inventory/partials/add_inventory_item.html", context)
+#     context = {
+#         'form':form,
+#         'invoice':invoice
+#     }
+#     print(baseitem)
+#     if baseitem:
+#         print(baseitem)
+#         return render (request, "inventory/items/add_inventory_item.html", context)
+#     print(baseitem)
+#     return render (request, "inventory/partials/add_inventory_item.html", context)
+
 def add_inventory_item(request, vendor=None, invoice=None, baseitem=None):
-    print(baseitem)
-    form = InventoryMasterForm
-    if not invoice:
-        if request.method == "POST":
-            form = InventoryMasterForm(request.POST)
-            if form.is_valid():
-                #print(form.data)
-                print('yippie')
-                #vendor = request.POST.get('primary_vendor')
-                #form.instance.primary_vendor = vendor
-                form.save()
-                pk = form.instance.pk
-                unit_cost = form.instance.unit_cost
-                price_per_m = unit_cost * 1000
-                print('Cost per M')
-                print(price_per_m)
-                InventoryMaster.objects.filter(pk=pk).update(high_price=unit_cost, price_per_m=price_per_m)
-                item = InventoryMaster.objects.get(pk=pk)
-                primary_unit = item.primary_base_unit.id
-                units_per_base = item.units_per_base_unit
-                variation = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=pk), variation=Measurement.objects.get(id=primary_unit), variation_qty=units_per_base)
-                variation.save()
-                print(item.pk)
-                vendor = item.primary_vendor
-                name = item.name
-                vpn = item.primary_vendor_part_number
-                description = item.description
-                supplies = item.supplies
-                retail = item.retail
-                non_inventory = item.non_inventory
-                online_store = item.online_store
-                if online_store:
-                    print('Online Store')
-                    print(online_store)
-                print('Online Store Above')
-                invoice = request.POST.get('invoice')
-                print(vendor)
-                item = VendorItemDetail(vendor=vendor, name=name, vendor_part_number=vpn, description=description, supplies=supplies, retail=retail, non_inventory=non_inventory, online_store=online_store, internal_part_number_id=item.pk )
-                item.save()
-                if online_store:
-                    store_item = StoreItemDetails(item=InventoryMaster.objects.get(pk=pk))
-                    store_item.save()
-                baseitem = request.POST.get('baseitem')
-                print(baseitem)
-                print('123')
-                if baseitem:
-                    print('dsajk')
-                    messages.success(request, ("Item has been added"))
-                    return redirect ('finance:add_inventory_item', baseitem=1)
-                    #return redirect ('finance:invoice_detail', id=invoice)
-                if invoice is None:
-                    return redirect ('finance:invoice_detail', id=invoice)
-                #return redirect ('finance:retail_inventory_list')
-                return redirect ('finance:invoice_detail', id=invoice)
-        context = {
-        'form':form,
-        'invoice':invoice
-        }
-        print('test')
-        #return redirect ('finance:view_bills_payable')
-        if baseitem:
-            print(baseitem)
-            return render (request, "inventory/items/add_inventory_item.html", context)
-        return render (request, "inventory/partials/add_inventory_item.html", context)
-    context = {
-        'form':form,
-        'invoice':invoice
-    }
-    print(baseitem)
+    """
+    Create an InventoryMaster via form and wire up related defaults.
+    - If `baseitem` is truthy, use the full-page template.
+    - If `invoice` is provided, redirect back to that invoice after save.
+    - Otherwise render as a partial and redirect to a sensible fallback after save.
+    """
+    # normalize baseitem to a boolean
+    baseitem = str(baseitem).lower() in {"1", "true", "yes", "y"} if baseitem is not None else False
+
+    if request.method == "POST":
+        form = InventoryMasterForm(request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                item = form.save()  # InventoryMaster instance
+
+                # --- Price math ---
+                unit_cost = item.unit_cost or Decimal("0")
+                # price_per_m = unit_cost * 1000 (guard with Decimal)
+                price_per_m = (unit_cost * Decimal("1000")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+                InventoryMaster.objects.filter(pk=item.pk).update(
+                    high_price=unit_cost,  # if "high price" means "last cost" here
+                    price_per_m=price_per_m,
+                )
+
+                # --- Default variation if base unit present ---
+                if getattr(item, "primary_base_unit", None) and item.units_per_base_unit:
+                    try:
+                        variation = InventoryQtyVariations(
+                            inventory=item,
+                            variation=Measurement.objects.get(pk=item.primary_base_unit_id),
+                            variation_qty=item.units_per_base_unit,
+                        )
+                        variation.save()
+                    except Measurement.DoesNotExist:
+                        # Silently skip if the measurement is missing
+                        pass
+
+                # --- Vendor item mirror ---
+                # `vendor` arg (from URL) is optional; prefer the item's primary vendor
+                effective_vendor = item.primary_vendor or vendor
+                vid = VendorItemDetail(
+                    vendor=effective_vendor,
+                    name=item.name,
+                    vendor_part_number=item.primary_vendor_part_number,
+                    description=item.description,
+                    supplies=item.supplies,
+                    retail=item.retail,
+                    non_inventory=item.non_inventory,
+                    online_store=item.online_store,
+                    # use *_id to avoid extra query (your earlier code did this correctly)
+                    master_id=item.pk
+                )
+                vid.save()
+
+                # --- Store item record if flagged ---
+                if item.online_store:
+                    StoreItemDetails.objects.get_or_create(item=item)
+
+            messages.success(request, "Item has been added.")
+
+            # Post-save navigation
+            if baseitem:
+                # stay on the full-page form for quickly adding another base item
+                return redirect("finance:add_inventory_item", baseitem=1)
+
+            if invoice:
+                # explicit invoice path only when we have a real invoice id
+                return redirect("finance:invoice_detail", id=invoice)
+
+            # Fallback (adjust to your preferred list/dashboard)
+            return redirect("finance:view_bills_payable")
+        else:
+            messages.error(request, "Please fix the errors below.")
+    else:
+        form = InventoryMasterForm()
+
+    context = {"form": form, "invoice": invoice}
     if baseitem:
-        print(baseitem)
-        return render (request, "inventory/items/add_inventory_item.html", context)
-    print(baseitem)
-    return render (request, "inventory/partials/add_inventory_item.html", context)
+        return render(request, "inventory/items/add_inventory_item.html", context)
+    return render(request, "inventory/partials/add_inventory_item.html", context)
 
 
 def vendor_item_remainder(request, vendor=None, invoice=None):

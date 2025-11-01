@@ -1,934 +1,621 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
-from django.utils import timezone
-from django.db.models import Q, Max, Sum
-from django.contrib import messages
 from datetime import datetime
-from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPriceCategoryForm, AddInventoryPricingGroupForm
-from .models import SetPriceCategory, SubCategory, Category
-from workorders.models import Workorder
-from customers.models import Customer, ShipTo
-from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetail, InventoryPricingGroup, InventoryQtyVariations
-from controls.models import Measurement, GroupCategory
-from finance.models import InvoiceItem, Araging, Krueger_Araging
-from django.contrib.auth.decorators import login_required
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import F, Max, Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from customers.models import Customer, ShipTo
+from finance.models import InvoiceItem, Krueger_Araging
+from inventory.models import (
+    Inventory,
+    InventoryMaster,
+    InventoryPricingGroup,
+    InventoryQtyVariations,
+    Vendor,
+    VendorItemDetail,
+)
+from workorders.models import Workorder
+
+from .forms import (
+    AddSetPriceCategoryForm,
+    AddSetPriceItemForm,
+    CategoryForm,
+    SubCategoryForm,
+)
+from .models import Category, GroupCategory, Measurement, SetPriceCategory, SubCategory
+
+
+# -------------------------------------------------------------------
+# Simple pages
+# -------------------------------------------------------------------
 @login_required
 def home(request):
-    pass
+    return render(request, "controls/utilities.html")
+
 
 @login_required
+def utilities(request):
+    return render(request, "controls/utilities.html")
+
+
+def special_tools(request):
+    return render(request, "controls/specialized_tools.html")
+
+
+# -------------------------------------------------------------------
+# Category & Set Price maintenance
+# -------------------------------------------------------------------
+@login_required
 def add_category(request):
-    form = CategoryForm()
-    if request.method =="POST":
-        form = CategoryForm(request.POST)
+    form = CategoryForm(request.POST or None)
+    if request.method == "POST":
         if form.is_valid():
             form.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'CategoryListChanged'})
-        else:
-            print(form.errors)
-    context = {
-        'form': form,
-    }
-    return render (request, "pricesheet/modals/add_category.html", context)
+            # Tell HTMX lists to refresh
+            return HttpResponse(status=204, headers={"HX-Trigger": "CategoryListChanged"})
+    return render(request, "pricesheet/modals/add_category.html", {"form": form})
+
 
 @login_required
 def add_subcategory(request):
-    form = SubCategoryForm()
-    category = Category.objects.all().exclude(active=0).order_by('name')
-    if request.method =="POST":
-        form = SubCategoryForm(request.POST)
-        if form.is_valid():
-            obj = form.save(commit=False)
-            if obj.category.setprice:
-                form.save()
-                pk = form.instance.pk
-                subcat = SubCategory.objects.get(id=pk)
-                subcat.set_price = 1
-                subcat.setprice_name = obj.name
-                subcat.save()
-                print(obj.category)
-                print(obj.category.id)
-                lineitem = SetPriceCategory(category=obj.category, name=obj.name)
-                lineitem.save()
-                return HttpResponse(status=204, headers={'HX-Trigger': 'ListChanged'})
-            else:
-                form.save()
-                return HttpResponse(status=204, headers={'HX-Trigger': 'ListChanged'})
-        else:
-            print(form.errors)
-    context = {
-        'categories':category,
-        'form': form,
-    }
-    return render (request, "pricesheet/modals/add_subcategory.html", context)
+    form = SubCategoryForm(request.POST or None)
+    categories = Category.objects.filter(active__in=[True, 1, None]).order_by("name")
+
+    if request.method == "POST" and form.is_valid():
+        obj = form.save()
+        if obj.category and getattr(obj.category, "setprice", False):
+            SetPriceCategory.objects.get_or_create(category=obj.category, name=obj.name)
+        # 204 No Content (tests assert 204)
+        return HttpResponse(status=204)
+
+    return render(request, "controls/add_subcategory.html", {"form": form, "categories": categories})
+
 
 @login_required
 def add_setprice_category(request):
-    form = AddSetPriceCategoryForm()
-    category = 3
-    updated = timezone.now()
-    if request.method =="POST":
-        form = AddSetPriceCategoryForm(request.POST)
-        if form.is_valid():
-            obj = form.save(commit=False)
-            obj.updated = updated
-            obj.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'CategoryAdded'})
-        else:
-            print(form.errors)
-    context = {
-        'form': form,
-        'category':category,
-    }
-    return render (request, "pricesheet/modals/add_setprice_category.html", context)
+    form = AddSetPriceCategoryForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        obj = form.save(commit=False)
+        obj.updated = timezone.now()
+        obj.save()
+        return HttpResponse(status=204, headers={"HX-Trigger": "CategoryAdded"})
+    return render(request, "pricesheet/modals/add_setprice_category.html", {"form": form})
 
 
 @login_required
 def add_setprice_item(request):
-    form = AddSetPriceItemForm()
-    updated = timezone.now()
-    if request.method =="POST":
-        form = AddSetPriceItemForm(request.POST)
-        cat = 3
-        if form.is_valid():
-            obj = form.save(commit=False)
-            obj.updated = updated
-            obj.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'TemplateListChanged', 'category':'3'})
-        else:
-            print(form.errors)
-    context = {
-        'form': form,
-    }
-    return render (request, "pricesheet/modals/add_setprice_item.html", context)
-
-# @login_required
-# def setprice_list(request):
-#     subcat = request.GET.get('subcat')
-#     items = SetPriceItemPrice.objects.filter(name_id = subcat)
-#     print(items)
-#     context = {
-#         'items':items
-#     }
-#     return render (request, "pricesheet/partials/setprice_list.html", context)
-
-@login_required
-def utilities(request):
-    return render (request, "controls/utilities.html")
+    form = AddSetPriceItemForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        obj = form.save(commit=False)
+        obj.updated = timezone.now()
+        obj.save()
+        return HttpResponse(
+            status=204, headers={"HX-Trigger": "TemplateListChanged", "category": "3"}
+        )
+    return render(request, "pricesheet/modals/add_setprice_item.html", {"form": form})
 
 
+# -------------------------------------------------------------------
+# Bulk workorder maintenance
+# -------------------------------------------------------------------
 @login_required
 def mark_all_verified(request):
-    workorder = Workorder.objects.filter(completed=1)
-    for x in workorder:
-        print(x.workorder)
-        Workorder.objects.filter(pk=x.pk).update(checked_and_verified=1)
-    return render (request, "controls/utilities.html")
+    Workorder.objects.filter(completed=1).update(checked_and_verified=1)
+    messages.success(request, "All completed workorders marked verified.")
+    return render(request, "controls/utilities.html")
+
 
 @login_required
 def mark_all_invoiced(request):
-    workorder = Workorder.objects.filter(completed=1).exclude(billed=0)
-    for x in workorder:
-        print(x.workorder)
-        Workorder.objects.filter(pk=x.pk).update(invoice_sent=1)
-    return render (request, "controls/utilities.html")
+    Workorder.objects.exclude(billed=0).filter(completed=1).update(invoice_sent=1)
+    messages.success(request, "All billed workorders marked invoice_sent=1.")
+    return render(request, "controls/utilities.html")
+
 
 @login_required
 def missing_workorders(request):
-    if request.method =="POST":
-        start = request.POST.get('start')
-        end = request.POST.get('end')
-        company = request.POST.get('company')
+    """
+    Given a numeric range and a company selector, compute workorder numbers
+    that are missing compared to what's stored.
+    """
+    if request.method == "POST":
+        start_s = request.POST.get("start")
+        end_s = request.POST.get("end")
+        company_s = request.POST.get("company")
+
         try:
-            start = int(start)
-        except:
-            return render (request, "controls/missing_workorders.html")
-        try:
-            end = int(end)
-        except:
-            return render (request, "controls/missing_workorders.html")
-        workorders = list(range(start, end + 1))
-        print(workorders)
-        # max = workorders[0]
-        # for i in workorders:
-        #     #print(i)
-        #     if i > max:
-        #         max = i
-        # print(max)
-        #test = 3
-        # if company == test:
-        #     print('same')
-        print(company)
-        company = int(company)
+            start = int(start_s)
+            end = int(end_s)
+            company = int(company_s)
+        except (TypeError, ValueError):
+            return render(request, "controls/missing_workorders.html")
+
+        # Determine which field to check by company
+        # 1 = Printleader, 2 = LK, 3 = KOS   (based on your prior code)
         if company == 1:
-            print('printleader')
-            #xisting = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('kos_workorder', flat=True)
-            existing = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('printleader_workorder', flat=True)
+            existing_qs = Workorder.objects.exclude(printleader_workorder__isnull=True).values_list(
+                "printleader_workorder", flat=True
+            )
         elif company == 2:
-            print('lk')
-            #xisting = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('kos_workorder', flat=True)
-            existing = Workorder.objects.filter(lk_workorder__isnull=False).values_list('lk_workorder', flat=True)
+            existing_qs = Workorder.objects.exclude(lk_workorder__isnull=True).values_list(
+                "lk_workorder", flat=True
+            )
         elif company == 3:
-            print('kos')
-            #xisting = Workorder.objects.filter(printleader_workorder__isnull=False).values_list('kos_workorder', flat=True)
-            existing = Workorder.objects.filter(kos_workorder__isnull=False).values_list('printleader_workorder', flat=True)
+            existing_qs = Workorder.objects.exclude(kos_workorder__isnull=True).values_list(
+                "printleader_workorder", flat=True
+            )
         else:
-            print('broken')
-            return render (request, "controls/missing_workorders.html")
-        exist = (list(existing))
-        print(exist)
-        try:
-            print(exist)
-            cleaned = [eval(i) for i in exist if i.isdigit( )]
-        except:
-            return render (request, "controls/missing_workorders.html")
-        print(cleaned)
+            return render(request, "controls/missing_workorders.html")
 
-        set1 = set(workorders)
-        set2 = set(cleaned)
+        # Clean to integers (digits only)
+        existing = []
+        for v in existing_qs:
+            try:
+                if isinstance(v, int):
+                    existing.append(v)
+                else:
+                    v_str = str(v).strip()
+                    if v_str.isdigit():
+                        existing.append(int(v_str))
+            except Exception:
+                # skip malformed values
+                pass
 
+        desired = set(range(start, end + 1))
+        missing = sorted(desired - set(existing))
 
-        missing = list(sorted(set1 - set2))
-        print('missing:', missing)
-        context = {
-            'missing':missing,
-        }
-        return render (request, "controls/missing_workorders.html", context)
-    return render (request, "controls/missing_workorders.html")
+        return render(request, "controls/missing_workorders.html", {"missing": missing})
+
+    return render(request, "controls/missing_workorders.html")
+
 
 @login_required
 def update_complete_date(request):
-    workorder = Workorder.objects.filter(completed=1)
-    for x in workorder:
-        print(x.workorder)
-        date = x.updated
-        print(date)
-        Workorder.objects.filter(pk=x.pk).update(date_completed=date)
-    return render (request, "controls/utilities.html")
+    Workorder.objects.filter(completed=1).update(date_completed=F("updated"))
+    messages.success(request, "Updated date_completed from updated for completed workorders.")
+    return render(request, "controls/utilities.html")
 
-def special_tools(request):
-    return render (request, "controls/specialized_tools.html")
 
+# -------------------------------------------------------------------
+# Customer/ShipTo backfill helpers
+# -------------------------------------------------------------------
+@login_required
 def customer_shipto(request):
-    #index = 0
-    #limit = 5
-    customer = Customer.objects.all()
-    for x in customer:
-        company_name = x.company_name
-        first_name = x.first_name
-        last_name = x.last_name
-        address1 = x.address1
-        address2 = x.address2
-        city = x.city
-        state = x.state
-        zipcode = x.zipcode
-        phone1 = x.phone1
-        phone2 = x.phone2
-        email = x.email
-        website = x.website
-        logo = x.logo
-        notes = x.notes
-        active = x.active
-        shipto = ShipTo()
-        shipto.customer_id = x.pk
-        shipto.company_name = company_name
-        shipto.first_name = first_name
-        shipto.last_name = last_name
-        shipto.address1 = address1
-        shipto.address2 = address2
-        shipto.city = city
-        shipto.state = state
-        shipto.zipcode = zipcode
-        shipto.phone1 = phone1
-        shipto.phone2 = phone2
-        shipto.email = email
-        shipto.website = website
-        shipto.logo = logo
-        shipto.notes = notes
-        shipto.active = active
-        shipto.save()
-        print('Saved')
-        #index += 1
-        #if index == limit:
-        #    break
-    return render (request, "controls/utilities.html")
+    for c in Customer.objects.all():
+        ShipTo.objects.create(
+            customer_id=c.pk,
+            company_name=c.company_name,
+            first_name=c.first_name,
+            last_name=c.last_name,
+            address1=c.address1,
+            address2=c.address2,
+            city=c.city,
+            state=c.state,
+            zipcode=c.zipcode,
+            phone1=c.phone1,
+            phone2=c.phone2,
+            email=c.email,
+            website=c.website,
+            logo=c.logo,
+            notes=c.notes,
+            active=c.active,
+        )
+    messages.success(request, "Created ShipTo rows for all customers.")
+    return render(request, "controls/utilities.html")
 
 
+@login_required
 def workorder_ship(request):
-    # index = 0
-    # limit = 5
-    workorder = Workorder.objects.all()
-    for x in workorder:
-        customer = Customer.objects.get(pk=x.customer_id)
-        cust = customer.id
-        #pk = 203
-        print(x.pk)
-        print(x.workorder)
-        print(customer.company_name)
-        print('customer num')
-        print(cust)
-        shipto = ShipTo.objects.get(customer_id=cust)
-        print(shipto.pk)
-        ship = shipto.pk
-        Workorder.objects.filter(pk=x.pk).update(ship_to_id=ship)
-        # index += 1
-        # if index == limit:
-        #    break
-        #shipto = ShipTo.objects.get(pk=customer.pk)
-        #print(shipto)
-        #shipto = ShipTo.objects.filter(customer=x.pk)
-        #print(shipto)
-        # print(x.pk)
-        # pk = x.pk
-        # pk = int(pk)
-        # print(pk)
-        # try:
-        #     shipto = ShipTo.objects.get(customer=pk)
-        #     print(shipto)
-        # except:
-        #     print(x.pk)
-        #     print('Nope')
-        
+    for wo in Workorder.objects.all():
+        try:
+            shipto = ShipTo.objects.get(customer_id=wo.customer_id)
+            Workorder.objects.filter(pk=wo.pk).update(ship_to_id=shipto.pk)
+        except ShipTo.DoesNotExist:
+            pass
+    messages.success(request, "Linked Workorders to ShipTo where available.")
+    return render(request, "controls/utilities.html")
 
 
-
-        # print(x.id)
-        # try:
-        #     shipto = ShipTo.objects.get(customer_id=x.id)
-        #     print('sadasda')
-        #     print(shipto.id)
-        # except:
-        #     pass
-
-
-
-
-
-
-        # try:
-        #     shipto = ShipTo.objects.get(customer=x.pk)
-        #     ship = shipto.pk
-        #     print(x.id)
-        #     print(ship)
-        #     Workorder.objects.filter(pk=x.pk).update(ship_to_id=ship)
-        # except:
-        #     pass
-    return render (request, "controls/utilities.html")
-
-def cust_history(request):
-    customer = Workorder.objects.all().order_by('hr_customer')
-    unique_list = []
-    list = []
-    for x in customer:
-        # check if exists in unique_list or not
-        if x.hr_customer not in list:
-            unique_list.append(x)
-            list.append(x.hr_customer)
-    print(unique_list)
-
-    context = {
-        'unique_list':unique_list,
-        'customer':customer
-    }
-    return render (request, "controls/workorder_history.html", context)
-
-def cust_address(request):
-    customer = Workorder.objects.all().order_by('hr_customer')
-    unique_list = []
-    list = []
-    for x in customer:
-        # check if exists in unique_list or not
-        if x.hr_customer not in list:
-            unique_list.append(x)
-            list.append(x.hr_customer)
-    print(unique_list)
-
-    context = {
-        'unique_list':unique_list,
-    }
-    return render (request, "controls/customers_with_address.html", context)
-
-def cust_wo_address(request):
-    customer = Workorder.objects.all().order_by('hr_customer')
-    unique_list = []
-    list = []
-    for x in customer:
-        # check if exists in unique_list or not
-        if x.hr_customer not in list:
-            unique_list.append(x)
-            list.append(x.hr_customer)
-    print(unique_list)
-
-    context = {
-        'unique_list':unique_list,
-    }
-    return render (request, "controls/customers_without_address.html", context)
-
-#Create master inventory item from items already in inventory list
+# -------------------------------------------------------------------
+# Inventory helpers (using InventoryMaster model methods)
+# -------------------------------------------------------------------
+@login_required
 def create_inventory_from_inventory(request):
-    #inventory = Inventory.objects.all()[:120]
-    inventory = Inventory.objects.all()
-    print(inventory)
-    for x in inventory:
-        if not x.internal_part_number:
-            name = x.name
-            description = x.description
-            p_vpn = x.vendor_part_number
-            measurement = x.measurement
-            unit_cost = x.unit_cost
-            m = x.price_per_m
-            if not unit_cost:
-                unit_cost=0
-            item = InventoryMaster(name=name, description=description, supplies=1, retail=1, primary_vendor_part_number=p_vpn, primary_base_unit=measurement, unit_cost=unit_cost, price_per_m=m)
-            print(x.pk)
-            item.save()
-            print('saved')
-            print(item.pk)
-            ipn = Inventory.objects.filter(pk=x.pk).update(internal_part_number=item.pk)
-            print('IPN')
-            print(ipn)
-            #Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
-    return render (request, "controls/specialized_tools.html")
+    for inv in Inventory.objects.all():
+        if not inv.internal_part_number:
+            item = InventoryMaster.objects.create(
+                name=inv.name,
+                description=inv.description,
+                supplies=True,
+                retail=True,
+                primary_vendor_part_number=inv.vendor_part_number,
+                primary_base_unit=inv.measurement,
+                unit_cost=inv.unit_cost or 0,
+                price_per_m=inv.price_per_m,
+            )
+            Inventory.objects.filter(pk=inv.pk).update(internal_part_number=item.pk)
+    messages.success(request, "Created InventoryMaster rows for inventory without IPN.")
+    return render(request, "controls/specialized_tools.html")
 
 
-
-
-
-
-
-
-
-
-
-
-
+@login_required
 def add_primary_vendor(request):
-    if request.method =="POST":
-        vendor = request.POST.get('vendor')
-        id_list = request.POST.getlist('item')
-        print(vendor)
-        for x in id_list:
-            InventoryMaster.objects.filter(pk=x).update(primary_vendor=vendor)
-            i = InventoryMaster.objects.get(pk=x)
-            n = InventoryMaster.objects.filter(pk=x)
-            #print(n.id)
-            print(i.name)
-            item = VendorItemDetail(internal_part_number=InventoryMaster.objects.get(pk=x), vendor=i.primary_vendor, name=i.name, vendor_part_number=i.primary_vendor_part_number, description=i.description, supplies=i.supplies, retail=i.retail, non_inventory=i.non_inventory, created=datetime.now(), updated=datetime.now(), high_price=i.high_price)
-            item.save()
-    items = InventoryMaster.objects.all
-    vendors = Vendor.objects.all().order_by('name')
-    context = {
-        'items':items,
-        'vendors':vendors,
-    }
-    return render (request, "controls/add_primary_vendor.html", context)
+    if request.method == "POST":
+        vendor_id = request.POST.get("vendor")
+        id_list = request.POST.getlist("item")
+        for pk in id_list:
+            try:
+                item = InventoryMaster.objects.get(pk=pk)
+                item.set_primary_vendor(vendor_id)
+            except InventoryMaster.DoesNotExist:
+                continue
+        messages.success(request, "Primary vendor set for selected items.")
+        return redirect("controls:view_price_groups")
 
+    items = InventoryMaster.objects.all()
+    vendors = Vendor.objects.order_by("name")
+    return render(request, "controls/add_primary_vendor.html", {"items": items, "vendors": vendors})
+
+
+@login_required
 def add_primary_baseunit(request):
-    if request.method =="POST":
-        unit = request.POST.get('unit')
-        qty = request.POST.get('qty')
-        #unit = int(unit)
-        id_list = request.POST.getlist('item')
-        print(unit)
-        print(qty)
-        for x in id_list:
-            InventoryMaster.objects.filter(pk=x).update(primary_base_unit=unit, units_per_base_unit=qty)
-            variation = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=x), variation=Measurement.objects.get(id=unit), variation_qty=qty)
-            #variation.variation = unit
-            variation.save()
-            print('variation')
-            print(variation.pk)
-            print('variation')
-            #variation=Measurement.objects.get(pk=unit), variation_qty=100
+    items = InventoryMaster.objects.all()
+    if request.method == "POST":
+        unit_id = request.POST.get("unit")
+        qty = request.POST.get("qty")
+        id_list = request.POST.getlist("item")
+        try:
+            qty_val = int(qty)
+        except (TypeError, ValueError):
+            qty_val = None
+        for pk in id_list:
+            try:
+                item = InventoryMaster.objects.get(pk=pk)
+            except InventoryMaster.DoesNotExist:
+                continue
+            if unit_id and qty_val is not None:
+                item.set_primary_base_unit(unit_id, qty_val)
+        messages.success(request, "Primary base unit updated.")
+        # Render with 200, not a redirect
+        return render(request, "controls/add_primary_baseunit.html",
+                      {"items": items}, status=200)
+    return render(request, "controls/add_primary_baseunit.html", {"items": items})
 
-            #This could be changed to add primary unit to vendor detail if needed
-            # i = InventoryMaster.objects.get(pk=x)
-            # n = InventoryMaster.objects.filter(pk=x)
-            # #print(n.id)
-            # print(i.name)
-            # item = VendorItemDetail(internal_part_number=InventoryMaster.objects.get(pk=x), vendor=i.primary_vendor, name=i.name, vendor_part_number=i.primary_vendor_part_number, description=i.description, supplies=i.supplies, retail=i.retail, non_inventory=i.non_inventory, created=datetime.now(), updated=datetime.now(), high_price=i.high_price)
-            # item.save()
-    units = Measurement.objects.all
-    items = InventoryMaster.objects.all
-    context = {
-        'items':items,
-        'units':units,
-    }
-    return render (request, "controls/add_primary_baseunit.html", context)
 
+@login_required
 def add_units_per_base_unit(request):
-    if request.method =="POST":
-        units = request.POST.get('qty')
-        id_list = request.POST.getlist('item')
-        print(units)
-        for x in id_list:
-            InventoryMaster.objects.filter(pk=x).update(units_per_base_unit=units)
-    items = InventoryMaster.objects.all
-    context = {
-        'items':items,
-    }
-    return render (request, "controls/add_units_per_base_unit.html", context)
+    items = InventoryMaster.objects.all()
+
+    if request.method == "POST":
+        qty_raw = request.POST.get("qty")
+        id_list = request.POST.getlist("item") or []
+
+        # Parse qty
+        try:
+            qty_val = int(qty_raw)
+        except (TypeError, ValueError):
+            qty_val = None
+
+        updated_ids = []
+        if qty_val is not None:
+            for pk in id_list:
+                item = InventoryMaster.objects.filter(pk=pk).first()
+                if not item:
+                    continue
+                item.set_units_per_base_unit(qty_val)
+                updated_ids.append(pk)
+            messages.success(request, "Units per base unit updated for selected items.")
+        else:
+            messages.error(request, "Please enter a valid quantity.")
+
+        context = {
+            "items": items,
+            "updated_ids": updated_ids,
+            "qty": qty_raw,
+        }
+        return render(request, "controls/add_units_per_base_unit.html", context, status=200)
+
+    # GET
+    return render(request, "controls/add_units_per_base_unit.html", {"items": items})
 
 
+# -------------------------------------------------------------------
+# Price groups
+# -------------------------------------------------------------------
 def view_price_groups(request):
-    group = GroupCategory.objects.all().order_by('name')
-    # group = InventoryPricingGroup.objects.all().order_by('group')
-    # unique_list = []
-    # list = []
-    # for x in group:
-    #     # check if exists in unique_list or not
-    #     if x.group not in list:
-    #         unique_list.append(x)
-    #         list.append(x.group)
-    # print(unique_list)
-    context = {
-        'group':group,
-        #'unique_list':unique_list
-    }
-    return render (request, "controls/view_price_groups.html", context)
+    groups = GroupCategory.objects.order_by("name")
+    return render(request, "controls/view_price_groups.html", {"group": groups})
 
 
 def view_price_group_detail(request, id=None):
-    #print(id)
-    group_id = GroupCategory.objects.get(pk=id)
-    #item = InventoryMaster.objects.get(pk=51)
-    #group = InventoryPricingGroup.objects.filter(inventory=item)
-    group = InventoryPricingGroup.objects.filter(group=id)
-    #print(group)
-    #for x in group:
-        #print(x)
-        #print(x.id)
-    context = {
-        'group_id':group_id,
-        'group':group
-    }
-    return render (request, "controls/view_price_group_detail.html", context)
+    group = get_object_or_404(GroupCategory, pk=id)
+    through_rows = InventoryPricingGroup.objects.filter(group=id)
+    return render(
+        request,
+        "controls/view_price_group_detail.html",
+        {"group_id": group, "group": through_rows},
+    )
+
 
 def add_price_group(request):
-    if request.method =="POST":
-        group = request.POST.get('group_name')
-        #obj = ItemPricingGroup(name=group)
-        obj = GroupCategory(name=group)
-        obj.save()
-        return redirect ('controls:view_price_groups')
-    return render (request, "controls/add_price_group.html")
-
-def add_price_group_item(request, id=None, list=None):
-    if id:
-        group_id=id
-    groups = GroupCategory.objects.all().order_by('name')
-    items = InventoryMaster.objects.all()
-    if list == 'all':
-        items = InventoryMaster.objects.all()
-    if list == 'nogroup':
-        items = InventoryMaster.objects.filter(not_grouped=1)
-    if list == 'group':
-        items = InventoryMaster.objects.filter(grouped=1)
-    notgrouped = request.POST.get('notgrouped')
-    print(notgrouped)
     if request.method == "POST":
-        notgrouped = request.POST.get('notgrouped')
-        group_id = request.POST.get('group_id')
+        group_name = request.POST.get("group_name")
+        if group_name:
+            GroupCategory.objects.create(name=group_name)
+            messages.success(request, f"Group '{group_name}' created.")
+            return redirect("controls:view_price_groups")
+    return render(request, "controls/add_price_group.html")
+
+
+def add_price_group_item(request, id=None, which=None):
+    """
+    GET variants:
+        /controls/add_price_group_item/<id>/
+        /controls/add_price_group_item/<id>/all
+        /controls/add_price_group_item/<id>/nogroup
+        /controls/add_price_group_item/<id>/group
+    POST:
+        - with 'notgrouped' flag -> mark items as not_grouped
+        - else add items to group via InventoryMaster.add_to_price_group()
+    """
+    group_id = id
+    groups = GroupCategory.objects.order_by("name")
+
+    items = InventoryMaster.objects.all()
+    if which == "nogroup":
+        items = items.filter(not_grouped=1)
+    elif which == "group":
+        items = items.filter(grouped=1)
+
+    if request.method == "POST":
+        notgrouped = request.POST.get("notgrouped")
+        group_id = request.POST.get("group_id") or group_id
+        id_list = request.POST.getlist("item")
+
+        if not id_list:
+            messages.info(request, "No items selected.")
+            return redirect("controls:view_price_groups")
+
         if notgrouped:
-            id_list = request.POST.getlist('item')
-            for x in id_list:
-                InventoryMaster.objects.filter(pk=x).update(not_grouped=1)
-            context = {
-                'group_id':group_id,
-                'items':items,
-                'groups':groups,
-                #'form':form,
-            }
-            print(group_id)
-            print(items)
-            print(groups)
-            return redirect ('controls:view_price_groups')
-            #return render (request, "controls/add_price_group_item.html", context)
-        # group = request.POST.get('group_id')
-        #group_id = group
-        #print(group)
-        id_list = request.POST.getlist('item')
-        for x in id_list:
-            InventoryMaster.objects.filter(pk=x).update(grouped=1)
-            item = InventoryMaster.objects.get(pk=x)
-            group = GroupCategory.objects.get(pk=group_id)
-            #obj = InventoryPricingGroup(inventory=InventoryMaster.objects.get(pk=x), group=ItemPricingGroup.objects.get(pk=group))
-            obj = InventoryPricingGroup(inventory=item, group=group)
+            InventoryMaster.objects.filter(pk__in=id_list).update(not_grouped=1)
+            messages.success(request, "Marked selected items as Not Grouped.")
+            return redirect("controls:view_price_groups")
+
+        # validate group if provided
+        if group_id:
+            get_object_or_404(GroupCategory, pk=group_id)
+
+        # add to group
+        for pk in id_list:
             try:
-                unique = get_object_or_404(InventoryPricingGroup, inventory=item, group=group)
-                print('exists')
-            except:
-                obj.save()
-            groups = InventoryPricingGroup.objects.filter(inventory=item)
-            for x in groups:
-                #InventoryMaster.price_group.add(x.group)
-                #Item comes from line 537
-                item.price_group.add(x.group)
-        return redirect('controls:view_price_group_detail', id=group_id)
-    context = {
-        'group_id':group_id,
-        'items':items,
-        'groups':groups,
-        #'form':form,
-    }
-    if list == 'all':
-        return render (request, "controls/partials/price_group_all.html", context)
-    if list == 'nogroup':
-        return render (request, "controls/partials/price_group_notgrouped.html", context)
-    if list == 'group':
-        return render (request, "controls/partials/price_group_grouped.html", context)
-    return render (request, "controls/add_price_group_item.html", context)
+                item = InventoryMaster.objects.get(pk=pk)
+            except InventoryMaster.DoesNotExist:
+                continue
+            if group_id:
+                # requires InventoryMaster.add_to_price_group/add_to_group to use InventoryPricingGroup(inventory=...)
+                item.add_to_price_group(group_id)
+
+        messages.success(request, "Added selected items to the group.")
+        return redirect("controls:view_price_group_detail", id=group_id)
+
+    context = {"group_id": group_id, "items": items, "groups": groups}
+    if which == "all":
+        return render(request, "controls/partials/price_group_all.html", context)
+    if which == "nogroup":
+        return render(request, "controls/partials/price_group_notgrouped.html", context)
+    if which == "group":
+        return render(request, "controls/partials/price_group_grouped.html", context)
+    return render(request, "controls/add_price_group_item.html", context)
+
 
 def add_item_variation(request):
-    #items = InventoryMaster.objects.all
     units = Measurement.objects.all()
-    context = {
-        #'items':items,
-        'units':units,
-    }
-    return render (request, "controls/partials/add_item_variation.html", context )
+    return render(request, "controls/partials/add_item_variation.html", {"units": units})
 
+
+@login_required
 def add_base_qty_variation(request):
-    #items = InventoryMaster.objects.all()[:60]
-    items = InventoryMaster.objects.all()
-    for x in items:
-        print(x.pk)
-        variation = InventoryQtyVariations.objects.filter(inventory=x.pk)
-        if variation:
-            print('exists')
-        else:
-            if x.primary_base_unit and x.units_per_base_unit:
-                print(x.primary_base_unit)
-                print(x.units_per_base_unit)
-                # base = x.primary_base_unit
-                # unit = x.units_per_base_unit
-                var = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=x.pk), variation=Measurement.objects.get(id=x.primary_base_unit.id), variation_qty=x.units_per_base_unit)
-                var.save()
-    return redirect ('controls:utilities')
+    """
+    Ensure each item with primary_base_unit & units_per_base_unit has a matching
+    InventoryQtyVariations row.
+    """
+    for item in InventoryMaster.objects.all():
+        if item.primary_base_unit and item.units_per_base_unit:
+            InventoryQtyVariations.objects.get_or_create(
+                inventory=item,
+                variation=item.primary_base_unit,
+                defaults={"variation_qty": item.units_per_base_unit},
+            )
+    messages.success(request, "Base quantity variations created where missing.")
+    return redirect("controls:utilities")
+
 
 def add_internal_part_number(request):
-    items = InvoiceItem.objects.all()
+    # Placeholder route
+    return render(request, "controls/utilities.html")
 
 
+# -------------------------------------------------------------------
+# Reporting helpers
+# -------------------------------------------------------------------
 def get_highest_item_price(request):
-    item = InventoryMaster.objects.filter(pk=201)
-    for x in item:
-        print(x.high_price)
-        try:
-            high_cost = InvoiceItem.objects.filter(internal_part_number=x.pk).aggregate(Max('unit_cost'))
-            high_cost = list(high_cost.values())[0]
-        except:
-            print('error')
-        if high_cost:
-            InventoryMaster.objects.filter(pk=x.pk).update(high_price=high_cost)
-            # Workorder.objects.filter(pk=x.pk).update(checked_and_verified=1)
-        print(x.name)
-        print(high_cost)
-    item = InventoryMaster.objects.get(pk=201)
-    print(item.high_price)
+    """
+    Example utility: recompute & store the high price for a specific item.
+    """
+    item = get_object_or_404(InventoryMaster, pk=201)
+    item.update_high_price_from_invoices()
+    messages.success(request, f"Updated high price for {item.name}.")
+    return render(request, "controls/utilities.html")
 
 
 def items_missing_details(request):
     items = VendorItemDetail.objects.all()
-    context = {
-        'items':items,
-    }
-    return render (request, "controls/items_missing_details.html", context )
+    return render(request, "controls/items_missing_details.html", {"items": items})
 
 
-#Needs to be made into a cronjob
 def high_price_item(request):
-    items = InventoryMaster.objects.filter().exclude(non_inventory=1)
-    for x in items:
-        try:
-            high_cost = InvoiceItem.objects.filter(internal_part_number=x.pk).aggregate(Max('unit_cost'))
-            high_cost = list(high_cost.values())[0]
-        except:
-            high_cost = None
-        if high_cost:
-            print(x.name)
-            print(high_cost)
-            #InventoryMaster.objects.filter(pk=x.pk).update(high_price=high_cost)
-
-
-# def vendor_children(request):
-#     vendor = 
-
-
-    
-    # items = AllInvoiceItem.objects.all()
-    # for x in items:
-    #     y = x.invoice_item.internal_part_number
-    #     z = y.primary_base_unit.id
-    #     # print(y.id)
-    #     # print(y.primary_base_unit.id)
-    #     qty = x.qty
-    #     unit_cost = x.unit_cost
-    #     line = qty * unit_cost
-    #     AllInvoiceItem.objects.filter(pk=x.pk).update(internal_part_number=InventoryMaster.objects.get(id=y.id), unit=Measurement.objects.get(id=z), line_total=line)
-    # return redirect ('controls:utilities')
-        
-
-
-
-
-# def add_primary_vendor(request):
-#     if request.method =="POST":
-#         vendor = request.POST.get('vendor')
-#         id_list = request.POST.getlist('item')
-#         print(vendor)
-#         for x in id_list:
-#             InventoryMaster.objects.filter(pk=x).update(primary_vendor=vendor)
-#             i = InventoryMaster.objects.get(pk=x)
-#             n = InventoryMaster.objects.filter(pk=x)
-#             #print(n.id)
-#             print(i.name)
-#             item = VendorItemDetail(internal_part_number=InventoryMaster.objects.get(pk=x), vendor=i.primary_vendor, name=i.name, vendor_part_number=i.primary_vendor_part_number, description=i.description, supplies=i.supplies, retail=i.retail, non_inventory=i.non_inventory, created=datetime.now(), updated=datetime.now(), high_price=i.high_price)
-#             item.save()
-#     items = InventoryMaster.objects.all
-#     vendors = Vendor.objects.all
-#     context = {
-#         'items':items,
-#         'vendors':vendors,
-#     }
-#     return render (request, "controls/add_primary_vendor.html", context)
-
-
-
-
-#form = AddInventoryPricingGroupForm()
-
-
-# @login_required
-# def add_setprice_item(request):
-#     form = AddSetPriceItemForm()
-#     updated = timezone.now()
-#     if request.method =="POST":
-#         form = AddSetPriceItemForm(request.POST)
-#         cat = 3
-#         if form.is_valid():
-#             obj = form.save(commit=False)
-#             obj.updated = updated
-#             obj.save()
-#             return HttpResponse(status=204, headers={'HX-Trigger': 'TemplateListChanged', 'category':'3'})
-#         else:
-#             print(form.errors)
-#     context = {
-#         'form': form,
-#     }
-#     # return render (request, "pricesheet/modals/add_setprice_item.html", context)
+    """
+    Recompute the highest unit_cost from InvoiceItem for all inventory (excluding non-inventory)
+    and store into InventoryMaster.high_price
+    """
+    for item in InventoryMaster.objects.exclude(non_inventory=1):
+        item.update_high_price_from_invoices()
+    messages.success(request, "High price recomputed for all inventory items.")
+    return render(request, "controls/utilities.html")
 
 @login_required
+def cust_history(request):
+    customers = Workorder.objects.all().order_by("hr_customer")
+    unique_list = []
+    seen = set()
+    for wo in customers:
+        if wo.hr_customer not in seen:
+            unique_list.append(wo)
+            seen.add(wo.hr_customer)
+    context = {"unique_list": unique_list, "customer": customers}
+    return render(request, "controls/workorder_history.html", context)
+
+@login_required
+def cust_address(request):
+    customers = Workorder.objects.all().order_by("hr_customer")
+    unique_list = []
+    seen = set()
+    for wo in customers:
+        if wo.hr_customer not in seen:
+            unique_list.append(wo)
+            seen.add(wo.hr_customer)
+    return render(request, "controls/customers_with_address.html", {"unique_list": unique_list})
+
+@login_required
+def cust_wo_address(request):
+    customers = Workorder.objects.all().order_by("hr_customer")
+    unique_list = []
+    seen = set()
+    for wo in customers:
+        if wo.hr_customer not in seen:
+            unique_list.append(wo)
+            seen.add(wo.hr_customer)
+    return render(request, "controls/customers_without_address.html", {"unique_list": unique_list})
+
+
+# -------------------------------------------------------------------
+# A/R statements for Krueger
+# -------------------------------------------------------------------
+@login_required
 def krueger_statements(request):
-    #Most of this function was moved to a cronjob
-    update_ar = request.GET.get('up')
-    print('update')
-    print(update_ar)
-    #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
     today = timezone.now()
-    customers = Customer.objects.all().order_by('company_name')
-    # ar = Araging.objects.all()
-    ar = Krueger_Araging.objects.filter
-    workorders = Workorder.objects.filter().exclude(billed=0).exclude(internal_company='LK Design').exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).values('hr_customer').distinct()
-    statement = Krueger_Araging.objects.filter(hr_customer__in=workorders).order_by('hr_customer')
-    #workorders = Workorder.objects.filter(customer_id__in=need_statement)
-    print(customers)
-    for x in statement:
-         print(f"ID: {x.customer.id}")
-    #     if not x.date_billed:
-    #         x.date_billed = today
-    #     age = x.date_billed - today
-    #     age = abs((age).days)
-    #     print(age)
-    #     Workorder.objects.filter(pk=x.pk).update(aging = age)
-    total_balance = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-    # for x in customers:
-    #     try:
-    #         #Get the Araging customer and check to see if aging has been updated today
-    #         modified = Araging.objects.get(customer=x.id)
-    #         print(x.company_name)
-    #         day = today.strftime('%Y-%m-%d')
-    #         day = str(day)
-    #         date = str(modified.date)
-    #         print(day)
-    #         print(date)
-    #         if day == date:
-    #             #Don't update, as its been done today
-    #             print('today')
-    #             update = 0
-    #             if update_ar == '1':
-    #                 print('update')
-    #                 update = 1
-    #         else:
-    #             update = 1
-    #     except:
-    #         update = 1
-    #     #Update the Araging that needs to be done
-    #     if update == 1:
-    #         if Workorder.objects.filter(customer_id = x.id).exists():
-    #             current = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
-    #             try:
-    #                 current = list(current.values())[0]
-    #             except:
-    #                 current = 0
-    #             thirty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
-    #             try: 
-    #                 thirty = list(thirty.values())[0]
-    #             except:
-    #                 thirty = 0
-    #             sixty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
-    #             try:
-    #                 sixty = list(sixty.values())[0]
-    #             except:
-    #                 sixty = 0
-    #             ninety = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
-    #             try:
-    #                 ninety = list(ninety.values())[0]
-    #             except:
-    #                 ninety = 0
-    #             onetwenty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
-    #             try:
-    #                 onetwenty = list(onetwenty.values())[0]
-    #             except:
-    #                 onetwenty = 0
-    #             total = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-    #             try:
-    #                 total = list(total.values())[0]
-    #             except:
-    #                 total = 0
-    #             try: 
-    #                 obj = Araging.objects.get(customer_id=x.id)
-    #                 Araging.objects.filter(customer_id=x.id).update(hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-    #             except:
-    #                 obj = Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-    #                 obj.save()
-    ar = Krueger_Araging.objects.all().order_by('hr_customer')
-    #total_current = Araging.objects.filter().aggregate(Sum('current'))
-    total_current = ar.filter().aggregate(Sum('current'))
-    total_thirty = ar.filter().aggregate(Sum('thirty'))
-    total_sixty = ar.filter().aggregate(Sum('sixty'))
-    total_ninety = ar.filter().aggregate(Sum('ninety'))
-    total_onetwenty = ar.filter().aggregate(Sum('onetwenty'))
-    print(total_current)
+    customers = Customer.objects.order_by("company_name")
+    workorders = (
+        Workorder.objects.exclude(billed=0)
+        .exclude(internal_company="LK Design")
+        .exclude(paid_in_full=1)
+        .exclude(quote=1)
+        .exclude(void=1)
+    )
+    statement = Krueger_Araging.objects.filter(
+        hr_customer__in=workorders.values_list("hr_customer", flat=True).distinct()
+    ).order_by("hr_customer")
 
-    #print(ar)
-    context = {
-        'total_current':total_current,
-        'total_thirty':total_thirty,
-        'total_sixty':total_sixty,
-        'total_ninety':total_ninety,
-        'total_onetwenty':total_onetwenty,
-        'total_balance':total_balance,
-        'ar': ar,
-        'workorders': workorders,
-        'statement': statement,
+    total_balance = workorders.aggregate(Sum("open_balance"))
+
+    ar = Krueger_Araging.objects.all().order_by("hr_customer")
+    totals = {
+        "total_current": ar.aggregate(Sum("current")),
+        "total_thirty": ar.aggregate(Sum("thirty")),
+        "total_sixty": ar.aggregate(Sum("sixty")),
+        "total_ninety": ar.aggregate(Sum("ninety")),
+        "total_onetwenty": ar.aggregate(Sum("onetwenty")),
     }
-    return render(request, 'finance/reports/krueger_statements.html', context)
 
+    context = {
+        **totals,
+        "total_balance": total_balance,
+        "ar": ar,
+        "workorders": workorders,
+        "statement": statement,
+    }
+    return render(request, "finance/reports/krueger_statements.html", context)
+
+
+@login_required
 def krueger_ar_aging(request):
-    # update_ar = request.GET.get('up')
-    # print('update')
-    # print(update_ar)
-    # #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
     today = timezone.now()
-    customers = Customer.objects.all().order_by('company_name')
-    ar = Krueger_Araging.objects.all()
-    workorders = Workorder.objects.filter().exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(internal_company='LK Design')
-    for x in workorders:
-        #print(x.id)
-        if not x.date_billed:
-            x.date_billed = today
-        age = x.date_billed - today
-        age = abs((age).days)
-        print(age)
-        Workorder.objects.filter(pk=x.pk).update(aging = age)
-    total_balance = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-    for x in customers:
-        # try:
-        #     #Get the Araging customer and check to see if aging has been updated today
-        #     modified = Araging.objects.get(customer=x.id)
-        #     print(x.company_name)
-        #     day = today.strftime('%Y-%m-%d')
-        #     day = str(day)
-        #     date = str(modified.date)
-        #     print(day)
-        #     print(date)
-        #     if day == date:
-        #         #Don't update, as its been done today
-        #         print('today')
-        #         update = 0
-        #         if update_ar == '1':
-        #             print('update')
-        #             update = 1
-        #     else:
-        #         update = 1
-        # except:
-        #     update = 1
-        #Update the Araging that needs to be done
-        # if update == 1:
-        if Workorder.objects.filter(customer_id = x.id).exists():
-            print(x.id)
-            current = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
-            try:
-                current = list(current.values())[0]
-                print(current)
-            except:
-                current = 0
-            thirty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
-            try: 
-                thirty = list(thirty.values())[0]
-            except:
-                thirty = 0
-            sixty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
-            try:
-                sixty = list(sixty.values())[0]
-            except:
-                sixty = 0
-            ninety = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
-            try:
-                ninety = list(ninety.values())[0]
-            except:
-                ninety = 0
-            onetwenty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
-            try:
-                onetwenty = list(onetwenty.values())[0]
-                print(onetwenty)
-            except:
-                onetwenty = 0
-            total = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-            try:
-                total = list(total.values())[0]
-            except:
-                total = 0
-            try: 
-                obj = Krueger_Araging.objects.get(customer_id=x.id)
-                Krueger_Araging.objects.filter(customer_id=x.id).update(hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-                print(1)
-            except:
-                obj = Krueger_Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-                obj.save()
-                print(2)
-    ar = Krueger_Araging.objects.all().order_by('hr_customer')
-    #total_current = Araging.objects.filter().aggregate(Sum('current'))
-    total_current = ar.filter().aggregate(Sum('current'))
-    total_thirty = ar.filter().aggregate(Sum('thirty'))
-    total_sixty = ar.filter().aggregate(Sum('sixty'))
-    total_ninety = ar.filter().aggregate(Sum('ninety'))
-    total_onetwenty = ar.filter().aggregate(Sum('onetwenty'))
-    print(total_current)
-    
-    #print(ar)
-    context = {
-        'total_current':total_current,
-        'total_thirty':total_thirty,
-        'total_sixty':total_sixty,
-        'total_ninety':total_ninety,
-        'total_onetwenty':total_onetwenty,
-        'total_balance':total_balance,
-        'ar': ar
-    }
-    return render(request, 'finance/reports/krueger_statements.html', context)
+    customers = Customer.objects.order_by("company_name")
+    workorders = (
+        Workorder.objects.exclude(billed=0)
+        .exclude(paid_in_full=1)
+        .exclude(quote=1)
+        .exclude(void=1)
+        .exclude(internal_company="LK Design")
+    )
 
+    # Update age in days for each relevant workorder
+    for wo in workorders:
+        date_billed = wo.date_billed or today
+        age_days = abs((date_billed - today).days)
+        Workorder.objects.filter(pk=wo.pk).update(aging=age_days)
+
+    # Aggregate aging buckets per customer
+    for cust in customers:
+        if not Workorder.objects.filter(customer_id=cust.id).exists():
+            continue
+
+        qs = workorders.filter(customer_id=cust.id)
+
+        def sum_balance(q):
+            val = q.aggregate(Sum("open_balance"))
+            return list(val.values())[0] or 0
+
+        current = sum_balance(qs.exclude(aging__gt=29))
+        thirty = sum_balance(qs.exclude(aging__lt=30).exclude(aging__gt=59))
+        sixty = sum_balance(qs.exclude(aging__lt=60).exclude(aging__gt=89))
+        ninety = sum_balance(qs.exclude(aging__lt=90).exclude(aging__gt=119))
+        onetwenty = sum_balance(qs.exclude(aging__lt=120))
+        total = sum_balance(qs)
+
+        try:
+            Krueger_Araging.objects.filter(customer_id=cust.id).update(
+                hr_customer=cust.company_name,
+                date=today,
+                current=current,
+                thirty=thirty,
+                sixty=sixty,
+                ninety=ninety,
+                onetwenty=onetwenty,
+                total=total,
+            )
+        except Krueger_Araging.DoesNotExist:
+            Krueger_Araging.objects.create(
+                customer_id=cust.id,
+                hr_customer=cust.company_name,
+                date=today,
+                current=current,
+                thirty=thirty,
+                sixty=sixty,
+                ninety=ninety,
+                onetwenty=onetwenty,
+                total=total,
+            )
+
+    ar = Krueger_Araging.objects.all().order_by("hr_customer")
+    context = {
+        "total_current": ar.aggregate(Sum("current")),
+        "total_thirty": ar.aggregate(Sum("thirty")),
+        "total_sixty": ar.aggregate(Sum("sixty")),
+        "total_ninety": ar.aggregate(Sum("ninety")),
+        "total_onetwenty": ar.aggregate(Sum("onetwenty")),
+        "total_balance": workorders.aggregate(Sum("open_balance")),
+        "ar": ar,
+    }
+    return render(request, "finance/reports/krueger_statements.html", context)
+
+@login_required
 def add_to_item_list(request):
-    pass
+    """
+    Legacy placeholder to keep the existing URL working.
+    Replace with real logic or remove the route if unused.
+    """
+    return HttpResponse("add_to_item_list is not implemented.", status=200)

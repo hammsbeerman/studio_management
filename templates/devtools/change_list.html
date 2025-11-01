@@ -1,0 +1,21 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="module" style="padding:16px;">
+    <h2>Developer Tools</h2>
+    <p>Quick links to development dashboards.</p>
+
+    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
+      <a class="button" href="{{ dashboard_url }}?base={{ default_base }}">Changed Templates ({{ default_base }})</a>
+      <a class="button" href="{{ dashboard_url }}?base=HEAD~1">Changed Templates (HEAD~1)</a>
+      <a class="button" href="{{ dashboard_url }}?base=origin/main">Changed Templates (origin/main)</a>
+    </div>
+
+    <form action="{{ dashboard_url }}" method="get" style="margin-top:16px;">
+      <label for="base">Custom base ref or SHA:</label>
+      <input id="base" name="base" type="text" value="{{ default_base }}" style="margin:0 8px;"/>
+      <button class="button" type="submit">Go</button>
+    </form>
+  </div>
+{% endblock %}

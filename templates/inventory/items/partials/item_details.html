@@ -1,9 +1,10 @@
 {% load crispy_forms_tags %}
+{% load form_extras %}
 {% load static %}
 
+<h1>Details:</h1><br/>
 
-<h1>Details:</h1></br>
-<form action="/inventory/item_details/" method="POST">
+<form action="" method="POST">
   {% csrf_token %}
   <input type="hidden" name="master_id" value="{{ master.pk }}">
 
@@ -29,68 +30,65 @@
         </td>
 
         <!-- First type -->
-        <td style="border:1px solid #ccc; padding:8px;">{{ form.type_paper|as_crispy_field }}</td>
+        <td style="border:1px solid #ccc; padding:8px;">
+          {% if form %}{{ form|as_bound:"type_paper"|as_crispy_field }}{% endif %}
+        </td>
 
         <!-- Category + Retail -->
         <td style="vertical-align:top; border:1px solid #ccc; padding:8px;" rowspan="7">
-          {{ form.inventory_category }}
+          {% if form %}{{ form|as_bound:"inventory_category"|as_crispy_field }}{% endif %}
           <br>
-          <button type="submit" class="btn btn-secondary" style="margin-top:30px;">
-            Submit
-            </button>
+          <button type="submit" class="btn btn-secondary" style="margin-top:30px;">Submit</button>
         </td>
         <td style="vertical-align:top; border:1px solid #ccc; padding:8px;" rowspan="7">
-          {{ form.retail_item }}
+          {% if form %}{{ form|as_bound:"retail_item"|as_crispy_field }}{% endif %}
         </td>
       </tr>
 
       <!-- Remaining types -->
-      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_envelope|as_crispy_field }}</td></tr>
-      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_wideformat|as_crispy_field }}</td></tr>
-      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_vinyl|as_crispy_field }}</td></tr>
-      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_mask|as_crispy_field }}</td></tr>
-      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_laminate|as_crispy_field }}</td></tr>
-      <tr><td style="border:1px solid #ccc; padding:8px;">{{ form.type_substrate|as_crispy_field }}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{% with f=form|as_bound:"type_envelope" %}{{ f|as_crispy_field }}{% endwith %}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{% with f=form|as_bound:"type_wideformat" %}{{ f|as_crispy_field }}{% endwith %}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{% with f=form|as_bound:"type_vinyl" %}{{ f|as_crispy_field }}{% endwith %}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{% with f=form|as_bound:"type_mask" %}{{ f|as_crispy_field }}{% endwith %}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{% with f=form|as_bound:"type_laminate" %}{{ f|as_crispy_field }}{% endwith %}</td></tr>
+      <tr><td style="border:1px solid #ccc; padding:8px;">{% with f=form|as_bound:"type_substrate" %}{{ f|as_crispy_field }}{% endwith %}</td></tr>
     </tbody>
   </table>
-
 </form>
-
 
 <hr>
 Items history
 <p>
-    
-
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <td>PK</td>
-                <td>Invoice date</td>
-                <td>Invoice Number</td>
-                <td>Invoice Qty</td>
-                <td>Invoice Unit</td>
-                <td>Invoice Unit Cost</td>
-                <td>Line Total</td>
-                <td>Vendor</td>
-                <td>Vendor Part Number</td>
-            </tr>
-        </thead>
-        {% for x in item %}
-            <tr>
-                <td>{{x.pk}}</td>
-                <td>{{x.invoice.invoice_date}}</td>
-                <td>{{x.invoice.invoice_number}}</td>
-                <td>{{x.invoice_qty}}</td>
-                <td>{{x.invoice_unit.variation}}</td>
-                <td>{{x.invoice_unit_cost}}</td>
-                <td>{{x.line_total}}</td>
-                <td>{{x.vendor}}</td>
-                <td>{{x.vendor_part_number}}</td>
-            </tr>
-        {% endfor %}
-    </table>
-
-    
-
-
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <td>PK</td>
+        <td>Invoice date</td>
+        <td>Invoice Number</td>
+        <td>Invoice Qty</td>
+        <td>Invoice Unit</td>
+        <td>Invoice Unit Cost</td>
+        <td>Line Total</td>
+        <td>Vendor</td>
+        <td>Vendor Part Number</td>
+      </tr>
+    </thead>
+    <tbody>
+      {% for x in history %}
+        <tr>
+          <td>{{ x.pk }}</td>
+          <td>{{ x.invoice.invoice_date }}</td>
+          <td>{{ x.invoice.invoice_number }}</td>
+          <td>{{ x.invoice_qty }}</td>
+          <td>{{ x.invoice_unit.variation }}</td>
+          <td>{{ x.invoice_unit_cost }}</td>
+          <td>{{ x.line_total }}</td>
+          <td>{{ x.vendor }}</td>
+          <td>{{ x.vendor_part_number }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="9" class="text-muted">No purchase history.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</p>

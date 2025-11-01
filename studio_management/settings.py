@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 import sentry_sdk
 
@@ -41,6 +42,9 @@ CSRF_TRUSTED_ORIGINS = ["https://staging.lkdesignstudios.com", "http://staging.l
                         "https://studiomanagement.lkdesignstudios.com", "http://studiomanagement.lkdesignstudios.com"]
 #CSRF_TRUSTED_ORIGINS = []
 
+# --- Environment gates ---
+RUNNING_TESTS = "pytest" in sys.modules or bool(os.environ.get("PYTEST_CURRENT_TEST"))
+DJANGO_ENV = os.environ.get("DJANGO_ENV", "development").lower()  # "production" or "development"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -85,6 +89,8 @@ THIRD_PARTY_APPS = [
     'import_export',
     'rest_framework',
     'django_crontab',
+    'django_filters',
+
 ]
 
 LOCAL_APPS = [
@@ -93,6 +99,7 @@ LOCAL_APPS = [
     'controls',
     'customers',
     'dashboard',
+    'devtools',
     'inventory',
     'finance',
     'krueger',
@@ -145,79 +152,138 @@ TEMPLATES = [
 WSGI_APPLICATION = 'studio_management.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+# # Database
+# # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-TESTING = str(os.environ.get('TESTING')) == "1"
-if not TESTING:
-    #Production database
+# IS_TESTS = os.environ.get("PYTEST_CURRENT_TEST") or "pytest" in sys.modules
+# TESTING = (str(os.environ.get("TESTING")) == "1") or bool(IS_TESTS)
+
+# if not TESTING:
+#     #Production database
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.mysql',
+#             'OPTIONS': {
+#         	        'read_default_file': '/etc/mysql/my.cnf',
+#     	},
+#         }
+#     }
+# else:
+#     #Development database
+# #     DATABASES = {
+# #         "default": {
+# #             "ENGINE": os.environ.get('ENGINE'),
+# #             "NAME": BASE_DIR / os.environ.get("MYSQL_DATABASE", "studio"),      # non-empty!
+# #             "OPTIONS": {"read_default_file": "/etc/mysql/my.cnf"},
+# #             "TEST": {"NAME": os.environ.get("MYSQL_TEST_DATABASE", "studio_test")},
+# #     }
+# # }
+#     #Development Database
+#     DATABASES = {
+#         "default": {
+#             "ENGINE": "django.db.backends.sqlite3",
+#             "NAME": BASE_DIR / "test.sqlite3",
+#         }
+#     }
+#     # #Development database
+#     # DATABASES = {
+#     #     'default': {
+#     #         'ENGINE': os.environ.get('ENGINE'),
+#     #         'NAME': BASE_DIR / os.environ.get('NAME'),
+#     #     }
+#     # }
+
+# if not TESTING:
+#     #Production Sentry
+#     sentry_sdk.init(
+#         dsn="https://8180ad13bf40e37b2df3bb08cfa3ecfa@o4507963680096256.ingest.us.sentry.io/4507963733180416",
+#         # Set traces_sample_rate to 1.0 to capture 100%
+#         # of transactions for tracing.
+#         traces_sample_rate=1.0,
+#         # Set profiles_sample_rate to 1.0 to profile 100%
+#         # of sampled transactions.
+#         # We recommend adjusting this value in production.
+#         profiles_sample_rate=1.0,
+#     )
+# else:
+#     #Development Sentry
+#     sentry_sdk.init(
+#     #Uncomment next line to allow for Sentry data
+#     #dsn="https://86f2807741dc55ed2fd9182d9471e38d@o4507963680096256.ingest.us.sentry.io/4507963682324480",
+#         # Set traces_sample_rate to 1.0 to capture 100%
+#         # of transactions for tracing.
+#         traces_sample_rate=1.0,
+#         # Set profiles_sample_rate to 1.0 to profile 100%
+#         # of sampled transactions.
+#         # We recommend adjusting this value in production.
+#         profiles_sample_rate=1.0,
+#     )
+
+
+
+# # DATABASES = {
+# #     'default': {
+# #         'ENGINE': 'django.db.backends.sqlite3',
+# #         'NAME': BASE_DIR / 'db.sqlite3',
+# #     }
+# # }
+
+
+# # DATABASES = {
+# #     'default': {
+# #         'ENGINE': os.environ.get('ENGINE'),
+# #         'NAME': BASE_DIR / os.environ.get('NAME'),
+# #         'USER': os.environ.get('USER'),
+# #         'PASSWORD': os.environ.get('HOST'),
+# #         'HOST': os.environ.get('HOST'),
+# #         'PORT': os.environ.get('PORT'),
+# #     }
+# # }
+
+# # DATABASES = {
+# #     'default' : os.environ.get('DB')
+# # }
+
+# --- Detect "real" test runs only -------------------------------------------
+def _running_tests() -> bool:
+    # True when `manage.py test` (Django) or pytest is actually executing.
+    return ("test" in sys.argv) or (os.environ.get("PYTEST_CURRENT_TEST") is not None)
+
+TESTING = _running_tests()
+# ---------------------------------------------------------------------------
+
+# --- Databases ---
+if DJANGO_ENV == "production" and not RUNNING_TESTS:
+    # Production MySQL (uses credentials in /etc/mysql/my.cnf)
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'OPTIONS': {
-        	        'read_default_file': '/etc/mysql/my.cnf',
-    	},
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "OPTIONS": {"read_default_file": "/etc/mysql/my.cnf"},
         }
     }
 else:
-    #Development database
+    # Local dev & tests: SQLite (tests get a separate file automatically)
+    SQLITE_NAME = BASE_DIR / ("test.sqlite3" if RUNNING_TESTS else "db.sqlite3")
     DATABASES = {
-        'default': {
-            'ENGINE': os.environ.get('ENGINE'),
-            'NAME': BASE_DIR / os.environ.get('NAME'),
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": SQLITE_NAME,
         }
     }
 
-if not TESTING:
-    #Production Sentry
+# --- Sentry ---
+if DJANGO_ENV == "production" and not RUNNING_TESTS:
     sentry_sdk.init(
         dsn="https://8180ad13bf40e37b2df3bb08cfa3ecfa@o4507963680096256.ingest.us.sentry.io/4507963733180416",
-        # Set traces_sample_rate to 1.0 to capture 100%
-        # of transactions for tracing.
         traces_sample_rate=1.0,
-        # Set profiles_sample_rate to 1.0 to profile 100%
-        # of sampled transactions.
-        # We recommend adjusting this value in production.
         profiles_sample_rate=1.0,
     )
 else:
-    #Development Sentry
     sentry_sdk.init(
-    #Uncomment next line to allow for Sentry data
-    #dsn="https://86f2807741dc55ed2fd9182d9471e38d@o4507963680096256.ingest.us.sentry.io/4507963682324480",
-        # Set traces_sample_rate to 1.0 to capture 100%
-        # of transactions for tracing.
+        # dsn="...optional dev DSN...",
         traces_sample_rate=1.0,
-        # Set profiles_sample_rate to 1.0 to profile 100%
-        # of sampled transactions.
-        # We recommend adjusting this value in production.
         profiles_sample_rate=1.0,
     )
-
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': os.environ.get('ENGINE'),
-#         'NAME': BASE_DIR / os.environ.get('NAME'),
-#         'USER': os.environ.get('USER'),
-#         'PASSWORD': os.environ.get('HOST'),
-#         'HOST': os.environ.get('HOST'),
-#         'PORT': os.environ.get('PORT'),
-#     }
-# }
-
-# DATABASES = {
-#     'default' : os.environ.get('DB')
-# }
 
 
 # Password validation
@@ -253,7 +319,7 @@ TIME_ZONE = 'America/Chicago'
 
 USE_I18N = True
 
-USE_L10N = True
+#USE_L10N = True
 
 USE_TZ = True
 
@@ -295,3 +361,11 @@ CRONJOBS = [
     ('*/5 * * * *', 'finance.cron.ar_aging'),
     ('*/5 * * * *', 'finance.cron.krueger_ar_aging')
 ]
+
+REST_FRAMEWORK = {
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+}

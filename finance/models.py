@@ -135,7 +135,7 @@ class InvoiceItem(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     vendor_part_number = models.CharField('Vendor Part Number', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
-    internal_part_number = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE, related_name='internal_part_number')
+    internal_part_number = models.ForeignKey(InventoryMaster, on_delete=models.PROTECT, related_name='invoice_items', related_query_name='invoice_item')
     invoice_unit = models.ForeignKey(InventoryQtyVariations, blank=True, null=True, on_delete=models.CASCADE)
     #invoice_unit = models.CharField('Invoice Unit', max_length=100, blank=True, null=True)
     invoice_unit_cost = models.DecimalField('Invoice Unit Cost', max_digits=15, decimal_places=5, blank=True, null=True)
@@ -303,6 +303,10 @@ def running_total(sender, instance, *args, **kwargs):
 
 @receiver(post_save, sender=InvoiceItem)   
 def highprice_handler(sender, instance, created, *args, **kwargs):
+    if not created:
+        return
+    if not instance.vendor:
+        return
     internal_part_number = instance.internal_part_number
     vendor = instance.vendor.id
     #Check for highprice from specific vendor

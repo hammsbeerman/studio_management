@@ -6,7 +6,8 @@ from .models import Workorder, WorkorderItem#ItemCategory,
 class WorkorderAdmin(admin.ModelAdmin):
     fields = ['customer', 'workorder', 'internal_company', 'description', 'deadline', 'budget', 'quoted_price', 'original_order', 'billed', 'notes', 'completed', 'delivery_pickup', 'total_balance', 'amount_paid', 'open_balance', 'days_to_pay', 'paid_in_full', 'date_billed', 'aging', 'checked_and_verified', 'invoice_sent']
     list_display = ('customer', 'workorder', 'internal_company', 'description', 'deadline', 'budget', 'quoted_price', 'quote_number', 'original_order', 'billed', 'total_balance', 'amount_paid', 'open_balance', 'days_to_pay')
-
+    search_fields = ("workorder", "description", "id__exact")
+    
 admin.site.register(Workorder, WorkorderAdmin)
 
 

@@ -34,7 +34,7 @@
 
     {# Preserve ?next=... so users return to where they were going #}
     {% if request.GET.next or request.POST.next %}
-      <input type="hidden" name="next" value="{{ request.GET.next|default:request.POST.next }}">
+      <input type="hidden" name="next" value="{{ next|default:'' }}">
     {% endif %}
 
     <button type="submit" class="btn btn-primary w-100">Sign in</button>

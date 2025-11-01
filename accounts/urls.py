@@ -16,5 +16,6 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     #path('register/', views.register_view, name='register'),
-    path('update_password', update_password, name='update_password'),
+    path("password/update/", views.update_password, name="update_password"),
+    #path('update_password', update_password, name='update_password'),
 ]

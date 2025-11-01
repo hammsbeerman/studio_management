@@ -61,15 +61,15 @@ class OrderOutQuerySetTests(TestCase):
 
     def test_for_vendor_accepts_instance(self):
         qs = OrderOut.objects.for_vendor(self.v1)
-        self.assertQuerysetEqual(qs.order_by("id"), [self.o1, self.o2], transform=lambda x: x)
+        self.assertQuerySetEqual(qs.order_by("id"), [self.o1, self.o2], transform=lambda x: x)
 
     def test_for_vendor_accepts_id(self):
         qs = OrderOut.objects.for_vendor(self.v2.id)
-        self.assertQuerysetEqual(qs.order_by("id"), [self.o3], transform=lambda x: x)
+        self.assertQuerySetEqual(qs.order_by("id"), [self.o3], transform=lambda x: x)
 
     def test_open_and_billed(self):
-        self.assertQuerysetEqual(OrderOut.objects.open().order_by("id"), [self.o1, self.o3], transform=lambda x: x)
-        self.assertQuerysetEqual(OrderOut.objects.billed().order_by("id"), [self.o2], transform=lambda x: x)
+        self.assertQuerySetEqual(OrderOut.objects.open().order_by("id"), [self.o1, self.o3], transform=lambda x: x)
+        self.assertQuerySetEqual(OrderOut.objects.billed().order_by("id"), [self.o2], transform=lambda x: x)
 
     def test_recent(self):
         # Everything is auto_now_add "now", so recent(30) should include all

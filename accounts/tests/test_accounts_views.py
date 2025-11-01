@@ -1,9 +1,14 @@
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
+
+User = get_user_model()
 
 class AccountsViewsTests(TestCase):
     def setUp(self):
+        self.url_login = reverse("accounts:login")
+        self.url_logout = reverse("accounts:logout")
+        self.url_update_pw = reverse("accounts:update_password") 
         User = get_user_model()
         self.user = User.objects.create_user("u1", password="oldpass", email="u1@example.com")
 
@@ -43,3 +48,36 @@ class AccountsViewsTests(TestCase):
         resp = self.client.post(url, follow=True)
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(resp.context["user"].is_authenticated)
+
+    def test_login_get_redirects_if_authenticated(self):
+        self.client.force_login(self.user)
+        resp = self.client.get(self.url_login)
+        # decorator redirects authenticated users to dashboard
+        self.assertEqual(resp.status_code, 302)
+
+    def test_logout_get_renders_page(self):
+        resp = self.client.get(self.url_logout)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "logout", html=False)
+
+    def test_logout_post_logs_out_and_redirects(self):
+        self.client.force_login(self.user)
+        resp = self.client.post(self.url_logout, follow=False)
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn(reverse("accounts:login"), resp["Location"])
+
+    def test_update_password_flow(self):
+        self.client.force_login(self.user)
+        # GET form
+        resp = self.client.get(self.url_update_pw)
+        self.assertEqual(resp.status_code, 200)
+        # POST new password
+        new_pw = "Newpass123!"
+        resp = self.client.post(
+            self.url_update_pw,
+            {"new_password1": new_pw, "new_password2": new_pw},
+        )
+        self.assertEqual(resp.status_code, 302)
+        # ensure password actually changed
+        user = authenticate(username="u1", password=new_pw)
+        self.assertIsNotNone(user)

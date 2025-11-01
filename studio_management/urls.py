@@ -31,7 +31,8 @@ urlpatterns = [
     path('sentry-debug/', trigger_error),
     path('admin/', admin.site.urls),
     path('controls/', include('controls.urls')),
-    path('accounts/', include('accounts.urls')),
+    #path('accounts/', include('accounts.urls')),
+    path("accounts/", include("accounts.urls", namespace="accounts")),
     path('customers/', include('customers.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('inventory/', include('inventory.urls')),
@@ -51,3 +52,8 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG:  # keep this dev-only
+    urlpatterns += [
+        path("dev/", include(("devtools.urls", "devtools"), namespace="devtools")),
+    ]

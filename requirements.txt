@@ -24,3 +24,8 @@ weasyprint
 djangorestframework
 sentry-sdk
 django-crontab
+pytest
+pytest-django
+django-filter
+factory_boy
+Faker

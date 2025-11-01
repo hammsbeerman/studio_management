@@ -1,0 +1,51 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+  <h1>Changed Templates</h1>
+
+  {% if invalid_base %}
+    <p style="color:#b30000;">
+      Invalid/unknown base: <strong>{{ invalid_base }}</strong>
+      {% if base_used %}
+        — falling back to <strong>{{ base_used }}</strong>
+      {% else %}
+        — no fallback available.
+      {% endif %}
+    </p>
+  {% endif %}
+
+  <form method="get" style="margin: 12px 0;">
+    <label>Base ref:</label>
+    <input type="text" name="base" value="{{ base_used|default:base }}" style="width:280px;">
+    <button class="button" type="submit">Run</button>
+  </form>
+
+  <h3>Results</h3>
+  {% if changed_templates %}
+    <ul>
+      {% for path in changed_templates %}
+        <li><a href="/{{ path|urlencode }}" target="_blank">{{ path }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No changed <code>.html</code> files detected.</p>
+  {% endif %}
+
+  <hr>
+  <details>
+    <summary><strong>Debug</strong></summary>
+    <p><strong>Repo root:</strong> {{ repo_root }}</p>
+    <p><strong>Template dirs:</strong></p>
+    <ul>
+      {% for d in template_dirs %}
+        <li>{{ d }}</li>
+      {% endfor %}
+    </ul>
+    <p><strong>Command:</strong> <code>{{ cmd }}</code></p>
+    <p><strong>stdout</strong></p>
+    <pre style="white-space:pre-wrap; background:#f6f8fa; padding:8px; border:1px solid #ddd;">{{ stdout }}</pre>
+    <p><strong>stderr</strong></p>
+    <pre style="white-space:pre-wrap; background:#fff3f3; padding:8px; border:1px solid #f5c2c7;">{{ stderr }}</pre>
+  </details>
+{% endblock %}

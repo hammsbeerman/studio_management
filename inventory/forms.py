@@ -87,6 +87,88 @@ class PhotographyForm(forms.ModelForm):
 #         }
        
 
-
+class MergeItemsForm(forms.Form):
+    target = forms.ModelChoiceField(
+        queryset=InventoryMaster.objects.filter(is_active=True),
+        label="Keep (target)",
+        help_text="The canonical item to keep"
+    )
+    duplicates = forms.ModelMultipleChoiceField(
+        queryset=InventoryMaster.objects.filter(is_active=True),
+        help_text="Select one or more duplicates to merge into the target",
+        label="Merge these into target"
+    )
+    prefer_target_name = forms.BooleanField(required=False, initial=True,
+        help_text="If unchecked and target.name is blank, we’ll borrow a non-blank name from duplicates.")
        
+class VendorForm(forms.ModelForm):
+    class Meta:
+        model = Vendor
+        fields = ["name", "supplier", "retail_vendor", "inventory_vendor",
+                  "non_inventory_vendor", "email", "website", "city", "state", "active"]
+        
+class AddItemtoListForm(forms.Form):
+    # Hidden ids (the template already includes a hidden master_id input; keeping item_id here)
+    item_id = forms.IntegerField(required=False, widget=forms.HiddenInput)
+
+    # Core data
+    quantity = forms.DecimalField(
+        required=False,
+        max_digits=10,
+        decimal_places=2,
+        label="Qty",
+    )
+
+    # Fields referenced in the template
+    inventory_category = forms.ChoiceField(
+        required=False,
+        label="Inventory Category",
+        choices=(),   # optionally populate in __init__
+    )
+    retail_item = forms.BooleanField(
+        required=False,
+        label="Retail Item",
+    )
+
+    # “Type” toggles
+    type_paper = forms.BooleanField(required=False, label="Paper")
+    type_envelope = forms.BooleanField(required=False, label="Envelope")
+    type_wideformat = forms.BooleanField(required=False, label="Wide Format")
+    type_vinyl = forms.BooleanField(required=False, label="Vinyl")
+    type_mask = forms.BooleanField(required=False, label="Mask")
+    type_laminate = forms.BooleanField(required=False, label="Laminate")
+    type_substrate = forms.BooleanField(required=False, label="Substrate")
+
+    def __init__(self, *args, **kwargs):
+        # Optionally accept categories via kwargs to keep it generic/testable
+        categories = kwargs.pop("category_choices", None)
+        super().__init__(*args, **kwargs)
+        if categories is not None:
+            self.fields["inventory_category"].choices = categories
+
+class InventoryMasterDetailsForm(forms.ModelForm):
+    # extra (non-model) fields
+    type_paper     = forms.BooleanField(required=False)
+    type_envelope  = forms.BooleanField(required=False)
+    type_wideformat= forms.BooleanField(required=False)
+    type_vinyl     = forms.BooleanField(required=False)
+    type_mask      = forms.BooleanField(required=False)
+    type_laminate  = forms.BooleanField(required=False)
+    type_substrate = forms.BooleanField(required=False)
+    retail_item    = forms.BooleanField(required=False)
+    # inventory_category = forms.ModelChoiceField(...)
+
+    class Meta:
+        model = InventoryMaster
+        fields = []  # <-- IMPORTANT: do NOT include the non-model field names
+
+    def save(self, commit=True):
+        """
+        If you eventually want to persist these to real model fields
+        or a related model, do it here. For now, it's a no-op.
+        """
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        return instance
     

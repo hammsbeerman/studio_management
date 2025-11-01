@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Optional
+from typing import Optional, Union
 
 from django.db import models, transaction
 from django.db.models import F, Q
@@ -28,7 +28,8 @@ class CategoryQuerySet(models.QuerySet):
     def with_template(self) -> "CategoryQuerySet":
         return self.filter(template=True)
 
-    def for_inventory_category(self, inv_cat: Optional[int | "InventoryCategory"]) -> "CategoryQuerySet":
+    def for_inventory_category(self, inv_cat: Optional[Union[int, "InventoryCategory"]],
+) -> "CategoryQuerySet":
         if inv_cat is None:
             return self.filter(inventory_category__isnull=True)
         if isinstance(inv_cat, int):
@@ -57,6 +58,15 @@ class RetailInventorySubCategoryQuerySet(models.QuerySet):
 
 
 RetailInventorySubCategoryManager = models.Manager.from_queryset(RetailInventorySubCategoryQuerySet)
+
+def add_to_group(self, group_or_id):
+    from django.apps import apps
+    InventoryPricingGroup = apps.get_model('inventory', 'InventoryPricingGroup')
+    group_id = getattr(group_or_id, 'id', group_or_id)
+    InventoryPricingGroup.objects.get_or_create(group_id=group_id, inventory=self)
+
+def add_to_price_group(self, group_or_id):
+    return self.add_to_group(group_or_id)
 
 
 # -------------------------------
@@ -124,7 +134,7 @@ class InventoryCategory(models.Model):
 
 
 class GroupCategory(models.Model):
-    name = models.CharField('Name', max_length=100)
+    name = models.CharField('Name', max_length=100, unique=True)
 
     class Meta:
         ordering = ("name",)
@@ -134,7 +144,18 @@ class GroupCategory(models.Model):
 
     def get_absolute_url(self):
         return reverse("controls:view_price_group_detail", kwargs={"id": self.id})
+    
+class GroupLink(models.Model):
+    """Through table: links a GroupCategory to an InventoryMaster."""
+    category = models.ForeignKey('controls.GroupCategory', on_delete=models.CASCADE, related_name='links')
+    item = models.ForeignKey('inventory.InventoryMaster', on_delete=models.CASCADE, related_name='group_links')
 
+    class Meta:
+        unique_together = (('category', 'item'),)
+    
+class ActiveCategoryQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(active=True)
 
 class Category(models.Model):
     name = models.CharField('Name', max_length=100, blank=True, null=True)
@@ -153,7 +174,7 @@ class Category(models.Model):
     wideformat = models.BooleanField('Wide Format', blank=False, null=True, default=False)
     active = models.BooleanField('Active', blank=True, null=True, default=True)
 
-    objects = CategoryManager()
+    objects = ActiveCategoryQuerySet.as_manager()
 
     class Meta:
         ordering = ("name",)
@@ -176,8 +197,9 @@ class Category(models.Model):
 
 
 class SubCategory(models.Model):
-    # NOTE: related_name is currently "Category" in your schema; leaving it intact to avoid breaking references.
-    category = models.ForeignKey(Category, blank=False, null=True, on_delete=models.SET_NULL, related_name="Category")
+    category = models.ForeignKey(
+        Category, blank=False, null=True, on_delete=models.SET_NULL, related_name="Category"
+    )
     name = models.CharField('Name', max_length=100, blank=True, null=True)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     template = models.BooleanField('Template', blank=True, null=True, default=False)
@@ -186,10 +208,38 @@ class SubCategory(models.Model):
     inventory_category = models.ForeignKey(InventoryCategory, blank=True, null=True, on_delete=models.DO_NOTHING)
 
     class Meta:
-        ordering = ("name",)
+        # Avoid dupes under same Category
+        constraints = [
+            models.UniqueConstraint(
+                fields=["category", "name"], name="uniq_subcategory_per_category"
+            )
+        ]
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.name or ""
+
+    def save(self, *args, **kwargs):
+        creating = self.pk is None
+        super().save(*args, **kwargs)
+
+        # If the parent Category is a "setprice" category, enforce flags and ensure a matching SetPriceCategory
+        if self.category and self.category.setprice:
+            updates = {}
+            if not self.set_price:
+                updates["set_price"] = True
+            if not self.setprice_name:
+                updates["setprice_name"] = self.name
+
+            if updates:
+                SubCategory.objects.filter(pk=self.pk).update(**updates)
+
+            from .models import SetPriceCategory  # local import to avoid cycles
+            # Avoid duplicates if saved multiple times
+            SetPriceCategory.objects.get_or_create(
+                category=self.category,
+                name=self.name or "",
+                defaults={"updated": None},
+            )
 
 
 class SetPriceCategory(models.Model):
@@ -199,9 +249,13 @@ class SetPriceCategory(models.Model):
     updated = models.DateTimeField(auto_now=False, blank=True, null=True)
 
     class Meta:
-        ordering = ("name",)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["category", "name"], name="uniq_setpricecategory_per_category"
+            )
+        ]
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.name
 
 
@@ -245,6 +299,7 @@ class SetPriceItemPrice(models.Model):
 
 class Measurement(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=True)
+    abbreviation = models.CharField(max_length=16, blank=True, null=True)
 
     class Meta:
         ordering = ("name",)

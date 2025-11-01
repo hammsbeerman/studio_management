@@ -1,9 +1,21 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
 from django.urls import reverse
+from django.utils import timezone
 from customers.models import Customer, Contact, ShipTo
 from controls.models import Category, SubCategory, DesignType, SetPriceCategory, SetPriceItemPrice, PostageType, JobStatus, UserGroup
 from accounts.models import Profile
+
+
+class WorkorderItemManager(models.Manager):
+    def create(self, **kwargs):
+        # Accept legacy callers that pass `inventory` and map to the real field
+        # if "inventory" in kwargs and "inventory_item" not in kwargs:
+            # kwargs["inventory_item"] = kwargs.pop("inventory")
+        # Map qty -> quantity if needed
+        if "qty" in kwargs and "quantity" not in kwargs:
+            kwargs["quantity"] = kwargs.pop("qty")
+        return super().create(**kwargs)
 
 
 class Workorder(models.Model):
@@ -66,6 +78,15 @@ class Workorder(models.Model):
     delivery_pickup = models.CharField('Delivery or Pickup', choices=[('Delivery', 'Delivery'),('Pickup', 'Pickup'),('Other', 'Other'),], max_length=100, blank=True, null=True, default=None)
     delivered = models.BooleanField('Delivered', default=False)
 
+    def compute_aging(self, today=None):
+        today = today or timezone.now()
+        date_billed = self.date_billed or today
+        return abs((date_billed - today).days)
+
+    def update_aging(self, today=None):
+        self.aging = self.compute_aging(today)
+        self.save(update_fields=["aging"])
+
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})
     
@@ -80,7 +101,15 @@ class Workorder(models.Model):
 
 
 class WorkorderItem(models.Model):
-    workorder = models.ForeignKey(Workorder, blank=False, null=True, on_delete=models.CASCADE)
+    workorder = models.ForeignKey("Workorder", on_delete=models.CASCADE, related_name="items", null=True, blank=True)
+    inventory_item = models.ForeignKey(
+        "inventory.InventoryMaster",
+        on_delete=models.PROTECT,
+        related_name="workorder_items",
+        null=True,
+        blank=True,
+    )
+    # qty = models.DecimalField(max_digits=12, decimal_places=2)
     workorder_hr = models.CharField('Workorder Human Readable', max_length=100, blank=False, null=False)
     item_category = models.ForeignKey(Category, blank=True, null=True, on_delete=models.SET_NULL)
     item_subcategory = models.ForeignKey(SubCategory, blank=True, null=True, on_delete=models.SET_NULL)
@@ -92,7 +121,7 @@ class WorkorderItem(models.Model):
     postage_type = models.ForeignKey(PostageType, blank=True, null=True, on_delete=models.SET_NULL)
     description = models.CharField('Description', max_length=100, blank=False, null=False)
     item_order = models.PositiveSmallIntegerField('Display Order', blank=True, null=True)
-    quantity = models.DecimalField('Quantity', max_digits=10, decimal_places=2, blank=True, null=True)
+    quantity = models.DecimalField('Quantity', max_digits=112, decimal_places=2, blank=True, null=True, default=0)
     show_qty_on_wo = models.BooleanField(default=True)
     unit_price = models.DecimalField('Unit Price', max_digits=10, decimal_places=4, blank=True, null=True)
     total_price = models.DecimalField('Total Price', max_digits=8, decimal_places=2, blank=True, null=True)
@@ -120,7 +149,9 @@ class WorkorderItem(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     void = models.BooleanField('Void Workorder', blank=False, null=False, default=False)
-    void_memo = models.CharField('Void Memo', max_length=100, blank=True, null=True)
+    void_memo = models.CharField('Void Memo', max_length=255, blank=True, default="")
+
+    objects = WorkorderItemManager()
 
     def get_absolute_url(self):
         return self.workorder.get_absolute_url()
@@ -159,6 +190,6 @@ class WorkorderItem(models.Model):
 
 
     def __str__(self):
-        return self.workorder.workorder #+ ' -- ' + self.description
+        return f"WO Item: {getattr(self.inventory_item, 'name', '')}"
     
     
