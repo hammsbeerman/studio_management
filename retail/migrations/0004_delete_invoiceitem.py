@@ -2,15 +2,19 @@
 
 from django.db import migrations
 
+SQL = """
+DROP TABLE IF EXISTS `retail_invoiceitem`;
+DROP TABLE IF EXISTS `retail_iteminvoice`;  -- old name, just in case
+"""
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('retail', '0003_delete_testtable_and_more'),
+        ("retail", "0003_delete_testtable_and_more"),
     ]
 
     operations = [
-        migrations.DeleteModel(
-            name='InvoiceItem',
-        ),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[migrations.DeleteModel(name="InvoiceItem")],
+            database_operations=[migrations.RunSQL(sql=SQL, reverse_sql=migrations.RunSQL.noop)],
+        )
     ]
