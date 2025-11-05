@@ -47,6 +47,15 @@
          Date Time Picker CSS -->
     
         <title>Studio Management</title>
+
+        {% if ENV_DEV %}
+          <!-- DEV-ONLY navbar color -->
+          <style>
+            .navbar { background-color: #b21e35 !important; }  /* red-ish for dev */
+            .navbar .nav-link, .navbar .navbar-brand { color: #fff !important; }
+          </style>
+        {% endif %}
+
         <style>
           body {background: #32396e;}
         
@@ -65,12 +74,16 @@
           .htmx-request .htmx-inverted-indicator {
             display: none;
           }
+
+          
         
         </style>
+
+        
     
       </head>
     
-    <body>
+    <body  class="{% if ENV_DEV %}env-dev{% endif %}">
 
   
         {% include 'navbar.html' %}

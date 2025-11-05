@@ -1,14 +1,15 @@
+from django.db import transaction
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
-from django.db.models import Avg, Count, Min, Sum
+from django.db.models import Avg, Count, Min, Sum, F
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from decimal import Decimal
 from datetime import datetime
 from django.contrib import messages
 from customers.models import Customer, Contact, ShipTo
-from controls.models import Numbering, Category, SubCategory, SetPriceCategory, SetPriceItemPrice
+from controls.models import Numbering, Category, SubCategory, SetPriceCategory, SetPriceItemPrice, JobStatus
 from .models import Workorder, DesignType, WorkorderItem
 from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, DesignItemForm, NoteForm, WorkorderNoteForm, CustomItemForm, ParentItemForm, PostageItemForm, JobStatusForm, ItemDetailForm
 from krueger.forms import KruegerJobDetailForm, WideFormatDetailForm
@@ -19,120 +20,262 @@ from pricesheet.forms import WideFormatForm
 from accounts.models import Profile
 from finance.models import WorkorderPayment
 
+def _next_number(counter_id: int) -> int:
+    with transaction.atomic():
+        Model = Numbering
+        fields = {f.name for f in Model._meta.get_fields() if getattr(f, "concrete", False) and not getattr(f, "auto_created", False)}
+        defaults = {}
+        if "name" in fields: defaults["name"] = "Workorder"
+        if "value" in fields: defaults["value"] = 1
+        elif "current" in fields: defaults["current"] = 1
+
+        num, _ = Model.objects.select_for_update().get_or_create(id=counter_id, defaults=defaults)
+        counter_field = "value" if "value" in fields else ("current" if "current" in fields else None)
+        nxt = getattr(num, counter_field) if counter_field else 1
+        if counter_field:
+            Model.objects.filter(pk=num.pk).update(**{counter_field: F(counter_field) + 1})
+        return nxt
+    
+def _next_number_by_name(name: str) -> int:
+    """
+    Schema-agnostic counter:
+    - creates Numbering row if missing
+    - uses 'value' or 'current' field (whichever exists)
+    - increments atomically
+    """
+    with transaction.atomic():
+        M = Numbering
+        fields = {
+            f.name for f in M._meta.get_fields()
+            if getattr(f, "concrete", False) and not getattr(f, "auto_created", False)
+        }
+        defaults = {}
+        if "name" in fields:
+            defaults["name"] = name
+        if "value" in fields:
+            defaults["value"] = 1
+            counter_field = "value"
+        elif "current" in fields:
+            defaults["current"] = 1
+            counter_field = "current"
+        else:
+            # fallback: synthetic counter
+            counter_field = None
+
+        num, _ = M.objects.select_for_update().get_or_create(name=name, defaults=defaults)
+        nxt = getattr(num, counter_field) if counter_field else 1
+        if counter_field:
+            M.objects.filter(pk=num.pk).update(**{counter_field: F(counter_field) + 1})
+        return nxt
+
+# @login_required
+# def create_base(request):
+#     #newcustomerform = CustomerForm(request.POST or None)
+#     customer = Customer.objects.filter(active=1).order_by('company_name')
+#     # workorder = Numbering.objects.get(name='Workorder Number')
+#     # workorder = int(workorder.value)
+#     # inc = int('1')
+#     # workordernum = workorder + inc
+#     #workorder = Numbering.objects.WorkorderNum
+#     #print(workorder)
+#             # workorder = workorder += 1
+#             # print(workorder)
+#     categories = Category.objects.all().distinct().exclude(active=0).order_by('name')
+#     context = {
+#         'customers': customer,
+#         #'newcustomerform': newcustomerform,
+#         'form': WorkorderForm(),
+#         #'workordernum': workordernum,
+#         'categories':categories,
+#         #'messages':messages,
+#     }
+#     if request.method == "POST":
+#         customer = request.POST.get('customer')
+#         print('custom customer')
+#         print(customer)
+#         if customer == "Select Customer":
+#             messages.error(request, "Please select a customer.")
+#             return render(request, 'workorders/create.html', context)
+#         print('hi')
+#         form = WorkorderForm(request.POST)
+#         #print(form.internal_company)
+#         print(form.errors)
+#         quote = request.POST.get('quote')
+#         form.fields['quote'].choices = [(quote, quote)]
+#         if not form.is_valid():
+#             print(form.errors)
+#             print('error')
+#             messages.error(request, "Please correct the errors below and resubmit.")
+#             return render(request, context)
+#         else:# form.is_valid():
+#             form.instance.customer_id = request.POST.get('customer')
+#             quote = request.POST.get('quote')
+#             cust = form.instance.customer_id
+#             select = 'Select Customer'
+#             if cust == select:
+#                 message = "Please select a customer"
+#                 context = {
+#                         'customers': customer,
+#                         'message': message,
+#                         'form': form,}
+#                 print(cust)
+#                 print(select)
+#                 return render(request, "workorders/create.html", context)
+#             hrcust = Customer.objects.get(id=cust)
+#             hrcust.updated=datetime.now
+#             hrcust.save()
+#             print(hrcust.tax_exempt)
+#             if hrcust.tax_exempt:
+#                 print('tax exempt')
+#                 form.instance.tax_exempt = 1
+#             form.instance.po_number = hrcust.po_number
+#             hrcust = hrcust.company_name
+#             form.instance.hr_customer = hrcust
+#             print(cust)
+#             print(hrcust)
+#             #shipto = ShipTo.objects.get(customer_id=cust)
+#             shipto = ShipTo.objects.filter(customer_id=cust).first()
+#             print('shipto')
+#             print(shipto.pk)
+#             form.instance.ship_to_id = shipto.pk
+#             #
+#             form.instance.contact_id = request.POST.get('contacts')
+#             cont = form.instance.contact_id
+#             if cont:
+#                 hrcont = Contact.objects.get(id=cont)
+#                 hrcont = hrcont.fname
+#                 form.instance.hr_contact = hrcont
+#             ##Increase workorder numbering
+#             print('quote')
+#             print(quote)
+#             if quote == '1':
+#                 print('quote')
+#                 print('test')
+#                 n = Numbering.objects.get(name='Quote Number')
+#                 form.instance.quote_number = n.value
+#                 form.instance.workorder = n.value
+#                 form.instance.workorder_status_id = 9
+#                 print(form.instance.workorder_status) 
+#                 print(n.value)
+#             else: 
+#                 print('workorder')
+#                 n = Numbering.objects.get(name='Workorder Number')
+#                 form.instance.workorder = n.value
+#                 form.instance.workorder_status_id = 1
+#             workorder = n.value
+#             inc = int('1')
+#             n.value = n.value + inc
+#             print(n.value)
+#             ## End of numbering
+#             print('hello')
+#             form.save()
+#             context = {
+#                 'id': n.value,
+#             }
+#             n.save()
+#             #messages.success(request, 'workorder added.')
+#             return redirect("workorders:overview", id=workorder)
+#             #return render(request, "workorders/overview.html", context)
+#         # else:
+#         #     for error in form.errors:
+#         #         messages.error(request, WorkorderForm.errors[error])
+#         #         return redirect(request.path)
+    
+#     return render(request, "workorders/create.html", context)
+
 @login_required
 def create_base(request):
-    #newcustomerform = CustomerForm(request.POST or None)
-    customer = Customer.objects.filter(active=1).order_by('company_name')
-    # workorder = Numbering.objects.get(name='Workorder Number')
-    # workorder = int(workorder.value)
-    # inc = int('1')
-    # workordernum = workorder + inc
-    #workorder = Numbering.objects.WorkorderNum
-    #print(workorder)
-            # workorder = workorder += 1
-            # print(workorder)
-    categories = Category.objects.all().distinct().exclude(active=0).order_by('name')
+    customers_qs = Customer.objects.filter(active=True).order_by("company_name")
+    categories = Category.objects.filter(active=True).order_by("name")
+
     context = {
-        'customers': customer,
-        #'newcustomerform': newcustomerform,
-        'form': WorkorderForm(),
-        #'workordernum': workordernum,
-        'categories':categories,
-        #'messages':messages,
+        "customers": customers_qs,
+        "form": WorkorderForm(),
+        "categories": categories,
     }
-    if request.method == "POST":
-        customer = request.POST.get('customer')
-        print('custom customer')
-        print(customer)
-        if customer == "Select Customer":
-            messages.error(request, "Please select a customer.")
-            return render(request, 'workorders/create.html', context)
-        print('hi')
-        form = WorkorderForm(request.POST)
-        #print(form.internal_company)
-        print(form.errors)
-        quote = request.POST.get('quote')
-        form.fields['quote'].choices = [(quote, quote)]
-        if not form.is_valid():
-            print(form.errors)
-            print('error')
-            messages.error(request, "Please correct the errors below and resubmit.")
-            return render(request, context)
-        else:# form.is_valid():
-            form.instance.customer_id = request.POST.get('customer')
-            quote = request.POST.get('quote')
-            cust = form.instance.customer_id
-            select = 'Select Customer'
-            if cust == select:
-                message = "Please select a customer"
-                context = {
-                        'customers': customer,
-                        'message': message,
-                        'form': form,}
-                print(cust)
-                print(select)
-                return render(request, "workorders/create.html", context)
-            hrcust = Customer.objects.get(id=cust)
-            hrcust.updated=datetime.now
-            hrcust.save()
-            print(hrcust.tax_exempt)
-            if hrcust.tax_exempt:
-                print('tax exempt')
-                form.instance.tax_exempt = 1
-            form.instance.po_number = hrcust.po_number
-            hrcust = hrcust.company_name
-            form.instance.hr_customer = hrcust
-            print(cust)
-            print(hrcust)
-            #shipto = ShipTo.objects.get(customer_id=cust)
-            shipto = ShipTo.objects.filter(customer_id=cust).first()
-            print('shipto')
-            print(shipto.pk)
-            form.instance.ship_to_id = shipto.pk
-            #
-            form.instance.contact_id = request.POST.get('contacts')
-            cont = form.instance.contact_id
-            if cont:
-                hrcont = Contact.objects.get(id=cont)
-                hrcont = hrcont.fname
-                form.instance.hr_contact = hrcont
-            ##Increase workorder numbering
-            print('quote')
-            print(quote)
-            if quote == '1':
-                print('quote')
-                print('test')
-                n = Numbering.objects.get(name='Quote Number')
-                form.instance.quote_number = n.value
-                form.instance.workorder = n.value
-                form.instance.workorder_status_id = 9
-                print(form.instance.workorder_status) 
-                print(n.value)
-            else: 
-                print('workorder')
-                n = Numbering.objects.get(name='Workorder Number')
-                form.instance.workorder = n.value
-                form.instance.workorder_status_id = 1
-            workorder = n.value
-            inc = int('1')
-            n.value = n.value + inc
-            print(n.value)
-            ## End of numbering
-            print('hello')
-            form.save()
-            context = {
-                'id': n.value,
-            }
-            n.save()
-            #messages.success(request, 'workorder added.')
-            return redirect("workorders:overview", id=workorder)
-            #return render(request, "workorders/overview.html", context)
-        # else:
-        #     for error in form.errors:
-        #         messages.error(request, WorkorderForm.errors[error])
-        #         return redirect(request.path)
-    
-    return render(request, "workorders/create.html", context)
+
+    if request.method != "POST":
+        return render(request, "workorders/create.html", context)
+
+    # POST
+    form = WorkorderForm(request.POST)
+    customer_id = request.POST.get("customer")
+    quote = request.POST.get("quote")  # '1' for quote, else workorder
+
+    if not customer_id or customer_id == "Select Customer":
+        messages.error(request, "Please select a customer.")
+        return render(request, "workorders/create.html", context)
+
+    if not form.is_valid():
+        messages.error(request, "Please correct the errors below and resubmit.")
+        context["form"] = form
+        return render(request, "workorders/create.html", context)
+
+    # hydrate instance bits
+    form.instance.customer_id = customer_id
+    cust = Customer.objects.filter(id=customer_id).first()
+    if not cust:
+        messages.error(request, "Selected customer was not found.")
+        context["form"] = form
+        return render(request, "workorders/create.html", context)
+
+    # touch customer updated
+    cust.updated = timezone.now()
+    cust.save(update_fields=["updated"])
+
+    if getattr(cust, "tax_exempt", False):
+        form.instance.tax_exempt = True
+
+    form.instance.po_number = getattr(cust, "po_number", None)
+    form.instance.hr_customer = cust.company_name or f"{cust.first_name or ''} {cust.last_name or ''}".strip()
+
+    # ShipTo (best-effort)
+    shipto = ShipTo.objects.filter(customer_id=cust.id).first()
+    if not shipto:
+        shipto = ShipTo.objects.create(
+            customer=cust,
+            company_name=cust.company_name,
+            first_name=getattr(cust, "first_name", "") or "",
+            last_name=getattr(cust, "last_name", "") or "",
+            address1=cust.address1, address2=cust.address2,
+            city=cust.city, state=cust.state, zipcode=cust.zipcode,
+            phone1=cust.phone1, phone2=cust.phone2,
+            email=cust.email, website=cust.website,
+            logo=cust.logo, notes=cust.notes, active=cust.active,
+        )
+    form.instance.ship_to = shipto
+
+    # optional contact
+    contact_id = request.POST.get("contacts")
+    try:
+        contact_id = int(contact_id) if contact_id else None
+    except (TypeError, ValueError):
+        contact_id = None
+    if contact_id:
+        contact = Contact.objects.filter(id=contact_id).first()
+        if contact:
+            form.instance.contact_id = contact.id
+            form.instance.hr_contact = getattr(contact, "fname", "") or getattr(contact, "first_name", "")
+
+    # Numbering (quote vs workorder)
+    if quote == "1":
+        num = _next_number_by_name("Quote Number")
+        form.instance.quote_number = num
+        form.instance.workorder = num
+        status_name = "Quoted"
+    else:
+        num = _next_number_by_name("Workorder Number")
+        form.instance.workorder = num
+        status_name = "Open"
+
+    # --- resolve/seed JobStatus by NAME, not hardcoded id ---
+    status_defaults = {"icon": ""}  # add defaults your model needs
+    status, _ = JobStatus.objects.get_or_create(name=status_name, defaults=status_defaults)
+    form.instance.workorder_status = status
+
+    # Save and go
+    form.save()
+    return redirect("workorders:overview", id=num)
 
 @login_required
 def overview(request, id=None):

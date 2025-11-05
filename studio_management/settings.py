@@ -142,6 +142,10 @@ TEMPLATES = [
     },
 ]
 
+TEMPLATES[0]["OPTIONS"]["context_processors"] += [
+    "devtools.context_processors.env_flags",
+]
+
 WSGI_APPLICATION = 'studio_management.wsgi.application'
 
 

@@ -1,9 +1,11 @@
 import os
 from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Count, Min, Sum
+from django.db.models import Avg, Count, Min, Sum, F
 from django.utils import timezone
+from django.utils.text import slugify
 from django.http import HttpResponse
 import datetime
 from datetime import datetime, timedelta
@@ -73,109 +75,204 @@ def customers(request):
 #     return render(request, 'customers/list.html', context)
 
 
+# @login_required
+# def new_customer(request):
+#     if request.method == "POST":
+#         form = CustomerForm(request.POST, request.FILES)
+#         print("FILES:", request.FILES)
+#         c = request.POST.get('customer')
+#         cn = request.POST.get('company_name')
+#         fn = request.POST.get('first_name')
+#         ln = request.POST.get('last_name')
+#         print('customer?')
+#         print(c)
+#          # check if a new file was uploaded
+#         if request.FILES.get("tax_exempt_paperwork"):
+#             uploaded_file = request.FILES["tax_exempt_paperwork"]
+
+#             # build new filename
+#             base, ext = os.path.splitext(uploaded_file.name)
+#             if not cn:
+#                 print('Empty string') 
+#                 print(fn)
+#                 print(ln)
+#                 form.instance.company_name = fn + ' ' + ln
+#                 cn = form.instance.company_name
+#                 #print(obj.company_name)
+#                 new_name = f"{cn}_{base}{ext}"
+#                 # assign new name
+#                 uploaded_file.name = new_name
+#             if cn:
+#                 print(cn)
+#                 new_name = f"{cn}_{base}{ext}"
+#                 # assign new name
+#                 uploaded_file.name = new_name
+#         if form.is_valid():
+#             ##Increase workorder numbering
+#             n = Numbering.objects.get(pk=2)
+#             form.instance.customer_number = n.value
+#             #workorder = n.value
+#             inc = int('1')
+#             n.value = n.value + inc
+#             print(n.value)
+#             #n.save() -- Save in the if statement below
+#             ## End of numbering
+#             #obj = form.save(commit=False)
+#             #customer = request.POST.get("company_name")
+#             #print(customer)
+#             cn = request.POST.get('company_name')
+#             fn = request.POST.get('first_name')
+#             ln = request.POST.get('last_name')
+#             if not cn and not fn and not ln:
+#                 message = 'Please fill in Company name or Customer Name'
+#                 context = {
+#                     'message': message,
+#                     'form': form
+#                 }
+#                 return render(request, 'customers/modals/newcustomer_form.html', context)
+#             if not cn:
+#                 print('Empty string')
+#                 print(fn)
+#                 print(ln)
+#                 form.instance.company_name = fn + ' ' + ln
+#                 #print(obj.company_name)
+#                 form.save()
+#                 n.save()
+#                 #return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+#             else:
+#                 print(cn)
+#                 form.save()
+#                 n.save()
+#                 #return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+#             print('customer stuff')
+#             newcust = form.instance.pk
+#             print(form.instance.pk)
+#             print(newcust)
+#             customer = Customer.objects.get(pk=newcust)
+#             print(customer)
+#             #Add customer info to shipto database
+#             shipto = ShipTo()
+#             shipto.customer_id = newcust
+#             shipto.company_name = customer.company_name
+#             shipto.first_name = customer.first_name
+#             shipto.last_name = customer.last_name
+#             shipto.address1 = customer.address1
+#             shipto.address2 = customer.address2
+#             shipto.city = customer.city
+#             shipto.state = customer.state
+#             shipto.zipcode = customer.zipcode
+#             shipto.phone1 = customer.phone1
+#             shipto.phone2 = customer.phone2
+#             shipto.email = customer.email
+#             shipto.website = customer.website
+#             shipto.logo = customer.logo
+#             shipto.notes = customer.notes
+#             shipto.active = customer.active
+#             shipto.save()
+#             print('Saved')
+#             # obj.save
+#             # form.save()
+#             return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+#     else:
+#         form = CustomerForm()
+#     return render(request, 'customers/modals/newcustomer_form.html', {
+#         'form': form,
+#     })
+
 @login_required
 def new_customer(request):
     if request.method == "POST":
         form = CustomerForm(request.POST, request.FILES)
-        print("FILES:", request.FILES)
-        c = request.POST.get('customer')
-        cn = request.POST.get('company_name')
-        fn = request.POST.get('first_name')
-        ln = request.POST.get('last_name')
-        print('customer?')
-        print(c)
-         # check if a new file was uploaded
-        if request.FILES.get("tax_exempt_paperwork"):
-            uploaded_file = request.FILES["tax_exempt_paperwork"]
+        # Normalize names once
+        cn = (request.POST.get('company_name') or "").strip()
+        fn = (request.POST.get('first_name') or "").strip()
+        ln = (request.POST.get('last_name') or "").strip()
 
-            # build new filename
-            base, ext = os.path.splitext(uploaded_file.name)
-            if not cn:
-                print('Empty string') 
-                print(fn)
-                print(ln)
-                form.instance.company_name = fn + ' ' + ln
-                cn = form.instance.company_name
-                #print(obj.company_name)
-                new_name = f"{cn}_{base}{ext}"
-                # assign new name
-                uploaded_file.name = new_name
-            if cn:
-                print(cn)
-                new_name = f"{cn}_{base}{ext}"
-                # assign new name
-                uploaded_file.name = new_name
+        # Rename uploaded tax-exempt file to include company/person name
+        if request.FILES.get("tax_exempt_paperwork"):
+            uploaded = request.FILES["tax_exempt_paperwork"]
+            base, ext = os.path.splitext(uploaded.name)
+            display_name = cn or f"{fn} {ln}".strip() or "customer"
+            new_name = f"{slugify(display_name)}_{slugify(base)}{ext}"
+            uploaded.name = new_name
+
         if form.is_valid():
-            ##Increase workorder numbering
-            n = Numbering.objects.get(pk=2)
-            form.instance.customer_number = n.value
-            #workorder = n.value
-            inc = int('1')
-            n.value = n.value + inc
-            print(n.value)
-            #n.save() -- Save in the if statement below
-            ## End of numbering
-            #obj = form.save(commit=False)
-            #customer = request.POST.get("company_name")
-            #print(customer)
-            cn = request.POST.get('company_name')
-            fn = request.POST.get('first_name')
-            ln = request.POST.get('last_name')
-            if not cn and not fn and not ln:
-                message = 'Please fill in Company name or Customer Name'
-                context = {
-                    'message': message,
-                    'form': form
-                }
-                return render(request, 'customers/modals/newcustomer_form.html', context)
+            # require at least a company name or a person name
+            if not (cn or fn or ln):
+                return render(request, "customers/modals/newcustomer_form.html", {
+                    "message": "Please fill in Company name or Customer Name",
+                    "form": form,
+                })
+
+            # If no company_name, synthesize from first/last
             if not cn:
-                print('Empty string')
-                print(fn)
-                print(ln)
-                form.instance.company_name = fn + ' ' + ln
-                #print(obj.company_name)
-                form.save()
-                n.save()
-                #return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
-            else:
-                print(cn)
-                form.save()
-                n.save()
-                #return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
-            print('customer stuff')
-            newcust = form.instance.pk
-            print(form.instance.pk)
-            print(newcust)
-            customer = Customer.objects.get(pk=newcust)
-            print(customer)
-            #Add customer info to shipto database
-            shipto = ShipTo()
-            shipto.customer_id = newcust
-            shipto.company_name = customer.company_name
-            shipto.first_name = customer.first_name
-            shipto.last_name = customer.last_name
-            shipto.address1 = customer.address1
-            shipto.address2 = customer.address2
-            shipto.city = customer.city
-            shipto.state = customer.state
-            shipto.zipcode = customer.zipcode
-            shipto.phone1 = customer.phone1
-            shipto.phone2 = customer.phone2
-            shipto.email = customer.email
-            shipto.website = customer.website
-            shipto.logo = customer.logo
-            shipto.notes = customer.notes
-            shipto.active = customer.active
-            shipto.save()
-            print('Saved')
-            # obj.save
-            # form.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+                form.instance.company_name = f"{fn} {ln}".strip()
+
+            # Safe numbering: seed if missing, increment atomically
+            # with transaction.atomic():
+            #     num, _ = Numbering.objects.select_for_update().get_or_create(
+            #         id=2,
+            #         defaults=dict(name="Customer", prefix="C", padding=5, value=1),
+            #     )
+            #     next_num = num.value
+            #     Numbering.objects.filter(pk=num.pk).update(value=F("value") + 1)
+
+            # form.instance.customer_number = next_num
+
+            # --- numbering (works regardless of Numbering fields) ---
+            with transaction.atomic():
+                NumberingModel = Numbering
+                field_names = {
+                    f.name for f in NumberingModel._meta.get_fields()
+                    if getattr(f, "concrete", False) and not getattr(f, "auto_created", False)
+                }
+
+                defaults = {}
+                if "name" in field_names: defaults["name"] = "Customer"
+                if "value" in field_names: defaults["value"] = 1
+                elif "current" in field_names: defaults["current"] = 1
+                if "prefix" in field_names: defaults["prefix"] = "C"
+                if "padding" in field_names: defaults["padding"] = 5
+
+                num, _ = NumberingModel.objects.select_for_update().get_or_create(
+                    id=2, defaults=defaults
+                )
+
+                counter_field = "value" if "value" in field_names else ("current" if "current" in field_names else None)
+                next_num = getattr(num, counter_field) if counter_field else 1
+                if counter_field:
+                    NumberingModel.objects.filter(pk=num.pk).update(**{counter_field: F(counter_field) + 1})
+
+            form.instance.customer_number = next_num
+            # --- end numbering ---
+            form.save()
+
+            # Mirror to ShipTo
+            customer = form.instance
+            ShipTo.objects.create(
+                customer=customer,
+                company_name=customer.company_name,
+                first_name=customer.first_name,
+                last_name=customer.last_name,
+                address1=customer.address1,
+                address2=customer.address2,
+                city=customer.city,
+                state=customer.state,
+                zipcode=customer.zipcode,
+                phone1=customer.phone1,
+                phone2=customer.phone2,
+                email=customer.email,
+                website=customer.website,
+                logo=customer.logo,
+                notes=customer.notes,
+                active=customer.active,
+            )
+
+            return HttpResponse(status=204, headers={"HX-Trigger": "CustomerAdded"})
     else:
         form = CustomerForm()
-    return render(request, 'customers/modals/newcustomer_form.html', {
-        'form': form,
-    })
+
+    return render(request, "customers/modals/newcustomer_form.html", {"form": form})
 
 @login_required
 def new_contact(request):

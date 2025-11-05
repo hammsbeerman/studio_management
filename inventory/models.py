@@ -1,17 +1,15 @@
-from django.db import models
-from django.urls import reverse
-from django.shortcuts import get_object_or_404
+
 from datetime import datetime
+from decimal import Decimal
+from django.conf import settings
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
+from controls.models import SubCategory, Measurement, InventoryCategory, GroupCategory
 from customers.models import Customer
 from workorders.models import Workorder
-from controls.models import SubCategory, Measurement, InventoryCategory, GroupCategory
-from decimal import Decimal
-
-from django.dispatch import receiver
-from django.db.models.signals import (
-    post_save,
-    #post_delete
-)
     
 
     
@@ -96,6 +94,7 @@ class InventoryMaster(models.Model):
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=6, blank=True, null=True)
+    active = models.BooleanField(default=True)
 
 
     def __str__(self):
@@ -108,7 +107,7 @@ class InventoryPricingGroup(models.Model):
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=4, blank=True, null=True)
 
     def __str__(self):
-        return self.group.name
+        return self.group.name if self.group_id else "PricingGroup"
     
     def get_absolute_url(self):
         return reverse("controls:view_price_group_detail", kwargs={"id": self.group.id})
@@ -119,9 +118,13 @@ class InventoryQtyVariations(models.Model):
     variation = models.ForeignKey(Measurement, null=True, on_delete=models.SET_NULL)
     variation_qty = models.DecimalField('Variation Qty', max_digits=15, decimal_places=4, blank=False, null=False)
 
+    # def __str__(self):
+    #     variation_qty = str(self.variation_qty)
+    #     return self.inventory.name + ' -- ' +self.variation.name + ' -- ' + variation_qty 
+
     def __str__(self):
-        variation_qty = str(self.variation_qty)
-        return self.inventory.name + ' -- ' +self.variation.name + ' -- ' + variation_qty 
+        vname = self.variation.name if self.variation_id else "—"
+        return f"{self.inventory.name} -- {vname} -- {self.variation_qty}"
     
     def get_absolute_url(self):
         return reverse("inventory:item_variation_details", kwargs={"id": self.inventory.id})
@@ -130,21 +133,21 @@ class InventoryQtyVariations(models.Model):
     
      
     
-@receiver(post_save, sender=InventoryMaster)  
-def Unit_Cost_Handler(sender, instance, created, *args, **kwargs):
-    print('adklasdklamdklamdlkamdalksdmalkdmalkdmalkdmasklmalksdmalkdmamkadmaskdlmalkdlkedmaeiliiliiiiefkasdlfasdlkasjmkdl')
-    #print(args, kwargs)
-    #print(instance.pk)
-    if instance.high_price:
-        if instance.units_per_base_unit:
-            unit_cost = Decimal(instance.high_price) / instance.units_per_base_unit
-            print(unit_cost)
-            m = unit_cost * 1000
-            unit_cost = round(unit_cost, 6)
-            m = round(m, 6)
-            print('adklasdklamdklamdlkamdalksdmalkdmalkdmalkdmasklmalksdmalkdmamkadmaskdlmalkdlkedmaeiliiliiiiefkasdlfasdlkasjmkdl')
-            InventoryMaster.objects.filter(pk=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
-            Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
+# @receiver(post_save, sender=InventoryMaster)  
+# def Unit_Cost_Handler(sender, instance, created, *args, **kwargs):
+#     print('adklasdklamdklamdlkamdalksdmalkdmalkdmalkdmasklmalksdmalkdmamkadmaskdlmalkdlkedmaeiliiliiiiefkasdlfasdlkasjmkdl')
+#     #print(args, kwargs)
+#     #print(instance.pk)
+#     if instance.high_price:
+#         if instance.units_per_base_unit:
+#             unit_cost = Decimal(instance.high_price) / instance.units_per_base_unit
+#             print(unit_cost)
+#             m = unit_cost * 1000
+#             unit_cost = round(unit_cost, 6)
+#             m = round(m, 6)
+#             print('adklasdklamdklamdlkamdalksdmalkdmalkdmalkdmasklmalksdmalkdmamkadmaskdlmalkdlkedmaeiliiliiiiefkasdlfasdlkasjmkdl')
+#             InventoryMaster.objects.filter(pk=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=timezone.now())
+#             Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=timezone.now())
     
 
 
@@ -307,25 +310,38 @@ class Photography(models.Model):
 
 
 #Add item to inventory if added to inventorymaster
-@receiver(post_save, sender=InventoryMaster)  
-def Inventory_Master_Handler(sender, instance, created, *args, **kwargs):
-    #print(args, kwargs)
-    try:
-        obj = get_object_or_404(Inventory, internal_part_number=instance.pk)
-        #print(obj)
-        print('found')
-    except:
-        print('not found')
-        name = instance.name
-        description = instance.description
-        unit_cost = instance.unit_cost
-        m = instance.price_per_m
-        measurement = instance.primary_base_unit
-        retail = instance.retail
-        if not unit_cost:
-            unit_cost=0
-        item = Inventory(name=name, description=description, internal_part_number=InventoryMaster.objects.get(pk=instance.pk), unit_cost=unit_cost, price_per_m=m , measurement=measurement, retail_item=retail, created=datetime.now(), updated=datetime.now())
-        item.save()
+# @receiver(post_save, sender=InventoryMaster)  
+# def Inventory_Master_Handler(sender, instance, created, *args, **kwargs):
+#     #print(args, kwargs)
+#     try:
+#         obj = get_object_or_404(Inventory, internal_part_number=instance.pk)
+#         #print(obj)
+#         print('found')
+#     except:
+#         print('not found')
+#         name = instance.name
+#         description = instance.description
+#         unit_cost = instance.unit_cost
+#         m = instance.price_per_m
+#         measurement = instance.primary_base_unit
+#         retail = instance.retail
+#         if not unit_cost:
+#             unit_cost=0
+#         item = Inventory(name=name, description=description, internal_part_number=InventoryMaster.objects.get(pk=instance.pk), unit_cost=unit_cost, price_per_m=m , measurement=measurement, retail_item=retail, created=timezone.now(), updated=timezone.now())
+#         item.save()
+
+class InventoryMerge(models.Model):
+    """Track that 'from_item' (duplicate) was merged into 'to_item' (canonical)."""
+    from_item = models.ForeignKey("inventory.InventoryMaster", on_delete=models.PROTECT, related_name="merged_from")
+    to_item   = models.ForeignKey("inventory.InventoryMaster", on_delete=models.PROTECT, related_name="merged_into")
+    reason    = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    class Meta:
+        unique_together = [("from_item", "to_item")]
 
 
         
@@ -377,7 +393,7 @@ class VendorContact(models.Model):
 #             ipn = Inventory.objects.filter(pk=x.pk).update(internal_part_number=item.pk)
 #             print('IPN')
 #             print(ipn)
-#             #Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=datetime.now())
+#             #Inventory.objects.filter(internal_part_number=instance.pk).update(unit_cost=unit_cost, price_per_m=m, updated=timezone.now())
 #     return render (request, "controls/specialized_tools.html")
 
 

@@ -13,6 +13,7 @@ from .forms import AddVendorForm
 from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut, Inventory
 from .serializers import InventorySerializer
 from finance.models import InvoiceItem, AccountsPayable#, AllInvoiceItem
+from .utils import merged_set_for
 #from inventory.models import Inventory
 
 # Create your views here.
@@ -228,7 +229,17 @@ def item_details(request, id=None):
     return render(request, 'inventory/items/item_details.html', context)
 
 
+def inventory_detail(request, pk):
+    item = get_object_or_404(InventoryMaster, pk=pk)
+    ids = merged_set_for(item)
 
+    # If your purchase history lives in finance.InvoiceItem or finance.AllInvoiceItem:
+    # Adjust names/fields to match your project (common name: InvoiceItem with FK "inventory" or "item")
+    from finance.models import InvoiceItem, AllInvoiceItem  # if present
+    history = InvoiceItem.objects.filter(inventory_id__in=ids).order_by("-purchase_date")
+    # or: history = InvoiceItem.objects.filter(item_id__in=ids)
+
+    return render(request, "inventory/detail.html", {"item": item, "history": history})
 
 
 
