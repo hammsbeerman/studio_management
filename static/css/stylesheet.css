@@ -1,6 +1,6 @@
-body{
+/*body{*/
 	/*background-color: blue;*/
-}
+/*}*/
 
 .myClass{
 	text-align: center;
@@ -134,3 +134,14 @@ body{
     width: 90%;
     max-width: 500px;
   }
+
+  .inventory-search-scroll {
+  max-height: 260px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+#inventory-search-results {
+  width: 100%;
+}

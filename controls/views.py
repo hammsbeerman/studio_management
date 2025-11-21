@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.db.models import Q, Max, Sum
 from django.contrib import messages
 from datetime import datetime
+from decimal import Decimal
 from .forms import SubCategoryForm, CategoryForm, AddSetPriceItemForm, AddSetPriceCategoryForm, AddInventoryPricingGroupForm
 from .models import SetPriceCategory, SubCategory, Category
 from workorders.models import Workorder
@@ -721,110 +722,111 @@ def high_price_item(request):
 
 @login_required
 def krueger_statements(request):
-    #Most of this function was moved to a cronjob
-    update_ar = request.GET.get('up')
-    print('update')
-    print(update_ar)
-    #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
-    today = timezone.now()
-    customers = Customer.objects.all().order_by('company_name')
-    # ar = Araging.objects.all()
-    ar = Krueger_Araging.objects.filter
-    workorders = Workorder.objects.filter().exclude(billed=0).exclude(internal_company='LK Design').exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).values('hr_customer').distinct()
-    statement = Krueger_Araging.objects.filter(hr_customer__in=workorders).order_by('hr_customer')
-    #workorders = Workorder.objects.filter(customer_id__in=need_statement)
-    print(customers)
-    for x in statement:
-         print(f"ID: {x.customer.id}")
-    #     if not x.date_billed:
-    #         x.date_billed = today
-    #     age = x.date_billed - today
-    #     age = abs((age).days)
-    #     print(age)
-    #     Workorder.objects.filter(pk=x.pk).update(aging = age)
-    total_balance = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-    # for x in customers:
-    #     try:
-    #         #Get the Araging customer and check to see if aging has been updated today
-    #         modified = Araging.objects.get(customer=x.id)
-    #         print(x.company_name)
-    #         day = today.strftime('%Y-%m-%d')
-    #         day = str(day)
-    #         date = str(modified.date)
-    #         print(day)
-    #         print(date)
-    #         if day == date:
-    #             #Don't update, as its been done today
-    #             print('today')
-    #             update = 0
-    #             if update_ar == '1':
-    #                 print('update')
-    #                 update = 1
-    #         else:
-    #             update = 1
-    #     except:
-    #         update = 1
-    #     #Update the Araging that needs to be done
-    #     if update == 1:
-    #         if Workorder.objects.filter(customer_id = x.id).exists():
-    #             current = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
-    #             try:
-    #                 current = list(current.values())[0]
-    #             except:
-    #                 current = 0
-    #             thirty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
-    #             try: 
-    #                 thirty = list(thirty.values())[0]
-    #             except:
-    #                 thirty = 0
-    #             sixty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
-    #             try:
-    #                 sixty = list(sixty.values())[0]
-    #             except:
-    #                 sixty = 0
-    #             ninety = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
-    #             try:
-    #                 ninety = list(ninety.values())[0]
-    #             except:
-    #                 ninety = 0
-    #             onetwenty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
-    #             try:
-    #                 onetwenty = list(onetwenty.values())[0]
-    #             except:
-    #                 onetwenty = 0
-    #             total = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-    #             try:
-    #                 total = list(total.values())[0]
-    #             except:
-    #                 total = 0
-    #             try: 
-    #                 obj = Araging.objects.get(customer_id=x.id)
-    #                 Araging.objects.filter(customer_id=x.id).update(hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-    #             except:
-    #                 obj = Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-    #                 obj.save()
-    ar = Krueger_Araging.objects.all().order_by('hr_customer')
-    #total_current = Araging.objects.filter().aggregate(Sum('current'))
-    total_current = ar.filter().aggregate(Sum('current'))
-    total_thirty = ar.filter().aggregate(Sum('thirty'))
-    total_sixty = ar.filter().aggregate(Sum('sixty'))
-    total_ninety = ar.filter().aggregate(Sum('ninety'))
-    total_onetwenty = ar.filter().aggregate(Sum('onetwenty'))
-    print(total_current)
+    """
+    Statements dashboard with optional company filters.
 
-    #print(ar)
+    ?company=Krueger+Printing&company=LK+Design&company=Office+Supplies
+    """
+    VALID_COMPANIES = ["Krueger Printing", "LK Design", "Office Supplies"]
+
+    # Read company filters from GET
+    selected_companies = request.GET.getlist("company")
+    selected_companies = [c for c in selected_companies if c in VALID_COMPANIES]
+
+    # Base: all open, non-void, non-quote WOs
+    base_workorders = (
+        Workorder.objects
+        .filter()
+        .exclude(billed=0)
+        .exclude(paid_in_full=1)
+        .exclude(quote=1)
+        .exclude(void=1)
+    )
+
+    # Default: old behavior (everything except LK Design)
+    if selected_companies:
+        workorders = base_workorders.filter(internal_company__in=selected_companies)
+        effective_companies = selected_companies
+    else:
+        workorders = base_workorders.exclude(internal_company="LK Design")
+        # “what this page is effectively showing” when no filters are set
+        effective_companies = ["Krueger Printing", "Office Supplies"]
+
+    # Total balance for the filtered WOs
+    total_balance = workorders.aggregate(Sum("open_balance"))
+
+    # ----- Compute aging buckets on the fly per customer -----
+
+    # We assume `aging` and `open_balance` are already maintained (by your cron)
+    workorders = workorders.select_related("customer")
+
+    buckets_by_customer = {}
+
+    for wo in workorders:
+        if not wo.customer_id:
+            continue
+
+        cust_id = wo.customer_id
+        aging = wo.aging or 0
+        ob = wo.open_balance or Decimal("0.00")
+
+        if cust_id not in buckets_by_customer:
+            buckets_by_customer[cust_id] = {
+                "customer": wo.customer,
+                "hr_customer": wo.customer.company_name if wo.customer else "",
+                "current": Decimal("0.00"),
+                "thirty": Decimal("0.00"),
+                "sixty": Decimal("0.00"),
+                "ninety": Decimal("0.00"),
+                "onetwenty": Decimal("0.00"),
+                "total": Decimal("0.00"),
+            }
+
+        row = buckets_by_customer[cust_id]
+
+        # Bucket logic (mirrors your Araging ranges)
+        if aging < 30:
+            row["current"] += ob
+        elif 30 <= aging <= 59:
+            row["thirty"] += ob
+        elif 60 <= aging <= 89:
+            row["sixty"] += ob
+        elif 90 <= aging <= 119:
+            row["ninety"] += ob
+        else:  # 120+
+            row["onetwenty"] += ob
+
+        row["total"] += ob
+
+    # Turn dict into sorted list for template
+    statement_rows = sorted(
+        buckets_by_customer.values(),
+        key=lambda r: (r["hr_customer"] or "").lower()
+    )
+
+    # Totals per column (for the bottom summary)
+    def sum_field(field):
+        return sum((row[field] for row in statement_rows), Decimal("0.00"))
+
+    total_current = sum_field("current")
+    total_thirty = sum_field("thirty")
+    total_sixty = sum_field("sixty")
+    total_ninety = sum_field("ninety")
+    total_onetwenty = sum_field("onetwenty")
+
     context = {
-        'total_current':total_current,
-        'total_thirty':total_thirty,
-        'total_sixty':total_sixty,
-        'total_ninety':total_ninety,
-        'total_onetwenty':total_onetwenty,
-        'total_balance':total_balance,
-        'ar': ar,
-        'workorders': workorders,
-        'statement': statement,
+        "company_choices": VALID_COMPANIES,
+        "selected_companies": selected_companies,      # for passing to PDFs
+        "effective_companies": effective_companies,    # which boxes to check
+        "total_balance": total_balance,
+        "statement_rows": statement_rows,
+        "total_current": total_current,
+        "total_thirty": total_thirty,
+        "total_sixty": total_sixty,
+        "total_ninety": total_ninety,
+        "total_onetwenty": total_onetwenty,
     }
-    return render(request, 'finance/reports/krueger_statements.html', context)
+    return render(request, "finance/reports/statements.html", context)
 
 def krueger_ar_aging(request):
     # update_ar = request.GET.get('up')
