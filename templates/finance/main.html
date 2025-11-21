@@ -6,74 +6,124 @@
 
 {% if user.is_authenticated %}
 <h1>Finance Home</h1>
-<br/>
+<hr/>
 
 <div class="container">
-    <div class="row">
-      <div class="col-sm-3">
-        <a href="{% url 'finance:add_invoice' %}">Add Bill to be paid</a><br>
-        <a href="{% url 'finance:view_bills_payable' %}">View Bills to be paid</a><br>
-        <a href="{% url 'finance:bills_by_vendor' %}">View Bills by vendor</a><br>
-        <a href="{% url 'inventory:add_vendor' %}">Add Vendor</a><br>
-        <a href="{% url 'inventory:vendor_list' %}">Vendor List</a><br>
-        <a href="{% url 'inventory:item_variations' %}">Item Variations</a><br>
-        <a href="{% url 'inventory:item_details' %}">Item Details</a><br>
-        <a href="{% url 'finance:add_inventory_item' baseitem=1 %}">Add Item</a><br>
-      </div>
-      <div class="col-sm-3">
-        <a href="{% url 'finance:add_daily_sale' %}">Add Daily Sale Record</a><br>
-        <a href="{% url 'finance:view_daily_sales' %}">View Daily Sales History</a><br> 
-        <a href="{% url 'finance:payment_history' %}">View all payment history</a><br>
-        <a href="{% url 'finance:sales_tax_payable' %}">Sales Tax Payable</a><br>
-      </div>
-      <div class="col-sm-3">
-        <a href="{% url 'finance:ar_aging' %}">A/R Aging</a><br>
-        <a href="{% url 'finance:complete_not_billed' %}">Complete Not Billed</a><br>
-        <a href="{% url 'finance:krueger_ar' %}">Krueger Outstanding Invoices</a><br>
-        <a href="{% url 'finance:lk_ar' %}">LK Outstanding Invoices</a><br> 
-        <a href="{% url 'finance:all_lk' %}">All LK Invoices</a><br>
-        
-        <a href="{% url 'finance:krueger_ar_aging' %}">Krueger AR Aging</a><br>
-        <a href="{% url 'controls:krueger_ar_aging' %}">Update Krueger Aging</a><br>
-        <a href="{% url 'pdf:statement_pdf_bulk' %}">Krueger Statements - Bulk</a><br>
-        <a href="{% url 'finance:monthly_statements' %}">Krueger Statements - Monthly</a><br>
-      </div>
-      <div class="col-sm-3">
-        <a href="{% url 'finance:all_printleader' %}">All Printleader Invoices</a><br>
-        <a href="{% url 'finance:all_open_printleader' %}">All Open Printleader Invoices</a><br>   
+
+  <div class="row g-3">
+
+    {# Accounts Payable & Vendors #}
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-header fw-bold">
+          Accounts Payable &amp; Vendors
+        </div>
+        <div class="card-body py-2">
+          <ul class="list-unstyled mb-0">
+            <li><a href="{% url 'finance:add_invoice' %}">Add bill to be paid</a></li>
+            <li><a href="{% url 'finance:view_bills_payable' %}">View bills to be paid</a></li>
+            <li><a href="{% url 'finance:bills_by_vendor' %}">View bills by vendor</a></li>
+          </ul>
+          <hr class="my-2">
+          <div class="small text-muted mb-1">Vendors &amp; Items</div>
+          <ul class="list-unstyled mb-0">
+            <li><a href="{% url 'inventory:add_vendor' %}">Add vendor</a></li>
+            <li><a href="{% url 'inventory:vendor_list' %}">Vendor list</a></li>
+            <li><a href="{% url 'inventory:item_variations' %}">Item variations</a></li>
+            <li><a href="{% url 'inventory:item_details' %}">Item details</a></li>
+            <li><a href="{% url 'finance:add_inventory_item' baseitem=1 %}">Add item</a></li>
+          </ul>
+        </div>
       </div>
     </div>
-</div>
 
-<hr>
-
-<div class="container">
-    <div class="row">
-      <div class="col-sm-3">
-        <a href="{% url 'controls:krueger_statements' %}">Customer Statements</a><br>
+    {# Daily Sales & Tax #}
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-header fw-bold">
+          Daily Sales &amp; Tax
+        </div>
+        <div class="card-body py-2">
+          <ul class="list-unstyled mb-0">
+            <li><a href="{% url 'finance:add_daily_sale' %}">Add daily sale record</a></li>
+            <li><a href="{% url 'finance:view_daily_sales' %}">View daily sales history</a></li>
+            <li><a href="{% url 'finance:payment_history' %}">View all payment history</a></li>
+            <li><a href="{% url 'finance:sales_tax_payable' %}">Sales tax payable</a></li>
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+
+    {# A/R & Statements #}
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-header fw-bold">
+          A/R &amp; Statements
+        </div>
+        <div class="card-body py-2">
+          <div class="small text-muted mb-1">Receivables</div>
+          <ul class="list-unstyled mb-2">
+            <li><a href="{% url 'finance:ar_aging' %}">A/R aging</a></li>
+            <li><a href="{% url 'finance:complete_not_billed' %}">Complete, not billed</a></li>
+            <li><a href="{% url 'finance:krueger_ar' %}">Krueger outstanding invoices</a></li>
+            <li><a href="{% url 'finance:lk_ar' %}">LK outstanding invoices</a></li>
+            <li><a href="{% url 'finance:all_lk' %}">All LK invoices</a></li>
+          </ul>
+
+          <hr class="my-2">
+
+          <div class="small text-muted mb-1">Aging &amp; Updates</div>
+          <ul class="list-unstyled mb-2">
+            <li><a href="{% url 'finance:krueger_ar_aging' %}">Krueger A/R aging</a></li>
+            <li><a href="{% url 'controls:krueger_ar_aging' %}">Update Krueger aging</a></li>
+          </ul>
+
+          <hr class="my-2">
+
+          <div class="small text-muted mb-1">Customer statements</div>
+          <ul class="list-unstyled mb-0">
+            <li><a href="{% url 'controls:krueger_statements' %}">Customer statements</a></li>
+            <li><a href="{% url 'pdf:statement_pdf_bulk' %}">Krueger statements – bulk</a></li>
+            <li><a href="{% url 'finance:monthly_statements' %}">Krueger statements – monthly</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    {# Reporting / Printleader #}
+    <div class="col-md-3">
+      <div class="card h-100">
+        <div class="card-header fw-bold">
+          Reporting &amp; Printleader
+        </div>
+        <div class="card-body py-2">
+          <ul class="list-unstyled mb-0">
+            <li><a href="{% url 'finance:all_printleader' %}">All Printleader invoices</a></li>
+            <li><a href="{% url 'finance:all_open_printleader' %}">All open Printleader invoices</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.row -->
+
+</div><!-- /.container -->
 
 {% else %}
 
 <h1>Login</h1>
 <br/>
 <form method="POST" action="{% url 'home' %}">
-    {% csrf_token %}
-        <div class="mb-3">
-          <input type="text" class="form-control" name="username", placeholder="Username", required>
-        </div>
-        <div class="mb-3">
-          <input type="password" class="form-control" name="password", placeholder="Password" required>
-        </div>
-        <button type="submit" class="btn btn-secondary">Login</button>
+  {% csrf_token %}
+  <div class="mb-3">
+    <input type="text" class="form-control" name="username" placeholder="Username" required>
+  </div>
+  <div class="mb-3">
+    <input type="password" class="form-control" name="password" placeholder="Password" required>
+  </div>
+  <button type="submit" class="btn btn-secondary">Login</button>
 </form>
 
-</div>
-
 {% endif %}
-
 
 {% endblock %}

@@ -8,14 +8,14 @@ from django.db import models
 from django.db.models import Avg, Max, Count, Min, Sum, Subquery, Case, When, Value, DecimalField, OuterRef
 from django.db.models import Q
 from django.utils import timezone
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 from decimal import Decimal
 import logging
 from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment, Krueger_Araging
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm, DateRangeForm
 from retail.forms import RetailInventoryMasterForm
 from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm, BulkEditInvoiceForm
-from finance.models import InvoiceItem#, AllInvoiceItem
+from finance.models import InvoiceItem, Araging#, AllInvoiceItem
 from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import PaymentType, Measurement
@@ -603,104 +603,80 @@ def complete_not_billed(request):
 
 @login_required
 def ar_aging(request):
-    #Most of this function was moved to a cronjob
-    update_ar = request.GET.get('up')
-    print('update')
-    print(update_ar)
-    #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
+    # Manual update flag from "Update" link
+    update_ar = request.GET.get("up")
+    print("update:", update_ar)
+
+    if update_ar == "1":
+        from finance.cron import ar_aging as run_ar_aging
+        run_ar_aging()
+
     today = timezone.now()
-    customers = Customer.objects.all()
-    ar = Araging.objects.all()
-    workorders = Workorder.objects.filter().exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1)
-    # for x in workorders:
-    #     #print(x.id)
-    #     if not x.date_billed:
-    #         x.date_billed = today
-    #     age = x.date_billed - today
-    #     age = abs((age).days)
-    #     print(age)
-    #     Workorder.objects.filter(pk=x.pk).update(aging = age)
-    total_balance = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-    # for x in customers:
-    #     try:
-    #         #Get the Araging customer and check to see if aging has been updated today
-    #         modified = Araging.objects.get(customer=x.id)
-    #         print(x.company_name)
-    #         day = today.strftime('%Y-%m-%d')
-    #         day = str(day)
-    #         date = str(modified.date)
-    #         print(day)
-    #         print(date)
-    #         if day == date:
-    #             #Don't update, as its been done today
-    #             print('today')
-    #             update = 0
-    #             if update_ar == '1':
-    #                 print('update')
-    #                 update = 1
-    #         else:
-    #             update = 1
-    #     except:
-    #         update = 1
-    #     #Update the Araging that needs to be done
-    #     if update == 1:
-    #         if Workorder.objects.filter(customer_id = x.id).exists():
-    #             current = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
-    #             try:
-    #                 current = list(current.values())[0]
-    #             except:
-    #                 current = 0
-    #             thirty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
-    #             try: 
-    #                 thirty = list(thirty.values())[0]
-    #             except:
-    #                 thirty = 0
-    #             sixty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
-    #             try:
-    #                 sixty = list(sixty.values())[0]
-    #             except:
-    #                 sixty = 0
-    #             ninety = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
-    #             try:
-    #                 ninety = list(ninety.values())[0]
-    #             except:
-    #                 ninety = 0
-    #             onetwenty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
-    #             try:
-    #                 onetwenty = list(onetwenty.values())[0]
-    #             except:
-    #                 onetwenty = 0
-    #             total = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-    #             try:
-    #                 total = list(total.values())[0]
-    #             except:
-    #                 total = 0
-    #             try: 
-    #                 obj = Araging.objects.get(customer_id=x.id)
-    #                 Araging.objects.filter(customer_id=x.id).update(hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-    #             except:
-    #                 obj = Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-    #                 obj.save()
-    ar = Araging.objects.all().order_by('hr_customer')
-    #total_current = Araging.objects.filter().aggregate(Sum('current'))
-    total_current = ar.filter().aggregate(Sum('current'))
-    total_thirty = ar.filter().aggregate(Sum('thirty'))
-    total_sixty = ar.filter().aggregate(Sum('sixty'))
-    total_ninety = ar.filter().aggregate(Sum('ninety'))
-    total_onetwenty = ar.filter().aggregate(Sum('onetwenty'))
-    print(total_current)
-    
-    #print(ar)
-    context = {
-        'total_current':total_current,
-        'total_thirty':total_thirty,
-        'total_sixty':total_sixty,
-        'total_ninety':total_ninety,
-        'total_onetwenty':total_onetwenty,
-        'total_balance':total_balance,
-        'ar': ar,
+    today_date = today.date()
+
+    # 🔹 Only ACTIVE customers
+    # adjust 'active' to 'is_active' or whatever your field actually is
+    active_ids = Customer.objects.filter(active=True).values_list("id", flat=True)
+
+    # Live open workorders for active customers only
+    workorders = (
+        Workorder.objects
+        .filter(customer_id__in=active_ids)
+        .exclude(billed=0)
+        .exclude(paid_in_full=1)
+        .exclude(quote=1)
+        .exclude(void=1)
+    )
+
+    # Overall outstanding balance (active customers only)
+    total_balance = workorders.aggregate(Sum("open_balance"))
+
+    # Snapshot rows for active customers only
+    ar = (
+        Araging.objects
+        .filter(customer_id__in=active_ids)
+        .order_by("hr_customer")
+    )
+
+    # --- "Billed Today" per active customer ---
+    today_workorders = workorders.filter(
+        Q(date_billed__date=today_date) | Q(date_billed__isnull=True)
+    )
+
+    today_totals_qs = (
+        today_workorders
+        .values("customer_id")
+        .annotate(billed_today=Sum("open_balance"))
+    )
+
+    today_totals_map = {
+        row["customer_id"]: row["billed_today"] or Decimal("0.00")
+        for row in today_totals_qs
     }
-    return render(request, 'finance/reports/ar_aging.html', context)
+
+    for row in ar:
+        row.billed_today = today_totals_map.get(row.customer_id, Decimal("0.00"))
+
+    total_billed_today = sum(today_totals_map.values(), Decimal("0.00"))
+
+    # Column totals from snapshot (active customers only)
+    total_current = ar.aggregate(Sum("current"))
+    total_thirty = ar.aggregate(Sum("thirty"))
+    total_sixty = ar.aggregate(Sum("sixty"))
+    total_ninety = ar.aggregate(Sum("ninety"))
+    total_onetwenty = ar.aggregate(Sum("onetwenty"))
+
+    context = {
+        "total_current": total_current,
+        "total_thirty": total_thirty,
+        "total_sixty": total_sixty,
+        "total_ninety": total_ninety,
+        "total_onetwenty": total_onetwenty,
+        "total_balance": total_balance,
+        "total_billed_today": total_billed_today,
+        "ar": ar,
+    }
+    return render(request, "finance/reports/ar_aging.html", context)
 
 @login_required
 def krueger_ar_aging(request):
@@ -906,16 +882,16 @@ def open_invoices_recieve_payment(request, pk, msg=None):
     }
     return render(request, 'finance/reports/modals/open_invoice_recieve_payment.html', context)
 
-@login_required
-def payment_history(request):
-    if request.method == "GET":
-        customer = request.GET.get('customer')
-        payment = Payments.objects.filter(customer=customer).exclude(void=1).exclude(available=0).order_by('-date')
-        context = {
-            'payment':payment,
-            'customer':customer,
-        }
-    return render(request, 'finance/AR/partials/payment_history.html', context)
+# @login_required
+# def payment_history(request):
+#     if request.method == "GET":
+#         customer = request.GET.get('customer')
+#         payment = Payments.objects.filter(customer=customer).exclude(void=1).exclude(available=0).order_by('-date')
+#         context = {
+#             'payment':payment,
+#             'customer':customer,
+#         }
+#     return render(request, 'finance/AR/partials/payment_history.html', context)
 
 @login_required
 def remove_payment(request, pk=None):
@@ -1785,12 +1761,69 @@ def bulk_edit_invoices(request, vendor=None):
 
 
 
+@login_required
 def payment_history(request):
-    payments = WorkorderPayment.objects.all().order_by('-date')
+    year = request.GET.get("year")
+    month = request.GET.get("month")
+
+    # Base queryset: all workorder payments, newest first
+    qs = (
+        WorkorderPayment.objects
+        .select_related("workorder", "workorder__customer")
+        .order_by("-date")
+    )
+
+    today = timezone.now().date()
+
+    # Decide which range to show
+    if year and month:
+        # Specific month
+        year = int(year)
+        month = int(month)
+        start_date = date(year, month, 1)
+
+        # First day of next month
+        if month == 12:
+            end_date = date(year + 1, 1, 1)
+        else:
+            end_date = date(year, month + 1, 1)
+
+        payments = qs.filter(date__gte=start_date, date__lt=end_date)
+        current_range_label = start_date.strftime("%B %Y")
+        is_default_range = False
+    else:
+        # Default: last 30 days
+        start_date = today - timedelta(days=30)
+        end_date = today
+        payments = qs.filter(date__gte=start_date, date__lte=end_date)
+        current_range_label = "Last 30 Days"
+        is_default_range = True
+
+    # Split into Krueger/Office vs LK Design
+    kr_payments = payments.filter(
+        workorder__internal_company__in=["Krueger Printing", "Office Supplies"]
+    )
+    lk_payments = payments.filter(
+        workorder__internal_company="LK Design"
+    )
+
+    kr_total = kr_payments.aggregate(Sum("payment_amount"))["payment_amount__sum"] or Decimal("0.00")
+    lk_total = lk_payments.aggregate(Sum("payment_amount"))["payment_amount__sum"] or Decimal("0.00")
+
+
+    # Archive list of months that actually have payments
+    months = qs.dates("date", "month", order="DESC")
+
     context = {
-        'payments':payments,
+        "kr_payments": kr_payments,
+        "lk_payments": lk_payments,
+        "kr_total": kr_total,
+        "lk_total": lk_total,
+        "months": months,
+        "current_range_label": current_range_label,
+        "is_default_range": is_default_range,
     }
-    return render (request, "finance/reports/payment_history.html", context)
+    return render(request, "finance/reports/payment_history.html", context)
 
 
 def sales_tax_payable(request):

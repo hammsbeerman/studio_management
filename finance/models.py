@@ -96,6 +96,7 @@ class Araging(models.Model):
     ninety = models.DecimalField('Ninety', max_digits=10, decimal_places=2, blank=True, null=True)
     onetwenty = models.DecimalField('One Twenty', max_digits=10, decimal_places=2, blank=True, null=True)
     total = models.DecimalField('Total', max_digits=10, decimal_places=2, blank=True, null=True)
+    billed_today = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Total open balance for invoices billed today")
 
     def __str__(self):
         return self.customer.company_name
