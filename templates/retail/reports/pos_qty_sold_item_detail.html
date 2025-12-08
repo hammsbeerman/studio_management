@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>POS Ledger — {{ item.name }}</h3>
+
+<p>
+  {% if item.primary_vendor_part_number %}
+    <strong>Vendor PN:</strong> {{ item.primary_vendor_part_number }}<br>
+  {% endif %}
+  <strong>On hand (now):</strong> {{ on_hand }}<br>
+  <strong>Net qty sold in period:</strong> {{ net_sold }}
+</p>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-3">
+    <label class="form-label">Start date</label>
+    <input
+      type="text"
+      name="start"
+      value="{{ start }}"
+      class="form-control form-control-sm datepicker"
+      autocomplete="off"
+    >
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">End date</label>
+    <input
+      type="text"
+      name="end"
+      value="{{ end }}"
+      class="form-control form-control-sm datepicker"
+      autocomplete="off"
+    >
+  </div>
+  <div class="col-md-3 d-flex align-items-end">
+    <button type="submit" class="btn btn-sm btn-primary">
+      Filter
+    </button>
+  </div>
+  <div class="col-md-3 d-flex align-items-end justify-content-end">
+    <a
+      href="{% url 'retail:pos_qty_sold_report' %}?start={{ start }}&end={{ end }}"
+      class="btn btn-sm btn-outline-secondary"
+    >
+      Back to Qty Sold
+    </a>
+  </div>
+</form>
+
+<table class="table table-sm table-striped">
+  <thead>
+    <tr>
+      <th>Date/Time</th>
+      <th>Source</th>
+      <th class="text-end">Qty delta</th>
+      <th>Note</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in entries %}
+      <tr>
+        <td>{{ e.when }}</td>
+        <td>{{ e.get_source_type_display }}</td>
+        <td class="text-end">
+          {{ e.qty_delta }}
+        </td>
+        <td>{{ e.note }}</td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="4" class="text-muted">
+          No POS ledger entries for this item in the selected period.
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    $(function () {
+      $(".datepicker").datepicker({
+        dateFormat: "yy-mm-dd"
+      });
+    });
+  </script>
+{% endblock %}

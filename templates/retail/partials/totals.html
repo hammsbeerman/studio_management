@@ -1,0 +1,27 @@
+<div class="small">
+  <div class="d-flex justify-content-between">
+    <span>Subtotal</span>
+    <strong>{{ subtotal|default_if_none:"0.00" }}</strong>
+  </div>
+
+  <div class="d-flex justify-content-between">
+    <span>
+      Tax
+      {% if sale.tax_exempt %}
+        <span class="text-muted">(Exempt)</span>
+      {% else %}
+        <span class="text-muted">
+          ({{ sale.tax_rate|floatformat:3 }} rate)
+        </span>
+      {% endif %}
+    </span>
+    <strong>{{ tax|default_if_none:"0.00" }}</strong>
+  </div>
+
+  <hr class="my-1">
+
+  <div class="d-flex justify-content-between">
+    <span>Total</span>
+    <strong>{{ total|default_if_none:"0.00" }}</strong>
+  </div>
+</div>

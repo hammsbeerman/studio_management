@@ -1,0 +1,39 @@
+{% if sale.customer and not is_walkin %}
+  <div class="d-flex flex-column gap-1">
+    <form
+        method="post"
+        hx-post="{% url 'retail:sale_toggle_delivery' sale.id %}"
+        hx-target="#delivery-toggle"
+        hx-swap="innerHTML"
+        class="d-inline"
+    >
+      {% csrf_token %}
+      {% if sale.requires_delivery %}
+        <button type="submit" class="btn btn-sm btn-outline-secondary">
+          Remove delivery from this sale
+        </button>
+      {% else %}
+        <button type="submit" class="btn btn-sm btn-outline-info">
+          Mark this sale for delivery
+        </button>
+      {% endif %}
+    </form>
+
+    {% if sale.requires_delivery %}
+      <div class="small">
+        <span class="badge bg-info text-dark me-1">
+          Delivery required
+        </span>
+        {% if sale.delivery %}
+          <span class="text-muted">
+            Scheduled for {{ sale.delivery.scheduled_date|date:"Y-m-d" }}
+          </span>
+        {% else %}
+          <span class="text-muted">
+            Scheduled date will be set on the delivery report.
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+{% endif %}

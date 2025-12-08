@@ -1,0 +1,96 @@
+<tr id="item-{{ item.id }}">
+  <form
+    method="post"
+    hx-post="{% url 'inventory:retail_pricing_admin' %}?category={{ category_param }}&q={{ search }}"
+    hx-target="#item-{{ item.id }}"
+    hx-swap="outerHTML"
+    hx-trigger="change delay:500ms from:input, change delay:500ms from:select"
+    class="d-contents"
+  >
+    {% csrf_token %}
+    <input type="hidden" name="action" value="update_item_pricing">
+    <input type="hidden" name="item_id" value="{{ item.id }}">
+
+    {# ITEM + CATEGORY SELECT #}
+    <td>
+      <div>
+        {{ item.name }}
+        {% if item.primary_vendor_part_number %}
+          <br>
+          <small class="text-muted">
+            {{ item.primary_vendor_part_number }}
+          </small>
+        {% endif %}
+      </div>
+
+      <div class="mt-1">
+        <select name="retail_category" class="form-select form-select-sm">
+          <option value="">-- Uncategorized --</option>
+          {% for cat in categories %}
+            <option value="{{ cat.id }}"
+              {% if item.retail_category_id == cat.id %}selected{% endif %}
+            >
+              {{ cat.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </td>
+
+    {# COST #}
+    <td class="text-end align-middle">
+      {{ item.unit_cost|default:0|floatformat:2 }}
+    </td>
+
+    {# RETAIL PRICE OVERRIDE #}
+    <td class="text-end align-middle">
+      <input
+        type="number"
+        step="0.01"
+        name="retail_price"
+        value="{{ item.retail_price }}"
+        class="form-control form-control-sm text-end"
+        style="width: 90px;"
+        placeholder="(auto)"
+      >
+    </td>
+
+    {# ITEM MARKUP % #}
+    <td class="text-end align-middle">
+      <input
+        type="number"
+        step="0.01"
+        name="retail_markup_percent"
+        value="{{ item.retail_markup_percent }}"
+        class="form-control form-control-sm text-end"
+        style="width: 90px;"
+        placeholder="(use cat)"
+      >
+    </td>
+
+    {# ITEM MARKUP $ #}
+    <td class="text-end align-middle">
+      <input
+        type="number"
+        step="0.01"
+        name="retail_markup_flat"
+        value="{{ item.retail_markup_flat }}"
+        class="form-control form-control-sm text-end"
+        style="width: 90px;"
+        placeholder="0.00"
+      >
+    </td>
+
+    {# EFFECTIVE PRICE #}
+    <td class="text-end align-middle">
+      ${{ item.computed_retail_price|default:0|floatformat:2 }}
+    </td>
+
+    {# BUTTON (not strictly needed, HTMX autosaves) #}
+    <td class="text-end align-middle">
+      <button type="submit" class="btn btn-sm btn-outline-primary">
+        Save
+      </button>
+    </td>
+  </form>
+</tr>

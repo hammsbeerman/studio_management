@@ -1,0 +1,35 @@
+{% if item.retail_workorder_items.exists %}
+  <h5>Retail POS Purchase History</h5>
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Workorder</th>
+        <th>Customer</th>
+        <th class="text-end">Qty</th>
+        <th class="text-end">Unit</th>
+        <th class="text-end">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in item.retail_workorder_items.all|dictsortreversed:"dateentered" %}
+        <tr>
+          <td>{{ r.dateentered|date:"Y-m-d" }}</td>
+          <td>
+            {% if r.workorder %}
+              <a href="{% url 'workorders:overview' id=r.workorder.workorder %}">
+                {{ r.workorder.workorder }}
+              </a>
+            {% endif %}
+          </td>
+          <td>{{ r.hr_customer }}</td>
+          <td class="text-end">{{ r.quantity }}</td>
+          <td class="text-end">{{ r.unit_price }}</td>
+          <td class="text-end">{{ r.total_price }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="text-muted small">No retail POS history for this item yet.</p>
+{% endif %}

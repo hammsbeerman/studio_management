@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h3>Retail Pricing Admin</h3>
+
+<div class="row">
+  {# LEFT: categories sidebar #}
+  <div class="col-md-4">
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Categories &amp; Markup</span>
+        {% if current_category or is_uncategorized %}
+          <a href="{% url 'inventory:retail_pricing_admin' %}" class="btn btn-sm btn-outline-secondary">
+            &laquo; All
+          </a>
+        {% endif %}
+      </div>
+      <div class="card-body p-2">
+
+        <table class="table table-sm mb-2">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th class="text-end">Default %</th>
+              <th class="text-end">Flat $</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {# Virtual "Uncategorized" row #}
+            <tr>
+              <td>
+                <a href="{% url 'inventory:retail_pricing_admin' %}?category=uncategorized">
+                  Uncategorized
+                </a>
+                {% if is_uncategorized %}
+                  <span class="badge bg-secondary ms-1">selected</span>
+                {% endif %}
+              </td>
+              <td class="text-end text-muted small" colspan="3">
+                Items with no retail category
+              </td>
+            </tr>
+
+            {# Real categories with HTMX autosave for markup #}
+            {% for cat in categories %}
+              <tr id="cat-{{ cat.id }}">
+                <form
+                  method="post"
+                  hx-post="{% url 'inventory:retail_pricing_admin' %}?category={{ category_filter }}&q={{ search }}"
+                  hx-target="#cat-{{ cat.id }}"
+                  hx-swap="outerHTML"
+                  hx-trigger="change delay:500ms from:input"
+                  class="d-contents"
+                >
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="update_category_markup">
+                  <input type="hidden" name="category_id" value="{{ cat.id }}">
+
+                  <td>
+                    <a href="{% url 'inventory:retail_pricing_admin' %}?category={{ cat.id }}">
+                      {{ cat.name }}
+                    </a>
+                    {% if current_category and current_category.id == cat.id %}
+                      <span class="badge bg-secondary ms-1">selected</span>
+                    {% endif %}
+                  </td>
+
+                  <td class="text-end">
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="default_markup_percent"
+                      value="{{ cat.default_markup_percent }}"
+                      class="form-control form-control-sm text-end"
+                      style="width: 80px;"
+                      placeholder="%"
+                    >
+                  </td>
+
+                  <td class="text-end">
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="default_markup_flat"
+                      value="{{ cat.default_markup_flat }}"
+                      class="form-control form-control-sm text-end"
+                      style="width: 80px;"
+                      placeholder="$"
+                    >
+                  </td>
+
+                  <td class="text-end">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                      Save
+                    </button>
+                  </td>
+                </form>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-muted">No categories yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <hr>
+
+        <h6>Add Category</h6>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_category">
+          {{ new_category_form|crispy }}
+          <button type="submit" class="btn btn-primary btn-sm">Add</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        Bulk Move Items
+      </div>
+      <div class="card-body">
+        <form method="post" class="row g-2">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="bulk_move_items">
+
+          <div class="col-12">
+            <label class="form-label">From category (optional)</label>
+            <select name="source_category" class="form-select form-select-sm">
+              <option value="">Any</option>
+              <option value="uncategorized"
+                {% if category_filter == "uncategorized" %}selected{% endif %}>
+                Uncategorized
+              </option>
+              {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">To category</label>
+            <select name="target_category" class="form-select form-select-sm">
+              <option value="">-- choose --</option>
+              {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="col-12">
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+              Move Items
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {# RIGHT: items in selected category or Uncategorized #}
+  <div class="col-md-8">
+    {% if current_category or is_uncategorized %}
+      <div class="card">
+        <div class="card-header">
+          {% if is_uncategorized %}
+            Uncategorized items
+          {% else %}
+            Items in {{ current_category.name }}
+          {% endif %}
+        </div>
+        <div class="card-body p-2">
+
+          <form method="get" class="row g-2 mb-2">
+            <input
+              type="hidden"
+              name="category"
+              value="{% if is_uncategorized %}uncategorized{% else %}{{ current_category.id }}{% endif %}"
+            >
+            <div class="col-md-6">
+              <input
+                type="text"
+                name="q"
+                value="{{ search }}"
+                class="form-control form-control-sm"
+                placeholder="Search items..."
+              >
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-sm btn-outline-secondary">
+                Filter
+              </button>
+            </div>
+          </form>
+
+          <table class="table table-sm table-striped">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="text-end">Cost</th>
+                <th class="text-end">Retail Price</th>
+                <th class="text-end">Item Markup %</th>
+                <th class="text-end">Item Markup $</th>
+                <th class="text-end">Effective Price</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in page_obj %}
+                <tr id="item-{{ item.id }}">
+                  <form
+                    method="post"
+                    hx-post="{% url 'inventory:retail_pricing_admin' %}?category={{ category_filter }}&q={{ search }}"
+                    hx-target="#item-{{ item.id }}"
+                    hx-swap="outerHTML"
+                    hx-trigger="change delay:500ms from:input, change delay:500ms from:select"
+                    class="d-contents"
+                  >
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_item_pricing">
+                    <input type="hidden" name="item_id" value="{{ item.id }}">
+
+                    {# ITEM + CATEGORY SELECT #}
+                    <td>
+                      <div>
+                        {{ item.name }}
+                        {% if item.primary_vendor_part_number %}
+                          <br>
+                          <small class="text-muted">
+                            {{ item.primary_vendor_part_number }}
+                          </small>
+                        {% endif %}
+                      </div>
+
+                      <div class="mt-1">
+                        <select name="retail_category" class="form-select form-select-sm">
+                          <option value="">-- Uncategorized --</option>
+                          {% for cat in categories %}
+                            <option value="{{ cat.id }}"
+                              {% if item.retail_category_id == cat.id %}selected{% endif %}
+                            >
+                              {{ cat.name }}
+                            </option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </td>
+
+                    {# COST #}
+                    <td class="text-end align-middle">
+                      {{ item.unit_cost|default:0|floatformat:2 }}
+                    </td>
+
+                    {# RETAIL PRICE OVERRIDE #}
+                    <td class="text-end align-middle">
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="retail_price"
+                        value="{{ item.retail_price }}"
+                        class="form-control form-control-sm text-end"
+                        style="width: 90px;"
+                        placeholder="(auto)"
+                      >
+                    </td>
+
+                    {# ITEM MARKUP % #}
+                    <td class="text-end align-middle">
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="retail_markup_percent"
+                        value="{{ item.retail_markup_percent }}"
+                        class="form-control form-control-sm text-end"
+                        style="width: 90px;"
+                        placeholder="(use cat)"
+                      >
+                    </td>
+
+                    {# ITEM MARKUP $ #}
+                    <td class="text-end align-middle">
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="retail_markup_flat"
+                        value="{{ item.retail_markup_flat }}"
+                        class="form-control form-control-sm text-end"
+                        style="width: 90px;"
+                        placeholder="0.00"
+                      >
+                    </td>
+
+                    {# EFFECTIVE PRICE #}
+                    <td class="text-end align-middle">
+                      ${{ item.computed_retail_price|default:0|floatformat:2 }}
+                    </td>
+
+                    {# BUTTON (not strictly needed, HTMX autosaves) #}
+                    <td class="text-end align-middle">
+                      <button type="submit" class="btn btn-sm btn-outline-primary">
+                        Save
+                      </button>
+                    </td>
+                  </form>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="7" class="text-muted">No items found in this view.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          {% if page_obj and page_obj.paginator.num_pages > 1 %}
+            <nav class="mt-2">
+              <ul class="pagination pagination-sm justify-content-center flex-wrap">
+                {% if page_obj.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link"
+                       href="?category={{ category_filter }}&page={{ page_obj.previous_page_number }}&q={{ search }}">&laquo;</a>
+                  </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                  <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                    <a class="page-link"
+                       href="?category={{ category_filter }}&page={{ num }}&q={{ search }}">{{ num }}</a>
+                  </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                  <li class="page-item">
+                    <a class="page-link"
+                       href="?category={{ category_filter }}&page={{ page_obj.next_page_number }}&q={{ search }}">&raquo;</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          {% endif %}
+        </div>
+      </div>
+    {% else %}
+      <div class="card">
+        <div class="card-body">
+          <p class="mb-0 text-muted">
+            Select a category on the left to view and edit item pricing.
+          </p>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -6,6 +6,9 @@ from .models import OrderOut, SetPrice, Photography, Vendor, InventoryMaster, Ve
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from localflavor.us.forms import USStateSelect
+from decimal import Decimal
+from controls.models import RetailInventoryCategory
+
 
 class AddVendorForm(forms.ModelForm):
    state = forms.CharField(widget=USStateSelect(), initial='WI')
@@ -77,6 +80,37 @@ class PhotographyForm(forms.ModelForm):
 #        fields = ['invoice_date', 'item', 'vendor', 'vendor_item_number', 'invoice_number', 'shipped_uom', 'shipped_qty', 'internal_uom', 'internal_qty', 'price_per_m', 'total_price']
 #        labels = {
 #         }
+
+class RetailCategoryForm(forms.ModelForm):
+    class Meta:
+        model = RetailInventoryCategory
+        fields = ["name", "default_markup_percent", "default_markup_flat"]
+
+
+class RetailCategoryMarkupForm(forms.ModelForm):
+    class Meta:
+        model = RetailInventoryCategory
+        fields = ["default_markup_percent", "default_markup_flat"]
+        widgets = {
+            "default_markup_percent": forms.NumberInput(attrs={"step": "0.01"}),
+            "default_markup_flat": forms.NumberInput(attrs={"step": "0.01"}),
+        }
+
+
+class InventoryItemPricingForm(forms.ModelForm):
+    class Meta:
+        model = InventoryMaster
+        fields = [
+            "retail_category",
+            "retail_price",          # hard override
+            "retail_markup_percent",
+            "retail_markup_flat",
+        ]
+        widgets = {
+            "retail_price": forms.NumberInput(attrs={"step": "0.01"}),
+            "retail_markup_percent": forms.NumberInput(attrs={"step": "0.01"}),
+            "retail_markup_flat": forms.NumberInput(attrs={"step": "0.01"}),
+        }
        
 
 

@@ -4,9 +4,10 @@ from django.http import HttpResponse, Http404
 from django.views.decorators.http import require_POST
 from django.db.models import Avg, Count, Min, Sum, F
 from django.contrib.auth.decorators import login_required
+from django.template.loader import render_to_string
 from django.utils import timezone
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, date
 from django.contrib import messages
 from customers.models import Customer, Contact, ShipTo
 from controls.models import Numbering, Category, SubCategory, SetPriceCategory, SetPriceItemPrice, JobStatus
@@ -15,10 +16,25 @@ from .forms import WorkorderForm, WorkorderNewItemForm, WorkorderItemForm, Desig
 from krueger.forms import KruegerJobDetailForm, WideFormatDetailForm
 from krueger.models import KruegerJobDetail, WideFormat
 from inventory.forms import OrderOutForm, SetPriceForm, PhotographyForm
-from inventory.models import OrderOut, SetPrice, Photography, Inventory
+from inventory.models import OrderOut, SetPrice, Photography, Inventory, RetailWorkorderItem
 from pricesheet.forms import WideFormatForm
 from accounts.models import Profile
 from finance.models import WorkorderPayment
+from workorders.services.totals import compute_workorder_totals
+from retail.models import RetailSale, Delivery
+from retail.delivery_utils import (
+    get_sticky_delivery_date,
+    set_sticky_delivery_date,
+    ensure_sale_delivery,
+    ensure_workorder_delivery,
+    ensure_route_entry_for_customer,
+    STATUS_PENDING,
+    STATUS_CANCELLED,
+    cancel_sale_delivery,
+    cancel_workorder_delivery,
+    sync_workorder_delivery_from_sale,
+)
+from retail.models import Delivery
 
 def _next_number(counter_id: int) -> int:
     with transaction.atomic():
@@ -545,74 +561,107 @@ def add_item(request, parent_id):
     }
     return render(request, 'workorders/modals/new_item_form.html', context)
 
+# @login_required
+# def workorder_item_list(request, id=None):
+#     #print(id)
+#     if not request.htmx:
+#         raise Http404
+#     try:
+#         #print(id)
+#         #id=1
+#         #obj = get_object_or_404(Workorder, id=id,)
+#         #qs = Workorder.objects.all()
+#         print('hello')
+#         print(id)
+#         completed = Workorder.objects.get(id=id)
+#         obj = WorkorderItem.objects.filter(workorder_id=id)
+#         #category = Category.objects.filter(id=obj.item_category.id)
+#         #print(category.name)
+#         #print(obj.item_category_id.name)
+#         subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).exclude(tax_exempt=1).aggregate(Sum('absolute_price'))
+#         subtotal_exempt = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).exclude(tax_exempt=0).aggregate(Sum('absolute_price'))
+#         tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
+#         total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
+#         print('Abs tax')
+#         #print(abs_tax)
+#         subtotal_aggregate = list(subtotal.values())[0]
+#         subtotal_exempt_aggregate = list(subtotal_exempt.values())[0]
+#         if subtotal_aggregate:
+#             print(subtotal_aggregate)
+#             tax_percent = Decimal.from_float(.055)
+#             tax_amount = Decimal.from_float(1.055)
+#             subtotal_aggregate = round(subtotal_aggregate, 3)
+#             tax_percent = round(tax_percent, 3)
+#             abs_tax = subtotal_aggregate * tax_percent
+#             abs_tax = round(abs_tax, 2)
+#             print(subtotal_aggregate)
+#             print(tax_percent)
+#             print(abs_tax)
+#         else:
+#             abs_tax = 0
+#         if not subtotal_aggregate:
+#             subtotal_aggregate = 0
+#         if not subtotal_exempt_aggregate:
+#             subtotal_exempt_aggregate = 0
+#         if not abs_tax:
+#             abs_tax = 0
+#         subtotal = subtotal_aggregate + subtotal_exempt_aggregate
+#         total = subtotal_aggregate + subtotal_exempt_aggregate + abs_tax
+#         #abs_tax = round(abs_tax, 2)
+#         #override_total = WorkorderItem.objects.filter(workorder_id=id).exclude(override_price__isnull=True).aggregate(Sum('override_price'))
+#         print('total')
+#         print(total)
+#     except:
+#         obj = None
+#     if obj is  None:
+#         print('broken')
+#         return HttpResponse("Not found.")
+#     test = 'notes'
+#     context = {
+#         "test": test,
+#         "items": obj,
+#         "subtotal":subtotal,
+#         #"tax":tax,
+#         "abs_tax":abs_tax,
+#         "total": total,
+#     }
+#     print(completed.completed)
+#     if completed.completed == 1:
+#         return render(request, "workorders/partials/item_list_completed.html", context)
+#     return render(request, "workorders/partials/item_list.html", context) 
+
 @login_required
 def workorder_item_list(request, id=None):
-    #print(id)
+    """
+    HTMX endpoint that renders the workorder items table +
+
+    Bottom line totals that now come from compute_workorder_totals,
+    so they include BOTH:
+      - regular WorkorderItem rows
+      - POS RetailWorkorderItem rows
+    """
     if not request.htmx:
         raise Http404
-    try:
-        #print(id)
-        #id=1
-        #obj = get_object_or_404(Workorder, id=id,)
-        #qs = Workorder.objects.all()
-        print('hello')
-        print(id)
-        completed = Workorder.objects.get(id=id)
-        obj = WorkorderItem.objects.filter(workorder_id=id)
-        #category = Category.objects.filter(id=obj.item_category.id)
-        #print(category.name)
-        #print(obj.item_category_id.name)
-        subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).exclude(tax_exempt=1).aggregate(Sum('absolute_price'))
-        subtotal_exempt = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).exclude(tax_exempt=0).aggregate(Sum('absolute_price'))
-        tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
-        total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
-        print('Abs tax')
-        #print(abs_tax)
-        subtotal_aggregate = list(subtotal.values())[0]
-        subtotal_exempt_aggregate = list(subtotal_exempt.values())[0]
-        if subtotal_aggregate:
-            print(subtotal_aggregate)
-            tax_percent = Decimal.from_float(.055)
-            tax_amount = Decimal.from_float(1.055)
-            subtotal_aggregate = round(subtotal_aggregate, 3)
-            tax_percent = round(tax_percent, 3)
-            abs_tax = subtotal_aggregate * tax_percent
-            abs_tax = round(abs_tax, 2)
-            print(subtotal_aggregate)
-            print(tax_percent)
-            print(abs_tax)
-        else:
-            abs_tax = 0
-        if not subtotal_aggregate:
-            subtotal_aggregate = 0
-        if not subtotal_exempt_aggregate:
-            subtotal_exempt_aggregate = 0
-        if not abs_tax:
-            abs_tax = 0
-        subtotal = subtotal_aggregate + subtotal_exempt_aggregate
-        total = subtotal_aggregate + subtotal_exempt_aggregate + abs_tax
-        #abs_tax = round(abs_tax, 2)
-        #override_total = WorkorderItem.objects.filter(workorder_id=id).exclude(override_price__isnull=True).aggregate(Sum('override_price'))
-        print('total')
-        print(total)
-    except:
-        obj = None
-    if obj is  None:
-        print('broken')
-        return HttpResponse("Not found.")
-    test = 'notes'
+
+    workorder = get_object_or_404(Workorder, id=id)
+
+    # existing item list (non-POS items)
+    items = WorkorderItem.objects.filter(workorder=workorder)
+
+    # 🔹 Unified totals (regular + POS)
+    totals = compute_workorder_totals(workorder)
+
     context = {
-        "test": test,
-        "items": obj,
-        "subtotal":subtotal,
-        #"tax":tax,
-        "abs_tax":abs_tax,
-        "total": total,
+        "test": "notes",          # preserving your existing context key
+        "items": items,
+        "subtotal": totals.subtotal,
+        "abs_tax": totals.tax,   # template uses `abs_tax` for tax display
+        "total": totals.total,
     }
-    print(completed.completed)
-    if completed.completed == 1:
+
+    if workorder.completed:
         return render(request, "workorders/partials/item_list_completed.html", context)
-    return render(request, "workorders/partials/item_list.html", context) 
+    return render(request, "workorders/partials/item_list.html", context)
 
 @login_required
 def workorder_total(request, id=None):
@@ -1767,72 +1816,67 @@ def readnotes(request, pk=None):
 
 @login_required
 def quote_to_workorder(request):
-    quote = request.GET.get('quote')
-    n = Numbering.objects.get(name='Workorder Number')
-    workorder_number = n.value
-    try:
-        item = Workorder.objects.get(workorder = quote)
-        if item.quote == 0:
-            return redirect("workorders:overview", id=item.workorder)
-        print(item.workorder)
-        print(item.quote)
-        print('total')
-        print(item.workorder_total)
-        item.quoted_price = item.workorder_total
-        item.workorder = workorder_number
-        item.quote = 0
-        item.save()
-    except Exception as e:
-        raise e
-    print(quote)
-    try:
-        items = WorkorderItem.objects.filter(workorder_hr = quote)
-        for item in items:
-            item.workorder_hr = workorder_number
-            item.save()
-    except Exception as e:
-        raise e
-    try:
-        items = KruegerJobDetail.objects.filter(hr_workorder = quote)
-        for item in items:
-            item.hr_workorder = workorder_number
-            item.save()
-    except Exception as e:
-        raise e
-    try:
-        items = WideFormat.objects.filter(hr_workorder = quote)
-        for item in items:
-            item.hr_workorder = workorder_number
-            item.save()
-    except Exception as e:
-        raise e
-    try:
-        items = OrderOut.objects.filter(hr_workorder = quote)
-        for item in items:
-            item.hr_workorder = workorder_number
-            item.save()
-    except Exception as e:
-        raise e
-    try:
-        items = SetPrice.objects.filter(hr_workorder = quote)
-        for item in items:
-            item.hr_workorder = workorder_number
-            item.save()
-    except Exception as e:
-        raise e
-    try:
-        items = Photography.objects.filter(hr_workorder = quote)
-        for item in items:
-            item.hr_workorder = workorder_number
-            item.save()
-    except Exception as e:
-        raise e
-    print(n.value)
-    inc = int('1')
-    n.value = n.value + inc
-    print(n.value)
-    n.save()
-    return redirect("workorders:overview", id=workorder_number)
+    with transaction.atomic():
+        """
+        Convert a quote (identified by its `workorder` string) into a real workorder.
+
+        - Uses Numbering "Workorder Number" to assign the next workorder number.
+        - Copies that number onto:
+            * Workorder.workorder
+            * WorkorderItem.workorder_hr
+            * KruegerJobDetail.hr_workorder
+            * WideFormat.hr_workorder
+            * OrderOut.hr_workorder
+            * SetPrice.hr_workorder
+            * Photography.hr_workorder
+        - If the given workorder is already a non-quote, just redirect to it.
+        """
+        quote = request.GET.get("quote")
+
+        # Guard bad / missing quote param
+        if not quote or quote in ("None", "null", "NULL"):
+            messages.error(request, "No quote selected.")
+            # Fallback – adjust if you have a dedicated quote list view
+            return redirect("workorders:overview", id=0)
+
+        # Get the next workorder number from Numbering
+        numbering = Numbering.objects.get(name="Workorder Number")
+        workorder_number = numbering.value  # usually an int
+
+        # Fetch the quote workorder
+        try:
+            wo = Workorder.objects.get(workorder=quote)
+        except Workorder.DoesNotExist:
+            messages.error(request, "Quote not found.")
+            return redirect("workorders:overview", id=0)
+
+        # If it's already a "real" workorder, just go there
+        if str(wo.quote) == "0":
+            return redirect("workorders:overview", id=wo.workorder)
+
+        # Convert quote → workorder
+        wo.quoted_price = wo.workorder_total
+        wo.workorder = workorder_number
+        # keep quote type consistent with field (int or str)
+        wo.quote = "0" if isinstance(wo.quote, str) else 0
+        wo.save()
+
+        old_id = quote
+        new_id = workorder_number
+
+        # Update related records in bulk
+        WorkorderItem.objects.filter(workorder_hr=old_id).update(workorder_hr=new_id)
+        KruegerJobDetail.objects.filter(hr_workorder=old_id).update(hr_workorder=new_id)
+        WideFormat.objects.filter(hr_workorder=old_id).update(hr_workorder=new_id)
+        OrderOut.objects.filter(hr_workorder=old_id).update(hr_workorder=new_id)
+        SetPrice.objects.filter(hr_workorder=old_id).update(hr_workorder=new_id)
+        Photography.objects.filter(hr_workorder=old_id).update(hr_workorder=new_id)
+
+        # Increment numbering
+        numbering.value = numbering.value + 1
+        numbering.save(update_fields=["value"])
+
+        return redirect("workorders:overview", id=workorder_number)
 
 @login_required
 def abandon_quote(request):
@@ -1848,110 +1892,151 @@ def abandon_quote(request):
 
 @login_required
 def complete_status(request):
-    workorder = request.GET.get('workorder')
-    print(workorder)
-    parent = WorkorderItem.objects.filter(workorder=workorder, parent=1)
-    parent.update(absolute_price = 0, tax_amount = 0, total_with_tax = 0)
-    for p in parent:
-        #absolute price
-        ap = 0
-        #tax amount
-        ta = 0
-        #total with tax
-        twt = 0
-        childs = WorkorderItem.objects.filter(parent_item=p.id)
-        for c in childs:
-            x = WorkorderItem.objects.get(pk=c.id)
-            if x.billable:
-                try:
-                    ap = ap + x.absolute_price
-                except:
-                    pass
-                try:
-                    ta = ta + x.tax_amount
-                except:
-                    pass
-                try:
-                    twt = twt + x.total_with_tax
-                except:
-                    pass
-                print(twt)
-        print(twt)
-        parent = WorkorderItem.objects.get(pk=p.id)
-        parent.absolute_price = ap
-        parent.tax_amount = ta
-        parent.total_with_tax = twt
-        parent.save()
-    item = Workorder.objects.get(id = workorder)
-    total_invoice = WorkorderItem.objects.filter(workorder_id=workorder).exclude(billable=0).exclude(parent=1).aggregate(
-            sum=Sum('total_with_tax'),
-            tax=Sum('tax_amount'),
-            abs=Sum('absolute_price')
-            )
-    #total_invoice = list(WorkorderItem.objects.aggregate(Sum('total_with_tax')).values())[0]
-    #total_with_tax = list(total_invoice.values())[0]
-    tax = list(total_invoice.values())[1]
-    subtotal = list(total_invoice.values())[2]
-    if not subtotal:
-        subtotal = 0
-    subtotal = round(subtotal, 2)
-    tax = round(tax, 2)
-    if not tax:
-        tax = 0
-    tax_percent = Decimal.from_float(.055)
-    tax_amount = Decimal.from_float(1.055)
-    abs_tax = subtotal * tax_percent
-    abs_tax = round(abs_tax, 2)
-    total = subtotal + tax
+    workorder_id = request.GET.get("workorder")
+    if not workorder_id:
+        return redirect("workorders:overview", id=0)
+    
+    with transaction.atomic():
+        # 1) Roll up parent WorkorderItems from children
+        parents_qs = WorkorderItem.objects.filter(workorder_id=workorder_id, parent=1)
+        parents_qs.update(absolute_price=0, tax_amount=0, total_with_tax=0)
 
-    if item.completed == 0:
-        item.total_balance = total
-        item.open_balance = total
-        item.updated = timezone.now()
-        item.date_completed = timezone.now()
-        item.workorder_total = total
-        item.subtotal = subtotal
-        item.tax = tax
-        if not item.amount_paid:
-            item.amount_paid = 0
-        item.completed = 1
-        #item.total_balance = 
-        item.save()
-    else:
-        if not item.amount_paid:
-            item.amount_paid = 0
-        item.completed = 0
-        item.total_balance = 0
-        item.open_balance = 0
-        item.checked_and_verified = 0
-        item.updated = timezone.now()
-        item.date_completed = None
-        item.workorder_total = 0
-        item.subtotal = 0
-        item.tax = 0
-        item.save()
-    cust = item.customer_id
-    #open_balance = Workorder.objects.filter(customer_id=cust).exclude(billed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
-    open_balance = Workorder.objects.filter(customer_id=cust).exclude(completed=0).exclude(paid_in_full=1).exclude(quote = 1).aggregate(Sum('open_balance'))
-    open_balance = list(open_balance.values())[0]
-    print('open balance')
-    print(open_balance)
-    if open_balance:
-        open_balance = round(open_balance, 2)
-    else:
-        open_balance = total
-    #print(open_balance)
-    new_high = Customer.objects.get(id=cust)
-    if new_high.high_balance:
-        if open_balance > new_high.high_balance:
-            high_balance = open_balance
+        for p in parents_qs:
+            ap = Decimal("0")   # absolute price (pre-tax)
+            ta = Decimal("0")   # tax amount
+            twt = Decimal("0")  # total with tax
+
+            childs = WorkorderItem.objects.filter(parent_item=p.id, billable=True)
+            for c in childs:
+                if c.absolute_price is not None:
+                    ap += c.absolute_price
+                if c.tax_amount is not None:
+                    ta += c.tax_amount
+                if c.total_with_tax is not None:
+                    twt += c.total_with_tax
+
+            p.absolute_price = ap
+            p.tax_amount = ta
+            p.total_with_tax = twt
+            p.save(update_fields=["absolute_price", "tax_amount", "total_with_tax"])
+
+        # 2) Load Workorder header
+        item = get_object_or_404(Workorder, id=workorder_id)
+
+        # Unified totals (WorkorderItem + POS/RetailWorkorderItem)
+        totals = compute_workorder_totals(item)
+        subtotal = totals.subtotal
+        tax = totals.tax
+        total = totals.total
+
+        # 3) Toggle completed / un-complete and set balances
+        if item.completed == 0:
+            # Completing the workorder
+            if not item.amount_paid:
+                item.amount_paid = Decimal("0")
+
+            item.subtotal = subtotal
+            item.tax = tax
+            item.workorder_total = total
+            item.total_balance = total
+            item.open_balance = total - item.amount_paid
+            item.updated = timezone.now()
+            item.date_completed = timezone.now()
+            item.completed = 1
+            item.save(
+                update_fields=[
+                    "subtotal",
+                    "tax",
+                    "workorder_total",
+                    "total_balance",
+                    "open_balance",
+                    "amount_paid",
+                    "updated",
+                    "date_completed",
+                    "completed",
+                ]
+            )
+
+            # 🔹 Mark any linked POS sales as completed/locked (closed on account)
+            sale_ids = (
+                RetailWorkorderItem.objects
+                .filter(workorder=item)
+                .values_list("sale_id", flat=True)
+                .distinct()
+            )
+            if sale_ids:
+                RetailSale.objects.filter(pk__in=sale_ids).update(
+                    status=RetailSale.STATUS_COMPLETED,
+                    locked=True,
+                )
+
         else:
-            high_balance = new_high.high_balance
-    else: 
-        print(total)
-        high_balance = total
-    Customer.objects.filter(pk=cust).update(open_balance = open_balance, high_balance = high_balance)
-    return redirect("workorders:overview", id=item.workorder)
+            # Un-completing the workorder
+            if not item.amount_paid:
+                item.amount_paid = Decimal("0")
+
+            item.completed = 0
+            item.total_balance = Decimal("0")
+            item.open_balance = Decimal("0")
+            item.checked_and_verified = 0
+            item.updated = timezone.now()
+            item.date_completed = None
+            item.workorder_total = Decimal("0")
+            item.subtotal = Decimal("0")
+            item.tax = Decimal("0")
+            item.save(
+                update_fields=[
+                    "completed",
+                    "total_balance",
+                    "open_balance",
+                    "checked_and_verified",
+                    "updated",
+                    "date_completed",
+                    "workorder_total",
+                    "subtotal",
+                    "tax",
+                ]
+            )
+
+            # Optional: re-open linked POS sales
+            sale_ids = (
+                RetailWorkorderItem.objects
+                .filter(workorder=item)
+                .values_list("sale_id", flat=True)
+                .distinct()
+            )
+            if sale_ids:
+                RetailSale.objects.filter(pk__in=sale_ids).update(
+                    status=RetailSale.STATUS_OPEN,
+                    locked=False,
+                )
+
+        # 4) Recompute customer open balance & high balance
+        cust_id = item.customer_id
+        if cust_id:
+            open_balance_agg = (
+                Workorder.objects
+                .filter(customer_id=cust_id)
+                .exclude(completed=0)
+                .exclude(paid_in_full=1)
+                .exclude(quote=1)
+                .aggregate(total=Sum("open_balance"))
+            )
+            open_balance = open_balance_agg["total"] or Decimal("0")
+            open_balance = round(open_balance, 2)
+
+            customer = Customer.objects.get(id=cust_id)
+            if customer.high_balance:
+                high_balance = max(open_balance, customer.high_balance)
+            else:
+                high_balance = open_balance
+
+            Customer.objects.filter(pk=cust_id).update(
+                open_balance=open_balance,
+                high_balance=high_balance,
+            )
+
+        return redirect("workorders:overview", id=item.workorder)
 
 @login_required
 def billable_status(request, id):
@@ -2303,3 +2388,207 @@ def delivered(request, id):
 
     context = {"workorder": workorder}
     return render(request, "workorders/partials/delivered.html", context)
+
+@require_POST
+@login_required
+def workorder_toggle_delivery(request, pk):
+    wo = get_object_or_404(Workorder, pk=pk)
+
+    # Turn OFF delivery
+    if wo.requires_delivery:
+        wo.requires_delivery = False
+        wo.delivery_date = None
+
+        # don't touch pickup here; user is simply unmarking delivery
+        wo.save(update_fields=["requires_delivery", "delivery_date"])
+
+    # Turn ON delivery (and force pickup OFF)
+    else:
+        wo.requires_delivery = True
+        if not wo.delivery_date:
+            wo.delivery_date = timezone.localdate()
+
+        # mutually exclusive with pickup
+        wo.requires_pickup = False
+        wo.date_called = None
+        wo.delivery_pickup = "Delivery"
+
+        wo.save(
+            update_fields=[
+                "requires_delivery",
+                "delivery_date",
+                "requires_pickup",
+                "date_called",
+                "delivery_pickup",
+            ]
+        )
+
+    sale = RetailSale.objects.filter(workorder=wo).first()
+    if sale:
+        sync_workorder_delivery_from_sale(sale)
+
+    return render(
+        request,
+        "workorders/partials/workorder_delivery_block.html",
+        {"workorder": wo},
+    )
+
+@require_POST
+@login_required
+def workorder_update_delivery_date(request, pk):
+    wo = get_object_or_404(Workorder, pk=pk)
+
+    raw_date = request.POST.get("delivery_date")
+    if raw_date:
+        try:
+            parsed = datetime.strptime(raw_date, "%Y-%m-%d").date()
+            wo.delivery_date = parsed
+            wo.requires_delivery = True
+
+            # if they set a delivery date, this is a delivery job
+            wo.requires_pickup = False
+            wo.date_called = None
+            wo.delivery_pickup = "Delivery"
+
+            wo.save(
+                update_fields=[
+                    "delivery_date",
+                    "requires_delivery",
+                    "requires_pickup",
+                    "date_called",
+                    "delivery_pickup",
+                ]
+            )
+        except ValueError:
+            pass
+
+    sale = RetailSale.objects.filter(workorder=wo).first()
+    if sale:
+        sync_workorder_delivery_from_sale(sale)
+
+    return render(
+        request,
+        "workorders/partials/workorder_delivery_block.html",
+        {"workorder": wo},
+    )
+
+@require_POST
+@login_required
+def workorder_toggle_pickup(request, pk):
+    wo = get_object_or_404(Workorder, pk=pk)
+
+    # Turn OFF pickup
+    if wo.requires_pickup:
+        wo.requires_pickup = False
+        wo.date_called = None
+        wo.save(update_fields=["requires_pickup", "date_called"])
+
+    # Turn ON pickup (and force delivery OFF)
+    else:
+        wo.requires_pickup = True
+        wo.requires_delivery = False
+        wo.delivery_date = None
+        wo.delivery_pickup = "Pickup"
+
+        wo.save(
+            update_fields=[
+                "requires_pickup",
+                "date_called",
+                "requires_delivery",
+                "delivery_date",
+                "delivery_pickup",
+            ]
+        )
+
+    return render(
+        request,
+        "workorders/partials/workorder_delivery_block.html",
+        {"workorder": wo},
+    )
+
+@require_POST
+@login_required
+def workorder_update_pickup_date(request, pk):
+    wo = get_object_or_404(Workorder, pk=pk)
+
+    raw_date = (request.POST.get("date_called") or "").strip()
+
+    if raw_date:
+        try:
+            parsed = datetime.strptime(raw_date, "%Y-%m-%d").date()
+        except ValueError:
+            # bad input – just render current state without changing anything
+            return render(
+                request,
+                "workorders/partials/workorder_delivery_block.html",
+                {"workorder": wo},
+            )
+
+        # valid date → set pickup, clear delivery
+        wo.date_called = parsed
+        wo.requires_pickup = True
+        wo.requires_delivery = False
+        wo.delivery_date = None
+        wo.delivery_pickup = "Pickup"
+
+        wo.save(
+            update_fields=[
+                "date_called",
+                "requires_pickup",
+                "requires_delivery",
+                "delivery_date",
+                "delivery_pickup",
+            ]
+        )
+    else:
+        # empty → clear the date, but don't change the toggles
+        wo.date_called = None
+        wo.save(update_fields=["date_called"])
+
+    return render(
+        request,
+        "workorders/partials/workorder_delivery_block.html",
+        {"workorder": wo},
+    )
+
+@login_required
+def pickup_call_report(request):
+    """
+    List workorders that are ready for pickup but have NOT been called yet.
+
+    - requires_pickup = True
+    - date_called is NULL
+    - completed = 1 (ready)
+    - void = 0
+    - quote = '0'
+    """
+    qs = (
+        Workorder.objects.filter(
+            requires_pickup=True,
+            date_called__isnull=True,
+            completed=1,
+            void=0,
+            quote="0",
+        )
+        .select_related("customer")
+        .order_by("customer__company_name", "id")
+    )
+
+    context = {
+        "workorders": qs,
+    }
+    return render(request, "workorders/pickup_call_report.html", context)
+
+@login_required
+def workorder_delivery_block_view(request, pk):
+    """
+    Render the delivery / pickup block for a workorder.
+
+    Used by HTMX on POS and anywhere else we need this partial.
+    """
+    wo = get_object_or_404(Workorder, pk=pk)
+    return render(
+        request,
+        "workorders/partials/workorder_delivery_block.html",
+        {"workorder": wo},
+    )

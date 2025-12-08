@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<h3>Inventory &mdash; Negative / Low Stock (by Master)</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <label class="form-label">Threshold &le;</label>
+    <input
+      type="number"
+      step="0.0001"
+      name="threshold"
+      value="{{ threshold }}"
+      class="form-control form-control-sm"
+    >
+  </div>
+  <div class="col-auto align-self-end">
+    <button class="btn btn-sm btn-primary" type="submit">Filter</button>
+  </div>
+</form>
+
+{% if page_obj.object_list %}
+  <table class="table table-sm table-striped align-middle">
+    <thead>
+      <tr>
+        <th>Master ID</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th class="text-end">On Hand</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in page_obj %}
+        {% with master=row.master on_hand=row.on_hand %}
+          <tr
+            hx-get="{% url 'inventory:master_inventory_modal' master.id %}"
+            hx-target="#dialog"
+            hx-swap="innerHTML"
+            style="cursor:pointer;"
+          >
+            <td>{{ master.id }}</td>
+            <td>{{ master.name }}</td>
+            <td>{{ master.description }}</td>
+            <td class="text-end">{{ on_hand|floatformat:2 }}</td>
+          </tr>
+        {% endwith %}
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <nav aria-label="Page navigation">
+    <ul class="pagination pagination-sm">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}&threshold={{ threshold }}">
+            Previous
+          </a>
+        </li>
+      {% endif %}
+
+      <li class="page-item disabled">
+        <span class="page-link">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+      </li>
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}&threshold={{ threshold }}">
+            Next
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% else %}
+  <p class="text-muted">No items at or below the selected threshold.</p>
+{% endif %}
+
+{# Bootstrap modal shell, same pattern as sale_detail.html #}
+<div id="modal" class="modal fade" tabindex="-1">
+  <div id="dialog" class="modal-dialog modal-lg" hx-target="this"></div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    // Inventory reports modal wiring (same pattern as retail/sale_detail)
+    const inventoryModalEl = document.getElementById("modal");
+    const inventoryModal = new bootstrap.Modal(inventoryModalEl);
+
+    htmx.on("htmx:afterSwap", (e) => {
+      if (e.detail.target.id === "dialog") {
+        inventoryModal.show();
+      }
+    });
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      if (e.detail.target.id === "dialog" && !e.detail.xhr.response) {
+        inventoryModal.hide();
+        e.detail.shouldSwap = false;
+      }
+    });
+
+    htmx.on("hidden.bs.modal", () => {
+      const dlg = document.getElementById("dialog");
+      if (dlg) dlg.innerHTML = "";
+    });
+  </script>
+{% endblock scripts %}

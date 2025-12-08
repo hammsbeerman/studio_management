@@ -16,12 +16,14 @@ from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, Pa
 from retail.forms import RetailInventoryMasterForm
 from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm, BulkEditInvoiceForm
 from finance.models import InvoiceItem, Araging#, AllInvoiceItem
+from inventory.services.ledger import record_inventory_movement
 from customers.models import Customer
 from workorders.models import Workorder
 from controls.models import PaymentType, Measurement
 from inventory.models import Vendor, InventoryMaster, VendorItemDetail, InventoryQtyVariations, InventoryPricingGroup, Inventory
 from inventory.forms import InventoryMasterForm, VendorItemDetailForm
 from onlinestore.models import StoreItemDetails
+from retail.models import RetailCashSale
 
 logger = logging.getLogger(__file__)
 
@@ -1059,161 +1061,152 @@ def edit_invoice_modal(request, invoice=None):
 
 @login_required
 def invoice_detail(request, id=None):
+    """
+    AP Invoice detail + add/edit invoice items.
+
+    - Builds qty from invoice_qty * variation_qty
+    - Computes price_ea from invoice_unit_cost (+ ppm handling)
+    - Updates AccountsPayable.calculated_total
+    - Records inventory IN movement in the InventoryLedger
+    """
+    invoice = get_object_or_404(AccountsPayable, id=id)
+
     if request.method == "POST":
-        # invoice = request.POST.get('invoice')
-        # invoice_item = request.POST.get('pk')
-        # print('invoice_item')
-        # print(invoice_item)
-        vendor = request.POST.get('vendor')
-        variation = request.POST.get('variation')
-        ipn = request.POST.get('internal_part_number')
-        base_unit = InventoryMaster.objects.get(pk=ipn)
-        base_unit = base_unit.primary_base_unit.id
-        ppm = request.POST.get('ppm')
-        print('ppm')
-        print(ppm)
-        unit = request.POST.get('unit')
-        item_qty = request.POST.get('variation_qty')
-        edit = request.POST.get('edit')
+        vendor_id = request.POST.get("vendor")
+        variation_id = request.POST.get("variation")
+        ipn = request.POST.get("internal_part_number")
+        ppm_flag = request.POST.get("ppm")
+        unit = request.POST.get("unit")
+        item_qty_raw = request.POST.get("variation_qty")
+        edit = request.POST.get("edit")
+
+        variation_obj_id = None
+        variation_qty = 1
+
+        # Create or reuse the InventoryQtyVariations row
         if unit:
-            variation_qty = item_qty
-            variation = unit
-            variation_qty = int(variation_qty)
-            var = InventoryQtyVariations(inventory=InventoryMaster.objects.get(pk=ipn), variation=Measurement.objects.get(pk=variation) , variation_qty=variation_qty) 
-            var.save()
-            print('var saved')
-            print(var.pk)
-            var = var.pk
+            # New variation row based on selected unit + entered qty
+            variation_qty = int(item_qty_raw or 1)
+            v = InventoryQtyVariations(
+                inventory=InventoryMaster.objects.get(pk=ipn),
+                variation=Measurement.objects.get(pk=unit),
+                variation_qty=variation_qty,
+            )
+            v.save()
+            variation_obj_id = v.pk
         else:
-            var = ''
-            v = InventoryQtyVariations.objects.get(id=variation)
+            # Existing variation
+            v = InventoryQtyVariations.objects.get(id=variation_id)
             variation_qty = v.variation_qty
-        # print(variation)
-        # print(ipn)
-        
-        # print('v')
-        # print(v)
-        #vendor = int(vendor)
-        invoice = id
-        print('id')
-        print(id)
-        if edit == '1':
-            pass
-            invoice_item = request.POST.get('pk')
-            obj = InvoiceItem.objects.get(pk=invoice_item)
-            form = AddInvoiceItemForm(request.POST, instance=obj)
+            variation_obj_id = v.pk
+
+        # Add vs edit
+        if edit == "1":
+            invoice_item_pk = request.POST.get("pk")
+            instance = InvoiceItem.objects.get(pk=invoice_item_pk)
+            form = AddInvoiceItemForm(request.POST, instance=instance)
         else:
             form = AddInvoiceItemForm(request.POST)
+
         if form.is_valid():
-            print(invoice)
+            # --- Compute qty & price_ea ---
             qty = form.instance.invoice_qty * variation_qty
+
             if form.instance.invoice_unit_cost:
-                if ppm == '1':
+                if ppm_flag == "1":
+                    # Price is per 1000 units
                     price_ea = form.instance.invoice_unit_cost / 1000
-                    print('price each ppm')
-                    print(price_ea)
                 else:
-                    ppm = '0'
                     price_ea = form.instance.invoice_unit_cost / variation_qty
-                    print('price each')
-                    print(price_ea)
+                    ppm_flag = "0"
             else:
-                price_ea = 0
-                ppm = 0
+                price_ea = Decimal("0.00")
+                ppm_flag = "0"
+
             vpn = form.instance.vendor_part_number
             description = form.instance.description
+
+            # --- Populate computed fields on the instance ---
             form.instance.qty = qty
             form.instance.unit_cost = price_ea
-            form.instance.invoice_id = invoice
-            print(qty)
-            print(price_ea)
-            print(invoice)
-            if var:
-                form.instance.invoice_unit = InventoryQtyVariations.objects.get(pk=var)
-            else:
-                form.instance.invoice_unit = InventoryQtyVariations.objects.get(id=variation)
-            #form.instance.invoice_unit = v
-            form.instance.ppm = ppm
+            form.instance.invoice = invoice
+            form.instance.ppm = ppm_flag
+            form.instance.invoice_unit = InventoryQtyVariations.objects.get(pk=variation_obj_id)
+
             line_total = qty * price_ea
             form.instance.line_total = line_total
-            #form.instance.variation_qty = v.variation_qty
+
             form.save()
-            invoice_date = form.instance.created
-            invoice_item = form.instance.pk
-            print('invoice_item')
-            print(invoice_item)
-            vpn_up = request.POST.get('vpn_update')
-            desc_up = request.POST.get('description_update')
-            print('vpn_update')
-            print(vpn_up)
-            print('desc update')
-            print(desc_up)
-            if vpn_up or desc_up == '1':
-                VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=ipn).update(vendor_part_number=vpn, description=description)
-            name = form.instance.name
-            print(name)
-            print(vendor)
-            print('here')
-            print(invoice_item)
-            print(variation)
-            item_v = InventoryQtyVariations.objects.get(pk=variation)
-            print(item_v)
-            item_variation = item_v.variation.id
-            print('variation')
-            print(item_variation)
-            invoice_date = AccountsPayable.objects.get(pk=invoice)
-            invoice_date = invoice_date.invoice_date
-            print('invoice item')
-            print(invoice_item)
-            # try:
-            #     item = get_object_or_404(AllInvoiceItem, invoice_item=invoice_item)
-            #     #item = AllInvoiceItem.objects.filter(invoice_item=invoice_item)
-            #     print('123')
-            #     print(item)
-            # except:
-            #     obj = AllInvoiceItem(invoice_item=InvoiceItem.objects.get(pk=invoice_item), invoice_id=invoice, internal_part_number=InventoryMaster.objects.get(id=ipn), purchase_date=invoice_date, qty=qty, unit_cost=price_ea, vendor=Vendor.objects.get(pk=vendor), unit=Measurement.objects.get(pk=base_unit), line_total=line_total)
-            #     #inventory=InventoryMaster.objects.get(pk=pk)
-            #     obj.save()  
-            #     item = ''
-            # if item:
-            #     AllInvoiceItem.objects.filter(invoice_item=invoice_item).update(invoice_id=invoice, internal_part_number=InventoryMaster.objects.get(id=ipn), purchase_date=invoice_date, qty=qty, unit_cost=price_ea, vendor=Vendor.objects.get(pk=vendor), unit=Measurement.objects.get(pk=base_unit), line_total=line_total)
+            invoice_item_id = form.instance.pk
 
+            # --- Optional: update VendorItemDetail description / VPN ---
+            vpn_up = request.POST.get("vpn_update")
+            desc_up = request.POST.get("description_update")
 
-            print('invoice')
-            print(invoice)
-            total = InvoiceItem.objects.filter(invoice=invoice).aggregate(Sum('line_total'))
-            total = list(total.values())[0]
-            total = Decimal(total)
-            AccountsPayable.objects.filter(pk=invoice).update(calculated_total=total)
-            # print('running total')
-            # print(instance.invoice.id)
-            # total = InvoiceItem.objects.filter(invoice=instance.invoice.id).aggregate(Sum('line_total'))
-            # print(total)
-            # total = list(total.values())[0]
-            # total = Decimal(total)
-            # AccountsPayable.objects.filter(pk=instance.invoice.id).update(calculated_total=total)
+            if vendor_id and (vpn_up == "1" or desc_up == "1"):
+                try:
+                    VendorItemDetail.objects.filter(
+                        vendor=vendor_id,
+                        internal_part_number=ipn,
+                    ).update(
+                        vendor_part_number=vpn,
+                        description=description,
+                    )
+                except VendorItemDetail.DoesNotExist:
+                    # If there isn't one, just skip; you can add create logic later if you want
+                    pass
 
+            # --- Recalculate invoice.calculated_total ---
+            total = (
+                InvoiceItem.objects
+                .filter(invoice=invoice)
+                .aggregate(sum_total=Sum("line_total"))["sum_total"]
+                or Decimal("0.00")
+            )
+            AccountsPayable.objects.filter(pk=invoice.pk).update(calculated_total=total)
 
+            # --- Ledger entry: inventory IN from AP invoice ---
+            try:
+                inv_item = form.instance.internal_part_number  # FK → InventoryMaster
+                invoice_date = invoice.invoice_date
 
-        else:
-            print(form.errors)
-        invoice = get_object_or_404(AccountsPayable, id=invoice)
-        print('djska')
-        print(invoice)
-        items = InvoiceItem.objects.filter(invoice_id = invoice)
-        print(items)
-        return redirect ('finance:invoice_detail', id=id)
-    invoice = get_object_or_404(AccountsPayable, id=id)
-    vendor = Vendor.objects.get(id=invoice.vendor.id)
-    print(vendor)
-    print(vendor.id)
-    items = InvoiceItem.objects.filter(invoice_id = id)
+                record_inventory_movement(
+                    inventory_item=inv_item,                    # ✅ matches helper signature
+                    qty_delta=Decimal(qty),           # positive = stock in
+                    source_type="AP_RECEIPT",
+                    source_id=invoice_item_id,
+                    note=f"AP invoice {invoice.pk} item {invoice_item_id}",
+                )
+            except Exception:
+                logger.exception(
+                    f"Failed to record inventory movement for invoice item {invoice_item_id}"
+                )
+
+            return redirect("finance:invoice_detail", id=invoice.pk)
+
+        # Invalid form: re-render page with errors
+        vendor = invoice.vendor
+        items = InvoiceItem.objects.filter(invoice_id=id)
+        return render(
+            request,
+            "finance/AP/invoice_detail.html",
+            {
+                "vendor": vendor,
+                "invoice": invoice,
+                "items": items,
+                "form": form,
+            },
+        )
+
+    # GET: show invoice + items
+    vendor = invoice.vendor
+    items = InvoiceItem.objects.filter(invoice_id=id)
     context = {
-        'vendor':vendor,
-        'invoice': invoice,
-        'items': items,
+        "vendor": vendor,
+        "invoice": invoice,
+        "items": items,
     }
-    return render(request, 'finance/AP/invoice_detail.html', context)
+    return render(request, "finance/AP/invoice_detail.html", context)
 
 def invoice_detail_highlevel(request, id=None):
     invoice = get_object_or_404(AccountsPayable, id=id)
@@ -1826,47 +1819,122 @@ def payment_history(request):
     return render(request, "finance/reports/payment_history.html", context)
 
 
+@login_required
 def sales_tax_payable(request):
-    form = DateRangeForm()
+    """
+    Accrual-based sales tax report for Krueger Printing.
 
-    if request.method == 'POST':
-        form = DateRangeForm(request.POST)
-        if form.is_valid():
-            start_date = form.cleaned_data['start_date']
-            end_date = form.cleaned_data['end_date']
+    Uses:
+      - Workorder.date_billed in the selected range
+      - internal_company = 'Krueger Printing'
+      - completed = '1'
+    """
+    form = DateRangeForm(request.POST or None)
 
-            print("Start:", start_date)
-            print("End:", end_date)
+    # default context (GET / initial load)
+    context = {"form": form}
 
-        workorders = Workorder.objects.filter(date_billed__range=(start_date, end_date), internal_company='Krueger Printing', completed='1').order_by('date_billed')
-        total_tax = workorders.aggregate(Sum('tax'))['tax__sum'] or 0
-        invoice_total = workorders.aggregate(Sum('workorder_total'))['workorder_total__sum'] or 0
-        invoice_subtotal = workorders.aggregate(Sum('subtotal'))['subtotal__sum'] or 0
-        
+    if request.method == "POST" and form.is_valid():
+        start_date = form.cleaned_data["start_date"]
+        end_date = form.cleaned_data["end_date"]
+
+        workorders = (
+            Workorder.objects
+            .filter(
+                date_billed__range=(start_date, end_date),
+                internal_company="Krueger Printing",
+                completed="1",
+            )
+            .order_by("date_billed")
+        )
+
+        # All of these come back as Decimals from the DB; fall back to Decimal(0)
+        invoice_subtotal = (
+            workorders.aggregate(sum_sub=Sum("subtotal"))["sum_sub"]
+            or Decimal("0.00")
+        )
+        total_tax = (
+            workorders.aggregate(sum_tax=Sum("tax"))["sum_tax"]
+            or Decimal("0.00")
+        )
+        invoice_total = (
+            workorders.aggregate(sum_total=Sum("workorder_total"))["sum_total"]
+            or Decimal("0.00")
+        )
+
+        # Taxable vs exempt: same logic you had, just all Decimal-safe
         taxable_workorders = workorders.exclude(tax__isnull=True).exclude(tax=0)
-        taxable_total = taxable_workorders.aggregate(Sum('workorder_total'))['workorder_total__sum'] or 0
-        
+        taxable_total = (
+            taxable_workorders.aggregate(sum_total=Sum("workorder_total"))["sum_total"]
+            or Decimal("0.00")
+        )
+
         exemptions = invoice_total - taxable_total
         taxable = invoice_subtotal - exemptions
 
-        context = {
-            'form':form,
-            'start_date':start_date,
-            'workorders':workorders,
-            'total_tax':total_tax,
-            'invoice_total':invoice_total,
-            'invoice_subtotoal':invoice_subtotal,
-            'exemptions':exemptions,
-            'taxable':taxable,
-        }
+        context.update(
+            {
+                "form": form,
+                "start_date": start_date,
+                "end_date": end_date,
+                "workorders": workorders,
+                "total_tax": total_tax,
+                "invoice_total": invoice_total,
+                "invoice_subtotoal": invoice_subtotal,  # keep your existing key name
+                "exemptions": exemptions,
+                "taxable": taxable,
+            }
+        )
 
-        return render (request, "finance/reports/sales_tax_payable.html", context)
+    return render(request, "finance/reports/sales_tax_payable.html", context)
 
-    context = {
-            'form':form,
-        }
+@login_required
+def office_supplies_pos_tax(request):
+    """
+    Accrual-style sales tax report for Office Supplies POS.
 
-    return render (request, "finance/reports/sales_tax_payable.html", context)
+    Uses RetailCashSale.created_at date range.
+    """
+    form = DateRangeForm(request.POST or None)
+    context = {"form": form}
+
+    if request.method == "POST" and form.is_valid():
+        start_date = form.cleaned_data["start_date"]
+        end_date = form.cleaned_data["end_date"]
+
+        sales = RetailCashSale.objects.filter(
+            created_at__date__range=(start_date, end_date),
+            sale__internal_company="Office Supplies",  # adjust if your field differs
+        ).select_related("customer", "sale")
+
+        agg = sales.aggregate(
+            sum_sub=Sum("subtotal"),
+            sum_tax=Sum("tax"),
+            sum_total=Sum("total"),
+        )
+
+        invoice_subtotal = agg["sum_sub"] or Decimal("0.00")
+        total_tax = agg["sum_tax"] or Decimal("0.00")
+        invoice_total = agg["sum_total"] or Decimal("0.00")
+
+        # Assume all POS is taxable unless tax=0 on a row
+        taxable = invoice_subtotal
+        exemptions = invoice_total - taxable  # probably 0, but keeps same structure
+
+        context.update(
+            {
+                "start_date": start_date,
+                "end_date": end_date,
+                "sales": sales,
+                "invoice_total": invoice_total,
+                "invoice_subtotoal": invoice_subtotal,  # keep same misspelling for consistency
+                "total_tax": total_tax,
+                "taxable": taxable,
+                "exemptions": exemptions,
+            }
+        )
+
+    return render(request, "finance/reports/office_supplies_pos_tax.html", context)
 
 
 def monthly_statements(request):

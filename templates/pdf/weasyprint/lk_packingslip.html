@@ -206,6 +206,22 @@ table.ordert-first {margin-bottom: 11px;}
     {% autoescape off %}
                 {{ packingslip_rows }}
             {% endautoescape %}
+            {% if pos_items %}
+  <tr>
+    <td colspan="5" style="font-weight:bold; padding-top:10px;">
+      Retail POS Items
+    </td>
+  </tr>
+  {% for pos in pos_items %}
+  <tr>
+    <td>{{ pos.description }}</td>
+    <td style="text-align:right;">{{ pos.quantity }}</td>
+    <td style="text-align:right;">${{ pos.unit_price|floatformat:2 }}</td>
+    <td style="text-align:right;">${{ pos.total_price|floatformat:2 }}</td>
+    <td></td>
+  </tr>
+  {% endfor %}
+{% endif %}
   </tbody>
 </table>
       </div>

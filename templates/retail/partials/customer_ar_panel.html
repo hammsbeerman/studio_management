@@ -1,0 +1,47 @@
+{% if not sale.customer %}
+  <p class="text-muted small mb-0">
+    Select a customer to view invoice history.
+  </p>
+{% else %}
+
+  {% if open_invoices or closed_invoices %}
+    {% if open_invoices %}
+      <h6 class="small text-danger fw-bold">Open invoices</h6>
+      <ul class="list-unstyled mb-2 small">
+        {% for inv in open_invoices %}
+          <li class="mb-1">
+            <strong>{{ inv.workorder }}</strong>
+            <span class="text-muted">({{ inv.internal_company }})</span><br>
+            {% if inv.date_billed %}
+              Billed {{ inv.date_billed|date:"Y-m-d" }} ·
+            {% endif %}
+            Open: {{ inv.open_balance|default_if_none:"0.00" }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-muted small mb-2">No open invoices.</p>
+    {% endif %}
+
+    {% if closed_invoices %}
+      <h6 class="small text-muted fw-bold mt-2">Paid / closed invoices</h6>
+      <ul class="list-unstyled mb-0 small">
+        {% for inv in closed_invoices %}
+          <li class="mb-1">
+            <strong>{{ inv.workorder }}</strong>
+            <span class="text-muted">({{ inv.internal_company }})</span><br>
+            {% if inv.date_billed %}
+              Billed {{ inv.date_billed|date:"Y-m-d" }} ·
+            {% endif %}
+            Total: {{ inv.total_balance|default_if_none:"0.00" }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% else %}
+    <p class="text-muted small mb-0">
+      No invoices yet for this customer in Krueger or Office Supplies.
+    </p>
+  {% endif %}
+
+{% endif %}

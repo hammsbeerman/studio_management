@@ -65,6 +65,16 @@ class Workorder(models.Model):
     invoice_sent = models.BooleanField('Invoice Sent', blank=False, null=False, default=False)
     delivery_pickup = models.CharField('Delivery or Pickup', choices=[('Delivery', 'Delivery'),('Pickup', 'Pickup'),('Other', 'Other'),], max_length=100, blank=True, null=True, default=None)
     delivered = models.BooleanField('Delivered', default=False)
+    retail_pos = models.BooleanField(
+        "Retail POS",
+        default=False,
+        help_text="Created from the Office Supplies retail POS screen.",
+    )
+    requires_delivery = models.BooleanField(default=False)
+    delivery_date = models.DateField(blank=True, null=True)
+    requires_pickup = models.BooleanField(default=False)
+    date_called = models.DateField(null=True, blank=True)
+
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})
@@ -121,6 +131,7 @@ class WorkorderItem(models.Model):
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     void = models.BooleanField('Void Workorder', blank=False, null=False, default=False)
     void_memo = models.CharField('Void Memo', max_length=100, blank=True, null=True)
+
 
     def get_absolute_url(self):
         return self.workorder.get_absolute_url()

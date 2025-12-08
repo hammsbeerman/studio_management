@@ -1,0 +1,89 @@
+{% load humanize %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Receipt #{{ sale.id }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; font-size: 12px; }
+    .receipt { max-width: 380px; margin: 0 auto; }
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 2px 0; vertical-align: top; }
+    .totals td { border-top: 1px solid #000; padding-top: 4px; }
+    .actions { margin-top: 10px; display: flex; gap: 6px; }
+  </style>
+</head>
+<body onload="window.print()">
+<div class="receipt">
+  <h4>Receipt</h4>
+
+  <p>
+    Sale #{{ sale.id }}<br>
+    {% if sale.workorder %}
+      Workorder: {{ sale.workorder.workorder }}<br>
+    {% endif %}
+    Date: {{ sale.created_at|date:"m/d/Y H:i" }}<br>
+    Customer:
+    {% if sale.customer %}
+      {{ sale.customer.company_name|default:sale.customer }}<br>
+    {% else %}
+      Walk-in / cash
+    {% endif %}
+  </p>
+
+  <table>
+    {% for line in lines %}
+    <tr>
+      <td colspan="2">{{ line.description }}</td>
+    </tr>
+    <tr>
+      <td>
+        {{ line.qty }} × ${{ line.unit_price|floatformat:2 }}
+      </td>
+      <td style="text-align:right;">
+        ${{ line.line_total|default:line.qty|floatformat:2 }}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="2"><em>No line items.</em></td></tr>
+    {% endfor %}
+  </table>
+
+  <table class="totals">
+    <tr>
+      <td>Subtotal</td>
+      <td style="text-align:right;">${{ subtotal|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <td>Tax</td>
+      <td style="text-align:right;">${{ tax|floatformat:2 }}</td>
+    </tr>
+    <tr>
+      <td><strong>Total</strong></td>
+      <td style="text-align:right;"><strong>${{ total|floatformat:2 }}</strong></td>
+    </tr>
+  </table>
+
+  <p style="margin-top:8px;">
+    {% if cash %}
+      Payment: {{ cash.payment_method }}
+      {% if cash.payment_notes %}<br>{{ cash.payment_notes }}{% endif %}
+    {% else %}
+      Payment: Charged to account
+      {% if sale.workorder %}
+        <br>Applied to workorder {{ sale.workorder.workorder }}
+      {% endif %}
+    {% endif %}
+  </p>
+
+  <div class="actions">
+    <a href="{% url 'retail:sale_detail' sale.id %}">Back to sale</a>
+    {% if sale.workorder %}
+      <a href="{% url 'workorders:overview' id=sale.workorder.workorder %}">View workorder</a>
+    {% endif %}
+  </div>
+
+  <p style="margin-top:10px;">Thank you!</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>POS Qty Sold</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-3">
+    <label class="form-label">Start date</label>
+    <input
+      type="text"
+      name="start"
+      value="{{ start }}"
+      class="form-control form-control-sm datepicker"
+      autocomplete="off"
+    >
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">End date</label>
+    <input
+      type="text"
+      name="end"
+      value="{{ end }}"
+      class="form-control form-control-sm datepicker"
+      autocomplete="off"
+    >
+  </div>
+  <div class="col-md-3 d-flex align-items-end">
+    <button type="submit" class="btn btn-sm btn-primary">
+      Filter
+    </button>
+  </div>
+</form>
+
+<table class="table table-sm table-striped">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th class="text-end">Qty sold</th>
+      <th class="text-end">On hand</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+      <tr>
+       <td>
+          <a
+            href="{% url 'retail:pos_qty_sold_item_detail' row.item.id %}?start={{ start }}&end={{ end }}"
+          >
+            {{ row.item.name }}
+          </a>
+          {% if row.item.primary_vendor_part_number %}
+            <br><small class="text-muted">{{ row.item.primary_vendor_part_number }}</small>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          {{ row.qty_sold }}
+        </td>
+        <td class="text-end">
+          {{ row.on_hand }}
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="3" class="text-muted">
+          No POS ledger activity in this period.
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+  {{ block.super }}
+  <script>
+    // assumes jQuery UI datepicker is available globally
+    $(function () {
+      $(".datepicker").datepicker({
+        dateFormat: "yy-mm-dd"
+      });
+    });
+  </script>
+{% endblock %}

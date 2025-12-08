@@ -296,6 +296,11 @@ margin-top: 25px;
 
 <!-- main table -->
       <div class="items-area items_area_second fix">
+        {% if pos_origin_sale %}
+          <p style="font-size:9pt; margin-top:4px;">
+            Created from POS sale #{{ pos_origin_sale.id }}
+          </p>
+          {% endif %}
         <table>
           <thead>
 			<tr>
@@ -307,6 +312,7 @@ margin-top: 25px;
       </tr>
           </thead>
           <tbody>
+
             {% for item in items %}
               {% if item.child == 0 %}
               <tr>

@@ -1,5 +1,6 @@
 from django import forms
 from django.forms import ModelForm
+from decimal import Decimal
 from django.urls import reverse_lazy
 from django.db.models.functions import Lower
 from finance.models import AccountsPayable, InvoiceItem
@@ -60,6 +61,51 @@ class RetailInventoryMasterForm(forms.ModelForm):
         labels = {
         } 
 
+PAYMENT_METHOD_CHOICES = [
+    ("cash", "Cash"),
+    ("check", "Check"),
+    ("card", "Credit/Debit Card"),
+    ("gift", "Gift Certificate"),
+    ("other", "Other"),
+]
+
+class PaymentMethodForm(forms.Form):
+    payment_method = forms.ChoiceField(choices=PAYMENT_METHOD_CHOICES)
+    amount = forms.DecimalField(
+        max_digits=9,
+        decimal_places=2,
+        required=False,  # let the view fall back if empty
+        label="Amount",
+    )
+    notes = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 2}),
+        required=False,
+        label="Notes",
+    )
+    check_number = forms.CharField(
+        max_length=64,
+        required=False,
+        label="Check number",
+        help_text="Only used for check payments.",
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        method = cleaned.get("payment_method")
+        check_number = cleaned.get("check_number")
+
+        # If you want to *require* a check number whenever method is check,
+        # make sure the value "check" matches your actual choice key.
+        if method == "check" and not check_number:
+            self.add_error("check_number", "Please enter the check number.")
+        return cleaned
+
+class RefundLookupForm(forms.Form):
+    invoice_number = forms.CharField(
+        label="POS Invoice #",
+        max_length=50,
+        widget=forms.TextInput(attrs={"class": "form-control"})
+    )
 
         
 

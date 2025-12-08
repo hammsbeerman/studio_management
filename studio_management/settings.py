@@ -14,27 +14,41 @@ import os
 from pathlib import Path
 import sentry_sdk
 
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "handlers": {
-#         "file": {
-#             "level": "DEBUG",
-#             "class": "logging.FileHandler",
-#             "filename": "/home/adam/logs/debug.log",
-#         },
-#     },
-#     "loggers": {
-#         "django": {
-#             "handlers": ["file"],
-#             "level": "WARNING",
-#             "propagate": True,
-#         },
-#     },
-# }
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "debug.log"),
+        },
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "WARNING",
+            "propagate": True,
+        },
+    },
+}
+
+WORKORDER_TOTALS_LOG_LEVEL = os.environ.get("WORKORDER_TOTALS_LOG_LEVEL", "INFO")
+
+LOGGING["loggers"]["workorders.services.totals"] = {
+    "handlers": ["console"],        # or whatever handlers you already use
+    "level": WORKORDER_TOTALS_LOG_LEVEL,
+    "propagate": False,
+}
+
+
 
 #Allow SSL Change if domain name changes
 CSRF_TRUSTED_ORIGINS = ["https://staging.lkdesignstudios.com", "http://staging.lkdesignstudios.com", 
@@ -74,6 +88,7 @@ DEFAULT_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
 ]
 
 THIRD_PARTY_APPS = [
@@ -294,3 +309,5 @@ CRONJOBS = [
     ('*/5 * * * *', 'finance.cron.ar_aging'),
     ('*/5 * * * *', 'finance.cron.krueger_ar_aging'),
 ]
+
+

@@ -47,7 +47,7 @@
                 Retail
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                <li><a class="dropdown-item" href="{% url 'retail:retail_home' %}">Retail Home</a></li>
+                <li><a class="dropdown-item" href="">Retail Home</a></li>
               </ul> 
             </li>
             {% endif %}
@@ -116,6 +116,24 @@
                   <!-- <li><a class="dropdown-item" href="{% url 'finance:add_item_to_vendor' %}">Add Item to vendor</a></li> -->
                 </ul>
               </li>
+              <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Office Supplies POS
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                  <li><a class="dropdown-item" href="{% url 'retail:new_sale' %}">New Sale</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:refund_lookup' %}">Start Refund</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:pos_sale_list' %}">POS Sale List</a></li>
+                  <li><a class="dropdown-item" href="{% url 'inventory:retail_pricing_admin' %}">Inventory Pricing Admin</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:inventory_sales_report' %}">Inventory Sales report</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:cash_sales_report' %}">Cash Sales report</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:pos_qty_sold_report' %}">POS Qty Sold Sales report</a></li>
+                  <li><a class="dropdown-item" href="{% url 'inventory:negative_stock_report' %}">Negative Stock report</a></li>
+                  <li><a class="dropdown-item" href="{% url 'inventory:stock_valuation_report' %}">Stock Valuation report</a></li>
+                  <li><a class="dropdown-item" href="{% url 'retail:delivery_report' %}">Delivery report</a></li>
+                  <li><a class="dropdown-item" href="{% url 'workorders:pickup_call_report' %}">Pickup Call report</a></li>
+              </ul> 
+            </li>
             {% endif %}
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+  <h3>Delivery Report</h3>
+
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+      <label for="delivery_report_date" class="col-form-label">Date:</label>
+    </div>
+    <div class="col-auto">
+      <input
+        type="date"
+        id="delivery_report_date"
+        name="date"
+        class="form-control"
+        value="{{ selected_date|date:'Y-m-d' }}"
+        onchange="this.form.submit();"
+      >
+    </div>
+  </form>
+
+  <div id="delivery-report-table">
+    {% include "retail/partials/delivery_report_table.html" %}
+  </div>
+</div>
+{% endblock %}

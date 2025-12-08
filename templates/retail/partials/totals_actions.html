@@ -1,0 +1,48 @@
+<div class="d-flex gap-2">
+  {% if not sale.locked and sale.customer and sale.customer.customer_number != "WALKIN" and not sale.is_refund %}
+    <form method="post" action="{% url 'retail:sale_save_workorder' sale.id %}" class="flex-fill">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-secondary w-100">
+        Save
+      </button>
+    </form>
+  {% endif %}
+
+  {% if not sale.locked %}
+    <form class="flex-fill">
+      <button
+        type="button"
+        class="btn btn-sm {% if sale.is_refund %}btn-warning{% else %}btn-success{% endif %} w-100"
+        hx-get="{% url 'retail:sale_payment_modal' sale.id %}"
+        hx-target="#dialog"
+      >
+        {% if sale.is_refund %}
+          Refund
+        {% else %}
+          Pay
+        {% endif %}
+      </button>
+    </form>
+  {% endif %}
+{# 🔹 New: Receipt button for paid cash sales #}
+  {% if sale.cash_record and sale.locked %}
+  <button
+    type="button"
+    class="btn btn-sm btn-outline-secondary w-100"
+    hx-get="{% url 'retail:sale_receipt_modal' sale.id %}"
+    hx-target="#dialog"
+    hx-swap="innerHTML"
+  >
+    Receipt (modal)
+  </button>
+{% endif %}
+  {% if sale.cash_record and sale.locked %}
+  <button
+    type="button"
+    class="btn btn-sm btn-outline-secondary w-100"
+    onclick="window.open('{% url 'retail:sale_receipt' sale.id %}', '_blank')"
+  >
+    Receipt
+  </button>
+{% endif %}
+</div>

@@ -45,6 +45,7 @@ from .views import (
     bulk_edit_invoices,
     payment_history,
     sales_tax_payable,
+    office_supplies_pos_tax,
     monthly_statements,
 )
 
@@ -78,6 +79,7 @@ urlpatterns = [
     path('open_invoices_recieve_payment/<int:pk>/', open_invoices_recieve_payment, name='open_invoices_recieve_payment'),
     path('sales_tax_payable/<int:submit>', sales_tax_payable, name='sales_tax_payable'),
     path('sales_tax_payable', sales_tax_payable, name='sales_tax_payable'),
+    path("office_supplies_pos_tax", office_supplies_pos_tax, name="office_supplies_pos_tax"),
     # path('add_item_to_vendor/<int:vendor>/<int:invoice>', add_item_to_vendor, name='add_item_to_vendor'),
     path('ap/bill_list/', bill_list, name='bill_list'),
     path('ap/add_invoice/<int:vendor>/', add_invoice, name='add_invoice'),

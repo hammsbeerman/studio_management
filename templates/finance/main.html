@@ -41,14 +41,27 @@
     <div class="col-md-3">
       <div class="card h-100">
         <div class="card-header fw-bold">
-          Daily Sales &amp; Tax
+          Payment History &amp; Sales Tax
         </div>
         <div class="card-body py-2">
           <ul class="list-unstyled mb-0">
+            <li><a href="{% url 'finance:payment_history' %}">View all payment history</a></li>
+          </ul>
+
+          <hr class="my-2">
+
+          <div class="small text-muted mb-1">Daily Sales Record</div>
+          <ul class="list-unstyled mb-0">
             <li><a href="{% url 'finance:add_daily_sale' %}">Add daily sale record</a></li>
             <li><a href="{% url 'finance:view_daily_sales' %}">View daily sales history</a></li>
-            <li><a href="{% url 'finance:payment_history' %}">View all payment history</a></li>
-            <li><a href="{% url 'finance:sales_tax_payable' %}">Sales tax payable</a></li>
+          </ul>
+
+          <hr class="my-2">
+
+          <div class="small text-muted mb-1">Sales Tax</div>
+          <ul class="list-unstyled mb-2">
+            <li><a href="{% url 'finance:sales_tax_payable' %}">Krueger Sales tax payable</a></li>
+            <li><a href="{% url 'finance:office_supplies_pos_tax' %}">Office Supply Sales tax payable</a></li>
           </ul>
         </div>
       </div>
@@ -65,9 +78,6 @@
           <ul class="list-unstyled mb-2">
             <li><a href="{% url 'finance:ar_aging' %}">A/R aging</a></li>
             <li><a href="{% url 'finance:complete_not_billed' %}">Complete, not billed</a></li>
-            <li><a href="{% url 'finance:krueger_ar' %}">Krueger outstanding invoices</a></li>
-            <li><a href="{% url 'finance:lk_ar' %}">LK outstanding invoices</a></li>
-            <li><a href="{% url 'finance:all_lk' %}">All LK invoices</a></li>
           </ul>
 
           <hr class="my-2">
@@ -100,6 +110,9 @@
           <ul class="list-unstyled mb-0">
             <li><a href="{% url 'finance:all_printleader' %}">All Printleader invoices</a></li>
             <li><a href="{% url 'finance:all_open_printleader' %}">All open Printleader invoices</a></li>
+            <li><a href="{% url 'finance:krueger_ar' %}">Krueger outstanding invoices</a></li>
+            <li><a href="{% url 'finance:lk_ar' %}">LK outstanding invoices</a></li>
+            <li><a href="{% url 'finance:all_lk' %}">All LK invoices</a></li>
           </ul>
         </div>
       </div>

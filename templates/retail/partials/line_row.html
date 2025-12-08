@@ -1,0 +1,135 @@
+<tr id="line-{{ line.id }}">
+  <td class="text-center">{{ rownum }}</td>
+
+  {# DESCRIPTION (clickable for inventory items) #}
+  <td>
+    {% if line.inventory_id %}
+      <button
+        type="button"
+        class="btn btn-link p-0 text-start text-decoration-none"
+        hx-get="{% url 'retail:inventory_item_modal' line.inventory_id %}"
+        hx-target="#dialog"
+        hx-swap="innerHTML"
+      >
+        {{ line.description }}
+      </button>
+
+      {# 🔹 Variation selector #}
+      {% with variations=line.inventory.inventoryqtyvariations_set.all %}
+        {% if variations %}
+          <div class="mt-1">
+            <small class="text-muted me-1">Unit:</small>
+            <select
+              class="form-select form-select-sm d-inline-block"
+              style="width:auto; display:inline-block;"
+              name="sold_variation"
+              hx-post="{% url 'retail:sale_update_line_variation' sale.id line.id %}"
+              hx-trigger="change"
+              hx-target="#line-{{ line.id }}"
+              hx-swap="outerHTML"
+              hx-vals='{"rownum": "{{ rownum }}"}'
+            >
+              <option value="">Base ({{ line.inventory.primary_base_unit }})</option>
+              {% for v in variations %}
+                <option
+                  value="{{ v.id }}"
+                  {% if line.sold_variation_id == v.id %}selected{% endif %}
+                >
+                  {{ v.variation.name }} (×{{ v.variation_qty }})
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        {% endif %}
+      {% endwith %}
+    {% else %}
+      {{ line.description }}
+    {% endif %}
+  </td>
+
+  {# PRICE COLUMN #}
+  <td class="text-end">
+    <form
+      method="post"
+      action="{% url 'retail:sale_update_line_price' sale.id line.id %}"
+      class="d-inline-flex align-items-center justify-content-end flex-nowrap"
+      style="gap: 0.25rem;"
+    >
+      {% csrf_token %}
+
+      {# Price input triggers update #}
+      {% if line.inventory and line.inventory.unit_cost and line.unit_price and line.unit_price < line.inventory.unit_cost %}
+        <input
+          type="number"
+          step="0.01"
+          name="unit_price"
+          value="{{ line.unit_price|floatformat:2 }}"
+          class="form-control form-control-sm text-end text-danger fw-bold"
+          style="width: 80px;"
+
+          hx-post="{% url 'retail:sale_update_line_price' sale.id line.id %}"
+          hx-trigger="change delay:300ms"
+          hx-target="#line-{{ line.id }}"
+          hx-swap="outerHTML"
+        >
+      {% else %}
+        <input
+          type="number"
+          step="0.01"
+          name="unit_price"
+          value="{{ line.unit_price|floatformat:2 }}"
+          class="form-control form-control-sm text-end"
+          style="width: 80px;"
+
+          hx-post="{% url 'retail:sale_update_line_price' sale.id line.id %}"
+          hx-trigger="change delay:300ms"
+          hx-target="#line-{{ line.id }}"
+          hx-swap="outerHTML"
+        >
+      {% endif %}
+
+      {# Save checkbox also triggers update so override can be stored #}
+      {% if line.inventory %}
+        <div class="form-check d-inline-block mb-0">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            name="update_default_price"
+            id="update-default-{{ line.id }}"
+
+            hx-post="{% url 'retail:sale_update_line_price' sale.id line.id %}"
+            hx-trigger="change"
+            hx-target="#line-{{ line.id }}"
+            hx-swap="outerHTML"
+          >
+          <label class="form-check-label small" for="update-default-{{ line.id }}">
+            Save
+          </label>
+        </div>
+      {% endif %}
+    </form>
+  </td>
+
+  {# AMOUNT COLUMN: qty * price, red if below cost #}
+  <td class="text-end">
+    {% if line.inventory and line.inventory.unit_cost and line.unit_price and line.unit_price < line.inventory.unit_cost %}
+      <span class="text-danger fw-bold">
+        ${{ line.get_line_total|floatformat:2 }}
+      </span>
+    {% else %}
+      ${{ line.get_line_total|floatformat:2 }}
+    {% endif %}
+  </td>
+
+  {# DELETE COLUMN #}
+  <td class="text-end">
+    <button
+      class="btn btn-sm btn-outline-danger"
+      hx-post="{% url 'retail:delete_line' line.id %}"
+      hx-target="#line-{{ line.id }}"
+      hx-swap="outerHTML"
+    >
+      &times;
+    </button>
+  </td>
+</tr>

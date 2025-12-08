@@ -2,59 +2,205 @@
 
 {% block content %}
 
-<center><h4>Search results</h4></center>
+<h4 class="text-center mb-4">Search results</h4>
+
 {% if message %}
- {{ message }}
+  <div class="alert alert-warning">{{ message }}</div>
 {% endif %}
+
+{# Open workorders #}
 {% if open %}
-    Open Workorders:
-    {% for x in open %}
-        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.description %} - {{ x.description }}{% endif %}{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}{% if x.void %}<span style="color:red;">Void</span>{% endif %}</li>
-    {% endfor %}
+  <div class="mb-4">
+    <h5>Open Workorders</h5>
+    <ul class="list-unstyled">
+      {% for x in open %}
+        <li>
+          <a href="{{ x.get_absolute_url }}">
+            {{ x.workorder }} — {{ x.hr_customer }}
+          </a>
+          {% if x.description %} – {{ x.description }}{% endif %}
+          {% if x.lk_workorder %}
+            – LK: {{ x.lk_workorder }}
+          {% elif x.printleader_workorder %}
+            – PL: {{ x.printleader_workorder }}
+          {% elif x.kos_workorder %}
+            – KOS: {{ x.kos_workorder }}
+          {% endif %}
+          {% if x.void %}
+            <span class="text-danger">Void</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 {% endif %}
-<p>
-</br>
+
+{# All workorders #}
 {% if workorders %}
-    Workorders:
-    {% for x in workorders %}
-        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.description %} - {{ x.description }}{% endif %}{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}{% if x.void %}<span style="color:red;">Void</span>{% endif %}</li>
-    {% endfor %}
+  <div class="mb-4">
+    <h5>Workorders</h5>
+    <ul class="list-unstyled">
+      {% for x in workorders %}
+        <li>
+          <a href="{{ x.get_absolute_url }}">
+            {{ x.workorder }} — {{ x.hr_customer }}
+          </a>
+          {% if x.description %} – {{ x.description }}{% endif %}
+          {% if x.lk_workorder %}
+            – LK: {{ x.lk_workorder }}
+          {% elif x.printleader_workorder %}
+            – PL: {{ x.printleader_workorder }}
+          {% elif x.kos_workorder %}
+            – KOS: {{ x.kos_workorder }}
+          {% endif %}
+          {% if x.void %}
+            <span class="text-danger">Void</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 {% endif %}
-<p>
-</br>
+
+{# Matching balance #}
 {% if balance %}
-    Matching balance:
-    {% for x in balance %}
-        <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.hr_customer }}</a>{% if x.description %} - {{ x.description }}{% endif %}{% if x.lk_workorder %} - LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %} - PL: {{ x.printleader_workorder}}{% elif x.kos_workorder %} - KOS: {{ x.kos_workorder}}{% endif %}{% if x.void %}<span style="color:red;">Void</span>{% endif %}</li>
-    {% endfor %}
+  <div class="mb-4">
+    <h5>Matching balance</h5>
+    <ul class="list-unstyled">
+      {% for x in balance %}
+        <li>
+          <a href="{{ x.get_absolute_url }}">
+            {{ x.workorder }} — {{ x.hr_customer }}
+          </a>
+          {% if x.description %} – {{ x.description }}{% endif %}
+          {% if x.lk_workorder %}
+            – LK: {{ x.lk_workorder }}
+          {% elif x.printleader_workorder %}
+            – PL: {{ x.printleader_workorder }}
+          {% elif x.kos_workorder %}
+            – KOS: {{ x.kos_workorder }}
+          {% endif %}
+          {% if x.void %}
+            <span class="text-danger">Void</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 {% endif %}
-    <p>
-    </br>
+
+{# Workorder items #}
 {% if workorder_item %}
-Workorders Items:
-{% for x in workorder_item %}
-    <li><a href='{{ x.get_absolute_url }}'>{{ x.workorder }} -- {{ x.workorder.hr_customer }}</a></li>
-{% endfor %}
+  <div class="mb-4">
+    <h5>Workorder Items</h5>
+    <ul class="list-unstyled">
+      {% for x in workorder_item %}
+        <li>
+          <a href="{{ x.get_absolute_url }}">
+            {{ x.workorder }} — {{ x.workorder.hr_customer }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 {% endif %}
-<p>
-</br>
+
+{# Customers #}
 {% if customer %}
-Customers:
-{% for x in customer %}
-<li><a href='{{ x.get_absolute_url }}'>{{ x.company_name }}</a>{% if not x.active %}<span style="color:red;"> - Inactive</span>{% endif %}</li>
-{% endfor %}
-<p>
-</br>
+  <div class="mb-4">
+    <h5>Customers</h5>
+    <ul class="list-unstyled">
+      {% for x in customer %}
+        <li>
+          <a href="{{ x.get_absolute_url }}">{{ x.company_name }}</a>
+          {% if not x.active %}
+            <span class="text-danger"> – Inactive</span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 {% endif %}
+
+{# Contacts #}
 {% if contact %}
-<p>
-    Contact:
-    <br>
-    {% for x in contact %}
-    <li><a href='{{ x.get_absolute_url }}'>{{ x.fname }} {{x.lname}} -- {{ x.customer.company_name }}</a></li>
-    {% endfor %}
+  <div class="mb-4">
+    <h5>Contacts</h5>
+    <ul class="list-unstyled">
+      {% for x in contact %}
+        <li>
+          <a href="{{ x.get_absolute_url }}">
+            {{ x.fname }} {{ x.lname }} — {{ x.customer.company_name }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
 {% endif %}
 
+{# Inventory (vendor part numbers) as cards linking to item_details #}
+{% if inventory_items %}
+  <div class="mb-4">
+    <h5>Inventory (vendor part numbers)</h5>
 
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mt-2">
+      {% for inv in inventory_items %}
+        {% with master=inv.internal_part_number %}
+          <div class="col">
+            <a
+              href="{% url 'inventory:item_details' %}?name={{ master.id }}"
+              class="text-decoration-none text-reset"
+            >
+              <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                  <h6 class="card-title mb-1">
+                    {{ master.name }}
+                  </h6>
+                  <p class="card-subtitle text-muted small mb-2">
+                    {% if master.primary_vendor %}
+                      {{ master.primary_vendor.name }}
+                    {% else %}
+                      No primary vendor
+                    {% endif %}
+                  </p>
+
+                  <dl class="mb-0 small">
+                    <div class="d-flex justify-content-between">
+                      <dt class="mb-0">Vendor PN</dt>
+                      <dd class="mb-0">
+                        {{ inv.vendor_part_number|default:"—" }}
+                      </dd>
+                    </div>
+
+                    {% if master.primary_vendor_part_number %}
+                      <div class="d-flex justify-content-between">
+                        <dt class="mb-0">Master PN</dt>
+                        <dd class="mb-0">
+                          {{ master.primary_vendor_part_number }}
+                        </dd>
+                      </div>
+                    {% endif %}
+
+                    {% if master.unit_cost %}
+                      <div class="d-flex justify-content-between mt-1">
+                        <dt class="mb-0">Cost</dt>
+                        <dd class="mb-0">
+                          ${{ master.unit_cost|floatformat:2 }}
+                        </dd>
+                      </div>
+                    {% endif %}
+                  </dl>
+                </div>
+                <div class="card-footer py-2 text-end">
+                  <span class="small text-primary">Open details →</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        {% endwith %}
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
 
 {% endblock content %}

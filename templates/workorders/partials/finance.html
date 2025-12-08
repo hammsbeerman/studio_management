@@ -1,6 +1,11 @@
 <h5 class="card-title"></h5>
 <p class="card-text">
 <b>Open Balance: </b>{{ customer.open_balance }}<br/>
+{% if workorder.retail_items.exists %}
+    <span class="badge bg-info text-dark">
+      Includes POS
+    </span><br/>
+  {% endif %}
 <b>Credits: </b>{{ customer.credit }}<br/>
 <b>Average Days to Pay: </b>{{ customer.avg_days_to_pay }}<br/>
 <b>Aging: </b><br/>

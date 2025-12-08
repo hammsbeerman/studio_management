@@ -1,0 +1,45 @@
+<div class="card">
+  <div class="card-header">
+    Customer
+  </div>
+  <div class="card-body">
+    <form
+      id="sale-customer-form"
+      method="post"
+      hx-post="{% url 'retail:set_sale_customer' sale.id %}"
+      hx-trigger="change from:#retail-customer-select"
+      hx-target="#customer-info-block"
+      hx-swap="innerHTML"
+    >
+      {% csrf_token %}
+
+      <label for="retail-customer-select" class="form-label">Select customer</label>
+      <select
+        id="retail-customer-select"
+        class="form-select mb-2"
+        name="customer_id"
+      >
+        <option value="">Walk-in / cash sale</option>
+        {% for c in customers %}
+          <option value="{{ c.id }}" {% if sale.customer_id == c.id %}selected{% endif %}>
+            {{ c.company_name }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <button
+        type="button"
+        class="btn btn-outline-primary btn-sm mb-3"
+        hx-get="{% url 'customers:new_customer' %}"
+        hx-target="#dialog"
+      >
+        + New customer
+      </button>
+
+      <div id="customer-info-block">
+        {# 🔹 ONLY info goes here – NO SECOND SELECT #}
+        {% include "retail/partials/customer_info_block.html" with sale=sale %}
+      </div>
+    </form>
+  </div>
+</div>

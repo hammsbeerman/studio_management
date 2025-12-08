@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.template.loader import render_to_string
 from workorders.models import Workorder, WorkorderItem
 from customers.models import Customer, Contact
+from inventory.models import Inventory, InventoryMaster
 from accounts.decorators import allowed_users
 from controls.models import JobStatus
 
@@ -48,30 +49,53 @@ def search(request):
     if not q:
         message = "Please enter a search term"
         context = {
-            'message':message,
+            'message': message,
         }
         return render(request, 'search.html', context)
+
+    # Workorders and related things (unchanged)
     workorders = Workorder.objects.filter(
-        Q(hr_customer__icontains=q) | Q(workorder__icontains=q) | Q(description__icontains=q) |
-        Q(lk_workorder__icontains=q) | Q(printleader_workorder__icontains=q) |
-        Q(kos_workorder__icontains=q)).distinct()
+        Q(hr_customer__icontains=q)
+        | Q(workorder__icontains=q)
+        | Q(description__icontains=q)
+        | Q(lk_workorder__icontains=q)
+        | Q(printleader_workorder__icontains=q)
+        | Q(kos_workorder__icontains=q)
+    ).distinct()
+
     open = workorders.filter(paid_in_full=0).exclude(completed=0)
     balance = Workorder.objects.filter(workorder_total__icontains=q)
-    workorder_item = WorkorderItem.objects.filter(description__icontains=q).distinct()
+
+    workorder_item = WorkorderItem.objects.filter(
+        description__icontains=q
+    ).distinct()
+
     customer = Customer.objects.filter(
-        Q(company_name__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q)
-        ).distinct()
+        Q(company_name__icontains=q)
+        | Q(first_name__icontains=q)
+        | Q(last_name__icontains=q)
+    ).distinct()
+
     contact = Contact.objects.filter(
         Q(fname__icontains=q) | Q(lname__icontains=q)
     ).distinct()
-    #contact = Contact.objects.filter(fname__icontains=q)
+
+    # 🔹 Inventory search by vendor part number / master fields
+    inventory_items = Inventory.objects.filter(
+        Q(vendor_part_number__icontains=q)
+        | Q(internal_part_number__name__icontains=q)
+        | Q(internal_part_number__primary_vendor_part_number__icontains=q)
+    ).select_related("internal_part_number", "internal_part_number__primary_vendor").distinct()
+
     context = {
-        'balance':balance,
-        'workorders':workorders,
-        'open':open,
-        'workorder_item':workorder_item,
-        'customer':customer,
-        'contact':contact,
+        'balance': balance,
+        'workorders': workorders,
+        'open': open,
+        'workorder_item': workorder_item,
+        'customer': customer,
+        'contact': contact,
+        'inventory_items': inventory_items,  # ⬅️ new
+        'query': q,
     }
     return render(request, 'search.html', context)
 

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+
+<h3>POS Sales</h3>
+
+{% if negative_items %}
+  <div class="alert alert-danger">
+    <strong>Negative stock:</strong>
+    <ul class="mb-0">
+      {% for item, on_hand in negative_items %}
+        <li>
+          {{ item.name }} &mdash; {{ item.description }}
+          (on hand: {{ on_hand }})
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+{% if low_items %}
+  <div class="alert alert-warning">
+    <strong>Low stock (≤ {{ low_stock_threshold }}):</strong>
+    <ul class="mb-0">
+      {% for item, on_hand in low_items %}
+        <li>
+          {{ item.name }} &mdash; {{ item.description }}
+          (on hand: {{ on_hand }})
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+<table class="table table-sm table-striped align-middle">
+  <thead>
+    <tr>
+      <th scope="col">Invoice #</th>
+      <th scope="col">Date</th>
+      <th scope="col">Status</th>
+      <th scope="col" class="text-end">Amount</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for sale in sales %}
+      <tr>
+        <td>
+          {% if sale.pos_number %}
+            {{ sale.pos_number }}
+          {% else %}
+            {{ sale.id }}
+          {% endif %}
+        </td>
+        <td>
+        {{ sale.created_at|date:"Y-m-d" }}
+        <small class="text-muted d-block">
+            {{ sale.created_at|time:"H:i" }}
+        </small>
+        </td>
+        <td>
+          {% if sale.status == "paid" %}
+            <span class="badge bg-success">Paid</span>
+          {% elif sale.status == "open" %}
+            <span class="badge bg-secondary">Open</span>
+          {% elif sale.status == "void" %}
+            <span class="badge bg-danger">Void</span>
+          {% else %}
+            <span class="badge bg-light text-dark">
+              {{ sale.get_status_display|default:sale.status }}
+            </span>
+          {% endif %}
+          {% if sale.is_refund %}
+            <span class="badge bg-warning text-dark ms-1">Refund</span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          {{ sale.total|floatformat:2|intcomma }}
+        </td>
+        <td class="text-end">
+          <a href="{% url 'retail:sale_detail' sale.id %}"
+             class="btn btn-sm btn-outline-primary">
+            View
+          </a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="5" class="text-muted text-center">
+          No POS sales found.
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock content %}

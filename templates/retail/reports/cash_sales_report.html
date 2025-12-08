@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Cash sales report</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input type="date" name="start" value="{{ start }}" class="form-control">
+  </div>
+  <div class="col-auto">
+    <input type="date" name="end" value="{{ end }}" class="form-control">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-sm btn-primary">Filter</button>
+  </div>
+</form>
+
+<table class="table table-sm table-striped">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Sale #</th>
+      <th>Customer</th>
+      <th>Method</th>
+      <th class="text-end">Subtotal</th>
+      <th class="text-end">Tax</th>
+      <th class="text-end">Total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for c in sales %}
+    <tr>
+      <td>{{ c.created_at|date:"m/d/Y H:i" }}</td>
+      <td>{{ c.sale.id }}</td>
+      <td>{{ c.customer.company_name }}</td>
+      <td>{{ c.payment_method }}</td>
+      <td class="text-end">${{ c.subtotal|floatformat:2 }}</td>
+      <td class="text-end">${{ c.tax|floatformat:2 }}</td>
+      <td class="text-end">${{ c.total|floatformat:2 }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" class="text-muted">No cash sales in this period.</td></tr>
+    {% endfor %}
+  </tbody>
+  {% if sales %}
+  <tfoot>
+    <tr>
+      <th colspan="4" class="text-end">Totals:</th>
+      <th class="text-end">${{ totals.subtotal|floatformat:2 }}</th>
+      <th class="text-end">${{ totals.tax|floatformat:2 }}</th>
+      <th class="text-end">${{ totals.total|floatformat:2 }}</th>
+    </tr>
+  </tfoot>
+  {% endif %}
+</table>
+{% endblock %}

@@ -1,0 +1,98 @@
+<div id="workorder-delivery-block" class="d-flex flex-column gap-2">
+
+  <div class="d-flex align-items-center gap-3">
+
+    <!-- Delivery toggle -->
+    <form method="post" class="mb-0">
+      {% csrf_token %}
+      <div class="form-check form-switch mb-0">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          name="requires_delivery"
+          id="wo_requires_delivery_switch"
+          {% if workorder.requires_delivery %}checked{% endif %}
+          hx-post="{% url 'workorders:toggle_delivery' workorder.id %}"
+          hx-target="#workorder-delivery-block"
+          hx-swap="outerHTML"
+          hx-trigger="change"
+        >
+        <label class="form-check-label" for="wo_requires_delivery_switch">
+          Mark for delivery
+        </label>
+      </div>
+    </form>
+
+    <!-- Pickup toggle -->
+    <form method="post" class="mb-0">
+      {% csrf_token %}
+      <div class="form-check form-switch mb-0">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          name="requires_pickup"
+          id="wo_requires_pickup_switch"
+          {% if workorder.requires_pickup %}checked{% endif %}
+          hx-post="{% url 'workorders:toggle_pickup' workorder.id %}"
+          hx-target="#workorder-delivery-block"
+          hx-swap="outerHTML"
+          hx-trigger="change"
+        >
+        <label class="form-check-label" for="wo_requires_pickup_switch">
+          Mark for pickup
+        </label>
+      </div>
+    </form>
+
+  </div>
+
+  {% if workorder.requires_delivery %}
+    <form method="post" class="mt-1">
+      {% csrf_token %}
+      <label for="wo_delivery_date" class="me-1 mb-0 small text-muted">
+        Delivery date:
+      </label>
+      <input
+        type="date"
+        id="wo_delivery_date"
+        name="delivery_date"
+        class="form-control form-control-sm d-inline-block"
+        style="width:auto;"
+        value="{{ workorder.delivery_date|date:'Y-m-d' }}"
+        hx-post="{% url 'workorders:update_delivery_date' workorder.id %}"
+        hx-target="#workorder-delivery-block"
+        hx-swap="outerHTML"
+        hx-trigger="change"
+      >
+    </form>
+  {% endif %}
+
+  {% if workorder.requires_pickup %}
+    <form method="post" class="mt-1">
+      {% csrf_token %}
+      <label for="wo_date_called" class="me-1 mb-0 small text-muted">
+        Date called:
+      </label>
+      <input
+        type="date"
+        id="wo_date_called"
+        name="date_called"
+        class="form-control form-control-sm d-inline-block"
+        style="width:auto;"
+        {% if workorder.date_called %}
+          value="{{ workorder.date_called|date:'Y-m-d' }}"
+        {% endif %}
+        hx-post="{% url 'workorders:update_pickup_date' workorder.id %}"
+        hx-target="#workorder-delivery-block"
+        hx-swap="outerHTML"
+        hx-trigger="change"
+      >
+    </form>
+  {% endif %}
+
+  {% if workorder.requires_delivery or workorder.delivery_pickup == "Delivery" %}
+    <div id="delivered-status" class="mt-2">
+      {% include 'workorders/partials/delivered.html' %}
+    </div>
+  {% endif %}
+</div>

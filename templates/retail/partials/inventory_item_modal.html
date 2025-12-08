@@ -1,0 +1,124 @@
+{% load static %}
+
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">
+      {{ item.name }}
+      {% if item.primary_vendor_part_number %}
+        <small class="text-muted ms-2">
+          VPN: {{ item.primary_vendor_part_number }}
+        </small>
+      {% endif %}
+    </h5>
+    <button
+      type="button"
+      class="btn-close"
+      data-bs-dismiss="modal"
+      aria-label="Close"
+    ></button>
+  </div>
+
+  <div class="modal-body">
+    {# Item details #}
+    <div class="mb-3">
+      {% if item.description %}
+        <p class="mb-1">{{ item.description }}</p>
+      {% endif %}
+
+      <div class="small text-muted">
+        {% if item.primary_vendor %}
+          Vendor: {{ item.primary_vendor.name }}<br>
+        {% endif %}
+        Part #: {{ item.primary_vendor_part_number|default:"—" }}<br>
+        Category: {{ item.retail_category|default:"—" }}
+      </div>
+    </div>
+
+    <hr>
+
+    {# Pricing breakdown #}
+    <p class="mb-1">
+      <strong>On hand:</strong>
+      {{ on_hand }}
+    </p>
+    <h6 class="mb-2">Pricing</h6>
+    <table class="table table-sm mb-0 align-middle">
+      <tbody>
+        <tr>
+          <th scope="row" class="w-25">Last cost</th>
+          <td>
+            {% if pricing.purchase_price %}
+              ${{ pricing.purchase_price }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Calculated price</th>
+          <td>
+            {% if pricing.calculated_price %}
+              ${{ pricing.calculated_price }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Override price</th>
+          <td>
+            {% if pricing.override_price %}
+              <span class="fw-bold">${{ pricing.override_price }}</span>
+              <span class="badge bg-secondary ms-2">Override</span>
+            {% else %}
+              <span class="text-muted">None</span>
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">POS effective</th>
+          <td>
+            <span class="fw-bold">${{ effective_price }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+
+
+<hr>
+
+    <h6 class="mb-2">Stock entries</h6>
+
+    {% if inventories %}
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 align-middle">
+          <thead>
+            <tr>
+              <th>Internal name</th>
+              <th>Vendor PN</th>
+              <th>Color / Size</th>
+              <th>Current stock</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inv in inventories %}
+              <tr>
+                <td>{{ inv.name }}</td>
+                <td>{{ inv.vendor_part_number|default:"—" }}</td>
+                <td>
+                  {% if inv.color %}{{ inv.color }}{% endif %}
+                  {% if inv.size %} {{ inv.size }}{% endif %}
+                </td>
+                <td>{{ inv.current_stock|default:"—" }}</td>
+                <td>{{ inv.created|date:"Y-m-d" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted mb-0">No stock entries for this item.</p>
+    {% endif %}
+  </div>

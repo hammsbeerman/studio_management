@@ -21,6 +21,8 @@ from customers.models import Customer, Contact
 from workorders.models import WorkorderItem, Workorder
 from krueger.models import KruegerJobDetail, WideFormat
 from finance.models import Krueger_Araging
+from workorders.services.totals import compute_workorder_totals
+from inventory.models import RetailWorkorderItem
 
 @login_required
 def invoice_pdf(request, id):
@@ -38,6 +40,23 @@ def invoice_pdf(request, id):
 
     
     workorder = Workorder.objects.get(id=id)
+
+    # 🔹 POS items attached to this workorder
+    pos_items = RetailWorkorderItem.objects.filter(workorder=workorder)
+
+    # 🔹 Use unified totals (includes POS + regular)
+    totals = compute_workorder_totals(workorder)
+    subtotal = totals.subtotal
+    tax = totals.tax
+    total = totals.total
+
+     # POS origin sale (for "Created from POS sale #X")
+    pos_origin_sale = None
+    if pos_items.exists():
+        first_pos = pos_items.first()
+        if first_pos.sale:
+            pos_origin_sale = first_pos.sale
+
     payment = workorder.amount_paid
     open_bal = workorder.open_balance
     total_bal = workorder.total_balance
@@ -109,7 +128,9 @@ def invoice_pdf(request, id):
         'total_bal':total_bal,
         'rows': rows,
         'rows2': rows2,
-        'packingslip_rows': packingslip_rows
+        'packingslip_rows': packingslip_rows,
+        'pos_items': pos_items,
+        "pos_origin_sale": pos_origin_sale,
     }
 
     if workorder.internal_company == 'LK Design':
@@ -917,6 +938,7 @@ def packing_slip(request, id):
 
     
     workorder = Workorder.objects.get(id=id)
+    pos_items = RetailWorkorderItem.objects.filter(workorder=workorder)
     payment = workorder.amount_paid
     open_bal = workorder.open_balance
     total_bal = workorder.total_balance
@@ -981,7 +1003,8 @@ def packing_slip(request, id):
         'total':total,
         'total_bal':total_bal,
         'rows': rows,
-        'rows2': rows2
+        'rows2': rows2,
+        'pos_items': pos_items,
     }
 
     if workorder.internal_company == 'LK Design':

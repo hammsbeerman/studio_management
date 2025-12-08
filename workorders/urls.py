@@ -50,8 +50,15 @@ from .views import (
     orderout_wait,
     shiptype,
     delivered,
+    workorder_toggle_delivery,
+    workorder_update_delivery_date,
+    workorder_toggle_pickup,
+    workorder_update_pickup_date,
+    pickup_call_report,
+    workorder_delivery_block_view
     #shipping_status,
     # removed,
+
 )
 
 app_name='workorders'
@@ -111,6 +118,12 @@ urlpatterns = [
     path("shiptype/<int:id>", shiptype, name='shiptype'),
     path("delivered/<int:id>", delivered, name='delivered'),
     #path("shipping_status/", shipping_status, name='shipping_status'),
+    path("workorders/<int:pk>/delivery/toggle/", workorder_toggle_delivery, name="toggle_delivery"),
+    path("workorders/<int:pk>/delivery/date/", workorder_update_delivery_date, name="update_delivery_date"),
+    path("workorders/<int:pk>/pickup/toggle/", workorder_toggle_pickup, name="toggle_pickup"),
+    path("workorders/<int:pk>/pickup/date/", workorder_update_pickup_date, name="update_pickup_date"),
+    path("pickup-call-report/", pickup_call_report, name="pickup_call_report"),
+    path("workorders/<int:pk>/delivery/block/", workorder_delivery_block_view, name="workorder_delivery_block"),
 
 
 

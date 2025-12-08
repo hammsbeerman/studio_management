@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<style>
+  #retail-customer-select.select2-hidden-accessible {
+    display: none !important;
+  }
+</style>
+
+<div class="row mb-2">
+  <div class="col-8">
+    <h4>
+      Office Supplies — Retail Sale #{{ sale.id }}
+      <small class="text-muted">Status: {{ sale.get_status_display }}</small>
+    </h4>
+  </div>
+  <div
+    class="col-4 text-end"
+    id="sale-header-actions"
+    hx-get="{% url 'retail:sale_header_actions' sale.id %}"
+    hx-trigger="load, customer-changed from:body"
+    hx-swap="innerHTML"
+  >
+    {% include "retail/partials/sale_header_actions.html" with sale=sale %}
+  </div>
+</div>
+
+<div class="row">
+  {# LEFT: Customer, AR, description #}
+  <div class="col-md-3 mb-3">
+
+    <div
+      id="customer-card-wrapper"
+      hx-get="{% url 'retail:sale_customer_block' sale.id %}"
+      hx-trigger="load, CustomerAdded from:body"
+      hx-swap="innerHTML"
+    >
+      <div class="card">
+        <div class="card-body text-muted small">
+          Loading customer…
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        Customer AR (Krueger + Office Supplies)
+      </div>
+      <div
+        id="customer-ar-panel"
+        class="card-body"
+        style="max-height: 250px; overflow-y: auto; overflow-x: hidden;"
+        hx-get="{% url 'retail:sale_customer_ar' sale.id %}"
+        hx-trigger="load, customer-changed from:body"
+        hx-swap="innerHTML"
+      >
+        {% if open_invoices is not None or closed_invoices is not None %}
+          {% include "retail/partials/customer_ar_panel.html" with sale=sale open_invoices=open_invoices closed_invoices=closed_invoices %}
+        {% else %}
+          {% include "retail/partials/customer_ar_panel.html" with sale=sale %}
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header">
+        Workorder description
+      </div>
+      <div class="card-body">
+        <form
+          method="post"
+          hx-post="{% url 'retail:update_sale_notes' sale.id %}"
+          hx-trigger="change delay:500ms, keyup delay:800ms"
+          hx-target="none"
+          hx-swap="none"
+        >
+          {% csrf_token %}
+          <textarea
+            name="notes"
+            class="form-control"
+            rows="3"
+            placeholder="Describe the job here (will appear on the workorder)..."
+          >{{ sale.notes }}</textarea>
+          <small class="text-muted">
+            This text will be copied to the workorder description.
+          </small>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  {# CENTER: POS grid #}
+  <div class="col-md-6 mb-3">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Items</span>
+        <small class="text-muted">Internal company: {{ sale.internal_company }}</small>
+      </div>
+      <div class="card-body p-1">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th style="width:40px;" class="text-center">#</th>
+              <th>Description</th>
+              <th style="width:70px;" class="text-end">Qty</th>
+              <th style="width:130px;" class="text-end">Price</th>
+              <th style="width:90px;" class="text-end">Amount</th>
+              <th style="width:40px;"></th>
+            </tr>
+          </thead>
+          <tbody id="lines-body">
+            {% for line in sale.lines.all %}
+              {% include "retail/partials/line_row.html" with sale=sale line=line rownum=forloop.counter %}
+            {% empty %}
+              <tr id="no-lines-message">
+                <td colspan="6" class="text-muted">
+                  No items yet. Use the item search on the right.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        {# Custom line add #}
+        <form
+          method="post"
+          action="{% url 'retail:sale_add_custom_line' sale.id %}"
+          class="row g-2 mt-3"
+        >
+          {% csrf_token %}
+          <div class="col-md-6">
+            <input
+              type="text"
+              name="description"
+              class="form-control"
+              placeholder="Custom item description"
+            >
+          </div>
+          <div class="col-md-2">
+            <input
+              type="number"
+              step="0.01"
+              name="qty"
+              class="form-control"
+              placeholder="Qty"
+              value="1"
+            >
+          </div>
+          <div class="col-md-2">
+            <input
+              type="number"
+              step="0.01"
+              name="unit_price"
+              class="form-control"
+              placeholder="Price"
+            >
+          </div>
+          <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+              Add custom item
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  {# RIGHT: Inventory search + totals #}
+  <div class="col-md-3 mb-3">
+
+    <div class="card mb-3">
+      <div class="card-header">
+        Find Items
+      </div>
+      <div class="card-body">
+        <input
+          type="text"
+          name="q"
+          class="form-control mb-2"
+          placeholder="Search inventory..."
+          hx-get="{% url 'retail:inventory_search' %}"
+          hx-trigger="keyup changed delay:300ms"
+          hx-target="#inventory-search-results"
+          hx-indicator="#inventory-search-loading"
+          hx-vals='{"sale_id": "{{ sale.id }}"}'
+        >
+        <div id="inventory-search-loading" class="htmx-indicator small text-muted">
+          Searching...
+        </div>
+
+        <div
+          id="inventory-search-results"
+          style="max-height: 500px; overflow-y: auto; overflow-x: hidden;"
+          hx-get="{% url 'retail:inventory_search' %}?sale_id={{ sale.id }}"
+          hx-trigger="load"
+        >
+          {# results partial loads here #}
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Totals</span>
+        <form
+          method="post"
+          action="{% url 'retail:sale_toggle_tax' sale.id %}"
+          class="d-inline"
+        >
+          {% csrf_token %}
+          {% if sale.tax_exempt %}
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+              Charge tax on this sale
+            </button>
+          {% else %}
+            <button type="submit" class="btn btn-sm btn-outline-warning">
+              Don’t charge tax on this sale
+            </button>
+          {% endif %}
+        </form>
+
+      <div
+        class="card-body p-2"
+        id="totals-panel"
+        hx-get="{% url 'retail:sale_totals' sale.id %}"
+        hx-trigger="load, retail-totals-changed from:body"
+        hx-swap="innerHTML"
+      >
+        {% include "retail/partials/totals.html" with sale=sale %}
+      </div>
+
+      <div class="card-body pt-0">
+        {% if sale.locked and not sale.is_refund %}
+          <a
+            href="{% url 'retail:sale_refund_start' sale.id %}"
+            class="btn btn-sm btn-warning"
+          >
+            Refund this sale
+          </a>
+        {% endif %}
+      </div>
+
+      <div class="card-footer">
+        <div
+          id="totals-actions"
+          hx-get="{% url 'retail:sale_totals_actions' sale.id %}"
+          hx-trigger="load, customer-changed from:body"
+          hx-swap="innerHTML"
+        >
+          {% include "retail/partials/totals_actions.html" with sale=sale %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{# New Customer modal shell #}
+<div id="modal" class="modal fade" tabindex="-1">
+  <div id="dialog" class="modal-dialog" hx-target="this"></div>
+</div>
+
+{% endblock content %}
+
+{% block scripts %}
+  {{ block.super }}
+
+  <script>
+    function initRetailCustomerSelect() {
+      const $el = $("#retail-customer-select");
+      if (!$el.length) return;
+
+      if ($el.data("select2-initialized")) return;
+
+      $el.select2({ width: "100%" });
+      $el.data("select2-initialized", true);
+
+      $el.off("select2:select.retail").on("select2:select.retail", function () {
+        htmx.trigger(this, "change");
+      });
+    }
+
+    $(document).ready(function () {
+      initRetailCustomerSelect();
+    });
+
+    htmx.on("htmx:afterSwap", function (e) {
+      if (
+        e.detail.target.id === "customer-card-wrapper" ||
+        $(e.detail.target).find("#retail-customer-select").length
+      ) {
+        initRetailCustomerSelect();
+      }
+
+      if (e.detail.target.id === "lines-body") {
+        const msg = document.getElementById("no-lines-message");
+        if (msg) msg.remove();
+      }
+    });
+
+    // New Customer modal wiring
+    const retailModalEl = document.getElementById("modal");
+    const retailModal = new bootstrap.Modal(retailModalEl);
+
+    htmx.on("htmx:afterSwap", (e) => {
+      if (e.detail.target.id === "dialog") {
+        retailModal.show();
+      }
+    });
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      if (e.detail.target.id === "dialog" && !e.detail.xhr.response) {
+        retailModal.hide();
+        e.detail.shouldSwap = false;
+      }
+    });
+
+    htmx.on("hidden.bs.modal", () => {
+      const dlg = document.getElementById("dialog");
+      if (dlg) dlg.innerHTML = "";
+    });
+  </script>
+{% endblock scripts %}

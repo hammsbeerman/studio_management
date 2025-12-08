@@ -74,16 +74,12 @@ class ItemPricingGroup(models.Model):
 class InventoryMaster(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False)
     description = models.CharField('Description', max_length=100, blank=True, null=True)
-    primary_vendor =  models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
+    primary_vendor = models.ForeignKey(Vendor, null=True, on_delete=models.SET_NULL)
     primary_vendor_part_number = models.CharField('Primary Vendor Part Number', max_length=100, blank=True, null=True)
     primary_base_unit = models.ForeignKey(Measurement, null=True, on_delete=models.SET_NULL)
-    #measurement = models.ForeignKey(Measurement, blank=True, null=True, on_delete=models.DO_NOTHING)
     units_per_base_unit = models.DecimalField('Units per base unit (almost always 1)', max_digits=15, decimal_places=6, blank=True, null=True)
     unit_cost = models.DecimalField('Unit Cost', max_digits=15, decimal_places=4, blank=True, null=True)
     price_per_m = models.DecimalField('Price Per M', max_digits=15, decimal_places=4, blank=True, null=True)
-    #pricing_group = models.ManyToManyField(GroupCategory, through='InventoryPricingGroup')
-    # qty_variations = models.ManyToManyField(ItemQtyVariations, through='InventoryQtyVariations')
-    #price_per_sqft = models.DecimalField('Price Per SqFt', max_digits=15, decimal_places=4, blank=True, null=True)
     supplies = models.BooleanField('Supply Item', blank=False, null=False, default=True)
     retail = models.BooleanField('Retail Item', blank=False, null=False, default=True)
     non_inventory = models.BooleanField('Non Inventory Item', blank=False, null=False)
@@ -92,13 +88,16 @@ class InventoryMaster(models.Model):
     grouped = models.BooleanField('In price group', blank=False, null=False, default=False)
     price_group = models.ManyToManyField(GroupCategory, blank=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+    updated = models.DateTimeField(auto_now=True, blank=False, null=False)
     high_price = models.DecimalField('High Price', max_digits=15, decimal_places=6, blank=True, null=True)
     active = models.BooleanField(default=True)
-
+    retail_price = models.DecimalField("Retail Price", max_digits=15, decimal_places=4, blank=True, null=True, help_text="Explicit retail price. If set, overrides markup rules.")
+    retail_markup_percent = models.DecimalField("Retail Markup %", max_digits=5, decimal_places=2, blank=True, null=True, help_text="Percent markup over unit cost (e.g. 50 = 50%).")
+    retail_markup_flat = models.DecimalField("Retail Markup $", max_digits=15, decimal_places=4, blank=True, null=True, help_text="Flat dollars added over cost.")
+    retail_category = models.ForeignKey("controls.RetailInventoryCategory", null=True, blank=True, on_delete=models.SET_NULL, related_name="inventory_items")
 
     def __str__(self):
-        return self.name 
+        return self.name
     
     
 class InventoryPricingGroup(models.Model):
@@ -282,6 +281,34 @@ class SetPrice(models.Model):
 
     def __str__(self):
         return self.workorder.workorder
+    
+class RetailWorkorderItem(models.Model):
+    workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.CASCADE, related_name="retail_items")
+    
+    # optional back-link to the POS ticket
+    sale = models.ForeignKey("retail.RetailSale", blank=True, null=True, on_delete=models.SET_NULL, related_name="workorder_items")
+    internal_company = models.CharField(
+        "Internal Company",
+        choices=[
+            ("LK Design", "LK Design"),
+            ("Krueger Printing", "Krueger Printing"),
+            ("Office Supplies", "Office Supplies"),
+        ], max_length=100, blank=False, null=False, default="Office Supplies")
+
+    customer = models.ForeignKey(Customer, blank=True, null=True, on_delete=models.SET_DEFAULT, default=2)
+    hr_customer = models.CharField("Customer Name", max_length=100, blank=True, null=True)
+    inventory = models.ForeignKey("inventory.InventoryMaster", blank=True, null=True, on_delete=models.SET_NULL, related_name="retail_workorder_items")
+    description = models.CharField("Description", max_length=255, blank=True, null=True)
+    quantity = models.DecimalField("Quantity", max_digits=10, decimal_places=2, blank=True, null=True)
+    unit_price = models.DecimalField("Unit Price", max_digits=10, decimal_places=4, blank=True, null=True)
+    total_price = models.DecimalField("Total Price", max_digits=10, decimal_places=2, blank=True, null=True)
+    notes = models.TextField("Notes", blank=True, null=True)
+    dateentered = models.DateTimeField(auto_now_add=True, blank=False, null=False)
+    billed = models.BooleanField("Billed", blank=False, null=False, default=False)
+    edited = models.BooleanField("Edited", blank=False, null=False, default=False)
+
+    def __str__(self):
+        return f"{self.workorder.workorder if self.workorder_id else ''} — {self.description or 'Retail Item'}"
 
 class Photography(models.Model):
     workorder = models.ForeignKey(Workorder, max_length=100, blank=False, null=True, on_delete=models.CASCADE)
@@ -397,4 +424,83 @@ class VendorContact(models.Model):
 #     return render (request, "controls/specialized_tools.html")
 
 
+class InventoryRetailPrice(models.Model):
+    """
+    Per-item retail pricing snapshot for Office Supplies POS.
+
+    - purchase_price: the cost basis we used (usually InventoryMaster.unit_cost)
+    - calculated_price: price from markup rules (pricing service)
+    - override_price: manual/default retail override for POS
+    """
+    inventory = models.OneToOneField("inventory.InventoryMaster", on_delete=models.CASCADE, related_name="retail_pricing")
+    purchase_price = models.DecimalField("Purchase Price", max_digits=15, decimal_places=4, blank=True, null=True, help_text="Cost used as the basis for this retail price.")
+    calculated_price = models.DecimalField("Calculated Retail Price", max_digits=15, decimal_places=4, blank=True, null=True, help_text="Price computed from unit cost + markup rules.")
+    override_price = models.DecimalField("Override Retail Price", max_digits=15, decimal_places=4, blank=True, null=True, help_text="If set, this is the default sell price for POS.")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    note = models.CharField(max_length=200, blank=True, help_text="Optional note (e.g. 'manager override 12/1/25').")
+
+    class Meta:
+        verbose_name = "Inventory Retail Price"
+        verbose_name_plural = "Inventory Retail Prices"
+
+    def __str__(self):
+        return f"Retail pricing for {self.inventory}"
+
+    @property
+    def effective_price(self) -> Decimal:
+        """
+        What POS should actually use:
+        override_price > calculated_price > purchase_price (fallback).
+        """
+        if self.override_price is not None:
+            return self.override_price
+        if self.calculated_price is not None:
+            return self.calculated_price
+        return self.purchase_price or Decimal("0.00")
     
+class InventoryLedger(models.Model):
+    """
+    Central stock movement log.
+
+    Each row represents a change in quantity for an InventoryMaster item.
+    Positive qty_delta = stock in
+    Negative qty_delta = stock out
+    """
+    
+
+    SOURCE_TYPE_CHOICES = [
+        ("AP_RECEIPT", "AP Receipt / Invoice"),
+        ("POS_SALE", "POS Sale"),
+        ("POS_REFUND", "POS Refund"),
+        ("WO_ORDEROUT", "Workorder Item (OrderOut)"),
+        ("ADJUSTMENT", "Manual Adjustment"),
+    ]
+
+    inventory_item = models.ForeignKey("InventoryMaster", on_delete=models.CASCADE, related_name="ledger_entries")
+    when = models.DateTimeField(auto_now_add=True)
+    qty_delta = models.DecimalField(max_digits=12, decimal_places=4)
+    source_type = models.CharField(max_length=40, choices=SOURCE_TYPE_CHOICES)
+    # free-form reference back to the originating record (sale id, workorder, etc.)
+    source_id = models.CharField(max_length=50, blank=True, null=True)
+    note = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        ordering = ["-when"]
+
+    def __str__(self):
+        return f"{self.inventory_item} {self.qty_delta} @ {self.when} ({self.source_type})"
+    
+@receiver(post_save, sender=Inventory)
+def update_retail_pricing_on_inventory_add(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    master = instance.internal_part_number
+    if not master:
+        return
+
+    from inventory.services.pricing import ensure_retail_pricing
+
+    # 🔹 here we DO reset override, because fresh inventory arrived
+    ensure_retail_pricing(master, reset_override=True)

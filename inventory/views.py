@@ -1,19 +1,27 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.models import OuterRef, Subquery
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status, generics, viewsets
+from django.core.paginator import Paginator
+from django.db.models import Q
 from decimal import Decimal
 from controls.forms import AddItemtoListForm
-from .forms import AddVendorForm
+from controls.models import RetailInventoryCategory
+from .forms import AddVendorForm, RetailCategoryForm, RetailCategoryMarkupForm, InventoryItemPricingForm
 from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut, Inventory
-from .serializers import InventorySerializer
 from finance.models import InvoiceItem, AccountsPayable#, AllInvoiceItem
 from .utils import merged_set_for
+from inventory.services.pricing import compute_retail_price
+from inventory.services.ledger import (
+    get_negative_stock_items,
+    get_on_hand,
+    get_stock_valuation_for_item,
+    get_stock_alerts,
+    get_on_hand,
+)
 #from inventory.models import Inventory
 
 # Create your views here.
@@ -181,7 +189,15 @@ def item_variation_details(request, id=None):
 
 def item_details(request, id=None):
     id = request.GET.get('name')
-    items = InventoryMaster.objects.all()
+    #items = InventoryMaster.objects.all()
+    items = (
+        InventoryMaster.objects
+        .filter(active=True)
+        .prefetch_related("inventory_set")  # default reverse name from Inventory FK
+        .order_by("name")
+    )
+    
+    
     if request.method == "POST":
         id = request.POST.get('master_id')
         obj = get_object_or_404(Inventory, internal_part_number=id)
@@ -334,27 +350,62 @@ def inventory_detail(request, pk):
 
 
 
-#Below this is solely for testing API data
+#Below this is solely for testing API data without DRF
 
-#For testing serializer
-#@api_view(['GET', 'POST'])
 def inventory_list(request):
-    if request.method == 'GET':
-        inventory = InventoryMaster.objects.all()
-        serializer = InventorySerializer(inventory, many=True)
-        #return JsonResponse(serializer.data, safe=False)
-        return JsonResponse({'inventory': serializer.data})
-    if request.method == 'POST':
-        #items = request.POST
-        #print(items)
-        serializer = InventorySerializer(data=request.data)
-        #print(1)
-        #print(serializer)
-        if serializer.is_valid():
-            #print(2)
-            serializer.save()
-            #print(3)
-            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+    """
+    Simple JSON endpoint for InventoryMaster, for testing.
+
+    GET:
+        Returns {"inventory": [{id, name, description}, ...]}
+
+    POST:
+        Accepts JSON body with at least {"name": "..."} and optional
+        "description". Creates a minimal InventoryMaster row and
+        returns it as JSON.
+    """
+    if request.method == "GET":
+        qs = InventoryMaster.objects.all().order_by("name")
+        data = [
+            {
+                "id": item.id,
+                "name": item.name,
+                "description": item.description,
+            }
+            for item in qs
+        ]
+        return JsonResponse({"inventory": data})
+
+    if request.method == "POST":
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+        name = (payload.get("name") or "").strip()
+        description = (payload.get("description") or "").strip()
+
+        if not name:
+            return JsonResponse({"error": "Name is required"}, status=400)
+
+        item = InventoryMaster.objects.create(
+            name=name,
+            description=description,
+            primary_vendor=None,
+            primary_base_unit=None,
+            non_inventory=False,
+        )
+
+        return JsonResponse(
+            {
+                "id": item.id,
+                "name": item.name,
+                "description": item.description,
+            },
+            status=201,
+        )
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
         
 #def new_inventory_list(request)
 
@@ -379,3 +430,346 @@ def inventory_list(request):
 # class InventoryViewSet(viewsets.ModelViewSet):
 #     queryset = Inventory.objects.all()
 #     serializer_class = InventorySerializer
+
+@login_required
+def retail_pricing_admin(request):
+    """
+    Retail pricing admin:
+
+    - Left sidebar:
+        * All real RetailInventoryCategory rows
+        * A virtual 'Uncategorized' bucket (items with no retail_category)
+    - Right panel:
+        * Items for the selected category or 'Uncategorized'
+        * Per-item overrides (retail_price, markup %, markup $) with HTMX autosave
+
+    POST actions:
+        * add_category
+        * update_category_markup
+        * bulk_move_items
+        * update_item_pricing
+    """
+
+    # ------------------------------------------------------------------
+    # Categories for sidebar
+    # ------------------------------------------------------------------
+    categories = RetailInventoryCategory.objects.order_by("name")
+
+    # ------------------------------------------------------------------
+    # Category filter: real ID or 'uncategorized'
+    # ------------------------------------------------------------------
+    category_filter = request.GET.get("category") or ""
+    search = request.GET.get("q") or ""
+
+    is_uncategorized = category_filter == "uncategorized"
+    current_category = None
+
+    if category_filter and not is_uncategorized:
+        try:
+            current_category = RetailInventoryCategory.objects.get(pk=category_filter)
+        except RetailInventoryCategory.DoesNotExist:
+            current_category = None
+            category_filter = ""
+            is_uncategorized = False
+
+    # ------------------------------------------------------------------
+    # Helper for decimals
+    # ------------------------------------------------------------------
+    def _dec_or_none(val):
+        if val is None or val == "":
+            return None
+        try:
+            return Decimal(str(val))
+        except Exception:
+            return None
+
+    # ------------------------------------------------------------------
+    # POST actions
+    # ------------------------------------------------------------------
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        # 1) Add new category
+        if action == "add_category":
+            form = RetailCategoryForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Category added.")
+            else:
+                messages.error(request, "Please fix errors in the category form.")
+            return redirect("inventory:retail_pricing_admin")
+
+        # 2) Update category markup (percent / flat)
+        if action == "update_category_markup":
+            cat_id = request.POST.get("category_id")
+            try:
+                cat = RetailInventoryCategory.objects.get(pk=cat_id)
+            except RetailInventoryCategory.DoesNotExist:
+                messages.error(request, "Category not found.")
+                return redirect("inventory:retail_pricing_admin")
+
+            cat.default_markup_percent = _dec_or_none(
+                request.POST.get("default_markup_percent")
+            )
+            cat.default_markup_flat = _dec_or_none(
+                request.POST.get("default_markup_flat")
+            )
+            cat.save(update_fields=["default_markup_percent", "default_markup_flat"])
+
+            # 🔹 HTMX: just save and do NOT swap any HTML (avoid nesting full page)
+            if request.headers.get("HX-Request") == "true":
+                return HttpResponse(status=204)
+
+            # Non-HTMX fallback
+            messages.success(request, f"Markup updated for {cat.name}.")
+            return redirect(f"{request.path}?category={cat.id}")
+
+        # 3) Bulk-move items between categories
+        if action == "bulk_move_items":
+            source_id = request.POST.get("source_category") or None
+            target_id = request.POST.get("target_category") or None
+
+            if not target_id:
+                messages.error(request, "Please choose a target category.")
+                return redirect("inventory:retail_pricing_admin")
+
+            try:
+                target_cat = RetailInventoryCategory.objects.get(pk=target_id)
+            except RetailInventoryCategory.DoesNotExist:
+                messages.error(request, "Target category not found.")
+                return redirect("inventory:retail_pricing_admin")
+
+            items_qs = InventoryMaster.objects.filter(active=True, retail=True)
+
+            # Source: "uncategorized" → items with no retail_category
+            if source_id == "uncategorized":
+                items_qs = items_qs.filter(retail_category__isnull=True)
+            elif source_id:
+                items_qs = items_qs.filter(retail_category_id=source_id)
+
+            count = items_qs.update(retail_category=target_cat)
+            messages.success(
+                request,
+                f"Moved {count} item(s) to category '{target_cat.name}'.",
+            )
+            return redirect("inventory:retail_pricing_admin")
+
+        # 4) Per-item pricing updates (HTMX autosave + normal POST)
+        if action == "update_item_pricing":
+            item_id = request.POST.get("item_id")
+            try:
+                item = InventoryMaster.objects.get(pk=item_id)
+            except InventoryMaster.DoesNotExist:
+                messages.error(request, "Item not found.")
+                return redirect("inventory:retail_pricing_admin")
+
+            # Optional category change per item (if you later add a select)
+            cat_id = request.POST.get("retail_category")
+            if cat_id == "":
+                item.retail_category = None
+            elif cat_id:
+                try:
+                    item.retail_category = RetailInventoryCategory.objects.get(pk=cat_id)
+                except RetailInventoryCategory.DoesNotExist:
+                    # ignore bad category
+                    pass
+
+            # Hard-set retail price override
+            item.retail_price = _dec_or_none(request.POST.get("retail_price"))
+
+            # Item-specific markup overrides
+            item.retail_markup_percent = _dec_or_none(
+                request.POST.get("retail_markup_percent")
+            )
+            item.retail_markup_flat = _dec_or_none(
+                request.POST.get("retail_markup_flat")
+            )
+
+            item.save(
+                update_fields=[
+                    "retail_category",
+                    "retail_price",
+                    "retail_markup_percent",
+                    "retail_markup_flat",
+                ]
+            )
+
+            # Recompute effective price for this item
+            item.computed_retail_price = compute_retail_price(item)
+
+            # HTMX row replace: return updated row only
+            if request.headers.get("HX-Request") == "true":
+                category_param = (
+                    request.GET.get("category")
+                    or (
+                        "uncategorized"
+                        if item.retail_category_id is None
+                        else str(item.retail_category_id)
+                    )
+                )
+                return render(
+                    request,
+                    "inventory/partials/retail_pricing_item_row.html",
+                    {
+                        "item": item,
+                        "current_category": item.retail_category,
+                        "category_param": category_param,
+                        "search": request.GET.get("q") or "",
+                        "categories": RetailInventoryCategory.objects.order_by("name"),
+                    },
+                )
+
+            # Non-HTMX fallback: redirect back to current view
+            messages.success(request, f"Pricing updated for '{item.name}'.")
+            if current_category:
+                return redirect(f"{request.path}?category={current_category.id}&q={search}")
+            if is_uncategorized:
+                return redirect(f"{request.path}?category=uncategorized&q={search}")
+            return redirect("inventory:retail_pricing_admin")
+
+        # Unknown action
+        messages.error(request, "Unknown action.")
+        return redirect("inventory:retail_pricing_admin")
+
+    # ------------------------------------------------------------------
+    # GET: build item list only if a category or 'uncategorized' is selected
+    # ------------------------------------------------------------------
+    page_obj = None
+    if current_category or is_uncategorized:
+        items = InventoryMaster.objects.filter(active=True, retail=True)
+
+        if current_category:
+            items = items.filter(retail_category=current_category)
+        elif is_uncategorized:
+            items = items.filter(retail_category__isnull=True)
+
+        if search:
+            items = items.filter(
+                Q(name__icontains=search)
+                | Q(description__icontains=search)
+                | Q(primary_vendor_part_number__icontains=search)
+            )
+
+        # Fix UnorderedObjectListWarning
+        items = items.order_by("name", "id")
+
+        paginator = Paginator(items, 50)
+        page = request.GET.get("page")
+        page_obj = paginator.get_page(page)
+
+        for item in page_obj.object_list:
+            item.computed_retail_price = compute_retail_price(item)
+
+    # ------------------------------------------------------------------
+    # Category form + context
+    # ------------------------------------------------------------------
+    new_category_form = RetailCategoryForm()
+
+    context = {
+        "categories": categories,
+        "new_category_form": new_category_form,
+        "page_obj": page_obj,
+        "category_filter": category_filter,
+        "current_category": current_category,
+        "is_uncategorized": is_uncategorized,
+        "search": search,
+    }
+    return render(request, "inventory/retail_pricing_admin.html", context)
+
+@login_required
+def negative_stock_report(request):
+    """
+    InventoryMaster-based negative/low stock report.
+
+    - Uses get_on_hand(master) for each InventoryMaster
+    - Filters by on_hand <= threshold
+    - Paginates results
+    """
+    raw_threshold = (request.GET.get("threshold") or "").strip() or "0"
+    try:
+        threshold = Decimal(raw_threshold)
+    except Exception:
+        threshold = Decimal("0")
+
+    masters = (
+        InventoryMaster.objects
+        .filter(non_inventory=False)
+        .order_by("name", "id")
+    )
+
+    rows = []
+    for master in masters:
+        on_hand = get_on_hand(master)
+        if on_hand <= threshold:
+            rows.append({"master": master, "on_hand": on_hand})
+
+    paginator = Paginator(rows, 50)  # adjust page size if you want
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "threshold": threshold,
+        "page_obj": page_obj,
+    }
+    return render(request, "inventory/negative_stock_report.html", context)
+
+@login_required
+def stock_valuation_report(request):
+    """
+    InventoryMaster-based valuation report.
+
+    - Only non_inventory=False items
+    - Uses get_on_hand(master) and master.unit_cost
+    - Paginates results
+    """
+    masters = (
+        InventoryMaster.objects
+        .filter(non_inventory=False)
+        .select_related("primary_vendor", "primary_base_unit")
+        .order_by("name", "id")
+    )
+
+    rows = []
+    total_value = Decimal("0")
+
+    for master in masters:
+        on_hand = get_on_hand(master)
+        unit_cost = master.unit_cost or Decimal("0")
+        value = (on_hand * unit_cost).quantize(Decimal("0.0001"))
+        rows.append(
+            {
+                "master": master,
+                "on_hand": on_hand,
+                "unit_cost": unit_cost,
+                "value": value,
+            }
+        )
+        total_value += value
+
+    paginator = Paginator(rows, 50)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "page_obj": page_obj,
+        "total_value": total_value,
+    }
+    return render(request, "inventory/stock_valuation_report.html", context)
+
+@login_required
+def master_inventory_modal(request, pk):
+    """
+    Small modal showing all Inventory rows under a given InventoryMaster.
+    """
+    master = get_object_or_404(InventoryMaster, pk=pk)
+    inventories = (
+        Inventory.objects
+        .filter(internal_part_number=master)
+        .order_by("vendor_part_number", "id")
+    )
+
+    context = {
+        "master": master,
+        "inventories": inventories,
+    }
+    return render(request, "inventory/modals/master_inventory_modal.html", context)

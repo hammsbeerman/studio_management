@@ -1,0 +1,108 @@
+{% if deliveries %}
+  {# retail/partials/delivery_report_table.html #}
+<table class="table table-sm table-striped align-middle">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Customer</th>
+      <th>Sale / Workorder</th>
+      <th>Delivery Date</th>
+      <th>Notes</th>
+      <th>Move</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% if deliveries %}
+      {% for d in deliveries %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+
+          <td>
+            {% if d.customer %}
+              {{ d.customer.company_name }}
+            {% else %}
+              <em>No customer</em>
+            {% endif %}
+          </td>
+
+          <td>
+            {% if d.sale %}
+              POS #{{ d.sale.id }}
+              {% if d.workorder %}
+                (<a href="{{ d.workorder.get_absolute_url }}">WO {{ d.workorder.workorder }}</a>)
+              {% endif %}
+            {% elif d.workorder %}
+              <a href="{{ d.workorder.get_absolute_url }}">WO {{ d.workorder.workorder }}</a>
+            {% else %}
+              &mdash;
+            {% endif %}
+          </td>
+
+          <td style="white-space: nowrap;">
+            <input
+              type="date"
+              name="date"
+              class="form-control form-control-sm"
+              value="{{ d.scheduled_date|date:'Y-m-d' }}"
+              hx-post="{% url 'retail:delivery_update_date' %}"
+              hx-vals='{
+                "delivery_id": "{{ d.id }}",
+                "current_date": "{{ selected_date|date:"Y-m-d" }}"
+              }'
+              hx-target="#delivery-report-table"
+              hx-swap="outerHTML"
+              hx-trigger="change"
+            >
+          </td>
+
+          <td>
+            {{ d.notes|default_if_none:"" }}
+          </td>
+
+          <td style="white-space: nowrap;">
+            <!-- Move up -->
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              hx-post="{% url 'retail:delivery_reorder' %}"
+              hx-vals='{
+                "move": "up",
+                "delivery_id": "{{ d.id }}",
+                "date": "{{ selected_date|date:"Y-m-d" }}"
+              }'
+              hx-target="#delivery-report-table"
+              hx-swap="outerHTML"
+            >
+              ↑
+            </button>
+
+            <!-- Move down -->
+            <button
+              type="button"
+              class="btn btn-sm btn-outline-secondary"
+              hx-post="{% url 'retail:delivery_reorder' %}"
+              hx-vals='{
+                "move": "down",
+                "delivery_id": "{{ d.id }}",
+                "date": "{{ selected_date|date:"Y-m-d" }}"
+              }'
+              hx-target="#delivery-report-table"
+              hx-swap="outerHTML"
+            >
+              ↓
+            </button>
+          </td>
+        </tr>
+      {% endfor %}
+    {% else %}
+      <tr>
+        <td colspan="6" class="text-center text-muted">
+          No deliveries scheduled for {{ selected_date|date:"Y-m-d" }}.
+        </td>
+      </tr>
+    {% endif %}
+  </tbody>
+</table>
+{% else %}
+  <p class="text-muted">No deliveries scheduled for this date.</p>
+{% endif %}

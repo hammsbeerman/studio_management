@@ -1,0 +1,62 @@
+{% if sale.workorder_id %}
+  <a
+    href="{% url 'workorders:overview' id=sale.workorder.workorder %}"
+    class="btn btn-sm btn-outline-secondary me-1"
+    target="_blank"
+  >
+    Open WO #{{ sale.workorder.workorder }}
+  </a>
+{% endif %}
+
+{# Save only if non-walkin AND not locked #}
+{% if not sale.locked and sale.customer and sale.customer.customer_number != "WALKIN" %}
+  <form method="post" action="{% url 'retail:sale_save_workorder' sale.id %}" class="d-inline">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-sm btn-secondary">
+      Save
+    </button>
+  </form>
+
+{% endif %}
+
+{% if sale.cash_record %}
+  <button
+    type="button"
+    class="btn btn-sm btn-outline-secondary"
+    hx-get="{% url 'retail:sale_receipt' sale.id %}"
+    hx-target="#dialog"
+    hx-swap="innerHTML"
+  >
+    Receipt
+  </button>
+{% endif %}
+
+{# Pay only when not locked #}
+{% if not sale.locked %}
+  <form class="d-inline ms-1">
+    <button
+      type="button"
+      class="btn btn-sm {% if sale.is_refund %}btn-warning{% else %}btn-success{% endif %}"
+      hx-get="{% url 'retail:sale_payment_modal' sale.id %}"
+      hx-target="#dialog"
+    >
+      {% if sale.is_refund %}
+        Refund
+      {% else %}
+        Pay
+      {% endif %}
+    </button>
+  </form>
+{% endif %}
+{% if not sale.locked and sale.customer and sale.customer.customer_number != "WALKIN" %}
+  <form
+  method="post"
+  action="{% url 'retail:sale_send_as_quote' sale.id %}"
+  class="d-inline"
+>
+  {% csrf_token %}
+  <button type="submit" class="btn btn-sm btn-outline-secondary">
+    Send to workorder as quote
+  </button>
+</form>
+{% endif %}

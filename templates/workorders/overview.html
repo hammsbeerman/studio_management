@@ -24,14 +24,7 @@
       <div id="workorder-info-card" class="card" hx-trigger="WorkorderInfoChanged from:body" hx-get="{% url 'workorders:workorder_info'  %}?workorder={{workorder.id}}" hx-target="this">
         {% include 'workorders/partials/workorder_info.html' %}
       </div>
-      <div id="ship-status">
-        {% include 'workorders/partials/shiptype.html' %}
-        </div>
-      <div id="delivered-status">
-        {% if workorder.delivery_pickup == "Delivery" %}
-          {% include 'workorders/partials/delivered.html' %}
-        {% endif %}
-      </div>
+      {% include "workorders/partials/workorder_delivery_block.html" %}
   </div>
   <div class="col-md-3">
       <div class="card">
@@ -66,6 +59,11 @@
 </div>
 
 <hr>
+
+<div class="container">
+  {% include "workorders/partials/retail_items.html" with workorder=workorder %}
+</div>
+
 
 <!-- Modal Area -->
 <div class="container">

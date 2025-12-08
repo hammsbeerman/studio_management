@@ -1,0 +1,27 @@
+{% if sale.customer %}
+  <div>
+    <strong>{{ sale.customer.company_name }}</strong><br>
+    {{ sale.customer.address1 }}<br>
+    {% if sale.customer.address2 %}{{ sale.customer.address2 }}<br>{% endif %}
+    {{ sale.customer.city }}, {{ sale.customer.state }} {{ sale.customer.zipcode }}<br>
+    {% if sale.customer.phone1 %}{{ sale.customer.phone1 }}<br>{% endif %}
+    {% if sale.customer.email %}
+      <span class="text-muted small">{{ sale.customer.email }}</span>
+    {% endif %}
+
+    {% if sale.tax_exempt %}
+      <div class="mt-2">
+        <span class="badge bg-info text-dark">Tax Exempt</span>
+        {% if sale.customer.tax_exempt_number %}
+          <small class="text-muted ms-1">
+            ID: {{ sale.customer.tax_exempt_number }}
+          </small>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+{% else %}
+  <p class="text-muted mb-0">
+    No customer selected. Using walk-in / cash sale.
+  </p>
+{% endif %}

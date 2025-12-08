@@ -1,0 +1,47 @@
+{% load humanize %}
+
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">
+      Inventory rows for Master #{{ master.id }} &mdash; {{ master.name }}
+    </h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+
+  <div class="modal-body">
+    <p>
+      <strong>Description:</strong> {{ master.description }}<br>
+      <strong>Base Unit:</strong> {{ master.primary_base_unit }}<br>
+      <strong>Unit Cost:</strong> {{ master.unit_cost|floatformat:4 }}
+    </p>
+
+    {% if inventories %}
+      <table class="table table-sm table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Vendor Part #</th>
+            <th>Color</th>
+            <th>Size</th>
+            <th class="text-end">Legacy Current Stock</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in inventories %}
+            <tr>
+              <td>{{ inv.id }}</td>
+              <td>{{ inv.vendor_part_number }}</td>
+              <td>{{ inv.color }}</td>
+              <td>{{ inv.size }}</td>
+              <td class="text-end">{{ inv.current_stock }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="text-muted mb-0">
+        No Inventory rows are currently linked to this master part.
+      </p>
+    {% endif %}
+  </div>
+</div>

@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from decimal import Decimal
 
 class Numbering(models.Model):
     name = models.CharField('Name', max_length=100, blank=False, null=False, unique=True)
@@ -153,11 +154,30 @@ class PaymentType(models.Model):
         return self.name
 
 class RetailInventoryCategory(models.Model):
-    name = models.CharField('Name', max_length=100, null = True)
+    name = models.CharField('Name', max_length=100, null = True, unique=True)
     icon = models.ImageField(null=True, blank=True, upload_to="retail_category")
     description = models.CharField('Description', max_length=100, blank=True, null=True)
     active = models.BooleanField('Active', blank=True, null=True, default=True)
     parent = models.CharField('Parent Category', max_length=10, null = True)
+
+    # 🔹 Defaults for this category
+    default_markup_percent = models.DecimalField(
+        "Default Markup %",
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("50.00"),
+        blank=True,
+        null=True,
+        help_text="Percent over cost for items in this category.",
+    )
+    default_markup_flat = models.DecimalField(
+        "Default Markup $",
+        max_digits=15,
+        decimal_places=4,
+        blank=True,
+        null=True,
+        help_text="Flat dollars added over cost for this category.",
+    )
 
     def __str__(self):
         return self.name

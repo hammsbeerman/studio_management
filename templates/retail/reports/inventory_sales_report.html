@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Inventory sold by period</h3>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input type="date" name="start" value="{{ start }}" class="form-control">
+  </div>
+  <div class="col-auto">
+    <input type="date" name="end" value="{{ end }}" class="form-control">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-sm btn-primary">Filter</button>
+  </div>
+</form>
+
+<table class="table table-sm table-striped">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th class="text-end">Qty sold</th>
+      <th class="text-end">Revenue</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in summary %}
+    <tr>
+      <td>{{ row.inventory__name }}</td>
+      <td class="text-end">{{ row.qty_sold }}</td>
+      <td class="text-end">${{ row.revenue|floatformat:2 }}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3" class="text-muted">No items sold in this period.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

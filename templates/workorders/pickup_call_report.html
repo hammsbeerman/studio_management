@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4>Pickup Call Report</h4>
+  <small class="text-muted">
+    Workorders marked for pickup, completed, not void, no call date.
+  </small>
+</div>
+
+{% if workorders %}
+  <table class="table table-sm table-striped align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Customer</th>
+        <th>Workorder</th>
+        <th>Company</th>
+        <th>Job Description</th>
+        <th>Due Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for wo in workorders %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ wo.customer }}</td>
+          <td>
+            <a href="{{ wo.get_absolute_url }}">
+              WO #{{ wo.workorder }}
+            </a>
+          </td>
+          <td>{{ wo.internal_company }}</td>
+          <td>{{ wo.job_description|truncatechars:60 }}</td>
+          <td>
+            {% if wo.due_date %}
+              {{ wo.due_date|date:"Y-m-d" }}
+            {% else %}
+              <span class="text-muted">N/A</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="text-muted">No workorders are waiting for pickup calls.</p>
+{% endif %}
+{% endblock %}
