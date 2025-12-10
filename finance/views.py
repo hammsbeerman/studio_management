@@ -28,6 +28,30 @@ from retail.models import RetailCashSale
 
 logger = logging.getLogger(__file__)
 
+def _date_range_to_datetimes(start_date, end_date):
+    """
+    Given two date objects, return (start_dt, end_dt_exclusive)
+    as timezone-aware datetimes in the current timezone.
+
+    We then filter with:
+        date_billed__gte=start_dt,
+        date_billed__lt=end_dt_exclusive
+    """
+    tz = timezone.get_current_timezone()
+
+    start_dt = timezone.make_aware(
+        datetime.combine(start_date, datetime.min.time()),
+        tz
+    )
+
+    end_next = end_date + timedelta(days=1)
+    end_dt_exclusive = timezone.make_aware(
+        datetime.combine(end_next, datetime.min.time()),
+        tz
+    )
+
+    return start_dt, end_dt_exclusive
+
 @login_required
 def finance_main(request):
     return render(request, 'finance/main.html')
@@ -2097,15 +2121,18 @@ def sales_comparison_report(request):
             "quote": "0",
         }
 
+        p1_start_dt, p1_end_dt = _date_range_to_datetimes(p1_start, p1_end)
+        p2_start_dt, p2_end_dt = _date_range_to_datetimes(p2_start, p2_end)
+
         qs1 = Workorder.objects.filter(
             **base_filters,
-            date_billed__date__gte=p1_start,
-            date_billed__date__lte=p1_end,
+            date_billed__gte=p1_start_dt,
+            date_billed__lt=p1_end_dt,
         )
         qs2 = Workorder.objects.filter(
             **base_filters,
-            date_billed__date__gte=p2_start,
-            date_billed__date__lte=p2_end,
+            date_billed__gte=p2_start_dt,
+            date_billed__lt=p2_end_dt,
         )
 
         if companies_selected:
@@ -2398,24 +2425,27 @@ def sales_comparison_debug(request):
         qs_with_billed = qs_base.filter(date_billed__isnull=False)
         steps.append(summarize("Base + date_billed is not null", qs_with_billed))
 
+        p1_start_dt, p1_end_dt = _date_range_to_datetimes(p1_start, p1_end)
+        p2_start_dt, p2_end_dt = _date_range_to_datetimes(p2_start, p2_end)
+
         # Step 3: Period 1 only
         qs_p1 = qs_with_billed.filter(
-            date_billed__date__gte=p1_start,
-            date_billed__date__lte=p1_end,
+            date_billed__gte=p1_start_dt,
+            date_billed__lt=p1_end_dt,
         )
         steps.append(summarize(f"Period 1 only ({period1_label})", qs_p1))
 
         # Step 4: Period 2 only
         qs_p2 = qs_with_billed.filter(
-            date_billed__date__gte=p2_start,
-            date_billed__date__lte=p2_end,
+            date_billed__gte=p2_start_dt,
+            date_billed__lt=p2_end_dt,
         )
         steps.append(summarize(f"Period 2 only ({period2_label})", qs_p2))
 
         # Step 5: “union” of P1+P2 using Q instead of .union()
         qs_union = qs_with_billed.filter(
-            Q(date_billed__date__gte=p1_start, date_billed__date__lte=p1_end)
-            | Q(date_billed__date__gte=p2_start, date_billed__date__lte=p2_end)
+            Q(date_billed__gte=p1_start_dt, date_billed__lt=p1_end_dt)
+            | Q(date_billed__gte=p2_start_dt, date_billed__lt=p2_end_dt)
         ).distinct()
         steps.append(summarize("Union of Period 1 + Period 2", qs_union))
 
