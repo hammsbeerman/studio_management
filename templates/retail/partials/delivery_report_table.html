@@ -22,20 +22,39 @@
 
             <td>
               {% if d.customer %}
-                {{ d.customer.company_name }}
+                <a
+                  href="#"
+                  hx-get="{% url 'customers:edit_customer' %}?customer={{ d.customer.id }}"
+                  hx-target="#dialog"
+                  hx-swap="innerHTML"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modal"
+                >
+                  {{ d.customer.company_name }}
+                </a>
               {% else %}
                 <em>No customer</em>
               {% endif %}
             </td>
 
             <td>
-              {% if d.sale %}
+              {# If this Delivery already has a workorder attached, link straight to it #}
+              {% if d.workorder %}
+                <a href="{% url 'workorders:overview' id=d.workorder.workorder %}">
+                  WO {{ d.workorder.workorder }}
+                </a>
+
+              {# POS delivery: link POS sale to its parent workorder if one exists #}
+              {% elif d.sale and d.sale.workorder %}
+                <a href="{% url 'workorders:overview' id=d.sale.workorder.workorder %}">
+                  POS #{{ d.sale.id }} → WO {{ d.sale.workorder.workorder }}
+                </a>
+
+              {# POS sale with no linked workorder – just show the POS #}
+              {% elif d.sale %}
                 POS #{{ d.sale.id }}
-                {% if d.workorder %}
-                  (<a href="{{ d.workorder.get_absolute_url }}">WO {{ d.workorder.workorder }}</a>)
-                {% endif %}
-              {% elif d.workorder %}
-                <a href="{{ d.workorder.get_absolute_url }}">WO {{ d.workorder.workorder }}</a>
+
+              {# Plain workorder-only delivery (if you're showing it differently) #}
               {% else %}
                 &mdash;
               {% endif %}

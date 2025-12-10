@@ -1,161 +1,177 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">{LK}</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          
-          {% if not user.is_authenticated %}
-          
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
-            </li>
-            <!-- <li class="nav-item">
-              <a class="nav-link" href="{% url 'accounts:register' %}">Register</a>
-            </li> -->
-          {% endif %}
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'workorders:dashboard' %}">{LK}</a>
 
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+            aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-          
-          {% if user.is_authenticated %}
-            <li class="nav-item">
-              <!-- <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a> -->
-              <a class="nav-link active" aria-current="page" href="{% url 'workorders:dashboard' %}">Home</a>
-            </li>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+        {# --- Public / not logged in --- #}
+        {% if not user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'accounts:login' %}">Login</a>
+          </li>
+        {% endif %}
+
+        {# --- Authenticated nav --- #}
+        {% if user.is_authenticated %}
+
+          {# Home / Dashboard #}
+          <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="{% url 'workorders:dashboard' %}">
+              Home
+            </a>
+          </li>
+
+          {# Workorders #}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              Workorders
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <li><a class="dropdown-item" href="{% url 'workorders:dashboard' %}">Workorder List</a></li>
+              <li><a class="dropdown-item" href="{% url 'workorders:createbase' %}">Add Workorder</a></li>
+              <li><a class="dropdown-item" href="{% url 'workorders:quote_list' %}">Quote List</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'finance:all_printleader' %}">All Printleader Invoices</a></li>
+              <li><a class="dropdown-item" href="{% url 'finance:all_lk' %}">All LK Invoices</a></li>
+            </ul>
+          </li>
+
+          {# Items assigned to user #}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'dashboard:assigned_items' %}">My Items</a>
+          </li>
+
+          {# Customers #}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              Customers
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <li><a class="dropdown-item" href="{% url 'customers:customer_dashboard' %}">Customer Detail</a></li>
+              <li><a class="dropdown-item" href="{% url 'customers:customer_list' %}">Customer List</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'customers:add_mailing_customer' %}">Add Mailing List Customer</a></li>
+            </ul>
+          </li>
+
+          {# Vendors (print + inventory) #}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              Vendors
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <li class="dropdown-header">Print / Inventory</li>
+              <li><a class="dropdown-item" href="{% url 'inventory:add_vendor' %}">Add Vendor</a></li>
+              <li><a class="dropdown-item" href="{% url 'inventory:vendor_list' %}">Vendor List</a></li>
+              {% if request.user.is_staff %}
+                <li><hr class="dropdown-divider"></li>
+                <li class="dropdown-header">Retail Vendors</li>
+                <li><a class="dropdown-item" href="{% url 'retail:add_vendor' %}">Add Retail Vendor</a></li>
+                <li><a class="dropdown-item" href="{% url 'retail:vendor_list' %}">Retail Vendor List</a></li>
+              {% endif %}
+            </ul>
+          </li>
+
+          {# Finance #}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              Finance
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              {% if request.user.is_staff %}
+                <li><a class="dropdown-item" href="{% url 'finance:finance' %}">Finance Home</a></li>
+                <li><a class="dropdown-item" href="{% url 'finance:add_invoice' %}">Add AP Invoice</a></li>
+                <li><a class="dropdown-item" href="{% url 'retail:invoice_list' %}">AP Invoices List</a></li>
+                <li><hr class="dropdown-divider"></li>
+              {% endif %}
+              <li><a class="dropdown-item" href="{% url 'finance:ar_dashboard' %}">A/R Dashboard</a></li>
+            </ul>
+          </li>
+
+          {# Office Supplies POS + inventory reports #}
+          {% if request.user.is_staff %}
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Workorders
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                <li><a class="dropdown-item" href="{% url 'workorders:dashboard' %}">Workorder List</a></li>
-                <li><a class="dropdown-item" href="{% url 'workorders:createbase' %}">Add Workorder</a></li>
-                <li><a class="dropdown-item" href="{% url 'workorders:quote_list' %}">Quote List</a></li>
-                <!-- <li><a class="dropdown-item" href="#">Abandoned Quotes</a></li> -->
-                <li><a class="dropdown-item" href="{% url 'finance:all_printleader' %}">All Printleader Invoices</a></li>
-                <li><a class="dropdown-item" href="{% url 'finance:all_lk' %}">All LK Invoices</a></li>
-              </ul> 
-            </li>
-            <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="{% url 'dashboard:assigned_items' %}">Items</a>
-            </li>
-            <!-- Not yet functional 
-            {% if request.user.is_staff %}
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Retail
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                <li><a class="dropdown-item" href="">Retail Home</a></li>
-              </ul> 
-            </li>
-            {% endif %}
-            -->
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Finance
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                {% if request.user.is_staff %}<li><a class="dropdown-item" href="{% url 'finance:finance' %}">Finance Home</a></li>{% endif %}
-                <li><a class="dropdown-item" href="{% url 'finance:ar_dashboard' %}">A/R Dashboard</a></li>
-              </ul> 
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Vendors
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                <li><a class="dropdown-item" href="{% url 'inventory:add_vendor' %}">Add Vendor</a></li>
-                <li><a class="dropdown-item" href="{% url 'inventory:vendor_list' %}">Vendor List</a></li>
-                
-              </ul> 
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Customers
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                <li><a class="dropdown-item" href="{% url 'customers:customer_dashboard' %}">Customer Detail</a></li>
-                <li><a class="dropdown-item" href="{% url 'customers:customer_list' %}">Customer List</a></li>
-                <li><a class="dropdown-item" href="{% url 'customers:add_mailing_customer' %}">Add Mailing List Customer</a></li>
-              </ul> 
-            </li>
-            {% if request.user.is_staff %}
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Administration
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item" href="{% url 'pricesheet:template_list' %}">Price Templates</a></li>
-                  <!-- <li><a class="dropdown-item" href="{% url 'pdf:management' %}">PDF Options</a></li> -->
-                  <li><a class="dropdown-item" href="/admin">Admin</a></li>
-                  <li><a class="dropdown-item" href="{% url 'controls:utilities' %}">Utilities</a></li>
-                  <li><a class="dropdown-item" href="{% url 'onlinestore:online_store' %}">Online Store Utilities</a></li>
-                </ul> 
-              </li>
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  PDF Tests
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item" href="{% url 'pdf:showitems' %}">Item list w/ xhtml2pdf</a></li>
-                </ul> 
-              </li>
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  Retail
-                </a>
-                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item" href="{% url 'retail:add_vendor' %}">Add Vendor</a></li>
-                  <li><a class="dropdown-item" href="{% url 'retail:vendor_list' %}">List Vendors</a></li>
-                  <li><a class="dropdown-item" href="{% url 'finance:add_invoice' %}">Add Invoice</a></li>
-                  <li><a class="dropdown-item" href="{% url 'retail:invoice_list' %}">Invoices</a></li>
-                  <!-- <li><a class="dropdown-item" href="{% url 'finance:add_inventory_item' %}">Add Inventory Item</a></li> -->
-                  <li><a class="dropdown-item" href="{% url 'retail:retail_inventory_list' %}">Inventory List</a></li>
-                  <!-- <li><a class="dropdown-item" href="{% url 'finance:add_item_to_vendor' %}">Add Item to vendor</a></li> -->
-                </ul>
-              </li>
-              <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <a class="nav-link dropdown-toggle" href="#" role="button"
+                 data-bs-toggle="dropdown" aria-expanded="false">
                 Office Supplies POS
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                  <li><a class="dropdown-item" href="{% url 'retail:new_sale' %}">New Sale</a></li>
-                  <li><a class="dropdown-item" href="{% url 'retail:refund_lookup' %}">Start Refund</a></li>
-                  <li><a class="dropdown-item" href="{% url 'retail:pos_sale_list' %}">POS Sale List</a></li>
-                  <li><a class="dropdown-item" href="{% url 'inventory:retail_pricing_admin' %}">Inventory Pricing Admin</a></li>
-                  <li><a class="dropdown-item" href="{% url 'retail:inventory_sales_report' %}">Inventory Sales report</a></li>
-                  <li><a class="dropdown-item" href="{% url 'retail:cash_sales_report' %}">Cash Sales report</a></li>
-                  <li><a class="dropdown-item" href="{% url 'retail:pos_qty_sold_report' %}">POS Qty Sold Sales report</a></li>
-                  <li><a class="dropdown-item" href="{% url 'inventory:negative_stock_report' %}">Negative Stock report</a></li>
-                  <li><a class="dropdown-item" href="{% url 'inventory:stock_valuation_report' %}">Stock Valuation report</a></li>
-                  <li><a class="dropdown-item" href="{% url 'retail:delivery_report' %}">Delivery report</a></li>
-                  <li><a class="dropdown-item" href="{% url 'workorders:pickup_call_report' %}">Pickup Call report</a></li>
-                  <li><a class="dropdown-item" href="{% url 'inventory:inventory_adjust' %}">Inventory Adjustment</a></li>
-              </ul> 
-            </li>
-            {% endif %}
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                User
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a></li>
-                <li><a class="dropdown-item" href="{% url 'accounts:update_password' %}">Change Password</a></li>
+                <li class="dropdown-header">POS</li>
+                <li><a class="dropdown-item" href="{% url 'retail:new_sale' %}">New Sale</a></li>
+                <li><a class="dropdown-item" href="{% url 'retail:refund_lookup' %}">Start Refund</a></li>
+                <li><a class="dropdown-item" href="{% url 'retail:pos_sale_list' %}">POS Sale List</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li class="dropdown-header">Inventory / Reports</li>
+                <li><a class="dropdown-item" href="{% url 'inventory:retail_pricing_admin' %}">Inventory Pricing Admin</a></li>
+                <li><a class="dropdown-item" href="{% url 'retail:inventory_sales_report' %}">Inventory Sales Report</a></li>
+                <li><a class="dropdown-item" href="{% url 'retail:cash_sales_report' %}">Cash Sales Report</a></li>
+                <li><a class="dropdown-item" href="{% url 'retail:pos_qty_sold_report' %}">POS Qty Sold Report</a></li>
+                <li><a class="dropdown-item" href="{% url 'inventory:negative_stock_report' %}">Negative Stock Report</a></li>
+                <li><a class="dropdown-item" href="{% url 'inventory:stock_valuation_report' %}">Stock Valuation Report</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li class="dropdown-header">Logistics</li>
+                <li><a class="dropdown-item" href="{% url 'retail:delivery_report' %}">Delivery Report</a></li>
+                <li><a class="dropdown-item" href="{% url 'workorders:pickup_call_report' %}">Pickup Call Report</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'inventory:inventory_adjust' %}">Inventory Adjustment</a></li>
               </ul>
             </li>
           {% endif %}
-      
-        </ul>
 
-          {% if user.is_authenticated %}
-          <form action="{% url 'search' %}" method="GET" class="d-flex" role="search">
-            <input class="form-control me-2" name="q" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-          </form>
+          {# Admin / System tools (staff only) #}
+          {% if request.user.is_staff %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button"
+                 data-bs-toggle="dropdown" aria-expanded="false">
+                Admin / System
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                <li class="dropdown-header">Configuration</li>
+                <li><a class="dropdown-item" href="{% url 'pricesheet:template_list' %}">Price Templates</a></li>
+                <li><a class="dropdown-item" href="{% url 'controls:utilities' %}">Utilities</a></li>
+                <li><a class="dropdown-item" href="{% url 'onlinestore:online_store' %}">Online Store Utilities</a></li>
+                <li><a class="dropdown-item" href="/admin">Django Admin</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li class="dropdown-header">PDF / Dev</li>
+                <li><a class="dropdown-item" href="{% url 'pdf:showitems' %}">Item list (xhtml2pdf)</a></li>
+              </ul>
+            </li>
           {% endif %}
-     
-      </div>
+
+          {# User menu #}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              User
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a></li>
+              <li><a class="dropdown-item" href="{% url 'accounts:update_password' %}">Change Password</a></li>
+            </ul>
+          </li>
+
+        {% endif %}
+      </ul>
+
+      {# Search bar #}
+      {% if user.is_authenticated %}
+        <form action="{% url 'search' %}" method="GET" class="d-flex" role="search">
+          <input class="form-control me-2" name="q" type="search"
+                 placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+      {% endif %}
     </div>
-  </nav>
+  </div>
+</nav>

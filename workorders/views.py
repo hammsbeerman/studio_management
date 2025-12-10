@@ -2402,6 +2402,19 @@ def delivered(request, id):
 @require_POST
 @login_required
 def workorder_toggle_delivery(request, pk):
+    """
+    Toggle 'requires_delivery' for a workorder and keep Delivery rows in sync.
+
+    - When turning ON:
+      * sets requires_delivery=True
+      * sets a default delivery_date if missing (today)
+      * disables pickup flags
+      * ensures a Delivery row exists via ensure_workorder_delivery()
+
+    - When turning OFF:
+      * clears requires_delivery + delivery_date
+      * cancels any pending Delivery rows via cancel_workorder_delivery()
+    """
     wo = get_object_or_404(Workorder, pk=pk)
 
     # Turn OFF delivery
@@ -2411,6 +2424,13 @@ def workorder_toggle_delivery(request, pk):
 
         # don't touch pickup here; user is simply unmarking delivery
         wo.save(update_fields=["requires_delivery", "delivery_date"])
+
+        # Remove any Delivery row tied to this workorder
+        try:
+            cancel_workorder_delivery(wo)
+        except Exception:
+            # don't blow up the UI if something odd happens
+            pass
 
     # Turn ON delivery (and force pickup OFF)
     else:
@@ -2433,6 +2453,14 @@ def workorder_toggle_delivery(request, pk):
             ]
         )
 
+        # Ensure there is a Delivery row for this workorder
+        try:
+            ensure_workorder_delivery(wo, wo.delivery_date)
+        except Exception:
+            # if schema isn't migrated yet, don't kill the block
+            pass
+
+    # POS sync stays as-is
     sale = RetailSale.objects.filter(workorder=wo).first()
     if sale:
         sync_workorder_delivery_from_sale(sale)
@@ -2446,30 +2474,67 @@ def workorder_toggle_delivery(request, pk):
 @require_POST
 @login_required
 def workorder_update_delivery_date(request, pk):
+    """
+    Update the workorder.delivery_date from the date input.
+
+    - Setting a valid date:
+      * turns delivery ON
+      * turns pickup OFF
+      * syncs / creates the Delivery row.
+
+    - Clearing the date:
+      * turns delivery OFF
+      * cancels any Delivery rows.
+    """
     wo = get_object_or_404(Workorder, pk=pk)
 
-    raw_date = request.POST.get("delivery_date")
+    raw_date = (request.POST.get("delivery_date") or "").strip()
+
     if raw_date:
+        # User entered a date → set delivery date + turn delivery ON
         try:
             parsed = datetime.strptime(raw_date, "%Y-%m-%d").date()
-            wo.delivery_date = parsed
-            wo.requires_delivery = True
-
-            # if they set a delivery date, this is a delivery job
-            wo.requires_pickup = False
-            wo.date_called = None
-            wo.delivery_pickup = "Delivery"
-
-            wo.save(
-                update_fields=[
-                    "delivery_date",
-                    "requires_delivery",
-                    "requires_pickup",
-                    "date_called",
-                    "delivery_pickup",
-                ]
-            )
         except ValueError:
+            # bad input – just render current state without changing anything
+            return render(
+                request,
+                "workorders/partials/workorder_delivery_block.html",
+                {"workorder": wo},
+            )
+
+        wo.delivery_date = parsed
+        wo.requires_delivery = True
+
+        # if they set a delivery date, this is a delivery job
+        wo.requires_pickup = False
+        wo.date_called = None
+        wo.delivery_pickup = "Delivery"
+
+        wo.save(
+            update_fields=[
+                "delivery_date",
+                "requires_delivery",
+                "requires_pickup",
+                "date_called",
+                "delivery_pickup",
+            ]
+        )
+
+        # Make sure the Delivery row exists / is updated
+        try:
+            ensure_workorder_delivery(wo, parsed)
+        except Exception:
+            pass
+
+    else:
+        # Empty date input → clear delivery date and disable delivery
+        wo.delivery_date = None
+        wo.requires_delivery = False
+        wo.save(update_fields=["delivery_date", "requires_delivery"])
+
+        try:
+            cancel_workorder_delivery(wo)
+        except Exception:
             pass
 
     sale = RetailSale.objects.filter(workorder=wo).first()
@@ -2576,7 +2641,6 @@ def pickup_call_report(request):
         Workorder.objects.filter(
             requires_pickup=True,
             date_called__isnull=True,
-            completed=1,
             void=0,
             quote="0",
         )

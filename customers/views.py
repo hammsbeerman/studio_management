@@ -970,6 +970,30 @@ def delete_mailing_customer(request, mailing=None):
     MailingCustomer.objects.filter(id=mailing).delete()
     return redirect ('customers:add_mailing_customer') 
 
+@login_required
+def customer_edit_modal(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+
+    if request.method == "POST":
+        form = CustomerForm(request.POST, instance=customer)
+        if form.is_valid():
+            form.save()
+            # Tell HTMX to close modal + optionally refresh delivery table
+            return HttpResponse(
+                status=204,
+                headers={
+                    "HX-Trigger": "customerUpdated"
+                }
+            )
+    else:
+        form = CustomerForm(instance=customer)
+
+    return render(
+        request,
+        "customers/modals/edit_customer.html",
+        {"form": form, "customer": customer},
+    )
+
 
 
 

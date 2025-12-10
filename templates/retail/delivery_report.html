@@ -29,4 +29,29 @@
 
   {% include "retail/partials/delivery_report_table.html" %}
 
+  <div class="modal fade" id="modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div id="dialog">
+      <!-- your modal-content (the snippet you pasted) gets swapped in here -->
+    </div>
+  </div>
+</div>
+
 {% endblock %}
+
+{% block scripts %}
+
+<script>
+  document.body.addEventListener("CustomerAdded", function (event) {
+    const modalEl = document.getElementById("modal");
+    if (!modalEl) return;
+
+    // Get existing Bootstrap instance or bail
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) {
+      modal.hide();
+    }
+  });
+</script>
+
+{% endblock scripts%}

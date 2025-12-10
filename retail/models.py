@@ -152,7 +152,7 @@ class Delivery(models.Model):
         (STATUS_CANCELLED, "Cancelled"),
     ]
 
-    sale = models.OneToOneField("retail.RetailSale", on_delete=models.CASCADE, related_name="delivery")
+    sale = models.OneToOneField("retail.RetailSale", on_delete=models.CASCADE, related_name="delivery", null=True, blank=True)
     workorder = models.OneToOneField("workorders.Workorder", on_delete=models.CASCADE, related_name="delivery", null=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name="deliveries")
     scheduled_date = models.DateField(default=timezone.localdate)
