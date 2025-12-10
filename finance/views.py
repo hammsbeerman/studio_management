@@ -5,10 +5,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from collections import defaultdict
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import models
-from django.db.models import Avg, Max, Count, Min, Sum, Subquery, Case, When, Value, DecimalField, OuterRef
-from django.db.models import Q
+from django.db.models import Avg, Max, Count, Min, Sum, Subquery, Case, When, Value, DecimalField, OuterRef, Q
 from django.utils import timezone
 from datetime import timedelta, datetime, date
 from decimal import Decimal, InvalidOperation
@@ -2336,6 +2335,127 @@ def sales_comparison_report(request):
         "base_qs": base_qs,
     }
     return render(request, "finance/sales_comparison.html", context)
+
+@user_passes_test(lambda u: u.is_staff)
+@login_required
+def sales_comparison_debug(request):
+    """
+    Frontend debug view for the sales comparison report.
+
+    Shows counts at each filter step and per internal_company so you can
+    see exactly where the data disappears.
+    """
+
+    if request.GET:
+        form = SalesComparisonForm(request.GET)
+    else:
+        form = SalesComparisonForm()
+
+    steps = []
+    period1_label = ""
+    period2_label = ""
+
+    def summarize(label, qs):
+        total = qs.count()
+        by_company = (
+            qs.values("internal_company")
+            .annotate(count=Count("id"))
+            .order_by("internal_company")
+        )
+        return {
+            "label": label,
+            "total": total,
+            "by_company": list(by_company),
+        }
+
+    # Step 0: all workorders
+    qs_all = Workorder.objects.all()
+    steps.append(summarize("All workorders (no filters)", qs_all))
+
+    if form.is_valid():
+        cd = form.cleaned_data
+        p1_start = cd["period1_start"]
+        p1_end = cd["period1_end"]
+        p2_start = cd["period2_start"]
+        p2_end = cd["period2_end"]
+        customer = cd["customer"]
+        companies_selected = cd.get("companies") or []
+
+        period1_label = f"{p1_start.strftime('%Y-%m-%d')} → {p1_end.strftime('%Y-%m-%d')}"
+        period2_label = f"{p2_start.strftime('%Y-%m-%d')} → {p2_end.strftime('%Y-%m-%d')}"
+
+        base_filters = {
+            "completed": True,
+            "void": False,
+            "quote": "0",
+        }
+
+        # Step 1: base filters
+        qs_base = Workorder.objects.filter(**base_filters)
+        steps.append(summarize("Base filters (completed=True, void=False, quote='0')", qs_base))
+
+        # Step 2: base + date_billed not null
+        qs_with_billed = qs_base.filter(date_billed__isnull=False)
+        steps.append(summarize("Base + date_billed is not null", qs_with_billed))
+
+        # Step 3: Period 1 only
+        qs_p1 = qs_with_billed.filter(
+            date_billed__date__gte=p1_start,
+            date_billed__date__lte=p1_end,
+        )
+        steps.append(summarize(f"Period 1 only ({period1_label})", qs_p1))
+
+        # Step 4: Period 2 only
+        qs_p2 = qs_with_billed.filter(
+            date_billed__date__gte=p2_start,
+            date_billed__date__lte=p2_end,
+        )
+        steps.append(summarize(f"Period 2 only ({period2_label})", qs_p2))
+
+        # Step 5: “union” of P1+P2 using Q instead of .union()
+        qs_union = qs_with_billed.filter(
+            Q(date_billed__date__gte=p1_start, date_billed__date__lte=p1_end)
+            | Q(date_billed__date__gte=p2_start, date_billed__date__lte=p2_end)
+        ).distinct()
+        steps.append(summarize("Union of Period 1 + Period 2", qs_union))
+
+        # Step 6: company filters
+        if companies_selected:
+            qs_union_companies = qs_union.filter(internal_company__in=companies_selected)
+            steps.append(
+                summarize(
+                    f"Union + company filter {companies_selected}",
+                    qs_union_companies,
+                )
+            )
+        else:
+            qs_union_companies = qs_union
+
+        # Step 7: customer filter
+        if customer:
+            qs_final = qs_union_companies.filter(customer=customer)
+            steps.append(
+                summarize(
+                    f"+ customer filter ({customer})",
+                    qs_final,
+                )
+            )
+        else:
+            qs_final = qs_union_companies
+            steps.append(
+                summarize(
+                    "Final set (no specific customer selected)",
+                    qs_final,
+                )
+            )
+
+    context = {
+        "form": form,
+        "steps": steps,
+        "period1_label": period1_label,
+        "period2_label": period2_label,
+    }
+    return render(request, "finance/sales_comparison_debug.html", context)
 
 
 #     if request.method == "POST":
