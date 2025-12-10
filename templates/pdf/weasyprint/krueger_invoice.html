@@ -307,29 +307,71 @@ margin-top: 25px;
           <th>Description</th>
           <th>Unit Price</th>
           <th>Total Price</th>
-          <th>Tax</th>
       </tr>
           </thead>
           <tbody>
+            {# Existing workorder items #}
             {% for item in items %}
               {% if item.child == 0 %}
-              <tr>
-                <td>{% if item.quantity%}{% if item.show_qty_on_wo %}{{item.quantity}}{% endif %}{% endif %}</td>
-                <td>{% if item.description%}{{item.description}}{% endif %}</td>
-                <td>{% if item.unit_price %}{{item.unit_price|floatformat:4}}{% endif %}</td>
-                <td>{% if item.absolute_price %}{% if item.billable %}{% if item.absolute_price %}{{item.absolute_price}}{% else %}{{item.total}}{% endif %}{% else %} -- {% endif %}{% endif %}</td>
-                <td>{% if item.absolute_price %}{% if item.tax_exempt %}--{% else %}T{%endif%}{% endif %}</td>          
-              </tr>
-              {% if item.show_notes %}
-              <tr>
-                <td colspan='5'>{{item.notes}}</td>
-              </tr>
-              {% endif %}
+                <tr>
+                  <td>
+                    {% if item.quantity %}
+                      {% if item.show_qty_on_wo %}
+                        {{ item.quantity }}
+                      {% endif %}
+                    {% endif %}
+                  </td>
+                  <td>{% if item.description %}{{ item.description }}{% endif %}</td>
+                  <td>
+                    {% if item.unit_price %}
+                      {{ item.unit_price|floatformat:4 }}
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if item.absolute_price %}
+                      {% if item.billable %}
+                        {% if item.absolute_price %}
+                          {{ item.absolute_price }}
+                        {% else %}
+                          {{ item.total }}
+                        {% endif %}
+                      {% else %}
+                        --
+                      {% endif %}
+                    {% endif %}
+                  </td>
+                </tr>
+                {% if item.show_notes %}
+                  <tr>
+                    <td colspan="5">{{ item.notes }}</td>
+                  </tr>
+                {% endif %}
               {% endif %}
             {% endfor %}
 
+            {# NEW: Retail POS Items #}
+            {% if pos_items %}
+            <tr>
+              <td colspan="4" style="font-weight:bold; padding-top:10px;">
+                Retail POS Items
+              </td>
+            </tr>
 
-			
+            {% for pos in pos_items %}
+              <tr>
+                <td>{{ pos.quantity }}</td>
+                <td>{{ pos.description }}</td>
+                <td>
+                  {% if pos.unit_price %}
+                    {{ pos.unit_price|floatformat:4 }}
+                  {% endif %}
+                </td>
+                <td>
+                  {{ pos.invoice_total|floatformat:2 }}
+                </td>
+              </tr>
+            {% endfor %}
+          {% endif %}
           </tbody>
         </table>
       </div>
@@ -361,12 +403,12 @@ margin-top: 25px;
 			  <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
 			  <span>{{workorder.tax}}</span> 
 				</td>-->
-				<td>{{workorder.subtotal}}</td>
-				<td>{{workorder.tax}}</td>
+				<td>{{workorder.subtotal|floatformat:2}}</td>
+				<td>{{workorder.tax|floatformat:2}}</td>
         <td></td>
-				<td>{{workorder.total_balance}}</td>
-				<td>{{workorder.amount_paid}}</td>
-        <td>{{workorder.open_balance}}</td>
+				<td>{{workorder.total_balance|floatformat:2}}</td>
+				<td>{{workorder.amount_paid|floatformat:2}}</td>
+        <td>{{workorder.open_balance|floatformat:2}}</td>
 			</tr>
 		</tbody>
 	</table>

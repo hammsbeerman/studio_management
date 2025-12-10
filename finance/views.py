@@ -1,7 +1,9 @@
 import os
+import csv
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
+from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import models
@@ -9,12 +11,12 @@ from django.db.models import Avg, Max, Count, Min, Sum, Subquery, Case, When, Va
 from django.db.models import Q
 from django.utils import timezone
 from datetime import timedelta, datetime, date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 import logging
 from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment, Krueger_Araging
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm, DateRangeForm
 from retail.forms import RetailInventoryMasterForm
-from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm, BulkEditInvoiceForm
+from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm, BulkEditInvoiceForm, SalesComparisonForm
 from finance.models import InvoiceItem, Araging#, AllInvoiceItem
 from inventory.services.ledger import record_inventory_movement
 from customers.models import Customer
@@ -1062,149 +1064,206 @@ def edit_invoice_modal(request, invoice=None):
 @login_required
 def invoice_detail(request, id=None):
     """
-    AP Invoice detail + add/edit invoice items.
+    AP Invoice detail + add/edit line items.
 
-    - Builds qty from invoice_qty * variation_qty
-    - Computes price_ea from invoice_unit_cost (+ ppm handling)
-    - Updates AccountsPayable.calculated_total
-    - Records inventory IN movement in the InventoryLedger
+    - ppm behavior preserved
+    - inventory ledger: AP_RECEIPT / AP_RECEIPT_ADJUST
+    - posted flag: just used for warnings (no hard lock)
+    - amount vs calculated_total: warns when difference > threshold
     """
     invoice = get_object_or_404(AccountsPayable, id=id)
 
     if request.method == "POST":
-        vendor_id = request.POST.get("vendor")
-        variation_id = request.POST.get("variation")
-        ipn = request.POST.get("internal_part_number")
-        ppm_flag = request.POST.get("ppm")
-        unit = request.POST.get("unit")
-        item_qty_raw = request.POST.get("variation_qty")
-        edit = request.POST.get("edit")
+        ppm_flag = request.POST.get("ppm")              # "1" if price-per-M checked
+        edit = request.POST.get("edit")                 # "1" if editing existing line
+        invoice_item_pk = request.POST.get("pk")        # InvoiceItem pk when editing
 
-        variation_obj_id = None
-        variation_qty = 1
+        ipn = request.POST.get("internal_part_number")  # InventoryMaster pk
+        variation_id = request.POST.get("variation")    # existing InventoryQtyVariations pk
+        unit = request.POST.get("unit")                 # Measurement pk if creating new variation
+        item_qty_raw = request.POST.get("variation_qty")  # how many of that unit (e.g. 1000)
 
-        # Create or reuse the InventoryQtyVariations row
-        if unit:
-            # New variation row based on selected unit + entered qty
-            variation_qty = int(item_qty_raw or 1)
-            v = InventoryQtyVariations(
-                inventory=InventoryMaster.objects.get(pk=ipn),
-                variation=Measurement.objects.get(pk=unit),
-                variation_qty=variation_qty,
-            )
-            v.save()
-            variation_obj_id = v.pk
-        else:
-            # Existing variation
-            v = InventoryQtyVariations.objects.get(id=variation_id)
-            variation_qty = v.variation_qty
-            variation_obj_id = v.pk
+        # Track old values for ledger adjustment on edit
+        old_qty = None
+        old_item = None
+        instance = None
 
-        # Add vs edit
-        if edit == "1":
-            invoice_item_pk = request.POST.get("pk")
-            instance = InvoiceItem.objects.get(pk=invoice_item_pk)
+        if edit == "1" and invoice_item_pk:
+            instance = get_object_or_404(InvoiceItem, pk=invoice_item_pk)
+            old_qty = instance.qty or Decimal("0")
+            old_item = instance.internal_part_number
             form = AddInvoiceItemForm(request.POST, instance=instance)
         else:
             form = AddInvoiceItemForm(request.POST)
 
+        # Determine or create the appropriate InventoryQtyVariations row
+        variation_qty = Decimal("1")
+        variation_obj_id = None
+
+        try:
+            base_item = InventoryMaster.objects.get(pk=ipn)
+        except (InventoryMaster.DoesNotExist, ValueError, TypeError):
+            base_item = None
+
+        if unit:
+            # Create a new variation for this inventory item
+            try:
+                measurement = Measurement.objects.get(pk=unit)
+            except Measurement.DoesNotExist:
+                measurement = None
+
+            try:
+                variation_qty = Decimal(item_qty_raw or "1")
+            except Exception:
+                variation_qty = Decimal("1")
+
+            if base_item:
+                v = InventoryQtyVariations(
+                    inventory=base_item,
+                    variation=measurement,
+                    variation_qty=variation_qty,
+                )
+                v.save()
+                variation_obj_id = v.pk
+        elif variation_id:
+            v = InventoryQtyVariations.objects.filter(pk=variation_id).first()
+            if v and v.variation_qty:
+                variation_qty = Decimal(v.variation_qty)
+                variation_obj_id = v.pk
+        # else: default variation_qty = 1, no invoice_unit
+
         if form.is_valid():
-            # --- Compute qty & price_ea ---
-            qty = form.instance.invoice_qty * variation_qty
+            # --- Compute qty & unit_cost (price ea) using ppm rules ---
+            invoice_qty = form.instance.invoice_qty or Decimal("0")
+            qty = invoice_qty * variation_qty
 
             if form.instance.invoice_unit_cost:
                 if ppm_flag == "1":
-                    # Price is per 1000 units
-                    price_ea = form.instance.invoice_unit_cost / 1000
+                    # Price is per 1000 units (Price Per M)
+                    unit_cost = form.instance.invoice_unit_cost / Decimal("1000")
                 else:
-                    price_ea = form.instance.invoice_unit_cost / variation_qty
+                    # Price is per variation unit (e.g. a case of 10)
+                    unit_cost = form.instance.invoice_unit_cost / (variation_qty or Decimal("1"))
                     ppm_flag = "0"
             else:
-                price_ea = Decimal("0.00")
+                unit_cost = Decimal("0.00")
                 ppm_flag = "0"
 
-            vpn = form.instance.vendor_part_number
-            description = form.instance.description
-
-            # --- Populate computed fields on the instance ---
+            # --- Populate instance fields ---
             form.instance.qty = qty
-            form.instance.unit_cost = price_ea
+            form.instance.unit_cost = unit_cost
             form.instance.invoice = invoice
-            form.instance.ppm = ppm_flag
-            form.instance.invoice_unit = InventoryQtyVariations.objects.get(pk=variation_obj_id)
+            if not form.instance.vendor_id and invoice.vendor_id:
+                form.instance.vendor_id = invoice.vendor_id
+            form.instance.invoice_unit_id = variation_obj_id
+            form.instance.ppm = bool(ppm_flag == "1")
 
-            line_total = qty * price_ea
+            # Line total
+            line_total = qty * unit_cost
             form.instance.line_total = line_total
 
-            form.save()
-            invoice_item_id = form.instance.pk
+            invoice_item = form.save()
+            invoice_item_id = invoice_item.pk
 
-            # --- Optional: update VendorItemDetail description / VPN ---
-            vpn_up = request.POST.get("vpn_update")
-            desc_up = request.POST.get("description_update")
-
-            if vendor_id and (vpn_up == "1" or desc_up == "1"):
-                try:
-                    VendorItemDetail.objects.filter(
-                        vendor=vendor_id,
-                        internal_part_number=ipn,
-                    ).update(
-                        vendor_part_number=vpn,
-                        description=description,
-                    )
-                except VendorItemDetail.DoesNotExist:
-                    # If there isn't one, just skip; you can add create logic later if you want
-                    pass
-
-            # --- Recalculate invoice.calculated_total ---
+            # --- Recalculate invoice.calculated_total from all items ---
             total = (
-                InvoiceItem.objects
-                .filter(invoice=invoice)
+                InvoiceItem.objects.filter(invoice=invoice)
                 .aggregate(sum_total=Sum("line_total"))["sum_total"]
                 or Decimal("0.00")
             )
-            AccountsPayable.objects.filter(pk=invoice.pk).update(calculated_total=total)
+            invoice.calculated_total = total
+            invoice.save(update_fields=["calculated_total"])
 
-            # --- Ledger entry: inventory IN from AP invoice ---
+            # --- Ledger adjustments (create or edit) ---
             try:
-                inv_item = form.instance.internal_part_number  # FK → InventoryMaster
-                invoice_date = invoice.invoice_date
+                new_item = invoice_item.internal_part_number
+                new_qty = Decimal(qty or 0)
 
-                record_inventory_movement(
-                    inventory_item=inv_item,                    # ✅ matches helper signature
-                    qty_delta=Decimal(qty),           # positive = stock in
-                    source_type="AP_RECEIPT",
-                    source_id=invoice_item_id,
-                    note=f"AP invoice {invoice.pk} item {invoice_item_id}",
-                )
+                if instance is None:
+                    # CREATE: just add stock in
+                    if new_item and new_qty:
+                        record_inventory_movement(
+                            inventory_item=new_item,
+                            qty_delta=new_qty,  # positive = stock in
+                            source_type="AP_RECEIPT",
+                            source_id=invoice_item_id,
+                            note=f"AP invoice {invoice.pk} item {invoice_item_id}",
+                        )
+                else:
+                    # EDIT: adjust by delta
+                    old_qty_decimal = Decimal(old_qty or 0)
+                    if old_item == new_item:
+                        # same item, just adjust quantity
+                        delta = new_qty - old_qty_decimal
+                        if delta:
+                            record_inventory_movement(
+                                inventory_item=new_item,
+                                qty_delta=delta,
+                                source_type="AP_RECEIPT_ADJUST",
+                                source_id=invoice_item_id,
+                                note=f"Adjust AP invoice {invoice.pk} item {invoice_item_id}",
+                            )
+                    else:
+                        # item changed: remove from old, add to new
+                        if old_item and old_qty_decimal:
+                            record_inventory_movement(
+                                inventory_item=old_item,
+                                qty_delta=-old_qty_decimal,
+                                source_type="AP_RECEIPT_ADJUST",
+                                source_id=invoice_item_id,
+                                note=f"Reassign AP invoice {invoice.pk} item {invoice_item_id} (old item)",
+                            )
+                        if new_item and new_qty:
+                            record_inventory_movement(
+                                inventory_item=new_item,
+                                qty_delta=new_qty,
+                                source_type="AP_RECEIPT_ADJUST",
+                                source_id=invoice_item_id,
+                                note=f"Reassign AP invoice {invoice.pk} item {invoice_item_id} (new item)",
+                            )
+
             except Exception:
                 logger.exception(
-                    f"Failed to record inventory movement for invoice item {invoice_item_id}"
+                    f"Failed to record inventory movement for AP invoice item {invoice_item_id}"
                 )
 
+            messages.success(request, "Invoice line item saved.")
             return redirect("finance:invoice_detail", id=invoice.pk)
 
-        # Invalid form: re-render page with errors
-        vendor = invoice.vendor
-        items = InvoiceItem.objects.filter(invoice_id=id)
-        return render(
-            request,
-            "finance/AP/invoice_detail.html",
-            {
-                "vendor": vendor,
-                "invoice": invoice,
-                "items": items,
-                "form": form,
-            },
-        )
+        messages.error(request, "Please correct the errors below.")
+    else:
+        form = AddInvoiceItemForm(initial={"vendor": invoice.vendor})
 
-    # GET: show invoice + items
-    vendor = invoice.vendor
-    items = InvoiceItem.objects.filter(invoice_id=id)
+    items = (
+        InvoiceItem.objects.filter(invoice=invoice)
+        .select_related("internal_part_number", "invoice_unit")
+        .order_by("created")
+    )
+
+    # --- Header vs calculated_total mismatch check ---
+    AP_MISMATCH_THRESHOLD = Decimal("1.00")  # adjust threshold as you like
+
+    def as_decimal(val):
+        if val is None:
+            return Decimal("0")
+        try:
+            return Decimal(str(val))
+        except (InvalidOperation, TypeError, ValueError):
+            return Decimal("0")
+
+    header_amount = as_decimal(invoice.total)
+    item_total = as_decimal(invoice.calculated_total)
+    amount_diff = (header_amount - item_total).copy_abs()
+    amount_mismatch = amount_diff > AP_MISMATCH_THRESHOLD
+
     context = {
-        "vendor": vendor,
         "invoice": invoice,
         "items": items,
+        "form": form,
+        "amount_mismatch": amount_mismatch,
+        "amount_diff": amount_diff,
+        "header_amount": header_amount,
+        "item_total": item_total,
     }
     return render(request, "finance/AP/invoice_detail.html", context)
 
@@ -1453,71 +1512,70 @@ def edit_invoice_item(request, invoice=None, id=None):
 
 @login_required
 def delete_invoice_item(request, id=None, invoice=None):
-    print('invoice')
-    print(invoice)
-    print('id')
-    print(id)
     item = get_object_or_404(InvoiceItem, id=id)
     item_delete = item
+
+    # Capture for ledger reversal
+    old_qty = Decimal(item.qty or 0)
+    old_item = item.internal_part_number
+
     vendor = item.vendor.id
-    print(vendor)
     internal_part_number = item.internal_part_number.id
-    print(11)
-    print(internal_part_number)
-    # print(vendor)
-    items = InvoiceItem.objects.filter(vendor=vendor, internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
-    print(12)
-    print(items)
+
+    # Highest price for this vendor + part (before delete)
+    items = InvoiceItem.objects.filter(
+        vendor=vendor,
+        internal_part_number=internal_part_number,
+    ).aggregate(Max("unit_cost"))
     price = list(items.values())[0]
-    if price:
-        print('1')
-        print(price)
-    else:
-        print('no price')
-    vendorprice = VendorItemDetail.objects.get(vendor=vendor, internal_part_number=internal_part_number)
-    # # print('highprice')
-    print('13')
-    print(vendorprice.high_price)
-    #Lower price for vendor item if highest price was deleted from invoice item
-    if vendorprice.high_price > price:
-         VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
-    #Lower price for inventory master if highest price from any vendor was removed
-    overall_price = InvoiceItem.objects.filter(internal_part_number=internal_part_number).aggregate(Max('unit_cost'))
+
+    vendorprice = VendorItemDetail.objects.get(
+        vendor=vendor,
+        internal_part_number=internal_part_number,
+    )
+
+    # Lower price for vendor item if highest price was deleted from invoice item
+    if price is not None and vendorprice.high_price > price:
+        VendorItemDetail.objects.filter(
+            vendor=vendor,
+            internal_part_number=internal_part_number,
+        ).update(high_price=price, updated=datetime.now())
+
+    # Lower price for inventory master if highest price from any vendor was removed
+    overall_price = InvoiceItem.objects.filter(
+        internal_part_number=internal_part_number
+    ).aggregate(Max("unit_cost"))
     op = list(overall_price.values())[0]
-    master_price = InventoryMaster.objects.get(pk=internal_part_number)
-    master_price = master_price.high_price
-    print('master')
-    print(master_price)
-    print('op')
-    print(op)
-    if master_price > op:
-        m = price * 1000
-        InventoryMaster.objects.filter(pk=internal_part_number).update(high_price=price, unit_cost=price, price_per_m=m, updated=datetime.now())
+
+    master = InventoryMaster.objects.get(pk=internal_part_number)
+    master_price = master.high_price
+
+    if op is not None and master_price > op:
+        m = op * 1000
+        InventoryMaster.objects.filter(pk=internal_part_number).update(
+            high_price=op, unit_cost=op, price_per_m=m, updated=datetime.now()
+        )
         try:
-            Inventory.objects.filter(internal_part_number=internal_part_number).update(unit_cost=price, price_per_m=m, updated=datetime.now())
-        except:
+            Inventory.objects.filter(internal_part_number=internal_part_number).update(
+                unit_cost=op, price_per_m=m, updated=datetime.now()
+            )
+        except Exception:
             pass
-    # # print('hello')
+
+    # Group pricing logic
     groups = InventoryPricingGroup.objects.filter(inventory=internal_part_number)
-    # high_price_list = []
-    # list = []
     high_price_current = 0
+
     for x in groups:
-        print('12')
-        #InventoryPricingGroup.objects.filter(group=x.group).update(high_price=price)
         group_items = InventoryPricingGroup.objects.filter(group=x.group)
         for x in group_items:
-            # print('13')
-            price = InvoiceItem.objects.filter(internal_part_number=x.inventory.id).aggregate(Max('unit_cost'))
-            price = list(items.values())[0]
-            # print(price)
-            if price > high_price_current:
-                # print('deleted price')
-                high_price_current = price
-                # print(high_price_current)
-            else:
-                pass
-                # print(price)
+            price_agg = InvoiceItem.objects.filter(
+                internal_part_number=x.inventory.id
+            ).aggregate(Max("unit_cost"))
+            price_val = list(price_agg.values())[0]
+            if price_val and price_val > high_price_current:
+                high_price_current = price_val
+
     price = high_price_current
     groups = InventoryPricingGroup.objects.filter(inventory=internal_part_number)
     for x in groups:
@@ -1529,16 +1587,41 @@ def delete_invoice_item(request, id=None, invoice=None):
                 cost = price / y.units_per_base_unit
                 m = cost * 1000
             else:
-                cost=0
+                cost = 0
                 m = 0
-            # print(x.inventory.id)
-            InventoryMaster.objects.filter(pk=x.inventory.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=datetime.now())
-            VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=x.inventory.id).update(high_price=price, updated=datetime.now())
-            Inventory.objects.filter(internal_part_number=x.inventory.id).update(unit_cost=cost, price_per_m=m, updated=datetime.now())
-        print(x.inventory)
+
+            InventoryMaster.objects.filter(pk=x.inventory.id).update(
+                high_price=price,
+                unit_cost=cost,
+                price_per_m=m,
+                updated=datetime.now(),
+            )
+            VendorItemDetail.objects.filter(
+                vendor=vendor, internal_part_number=x.inventory.id
+            ).update(high_price=price, updated=datetime.now())
+            Inventory.objects.filter(internal_part_number=x.inventory.id).update(
+                unit_cost=cost, price_per_m=m, updated=datetime.now()
+            )
+
+    # --- NEW: ledger reversal for this item ---
+    try:
+        if old_item and old_qty:
+            record_inventory_movement(
+                inventory_item=old_item,
+                qty_delta=-old_qty,  # negative = reverse AP_RECEIPT
+                source_type="AP_RECEIPT_DELETE",
+                source_id=item_delete.id,
+                note=f"Delete AP invoice {invoice} item {item_delete.id}",
+            )
+    except Exception:
+        logger.exception(
+            f"Failed to record inventory movement on delete for AP invoice item {item_delete.id}"
+        )
+
+    # Finally delete the item
     item_delete.delete()
- 
-    return redirect ('finance:invoice_detail', id=invoice)
+
+    return redirect("finance:invoice_detail", id=invoice)
 
 def add_item_to_vendor(request, vendor=None, invoice=None):
     print('vendor')
@@ -1960,6 +2043,299 @@ def monthly_statements(request):
             })
 
     return render(request, "finance/monthly_statements.html", {"files": files})
+
+
+@login_required
+def sales_comparison_report(request):
+    """
+    Compare workorder sales between two date ranges, grouped by
+    customer + internal_company.
+
+    Features:
+    - Filter by date ranges
+    - Optional single customer
+    - Company checkboxes (one or many)
+    - Optional "combine companies" → one row per customer
+    - Clickable header sorting (asc/desc) by:
+      - customer name
+      - period 1 total
+      - period 2 total
+      - % change
+    - CSV export that respects filters & sort
+    """
+
+    if request.GET:
+        form = SalesComparisonForm(request.GET)
+    else:
+        form = SalesComparisonForm()
+
+    company_groups = []  # [{company, rows, total_p1, total_p2, total_delta}, ...]
+    flat_rows = []
+    period1_label = ""
+    period2_label = ""
+
+    # current sorting from querystring
+    sort = request.GET.get("sort") or "p2"  # default: sort by period2 desc
+    direction = request.GET.get("dir") or "desc"
+    direction = "asc" if direction == "asc" else "desc"
+
+    if form.is_valid():
+        cd = form.cleaned_data
+        p1_start = cd["period1_start"]
+        p1_end = cd["period1_end"]
+        p2_start = cd["period2_start"]
+        p2_end = cd["period2_end"]
+        customer = cd["customer"]
+        companies_selected = cd.get("companies") or []
+        combine_companies = cd.get("combine_companies") or False
+
+        period1_label = f"{p1_start.strftime('%Y-%m-%d')} → {p1_end.strftime('%Y-%m-%d')}"
+        period2_label = f"{p2_start.strftime('%Y-%m-%d')} → {p2_end.strftime('%Y-%m-%d')}"
+
+        base_filters = {
+            "completed": True,
+            "void": False,
+            "quote": "0",
+        }
+
+        qs1 = Workorder.objects.filter(
+            **base_filters,
+            date_billed__date__gte=p1_start,
+            date_billed__date__lte=p1_end,
+        )
+        qs2 = Workorder.objects.filter(
+            **base_filters,
+            date_billed__date__gte=p2_start,
+            date_billed__date__lte=p2_end,
+        )
+
+        if companies_selected:
+            qs1 = qs1.filter(internal_company__in=companies_selected)
+            qs2 = qs2.filter(internal_company__in=companies_selected)
+
+        if customer:
+            qs1 = qs1.filter(customer=customer)
+            qs2 = qs2.filter(customer=customer)
+
+        agg1 = (
+            qs1.values("customer_id", "customer__company_name", "internal_company")
+            .annotate(total=Sum("workorder_total"))
+        )
+        agg2 = (
+            qs2.values("customer_id", "customer__company_name", "internal_company")
+            .annotate(total=Sum("workorder_total"))
+        )
+
+        def to_decimal(val):
+            if val is None:
+                return Decimal("0")
+            try:
+                return Decimal(str(val))
+            except Exception:
+                return Decimal("0")
+
+        period1_totals = {}
+        period2_totals = {}
+        customer_names = {}
+
+        for row in agg1:
+            key = (row["customer_id"], row["internal_company"])
+            period1_totals[key] = to_decimal(row["total"])
+            customer_names[row["customer_id"]] = row["customer__company_name"]
+
+        for row in agg2:
+            key = (row["customer_id"], row["internal_company"])
+            period2_totals[key] = to_decimal(row["total"])
+            customer_names[row["customer_id"]] = row["customer__company_name"]
+
+        all_keys = set(period1_totals.keys()) | set(period2_totals.keys())
+
+        rows = []
+        for (cust_id, company) in all_keys:
+            t1 = period1_totals.get((cust_id, company), Decimal("0"))
+            t2 = period2_totals.get((cust_id, company), Decimal("0"))
+
+            if t1 == 0 and t2 == 0:
+                continue
+
+            delta = t2 - t1
+            pct_change = None
+            if t1 != 0:
+                pct_change = (delta / t1) * Decimal("100")
+
+            rows.append(
+                {
+                    "customer_id": cust_id,
+                    "customer_name": customer_names.get(cust_id, f"Customer #{cust_id}"),
+                    "company": company,
+                    "p1_total": t1,
+                    "p2_total": t2,
+                    "delta": delta,
+                    "pct_change": pct_change,
+                }
+            )
+
+        # Combine companies to one row per customer, if requested
+        if combine_companies:
+            combined = {}
+            for r in rows:
+                cid = r["customer_id"]
+                if cid not in combined:
+                    combined[cid] = {
+                        "customer_id": cid,
+                        "customer_name": r["customer_name"],
+                        "company": "All selected companies",
+                        "p1_total": Decimal("0"),
+                        "p2_total": Decimal("0"),
+                    }
+                combined[cid]["p1_total"] += r["p1_total"]
+                combined[cid]["p2_total"] += r["p2_total"]
+
+            new_rows = []
+            for cid, r in combined.items():
+                t1 = r["p1_total"]
+                t2 = r["p2_total"]
+                delta = t2 - t1
+                pct_change = None
+                if t1 != 0:
+                    pct_change = (delta / t1) * Decimal("100")
+
+                new_rows.append(
+                    {
+                        "customer_id": cid,
+                        "customer_name": r["customer_name"],
+                        "company": r["company"],
+                        "p1_total": t1,
+                        "p2_total": t2,
+                        "delta": delta,
+                        "pct_change": pct_change,
+                    }
+                )
+
+            rows = new_rows
+
+        # Sorting helpers
+        def sort_key_and_reverse(sort_field, dir_value):
+            desc = (dir_value == "desc")
+
+            if sort_field == "p1":
+                return (lambda r: r["p1_total"], desc)
+            if sort_field == "p2":
+                return (lambda r: r["p2_total"], desc)
+            if sort_field == "pct":
+                # None should go last
+                return (
+                    lambda r: (
+                        r["pct_change"] is None,
+                        r["pct_change"] if r["pct_change"] is not None else Decimal("0"),
+                    ),
+                    desc,
+                )
+            # default: name
+            # for name, default ascending; only reverse if dir=desc
+            return (lambda r: r["customer_name"].lower(), desc)
+
+        key_func, reverse_flag = sort_key_and_reverse(sort, direction)
+
+        # Build groups for HTML
+        if combine_companies:
+            sorted_rows = sorted(rows, key=key_func, reverse=reverse_flag)
+            total_p1 = sum(r["p1_total"] for r in sorted_rows)
+            total_p2 = sum(r["p2_total"] for r in sorted_rows)
+            total_delta = sum(r["delta"] for r in sorted_rows)
+
+            company_groups = [
+                {
+                    "company": "All selected companies",
+                    "rows": sorted_rows,
+                    "total_p1": total_p1,
+                    "total_p2": total_p2,
+                    "total_delta": total_delta,
+                }
+            ]
+        else:
+            grouped = defaultdict(list)
+            for r in rows:
+                grouped[r["company"]].append(r)
+
+            for company, clist in grouped.items():
+                sorted_rows = sorted(clist, key=key_func, reverse=reverse_flag)
+                total_p1 = sum(r["p1_total"] for r in sorted_rows)
+                total_p2 = sum(r["p2_total"] for r in sorted_rows)
+                total_delta = sum(r["delta"] for r in sorted_rows)
+
+                company_groups.append(
+                    {
+                        "company": company,
+                        "rows": sorted_rows,
+                        "total_p1": total_p1,
+                        "total_p2": total_p2,
+                        "total_delta": total_delta,
+                    }
+                )
+
+            company_groups.sort(key=lambda g: g["company"])
+
+        # flat list for CSV (same sort)
+        flat_rows = sorted(rows, key=key_func, reverse=reverse_flag)
+
+        # CSV export
+        if request.GET.get("export") == "csv":
+            filename = "sales_comparison.csv"
+            response = HttpResponse(content_type="text/csv")
+            response["Content-Disposition"] = f'attachment; filename=\"{filename}\"'
+
+            writer = csv.writer(response)
+            writer.writerow(
+                [
+                    "Company",
+                    "Customer",
+                    "Period 1 total",
+                    "Period 2 total",
+                    "Change",
+                    "% Change",
+                    "Period 1 range",
+                    "Period 2 range",
+                ]
+            )
+
+            for r in flat_rows:
+                pct_str = ""
+                if r["pct_change"] is not None:
+                    pct_str = f"{r['pct_change']:.1f}"
+
+                writer.writerow(
+                    [
+                        r["company"],
+                        r["customer_name"],
+                        f"{r['p1_total']:.2f}",
+                        f"{r['p2_total']:.2f}",
+                        f"{r['delta']:.2f}",
+                        pct_str,
+                        period1_label,
+                        period2_label,
+                    ]
+                )
+
+            return response
+
+    # Build base querystring without sort/dir/export so headers can add them cleanly
+    params_without_sort = request.GET.copy()
+    for k in ["sort", "dir", "export"]:
+        if k in params_without_sort:
+            params_without_sort.pop(k)
+    base_qs = params_without_sort.urlencode()
+
+    context = {
+        "form": form,
+        "company_groups": company_groups,
+        "period1_label": period1_label,
+        "period2_label": period2_label,
+        "current_sort": sort,
+        "current_dir": direction,
+        "base_qs": base_qs,
+    }
+    return render(request, "finance/sales_comparison.html", context)
 
 
 #     if request.method == "POST":

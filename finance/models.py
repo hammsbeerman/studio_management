@@ -37,6 +37,7 @@ class AccountsPayable(models.Model):
     non_inventory = models.BooleanField('Non Inventory Invoice', null=True, default=True)
     order_out = models.BooleanField('Order Out', null=True, default=False)
     #workorder = models.ForeignKey(Workorder, blank=False, null=False, on_delete=models.DO_NOTHING)
+    posted = models.BooleanField(default=False, help_text="If checked, this invoice is considered posted. Edits should be rare.")
 
     def get_absolute_url(self):
         return reverse("finance:invoice_detail", kwargs={"id": self.id})

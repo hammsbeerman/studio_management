@@ -103,6 +103,15 @@
       
             <button hx-get="{% url 'workorders:add_item' parent_id=workid %}" hx-target="#dialog" class="btn btn-primary">Add an item</button>
 
+            {% if workorder.internal_company == "Krueger Printing" %}
+              <a
+                href="{% url 'workorders:pos_for_workorder' workorder.id %}"
+                class="btn btn-primary"
+              >
+                Add POS Item
+              </a>
+            {% endif %}
+
             <a href="{% url 'pdf:packing_slip' id=workid %}" class="btn btn-primary" target="_blank">Create Packing Slip</a>
        
           {% if workorder.quote == '1' %}

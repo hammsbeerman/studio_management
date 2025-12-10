@@ -1943,6 +1943,13 @@ def complete_status(request):
             item.updated = timezone.now()
             item.date_completed = timezone.now()
             item.completed = 1
+
+            # 🔹 NEW: LK Design + Office Supplies auto invoice + verify
+            if item.internal_company in ["LK Design", "Office Supplies"]:
+                item.invoice_sent = True
+                item.checked_and_verified = True
+                item.billed = True
+
             item.save(
                 update_fields=[
                     "subtotal",
@@ -1954,6 +1961,9 @@ def complete_status(request):
                     "updated",
                     "date_completed",
                     "completed",
+                    "invoice_sent",
+                    "checked_and_verified",
+                    "billed"
                 ]
             )
 
@@ -2592,3 +2602,58 @@ def workorder_delivery_block_view(request, pk):
         "workorders/partials/workorder_delivery_block.html",
         {"workorder": wo},
     )
+
+@login_required
+def pos_for_workorder(request, workorder_id):
+    """
+    Open the Office Supplies POS for a given Krueger workorder.
+
+    - If there is already a POS sale linked to this workorder, reopen it.
+    - Otherwise, create a new POS sale for the same customer.
+    - Store workorder_id in the session so POS line-add logic can link lines later (4D).
+    """
+    workorder = get_object_or_404(Workorder, pk=workorder_id)
+
+    # Only really "intended" for Krueger, but safe for others too
+    # if you want to enforce:
+    # if workorder.internal_company != "Krueger Printing":
+    #     return redirect(workorder.get_absolute_url())
+
+    # 1) See if there's already a POS sale for this workorder
+    existing_sale_ids = (
+        RetailWorkorderItem.objects.filter(workorder=workorder)
+        .values_list("sale_id", flat=True)
+        .distinct()
+    )
+
+    sale = None
+    if existing_sale_ids:
+        # Prefer an open sale if there is one
+        sale = (
+            RetailSale.objects.filter(pk__in=existing_sale_ids, status=RetailSale.STATUS_OPEN)
+            .order_by("-id")
+            .first()
+        )
+        if sale is None:
+            # Fall back to any sale
+            sale = (
+                RetailSale.objects.filter(pk__in=existing_sale_ids)
+                .order_by("-id")
+                .first()
+            )
+
+    # 2) If no existing sale, create a new one for this customer
+    if sale is None:
+        sale = RetailSale.objects.create(
+            customer=workorder.customer,
+            status=RetailSale.STATUS_OPEN,
+            # tweak these flags to match your normal "new sale" defaults:
+            # account_sale=True,
+            # internal_company="Office Supplies",
+        )
+
+    # 3) Remember the workorder in the session so POS can auto-link lines later (4D)
+    request.session["pos_workorder_id"] = workorder.id
+
+    # 4) Redirect to normal POS sale detail
+    return redirect("retail:sale_detail", pk=sale.pk)

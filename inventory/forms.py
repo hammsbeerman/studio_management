@@ -111,6 +111,55 @@ class InventoryItemPricingForm(forms.ModelForm):
             "retail_markup_percent": forms.NumberInput(attrs={"step": "0.01"}),
             "retail_markup_flat": forms.NumberInput(attrs={"step": "0.01"}),
         }
+
+class InventoryAdjustmentForm(forms.Form):
+    inventory_item = forms.ModelChoiceField(
+        queryset=InventoryMaster.objects.order_by("name"),
+        label="Item",
+        widget=forms.Select(
+            attrs={
+                "class": "form-select select2",  # <-- use your global select2 class
+            }
+        ),
+    )
+    qty_delta = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        label="Quantity change",
+        help_text="Use positive to add stock, negative to remove stock.",
+    )
+    note = forms.CharField(
+        label="Reason / note",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 2}),
+    )
+
+    def clean_qty_delta(self):
+        v = self.cleaned_data["qty_delta"]
+        if v == 0:
+            raise forms.ValidationError("Quantity change cannot be zero.")
+        return v
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["inventory_item"].empty_label = "Search item…"
+
+    def label_from_instance(self, obj: InventoryMaster) -> str:
+        parts = [obj.name or ""]
+
+        pn = getattr(obj, "primary_vendor_part_number", "") or getattr(obj, "part_number", "")
+        if pn:
+            parts.append(f"PN: {pn}")
+
+        sku = getattr(obj, "internal_part_number", "")
+        if sku:
+            parts.append(f"SKU: {sku}")
+
+        desc = getattr(obj, "description", "")
+        if desc and desc not in parts[0]:
+            parts.append(desc)
+
+        return " — ".join([p for p in parts if p])
        
 
 

@@ -160,6 +160,7 @@ class Delivery(models.Model):
     notes = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f"Delivery for sale #{self.sale_id} to {self.customer}"

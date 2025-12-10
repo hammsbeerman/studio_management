@@ -1,28 +1,32 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block content %}
-<div class="container">
-  <h3>Delivery Report</h3>
+<h4>Delivery Report</h4>
 
-  <form method="get" class="row g-2 mb-3">
-    <div class="col-auto">
-      <label for="delivery_report_date" class="col-form-label">Date:</label>
-    </div>
-    <div class="col-auto">
-      <input
-        type="date"
-        id="delivery_report_date"
-        name="date"
-        class="form-control"
-        value="{{ selected_date|date:'Y-m-d' }}"
-        onchange="this.form.submit();"
-      >
-    </div>
-  </form>
-
-  <div id="delivery-report-table">
-    {% include "retail/partials/delivery_report_table.html" %}
+<form
+  id="delivery-report-filter"
+  method="get"
+  class="mb-3"
+  hx-get="{% url 'retail:delivery_report' %}"
+  hx-target="#delivery-report-table"
+  hx-swap="outerHTML"
+  hx-trigger="change from:input[name='date']"
+>
+  <label class="form-label small mb-1">Filter by date</label>
+  <div class="input-group input-group-sm" style="max-width: 260px;">
+    <input
+      type="date"
+      name="date"
+      class="form-control"
+      value="{{ selected_date|date:'Y-m-d' }}"
+    >
+    <button class="btn btn-outline-secondary" type="submit">
+      Apply
+    </button>
   </div>
-</div>
+</form>
+
+
+  {% include "retail/partials/delivery_report_table.html" %}
+
 {% endblock %}

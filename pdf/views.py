@@ -27,35 +27,48 @@ from inventory.models import RetailWorkorderItem
 @login_required
 def invoice_pdf(request, id):
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; attachment; filename=' + \
-        str(datetime.datetime.now())+'.pdf'
-    #remove inline to allow direct download
-    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
-        
-    response['Content-Transfer-Encoding'] = 'binary'
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = "inline; attachment; filename=" + str(
+        datetime.datetime.now()
+    ) + ".pdf"
+    # remove inline to allow direct download
+    # response['Content-Disposition'] = 'attachment; filename=Expenses' + \
+    response["Content-Transfer-Encoding"] = "binary"
 
+    # Base workorder + items
     items = WorkorderItem.objects.filter(workorder=id)
     item_length = len(items)
 
-    
     workorder = Workorder.objects.get(id=id)
 
-    # 🔹 POS items attached to this workorder
-    pos_items = RetailWorkorderItem.objects.filter(workorder=workorder)
+    # 🔹 POS items attached to this workorder (queryset)
+    pos_items_qs = RetailWorkorderItem.objects.filter(workorder=workorder)
 
-    # 🔹 Use unified totals (includes POS + regular)
-    totals = compute_workorder_totals(workorder)
-    subtotal = totals.subtotal
-    tax = totals.tax
-    total = totals.total
+    # 🔹 Compute a per-line total (qty × unit_price) for each POS item
+    pos_items = []
+    for p in pos_items_qs:
+        # try both "quantity" and "qty" just in case
+        qty = getattr(p, "quantity", None) or getattr(p, "qty", None) or 0
+        unit_price = getattr(p, "unit_price", None) or 0
 
-     # POS origin sale (for "Created from POS sale #X")
+        try:
+            qty = Decimal(str(qty))
+        except Exception:
+            qty = Decimal("0")
+
+        try:
+            unit_price = Decimal(str(unit_price))
+        except Exception:
+            unit_price = Decimal("0")
+
+        p.invoice_total = qty * unit_price  # used in the template
+        pos_items.append(p)
+
+    # 🔹 POS origin sale (for "Created from POS sale #X" if you want it)
     pos_origin_sale = None
-    if pos_items.exists():
-        first_pos = pos_items.first()
-        if first_pos.sale:
-            pos_origin_sale = first_pos.sale
+    first_pos = pos_items_qs.first()
+    if first_pos is not None and getattr(first_pos, "sale_id", None):
+        pos_origin_sale = first_pos.sale
 
     payment = workorder.amount_paid
     open_bal = workorder.open_balance
@@ -66,102 +79,114 @@ def invoice_pdf(request, id):
         date = workorder.date_billed
         workorder.billed = 1
         workorder.save()
+
     customer = Customer.objects.get(id=workorder.customer.id)
-    print(workorder.contact)
     try:
-        contact = Contact.objects.get(id = workorder.contact.id)
-    except:
-        contact = ''
-    print(contact)
-    #print(customer.company_name)
-    #date = datetime.date.today()
-    subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
-    tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
-    total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
+        contact = Contact.objects.get(id=workorder.contact.id)
+    except Exception:
+        contact = ""
+
+    # Legacy subtotal/tax/total based on WorkorderItem only
+    subtotal = (
+        WorkorderItem.objects.filter(workorder_id=id)
+        .exclude(billable=0)
+        .exclude(parent=1)
+        .aggregate(Sum("absolute_price"))
+    )
+    tax = (
+        WorkorderItem.objects.filter(workorder_id=id)
+        .exclude(billable=0)
+        .exclude(parent=1)
+        .aggregate(Sum("tax_amount"))
+    )
+    total = (
+        WorkorderItem.objects.filter(workorder_id=id)
+        .exclude(billable=0)
+        .exclude(parent=1)
+        .aggregate(Sum("total_with_tax"))
+    )
+
     l = len(items)
 
+    # Paging + filler rows for layout
     if item_length > 15:
         items = WorkorderItem.objects.filter(workorder=id)[:15]
         items2 = WorkorderItem.objects.filter(workorder=id)[15:30]
-        rows2 = ''
+        rows2 = ""
         n = 60
         for x in range(n):
-            string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
-            #string = 'hello<br/>'
-            #print('test')
+            string = "<tr><td></td><td></td><td></td><td></td><td></td></tr>"
             rows2 += string
     else:
-        items2=''
-        rows2 = ''
-    print(l)
+        items2 = ""
+        rows2 = ""
+
     n = 40 - l
-    print(n)
-    rows = ''
+    rows = ""
     for x in range(n):
-        string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
-        #string = 'hello<br/>'
-        #print('test')
+        string = "<tr><td></td><td></td><td></td><td></td><td></td></tr>"
         rows += string
-    #print(rows)
-    packingslip_rows = ''
+
+    packingslip_rows = ""
     for x in range(n):
-        string = '<tr><td></td><td></td><td></td><td></td></tr>'
-        #string = 'hello<br/>'
-        #print('test')
+        string = "<tr><td></td><td></td><td></td><td></td></tr>"
         packingslip_rows += string
 
     if payment:
         total_bal = open_bal
-    print('payment')
-    print(payment)
+
     context = {
-        'items':items,
-        'items2':items2,
-        'workorder':workorder,
-        'customer':customer,
-        'payment':payment,
-        'contact':contact,
-        'date':date,
-        'subtotal':subtotal,
-        'tax':tax, 
-        'total':total,
-        'total_bal':total_bal,
-        'rows': rows,
-        'rows2': rows2,
-        'packingslip_rows': packingslip_rows,
-        'pos_items': pos_items,
+        "items": items,
+        "items2": items2,
+        "workorder": workorder,
+        "customer": customer,
+        "payment": payment,
+        "contact": contact,
+        "date": date,
+        "subtotal": subtotal,
+        "tax": tax,
+        "total": total,
+        "total_bal": total_bal,
+        "rows": rows,
+        "rows2": rows2,
+        "packingslip_rows": packingslip_rows,
+        # 🔹 POS-related
+        "pos_items": pos_items,  # list with .invoice_total attached
         "pos_origin_sale": pos_origin_sale,
     }
 
-    if workorder.internal_company == 'LK Design':
-        # i = len(items)
-        # print('list length')
-        # print(i)
+    if workorder.internal_company == "LK Design":
         if item_length < 15:
-            if workorder.quote == '0':
-                html_string=render_to_string('pdf/weasyprint/lk_invoice.html', context)
+            if workorder.quote == "0":
+                html_string = render_to_string("pdf/weasyprint/lk_invoice.html", context)
             else:
-                html_string=render_to_string('pdf/weasyprint/lk_quote.html', context)
+                html_string = render_to_string("pdf/weasyprint/lk_quote.html", context)
         else:
-            if workorder.quote == '0':
-                html_string=render_to_string('pdf/weasyprint/lk_invoice_long.html', context)
+            if workorder.quote == "0":
+                html_string = render_to_string(
+                    "pdf/weasyprint/lk_invoice_long.html", context
+                )
             else:
-                html_string=render_to_string('pdf/weasyprint/lk_quote_long.html', context)
+                html_string = render_to_string(
+                    "pdf/weasyprint/lk_quote_long.html", context
+                )
     else:
-        if workorder.quote == '0':
-            html_string=render_to_string('pdf/weasyprint/krueger_invoice.html', context)
+        if workorder.quote == "0":
+            html_string = render_to_string(
+                "pdf/weasyprint/krueger_invoice.html", context
+            )
         else:
-            html_string=render_to_string('pdf/weasyprint/krueger_quote.html', context)
+            html_string = render_to_string(
+                "pdf/weasyprint/krueger_quote.html", context
+            )
 
     html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
-
     result = html.write_pdf()
 
     with tempfile.NamedTemporaryFile(delete=True) as output:
         output.write(result)
         output.flush()
-        #rb stands for read binary
-        output=open(output.name,'rb')
+        output = open(output.name, "rb")
         response.write(output.read())
 
     return response
@@ -924,118 +949,125 @@ def statement_pdf_bulk(request):
 
 @login_required
 def packing_slip(request, id):
-
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; attachment; filename=' + \
-        str(datetime.datetime.now())+'.pdf'
-    #remove inline to allow direct download
-    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
-        
-    response['Content-Transfer-Encoding'] = 'binary'
-
-    items = WorkorderItem.objects.filter(workorder=id)
-    item_length = len(items)
-
-    
-    workorder = Workorder.objects.get(id=id)
+    # --- Core objects --------------------------------------------------------
+    workorder = get_object_or_404(Workorder, id=id)
+    customer = get_object_or_404(Customer, id=workorder.customer_id)
     pos_items = RetailWorkorderItem.objects.filter(workorder=workorder)
+
+    # WorkorderItems for this WO
+    items_qs = WorkorderItem.objects.filter(workorder=workorder).order_by("id")
+    item_length = items_qs.count()
+
+    top_line_count = items_qs.filter(child=0).count()
+
+    # Payment / balances
     payment = workorder.amount_paid
     open_bal = workorder.open_balance
     total_bal = workorder.total_balance
+
+    # Date billed / billed flag
     date = workorder.date_billed
-    if not workorder.date_billed:
+    if not date:
         workorder.date_billed = timezone.now()
         date = workorder.date_billed
         workorder.billed = 1
         workorder.save()
-    customer = Customer.objects.get(id=workorder.customer.id)
-    print(workorder.contact)
+
+    # Contact (optional)
     try:
-        contact = Contact.objects.get(id = workorder.contact.id)
-    except:
-        contact = ''
-    print(contact)
-    #print(customer.company_name)
-    #date = datetime.date.today()
-    subtotal = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('absolute_price'))
-    tax = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('tax_amount'))
-    total = WorkorderItem.objects.filter(workorder_id=id).exclude(billable=0).exclude(parent=1).aggregate(Sum('total_with_tax'))
-    l = len(items)
+        contact = Contact.objects.get(id=workorder.contact_id)
+    except Contact.DoesNotExist:
+        contact = ""
 
-    if item_length > 15:
-        items = WorkorderItem.objects.filter(workorder=id)[:15]
-        items2 = WorkorderItem.objects.filter(workorder=id)[15:30]
-        rows2 = ''
-        n = 60
-        for x in range(n):
-            string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
-            #string = 'hello<br/>'
-            #print('test')
-            rows2 += string
-    else:
-        items2=''
-        rows2 = ''
-    print(l)
-    n = 40 - l
-    print(n)
-    rows = ''
-    for x in range(n):
-        string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
-        #string = 'hello<br/>'
-        #print('test')
-        rows += string
-    #print(rows)
+    # --- Totals (same logic, just less repetition) ---------------------------
+    chargeable = items_qs.exclude(billable=0).exclude(parent=1)
 
+    subtotal = chargeable.aggregate(Sum("absolute_price"))
+    tax = chargeable.aggregate(Sum("tax_amount"))
+    total = chargeable.aggregate(Sum("total_with_tax"))
+
+    # If there is a payment, use open balance as total balance
     if payment:
         total_bal = open_bal
-    print('payment')
-    print(payment)
+
+    # --- Page splitting + filler rows ----------------------------------------
+    # First page items
+    if item_length > 15:
+        items = items_qs[:15]
+        items2 = items_qs[15:30]
+        # second page filler
+        rows2 = ""
+        for _ in range(60):
+            rows2 += "<tr><td></td><td></td><td></td><td></td><td></td></tr>"
+    else:
+        items = items_qs
+        items2 = ""
+        rows2 = ""
+
+    # first page filler
+    rows = ""
+    n = max(0, 40 - item_length)
+    for _ in range(n):
+        rows += "<tr><td></td><td></td><td></td><td></td><td></td></tr>"
+
+    # --- Office Supply flag to hide POS prices on packing slip --------------
+    internal_company = (workorder.internal_company or "").strip()
+    hide_pos_prices = internal_company in ["Office Supply", "Office Supplies"]
+
+    # --- Context -------------------------------------------------------------
     context = {
-        'items':items,
-        'items2':items2,
-        'workorder':workorder,
-        'customer':customer,
-        'payment':payment,
-        'contact':contact,
-        'date':date,
-        'subtotal':subtotal,
-        'tax':tax, 
-        'total':total,
-        'total_bal':total_bal,
-        'rows': rows,
-        'rows2': rows2,
-        'pos_items': pos_items,
+        "items": items,
+        "items2": items2,
+        "workorder": workorder,
+        "customer": customer,
+        "payment": payment,
+        "contact": contact,
+        "date": date,
+        "subtotal": subtotal,
+        "tax": tax,
+        "total": total,
+        "total_bal": total_bal,
+        "rows": rows,
+        "rows2": rows2,
+        "pos_items": pos_items,
+        "hide_pos_prices": hide_pos_prices,  # <- use this in template
+        "top_line_count": top_line_count, 
     }
 
-    if workorder.internal_company == 'LK Design':
-        # i = len(items)
-        # print('list length')
-        # print(i)
+    # --- Template selection (LK vs Krueger/Office Supply) --------------------
+    if internal_company == "LK Design":
         if item_length < 15:
-            if workorder.quote == '0':
-                html_string=render_to_string('pdf/weasyprint/lk_packingslip.html', context)
+            if workorder.quote == "0":
+                html_string = render_to_string("pdf/weasyprint/lk_packingslip.html", context)
             else:
-                html_string=render_to_string('pdf/weasyprint/lk_quote.html', context)
+                html_string = render_to_string("pdf/weasyprint/lk_quote.html", context)
         else:
-            if workorder.quote == '0':
-                html_string=render_to_string('pdf/weasyprint/lk_invoice_long.html', context)
+            if workorder.quote == "0":
+                html_string = render_to_string("pdf/weasyprint/lk_invoice_long.html", context)
             else:
-                html_string=render_to_string('pdf/weasyprint/lk_quote_long.html', context)
+                html_string = render_to_string("pdf/weasyprint/lk_quote_long.html", context)
     else:
-        if workorder.quote == '0':
-            html_string=render_to_string('pdf/weasyprint/krueger_packingslip.html', context)
+        # Krueger + Office Supply share templates here
+        if workorder.quote == "0":
+            html_string = render_to_string("pdf/weasyprint/krueger_packingslip.html", context)
         else:
-            html_string=render_to_string('pdf/weasyprint/krueger_quote.html', context)
+            html_string = render_to_string("pdf/weasyprint/krueger_quote.html", context)
 
+    # --- Render PDF ----------------------------------------------------------
     html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
+    pdf_bytes = html.write_pdf()
 
-    result = html.write_pdf()
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Transfer-Encoding"] = "binary"
+    # tweak filename if you like
+    filename = f"packing-slip-wo-{workorder.id}.pdf"
+    response["Content-Disposition"] = f'inline; attachment; filename="{filename}"'
 
+    # You can stream directly; keeping temp file pattern is optional
     with tempfile.NamedTemporaryFile(delete=True) as output:
-        output.write(result)
+        output.write(pdf_bytes)
         output.flush()
-        #rb stands for read binary
-        output=open(output.name,'rb')
-        response.write(output.read())
+        with open(output.name, "rb") as f:
+            response.write(f.read())
 
     return response

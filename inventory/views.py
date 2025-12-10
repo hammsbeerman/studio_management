@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 from django.db.models import OuterRef, Subquery
@@ -10,7 +10,7 @@ from django.db.models import Q
 from decimal import Decimal
 from controls.forms import AddItemtoListForm
 from controls.models import RetailInventoryCategory
-from .forms import AddVendorForm, RetailCategoryForm, RetailCategoryMarkupForm, InventoryItemPricingForm
+from .forms import AddVendorForm, RetailCategoryForm, RetailCategoryMarkupForm, InventoryItemPricingForm, InventoryAdjustmentForm
 from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut, Inventory
 from finance.models import InvoiceItem, AccountsPayable#, AllInvoiceItem
 from .utils import merged_set_for
@@ -773,3 +773,72 @@ def master_inventory_modal(request, pk):
         "inventories": inventories,
     }
     return render(request, "inventory/modals/master_inventory_modal.html", context)
+
+@login_required
+@permission_required("inventory.change_inventorymaster", raise_exception=True)
+def inventory_adjust(request):
+    """
+    Simple front-end inventory adjustment form.
+
+    - Positive qty_delta => add stock
+    - Negative qty_delta => remove stock
+    - Writes to InventoryLedger via record_inventory_movement
+    """
+    initial_item = None
+    item_id = request.GET.get("item")
+    if item_id:
+        try:
+            initial_item = InventoryMaster.objects.get(pk=item_id)
+        except InventoryMaster.DoesNotExist:
+            initial_item = None
+
+    if request.method == "POST":
+        form = InventoryAdjustmentForm(request.POST)
+        if form.is_valid():
+            item = form.cleaned_data["inventory_item"]
+            qty_delta = form.cleaned_data["qty_delta"]
+            note = form.cleaned_data["note"] or "Manual inventory adjustment"
+
+            # On-hand before
+            try:
+                before_on_hand = get_on_hand(item)
+            except Exception:
+                before_on_hand = None
+
+            # Write ledger entry
+            record_inventory_movement(
+                inventory_item=item,
+                qty_delta=Decimal(qty_delta),
+                source_type="ADJUSTMENT",
+                source_id=None,
+                note=f"{note} (by {request.user})",
+            )
+
+            # On-hand after
+            try:
+                after_on_hand = get_on_hand(item)
+            except Exception:
+                after_on_hand = None
+
+            if before_on_hand is not None and after_on_hand is not None:
+                messages.success(
+                    request,
+                    f"Adjusted {item} by {qty_delta}. On hand: {before_on_hand} → {after_on_hand}.",
+                )
+            else:
+                messages.success(
+                    request,
+                    f"Adjusted {item} by {qty_delta}.",
+                )
+
+            # Redirect to clear POST
+            return redirect(reverse("inventory:inventory_adjust"))
+    else:
+        form = InventoryAdjustmentForm(
+            initial={"inventory_item": initial_item} if initial_item else None
+        )
+
+    context = {
+        "form": form,
+    }
+    return render(request, "inventory/inventory_adjust.html", context)

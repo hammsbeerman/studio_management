@@ -47,6 +47,7 @@ from .views import (
     sales_tax_payable,
     office_supplies_pos_tax,
     monthly_statements,
+    sales_comparison_report,
 )
 
 app_name='finance'
@@ -114,6 +115,7 @@ urlpatterns = [
     path('ar/remove_payment/', remove_payment, name='remove_payment'),
     path('ar/payment_history/', payment_history, name='payment_history'),
     path("monthly_statements/", monthly_statements, name="monthly_statements"),
+    path("sales-comparison/", sales_comparison_report, name="sales_comparison_report"),
 
 
     #path('open_invoices/', open_invoices, name='open_invoices'),

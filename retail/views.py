@@ -1,6 +1,10 @@
 from decimal import Decimal, InvalidOperation
 import json
+import logging
 from datetime import timedelta, datetime
+from datetime import date as date_cls
+from django.utils.dateparse import parse_date
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import PermissionDenied
 from django.contrib import messages
@@ -9,19 +13,43 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.http import HttpResponse, HttpResponseBadRequest
-from django.db.models import Q, Count, Sum, F, ExpressionWrapper, DecimalField, Max, OuterRef, Subquery, IntegerField, Value
+from django.db import transaction
+from django.db.models import (
+    Q,
+    Count,
+    Sum,
+    F,
+    ExpressionWrapper,
+    DecimalField,
+    Max,
+    OuterRef,
+    Subquery,
+    IntegerField,
+    Value,
+)
 from django.db.models.functions import Coalesce
 from django.views.decorators.http import require_POST
-from django_htmx.http import HttpResponseClientRefresh
-from django.db import transaction
 from django.core.paginator import Paginator
+
+from django_htmx.http import HttpResponseClientRefresh
+
+from controls.models import Numbering, RetailInventoryCategory, RetailInventorySubCategory  # if still used elsewhere
+from customers.models import Customer, ShipTo
+from inventory.models import (
+    Vendor,
+    InventoryMaster,
+    RetailWorkorderItem,
+    Inventory,
+    InventoryLedger,
+    InventoryQtyVariations,
+)
 from inventory.services.pricing import (
-    compute_retail_price, 
+    compute_retail_price,
     get_effective_retail_price,
     ensure_retail_pricing,
 )
 from inventory.services.ledger import (
-    get_on_hand, 
+    get_on_hand,
     record_inventory_movement,
     get_qty_sold_summary,
     get_stock_alerts,
@@ -33,132 +61,122 @@ from retail.delivery_utils import (
     sync_workorder_delivery_from_sale,
     ensure_route_entry_for_customer,
 )
-from controls.models import Numbering, RetailInventoryCategory, RetailInventorySubCategory  # if still used elsewhere
-
-
-from inventory.models import (
-    Vendor, 
-    InventoryMaster, 
-    RetailWorkorderItem, 
-    Inventory, 
-    InventoryLedger,
-    InventoryQtyVariations,
-)
-from .models import RetailSale, RetailSaleLine, RetailCashSale, RetailPayment, Delivery, DeliveryRouteEntry
-from .forms import PaymentMethodForm, RefundLookupForm
-from customers.models import Customer, ShipTo
 from workorders.models import Workorder, JobStatus
 from workorders.views import _next_number_by_name
 from workorders.utils import apply_pos_adjustment_to_workorder
 from workorders.services.totals import compute_workorder_totals
 
+from .models import (
+    RetailSale,
+    RetailSaleLine,
+    RetailCashSale,
+    RetailPayment,
+    Delivery,
+    DeliveryRouteEntry,
+)
+from .forms import PaymentMethodForm, RefundLookupForm
+
+# --------------------------------------------------------------------------------------
+# Constants / logger
+# --------------------------------------------------------------------------------------
+
 STATUS_PENDING = "PENDING"
 STATUS_CANCELLED = "CANCELLED"
 
-
+logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------------------------
-# Helpers
+# POS helpers (ledger, totals, workorder sync, etc.)
 # --------------------------------------------------------------------------------------
 
-# def _get_sticky_delivery_date(request):
-#     """
-#     Read last used delivery date from session or default to today.
-#     """
-#     last_date_str = request.session.get("last_delivery_date")
-#     if last_date_str:
-#         try:
-#             return datetime.strptime(last_date_str, "%Y-%m-%d").date()
-#         except Exception:
-#             pass
-#     return timezone.localdate()
 
-
-# def _set_sticky_delivery_date(request, date_obj):
-#     """
-#     Save last used delivery date in session.
-#     """
-#     request.session["last_delivery_date"] = date_obj.strftime("%Y-%m-%d")
-
-# def ensure_route_entry_for_customer(customer: Customer) -> DeliveryRouteEntry:
-#     entry, created = DeliveryRouteEntry.objects.get_or_create(customer=customer)
-#     if created:
-#         max_order = DeliveryRouteEntry.objects.aggregate(m=Max("sort_order"))["m"] or 0
-#         entry.sort_order = max_order + 10
-#         entry.save()
-#     return entry
-
-# def _ensure_sale_delivery(sale, scheduled_date):
-#     """
-#     Ensure there is a PENDING Delivery for a sale at given date.
-#     """
-#     delivery, created = Delivery.objects.get_or_create(
-#         sale=sale,
-#         defaults={
-#             "customer": sale.customer,
-#             "scheduled_date": scheduled_date,
-#             "status": STATUS_PENDING,
-#         },
-#     )
-#     if not created:
-#         delivery.scheduled_date = scheduled_date
-#         delivery.status = STATUS_PENDING
-#         delivery.save()
-#     return delivery
-
-
-# def _sync_workorder_delivery_from_sale(sale, scheduled_date=None):
-#     """
-#     Keep Workorder delivery flags in sync with sale.requires_delivery.
-#     Optionally update workorder.delivery_date when scheduled_date given.
-#     """
-#     wo = getattr(sale, "workorder", None)
-#     if not wo:
-#         return
-
-#     wo.requires_delivery = sale.requires_delivery
-#     if sale.requires_delivery and scheduled_date is not None:
-#         wo.delivery_date = scheduled_date
-#     elif not sale.requires_delivery:
-#         wo.delivery_date = None
-
-#     wo.save()
-
-def _get_sorted_deliveries_for_date(selected_date):
+def pos_line_qty_signed(sale, qty: Decimal) -> Decimal:
     """
-    Return deliveries for the given date, ordered by the customer's
-    DeliveryRouteEntry.sort_order, then customer name.
+    Convert a positive 'qty' into a signed quantity based on sale type.
+
+    - Normal sale: negative (stock out)
+    - Refund sale: positive (stock in)
     """
+    if not qty:
+        return Decimal("0")
 
-    route_qs = DeliveryRouteEntry.objects.filter(
-        customer=OuterRef("customer")
-    ).values("sort_order")[:1]
+    if getattr(sale, "is_refund", False):
+        return Decimal(qty)  # stock in
+    return Decimal(qty) * Decimal("-1")  # stock out
 
-    qs = (
-        Delivery.objects
-        .select_related("customer", "sale", "workorder")
-        .filter(
-            scheduled_date=selected_date,
-            status=STATUS_PENDING,
-        )
-        .annotate(
-            route_sort_raw=Subquery(route_qs, output_field=IntegerField()),
-            route_sort=Coalesce(
-                "route_sort_raw",
-                Value(999999, output_field=IntegerField()),  # no entry → bottom
-            ),
-        )
-        .order_by("route_sort", "customer__company_name", "pk")
-    )
 
-    return qs
+def record_pos_inventory_for_line(line, old_qty=None, old_item=None, source_suffix=""):
+    """
+    Adjust the InventoryLedger for a RetailSaleLine create/edit.
+
+    - line: RetailSaleLine instance (must have .sale and .inventory, .qty)
+    - old_qty: previous qty (Decimal) before edit (None on create)
+    - old_item: previous inventory FK before edit (None on create)
+
+    This mirrors the AP logic but with sign handling for sale vs refund.
+    """
+    try:
+        sale = line.sale
+        new_item = line.inventory
+        new_qty_raw = line.qty or Decimal("0")
+        new_qty_signed = pos_line_qty_signed(sale, new_qty_raw)
+
+        if old_qty is None and old_item is None:
+            # CREATE
+            if new_item and new_qty_signed:
+                record_inventory_movement(
+                    inventory_item=new_item,
+                    qty_delta=new_qty_signed,
+                    source_type="POS_SALE" if not sale.is_refund else "POS_REFUND",
+                    source_id=line.pk,
+                    note=f"POS sale {sale.pk} line {line.pk}{source_suffix}",
+                )
+        else:
+            # EDIT
+            old_item = old_item or new_item
+            old_qty_raw = old_qty or Decimal("0")
+            old_qty_signed = pos_line_qty_signed(sale, old_qty_raw)
+
+            if old_item == new_item:
+                # same item, just adjust quantity
+                delta = new_qty_signed - old_qty_signed
+                if delta:
+                    record_inventory_movement(
+                        inventory_item=new_item,
+                        qty_delta=delta,
+                        source_type="POS_SALE_ADJUST" if not sale.is_refund else "POS_REFUND_ADJUST",
+                        source_id=line.pk,
+                        note=f"Adjust POS sale {sale.pk} line {line.pk}{source_suffix}",
+                    )
+            else:
+                # inventory item changed: reverse old, apply new
+                if old_item and old_qty_signed:
+                    record_inventory_movement(
+                        inventory_item=old_item,
+                        qty_delta=-old_qty_signed,
+                        source_type="POS_SALE_ADJUST" if not sale.is_refund else "POS_REFUND_ADJUST",
+                        source_id=line.pk,
+                        note=f"Reassign POS sale {sale.pk} line {line.pk} (old item){source_suffix}",
+                    )
+                if new_item and new_qty_signed:
+                    record_inventory_movement(
+                        inventory_item=new_item,
+                        qty_delta=new_qty_signed,
+                        source_type="POS_SALE_ADJUST" if not sale.is_refund else "POS_REFUND_ADJUST",
+                        source_id=line.pk,
+                        note=f"Reassign POS sale {sale.pk} line {line.pk} (new item){source_suffix}",
+                    )
+
+    except Exception:
+        logger.exception(f"Failed to record POS inventory movement for sale line {getattr(line, 'pk', '?')}")
+
 
 def _record_pos_ledger_entries(sale: RetailSale, scale: Decimal = Decimal("1.0")):
     """
     Write InventoryLedger entries for this POS sale / refund.
 
-    - For normal sales (qty > 0), we subtract stock (negative delta).
-    - For refunds (qty < 0 on refund sale), we add stock back (positive delta).
+    - For normal sales (qty > 0), subtract stock (negative delta).
+    - For refunds (qty < 0 on refund sale), add stock back (positive delta).
     - For partial refunds, `scale` lets us only move a fraction of that qty.
     """
     source_type = "POS_REFUND" if sale.is_refund else "POS_SALE"
@@ -175,7 +193,7 @@ def _record_pos_ledger_entries(sale: RetailSale, scale: Decimal = Decimal("1.0")
 
         # Sale:   qty=+3  -> delta=-3 (stock out)
         # Refund: qty=-3  -> delta=+3 (restock)
-        # Partial refund: scale < 1.0, so we only restock part of it.
+        # Partial refund: scale < 1.0 → only part of it.
         qty_delta = (-qty_dec) * scale
 
         record_inventory_movement(
@@ -185,6 +203,7 @@ def _record_pos_ledger_entries(sale: RetailSale, scale: Decimal = Decimal("1.0")
             source_id=str(sale.id),
             note=f"POS {'refund' if sale.is_refund else 'sale'} #{sale.id}",
         )
+
 
 def _compute_sale_totals(sale: RetailSale):
     """
@@ -235,11 +254,10 @@ def _sync_sale_lines_to_workorder(sale, workorder):
     """
     Copy all RetailSale lines onto the workorder as RetailWorkorderItem rows.
 
-    - First delete any existing POS rows for (workorder, sale) so we don't duplicate.
-    - If the sale has no POS lines, we just clear existing POS rows and recompute
-      workorder totals so POS no longer contributes.
+    - First delete existing POS rows for (workorder, sale) so we don't duplicate.
+    - If no POS lines, clear existing POS rows and recompute totals so POS
+      no longer contributes.
     """
-
     # 1) Clear old POS items for this combo
     RetailWorkorderItem.objects.filter(workorder=workorder, sale=sale).delete()
 
@@ -310,7 +328,7 @@ def _ensure_sale_workorder(sale, as_quote: bool = False):
     Ensure there is a Workorder (or Quote) for this sale.
 
     - Walk-in customers: return None.
-    - If sale.workorder exists: just return it (we won't auto-convert modes here).
+    - If sale.workorder exists: just return it.
     - If no workorder yet:
         * as_quote=True  → create a Quote using Quote Number
         * as_quote=False → create a normal Workorder using Workorder Number
@@ -321,8 +339,8 @@ def _ensure_sale_workorder(sale, as_quote: bool = False):
 
     if _is_walkin_customer(cust):
         return None
-    
-    # 🔹 NEW: don’t create a workorder if there are no lines at all
+
+    # Don't create a workorder if there are no lines at all
     if not sale.lines.exists():
         raise ValueError("Cannot create a workorder for a sale with no line items.")
 
@@ -354,7 +372,7 @@ def _ensure_sale_workorder(sale, as_quote: bool = False):
 
     # Decide numbering + status based on quote vs workorder
     if as_quote:
-        num = _next_number_by_name("Quote Number")  # 🔹 same as Krueger / LK
+        num = _next_number_by_name("Quote Number")
         quote_flag = "1"
         quote_number = str(num)
         workorder_number = str(num)  # quotes use quote number in workorder field
@@ -397,6 +415,7 @@ def _ensure_sale_workorder(sale, as_quote: bool = False):
 
     return wo
 
+
 def _guard_sale_unlocked(sale: RetailSale):
     """
     Raise if this POS sale has been locked (paid/completed).
@@ -405,27 +424,32 @@ def _guard_sale_unlocked(sale: RetailSale):
     if sale.locked:
         raise PermissionDenied("This sale is locked and cannot be edited.")
 
+
 def _ensure_pos_number(sale):
     """
     Ensure sale.pos_number is set if the field exists on the model.
     Safe to call even if the field does not exist (old schema).
-    """    
-    # Old schema: no `pos_number` field at all
+    """
     if not hasattr(sale, "pos_number"):
         return
 
-    # Already has a POS number
     if sale.pos_number:
         return
 
-    # Simple default: use the sale ID as the POS number
     sale.pos_number = str(sale.id)
     sale.save(update_fields=["pos_number"])
 
+def _attach_on_hand_to_line(line):
+    if getattr(line, "inventory", None):
+        try:
+            line.inventory.on_hand = get_on_hand(line.inventory)
+        except Exception:
+            line.inventory.on_hand = None
 
 # --------------------------------------------------------------------------------------
 # Basic totals + inventory views
 # --------------------------------------------------------------------------------------
+
 
 @login_required
 def sale_totals(request, pk):
@@ -448,10 +472,10 @@ def retail_inventory_list(request):
     }
     return render(request, "retail/inventory/inventory_list.html", context)
 
+# --------------------------------------------------------------------------------------
+# POS main flow (new sale, detail, search, add/edit/delete lines, customer)
+# --------------------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------------------
-# POS main flow
-# --------------------------------------------------------------------------------------
 
 @login_required
 def retail_new_sale(request):
@@ -463,10 +487,9 @@ def retail_new_sale(request):
     otherwise create a new one.
     """
     sale = (
-        RetailSale.objects
-        .filter(
+        RetailSale.objects.filter(
             cashier=request.user,
-            status=RetailSale.STATUS_OPEN,  # or "open" if you're using strings
+            status=RetailSale.STATUS_OPEN,
             locked=False,
             is_refund=False,
             customer__isnull=True,
@@ -480,9 +503,8 @@ def retail_new_sale(request):
             payment_count=0,
         )
         .filter(
-            Q(notes__isnull=True) | Q(notes="")  # 👈 allow NULL or empty
+            Q(notes__isnull=True) | Q(notes=""),
         )
-
         .first()
     )
 
@@ -492,7 +514,6 @@ def retail_new_sale(request):
             internal_company="Office Supplies",
             status=RetailSale.STATUS_OPEN,
             locked=False,
-            # NOTE: do NOT assign pos_number here
         )
 
     return redirect("retail:sale_detail", pk=sale.pk)
@@ -540,7 +561,6 @@ def inventory_search(request):
                 Q(name__icontains=q)
                 | Q(description__icontains=q)
                 | Q(primary_vendor_part_number__icontains=q)
-                # 🔹 also match vendor part numbers from Inventory
                 | Q(inventory__vendor_part_number__icontains=q)
             )
             .filter(active=True)
@@ -548,7 +568,7 @@ def inventory_search(request):
             .order_by("name")[:50]
         )
 
-    # 🔹 attach on_hand to each result so the template doesn't have to call anything
+    # Attach on_hand to each result
     for item in results:
         item.on_hand = get_on_hand(item)
 
@@ -566,6 +586,7 @@ def inventory_search(request):
         {"results": results, "sale": sale},
     )
 
+
 @login_required
 def inventory_item_modal(request, pk):
     """
@@ -578,13 +599,8 @@ def inventory_item_modal(request, pk):
     pricing = ensure_retail_pricing(item, reset_override=False)
     effective_price = get_effective_retail_price(item)
 
-    # All stock entries for this master item
-    inventories = (
-        Inventory.objects.filter(internal_part_number=item)
-        .order_by("-created")
-    )
+    inventories = Inventory.objects.filter(internal_part_number=item).order_by("-created")
 
-    # NEW: on-hand using ledger with legacy fallback
     on_hand = get_on_hand(item)
 
     context = {
@@ -604,14 +620,12 @@ def add_line_from_inventory(request, pk, inventory_id):
     _guard_sale_unlocked(sale)
     item = get_object_or_404(InventoryMaster, pk=inventory_id)
 
-    # Qty from modal (string -> Decimal)
     qty_str = (request.POST.get("qty") or "1").strip()
     try:
         qty = Decimal(qty_str)
     except Exception:
         qty = Decimal("1")
 
-    # Optional sold_variation from modal
     variation_id = (request.POST.get("variation_id") or "").strip()
     sold_variation = None
     if variation_id:
@@ -620,12 +634,10 @@ def add_line_from_inventory(request, pk, inventory_id):
         except InventoryQtyVariations.DoesNotExist:
             sold_variation = None
 
-    # NEW: default price comes from InventoryRetailPrice (override → calc → purchase)
     unit_price = get_effective_retail_price(item)
 
-    # 🔹 If exactly one variation exists, use it as the default
     variations = InventoryQtyVariations.objects.filter(inventory=item)
-    sold_variation = variations.first() if variations.count() == 1 else None
+    sold_variation = variations.first() if variations.count() == 1 else sold_variation
 
     line = RetailSaleLine.objects.create(
         sale=sale,
@@ -633,12 +645,17 @@ def add_line_from_inventory(request, pk, inventory_id):
         description=item.name,
         qty=qty,
         unit_price=unit_price,
-        tax_rate=Decimal("0.00"),  # pos tax handled at sale level
-        sold_variation=sold_variation
+        tax_rate=Decimal("0.00"),
+        sold_variation=sold_variation,
     )
 
-    # row number for "#" column – count after create
+    # 🔹 NEW: ledger entry for this new line
+    record_pos_inventory_for_line(line)
+
+
     rownum = sale.lines.count()
+
+    _attach_on_hand_to_line(line)
 
     response = render(
         request,
@@ -665,6 +682,10 @@ def update_line_field(request, line_id):
 
     if field not in {"qty", "unit_price", "tax_rate"}:
         return HttpResponseBadRequest("Invalid field")
+    
+    # 🔹 capture old values for ledger
+    old_qty = line.qty
+    old_item = line.inventory
 
     try:
         if field == "qty":
@@ -677,6 +698,9 @@ def update_line_field(request, line_id):
         return HttpResponseBadRequest("Invalid value")
 
     line.save()
+
+    # 🔹 NEW: adjust ledger based on change
+    record_pos_inventory_for_line(line, old_qty=old_qty, old_item=old_item)
 
     response = render(
         request,
@@ -693,6 +717,22 @@ def delete_line(request, line_id):
     line = get_object_or_404(RetailSaleLine, pk=line_id)
     sale = line.sale
     _guard_sale_unlocked(sale)
+
+    # 🔹 NEW: reverse ledger movement for this line
+    if line.inventory_id and line.qty:
+        try:
+            signed_qty = pos_line_qty_signed(sale, line.qty)  # what we *originally* did
+            if signed_qty:
+                record_inventory_movement(
+                    inventory_item=line.inventory,
+                    qty_delta=-signed_qty,  # reverse it
+                    source_type="POS_SALE_DELETE" if not sale.is_refund else "POS_REFUND_DELETE",
+                    source_id=line.pk,
+                    note=f"Delete POS sale {sale.pk} line {line.pk}",
+                )
+        except Exception:
+            logger.exception(f"Failed to record POS inventory delete for sale line {line.pk}")
+
     line.delete()
     return HttpResponseClientRefresh()
 
@@ -709,8 +749,7 @@ def set_sale_customer(request, pk):
 
     customer_id = request.POST.get("customer_id") or None
     if not customer_id:
-        # Dedicated Walk-in customer record for history/filters
-        walkin, created = Customer.objects.get_or_create(
+        walkin, _ = Customer.objects.get_or_create(
             customer_number="WALKIN",
             defaults={
                 "company_name": "Walk-in / Cash Sale",
@@ -743,7 +782,6 @@ def set_sale_customer(request, pk):
         customer = get_object_or_404(Customer, pk=customer_id)
         sale.customer = customer
 
-        # tie POS tax status to customer
         is_exempt = bool(getattr(customer, "tax_exempt", False))
         sale.tax_exempt = is_exempt
         sale.tax_rate = Decimal("0.000") if sale.tax_exempt else Decimal("0.055")
@@ -756,7 +794,6 @@ def set_sale_customer(request, pk):
             request=request,
         )
 
-    # 👇 NEW: render delivery toggle based on updated sale + walkin flag
     delivery_html = render_to_string(
         "retail/partials/sale_delivery_toggle.html",
         {
@@ -766,7 +803,6 @@ def set_sale_customer(request, pk):
         request=request,
     )
 
-    # main target = customer block; delivery updated OOB
     full_html = (
         customer_html
         + f'<div id="delivery-toggle" hx-swap-oob="true">{delivery_html}</div>'
@@ -810,10 +846,10 @@ def retail_sale_customer_ar(request, pk):
         },
     )
 
+# --------------------------------------------------------------------------------------
+# Workorder + pay actions
+# --------------------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------------------
-# Workorder + Save/Pay actions
-# --------------------------------------------------------------------------------------
 
 @require_POST
 @login_required
@@ -829,7 +865,6 @@ def sale_save_workorder(request, pk):
         sale = get_object_or_404(RetailSale, pk=pk)
         _guard_sale_unlocked(sale)
 
-        # ensure a POS number, but only when actually saving
         _ensure_pos_number(sale)
 
         if not sale.customer:
@@ -837,10 +872,8 @@ def sale_save_workorder(request, pk):
             return redirect("retail:sale_detail", pk=sale.pk)
 
         if _is_walkin_customer(sale.customer):
-            # Walk-in: no workorder – just stay on POS
             return redirect("retail:sale_detail", pk=sale.pk)
 
-        # 🔹 Only block empty sales when there is NO workorder yet.
         if not sale.lines.exists() and not getattr(sale, "workorder_id", None):
             messages.error(request, "Please add at least one line item before saving.")
             return redirect("retail:sale_detail", pk=sale.pk)
@@ -852,7 +885,6 @@ def sale_save_workorder(request, pk):
             return redirect("retail:sale_detail", pk=sale.pk)
 
         if wo is None:
-            # Safety fallback; shouldn't happen with non-walkin customers
             return redirect("retail:sale_detail", pk=sale.pk)
 
         _sync_sale_lines_to_workorder(sale, wo)
@@ -878,17 +910,14 @@ def sale_pay_workorder(request, pk):
 
     cust = sale.customer
 
-    # Must have at least one line
     if not sale.lines.exists():
         messages.error(request, "Please add at least one line item before taking payment.")
         return redirect("retail:sale_detail", pk=sale.pk)
 
-    # Must have a customer (including Walk-in)
     if not cust:
         messages.error(request, "Please select a customer before taking payment.")
         return redirect("retail:sale_detail", pk=sale.pk)
 
-    # Compute POS totals
     subtotal, tax, total = _compute_sale_totals(sale)
 
     # CASE 1: Walk-in / cash sale — NO workorder, just a RetailCashSale record
@@ -910,13 +939,12 @@ def sale_pay_workorder(request, pk):
             cash_record.total = total
             cash_record.save(update_fields=["subtotal", "tax", "total"])
 
-        # Optionally mark the sale as paid here
         sale.save()
 
         messages.success(request, f"Cash sale recorded. Total: {total}")
         return redirect("retail:sale_detail", pk=sale.pk)
 
-    # CASE 2: Account customer — create/ensure Workorder + sync lines
+    # CASE 2: Account customer — create/ensure Workorder + sync items
     try:
         wo = _ensure_sale_workorder(sale)
     except ValueError as e:
@@ -930,13 +958,12 @@ def sale_pay_workorder(request, pk):
     _sync_sale_lines_to_workorder(sale, wo)
 
     messages.success(request, f"Workorder #{wo.workorder} created for payment.")
-    # You can later redirect straight into a receive-payment screen
     return redirect("workorders:overview", id=wo.workorder)
 
+# --------------------------------------------------------------------------------------
+# Small POS helpers (notes, header blocks, payment modal/submit, refunds)
+# --------------------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------------------
-# Small POS helpers (notes, customer block, header, footer)
-# --------------------------------------------------------------------------------------
 
 @require_POST
 @login_required
@@ -1001,10 +1028,8 @@ def sale_payment_submit(request, pk):
         sale = get_object_or_404(RetailSale, pk=pk)
         _guard_sale_unlocked(sale)
 
-        # ensure a POS number the first time it’s paid
         _ensure_pos_number(sale)
 
-        # If already locked/paid, just bounce back – no double-pay
         if sale.locked:
             resp = HttpResponse("")
             resp["HX-Redirect"] = reverse("retail:sale_detail", args=[sale.pk])
@@ -1013,7 +1038,6 @@ def sale_payment_submit(request, pk):
         form = PaymentMethodForm(request.POST)
 
         if not form.is_valid():
-            # Re-render modal with errors
             subtotal, tax, total = _compute_sale_totals(sale)
             return render(
                 request,
@@ -1028,11 +1052,10 @@ def sale_payment_submit(request, pk):
             )
 
         payment_method = form.cleaned_data["payment_method"]
-        amount = form.cleaned_data["amount"]          # what the user typed
+        amount = form.cleaned_data["amount"]
         notes = form.cleaned_data.get("notes") or ""
         check_number = form.cleaned_data.get("check_number")
 
-        # If a check number was entered, prepend it to notes
         if check_number:
             prefix = f"Check #{check_number}"
             notes = f"{prefix} — {notes}" if notes else prefix
@@ -1040,7 +1063,7 @@ def sale_payment_submit(request, pk):
         subtotal, tax, total = _compute_sale_totals(sale)
         cust = sale.customer
 
-        # --- scale factor for partial refunds (used for both AR + ledger) ---
+        # Scale factor for partial refunds
         scale_for_ledger = Decimal("1.0")
         if sale.is_refund:
             max_refund = abs(total)
@@ -1057,7 +1080,7 @@ def sale_payment_submit(request, pk):
             else:
                 scale_for_ledger = Decimal("0")
 
-        # 🔹 If no customer is set at all, treat it as Walk-in / Cash
+        # Ensure there is *some* customer (fallback to Walk-in)
         if cust is None:
             walkin, _ = Customer.objects.get_or_create(
                 company_name="Walk-in / Cash Sale",
@@ -1080,23 +1103,17 @@ def sale_payment_submit(request, pk):
             )
             cust = walkin
             sale.customer = walkin
-            # default to taxable walk-in if nothing set yet
             if sale.tax_rate is None or sale.tax_rate == 0:
                 sale.tax_exempt = False
                 sale.tax_rate = Decimal("0.055")
             sale.save(update_fields=["customer", "tax_exempt", "tax_rate"])
 
-        # 🔹 Walk-in / cash path: record RetailCashSale, no workorder
+        # Walk-in / cash path
         if _is_walkin_customer(cust):
-            if sale.is_refund:
-                kind = "Refund"
-            else:
-                kind = "Sale"
+            kind = "Refund" if sale.is_refund else "Sale"
 
-            # For walk-ins, we treat the typed amount as the actual cash movement.
-            # Refunds should be negative in reports.
             if amount is None:
-                amount = total  # fallback to full total if somehow missing
+                amount = total
             signed_total = Decimal(amount)
             if sale.is_refund:
                 signed_total = -abs(signed_total)
@@ -1129,15 +1146,13 @@ def sale_payment_submit(request, pk):
                 sale.paid_at = timezone.now()
             sale.save(update_fields=["status", "locked", "paid_at"])
 
-            # 🔹 Ledger entries for POS sale/refund (respect partial refunds)
-            _record_pos_ledger_entries(sale, scale=scale_for_ledger)
 
             messages.success(request, f"{kind} recorded for {signed_total}.")
             resp = HttpResponse("")
             resp["HX-Redirect"] = reverse("retail:sale_detail", args=[sale.pk])
             return resp
 
-        # 🔹 Account customer path: ensure workorder & hand off to AR flow
+        # Account customer path
         wo = _ensure_sale_workorder(sale)
         if not wo:
             messages.error(request, "Unable to create workorder for this sale.")
@@ -1145,15 +1160,12 @@ def sale_payment_submit(request, pk):
             resp["HX-Redirect"] = reverse("retail:sale_receipt", args=[sale.pk])
             return resp
 
-        # Make sure the sale is linked to this workorder
         if sale.workorder_id is None:
             sale.workorder = wo
             sale.save(update_fields=["workorder"])
 
-        # Mirror POS line items onto the workorder so overview shows each line
         _sync_sale_lines_to_workorder(sale, wo)
 
-        # 🔹 If this is a refund, apply a *partial* POS adjustment based on entered amount
         if sale.is_refund:
             full_subtotal, full_tax, full_total = _compute_sale_totals(sale)
 
@@ -1169,7 +1181,6 @@ def sale_payment_submit(request, pk):
                 tax_amount=-refund_tax,
             )
 
-        # 🔹 Recompute full workorder totals after sync/adjustment
         totals = compute_workorder_totals(wo)
         wo.subtotal = f"{totals.subtotal:.2f}"
         wo.tax = f"{totals.tax:.2f}"
@@ -1192,9 +1203,6 @@ def sale_payment_submit(request, pk):
         sale.locked = True
         sale.save(update_fields=["status", "locked", "paid_at"])
 
-        # 🔹 Ledger entries for POS sale/refund (account customers, partial-aware)
-        _record_pos_ledger_entries(sale, scale=scale_for_ledger)
-
         completed_status = JobStatus.objects.filter(name__iexact="Completed").first()
         if completed_status:
             wo.workorder_status = completed_status
@@ -1203,6 +1211,7 @@ def sale_payment_submit(request, pk):
         resp = HttpResponse("")
         resp["HX-Redirect"] = reverse("retail:sale_receipt", args=[sale.pk])
         return resp
+
 
 @login_required
 def sale_refund_start(request, pk):
@@ -1217,8 +1226,8 @@ def sale_refund_start(request, pk):
     with transaction.atomic():
         refund = _create_refund_sale_from(original, request.user)
 
-    # Just redirect to the refund POS screen; no modal needed after this
     return redirect("retail:sale_detail", pk=refund.pk)
+
 
 def _create_refund_sale_from(original: RetailSale, user) -> RetailSale:
     """
@@ -1243,12 +1252,12 @@ def _create_refund_sale_from(original: RetailSale, user) -> RetailSale:
             sale=refund,
             inventory=line.inventory,
             description=line.description,
-            qty=-line.qty,               # 👈 negative
+            qty=-line.qty,
             unit_price=line.unit_price,
-            # copy any other fields you need (tax flags, etc.)
         )
 
     return refund
+
 
 @login_required
 def refund_lookup(request):
@@ -1259,7 +1268,6 @@ def refund_lookup(request):
 
         number = form.cleaned_data["invoice_number"].strip()
 
-        # If you're using a dedicated pos_number: sale = get_object_or_404(RetailSale, pos_number=number)
         try:
             sale = RetailSale.objects.get(id=number)
         except RetailSale.DoesNotExist:
@@ -1271,10 +1279,10 @@ def refund_lookup(request):
             return render(request, "retail/refund_lookup.html", {"form": form})
 
         return redirect("retail:sale_refund_start", pk=sale.pk)
-    else:
-        form = RefundLookupForm()
 
+    form = RefundLookupForm()
     return render(request, "retail/refund_lookup.html", {"form": form})
+
 
 @login_required
 def pos_sale_list(request):
@@ -1289,7 +1297,6 @@ def pos_sale_list(request):
         .order_by("-created_at", "-id")
     )
 
-    # You can tweak this low_stock_threshold number as needed
     low_stock_threshold = Decimal("5")
 
     negative_items, low_items = get_stock_alerts(
@@ -1305,6 +1312,7 @@ def pos_sale_list(request):
     }
     return render(request, "retail/pos_sale_list.html", context)
 
+
 @login_required
 @require_POST
 def sale_toggle_tax(request, pk):
@@ -1318,18 +1326,17 @@ def sale_toggle_tax(request, pk):
     _guard_sale_unlocked(sale)
 
     if sale.tax_exempt:
-        # Turn tax back ON for this sale
         sale.tax_exempt = False
         if not sale.tax_rate or sale.tax_rate == 0:
-            sale.tax_rate = Decimal("0.055")  # WI 5.5% default
+            sale.tax_rate = Decimal("0.055")
     else:
-        # Turn tax OFF just for this sale
         sale.tax_exempt = True
         sale.tax_rate = Decimal("0.000")
 
     sale.save(update_fields=["tax_exempt", "tax_rate"])
 
     return redirect("retail:sale_detail", sale.pk)
+
 
 @login_required
 @require_POST
@@ -1351,12 +1358,12 @@ def sale_send_as_quote(request, pk):
     messages.success(request, f"Quote {wo.workorder} created from POS sale.")
     return redirect("workorders:overview", id=wo.workorder)
 
+
 @require_POST
 @login_required
 def sale_add_custom_line(request, pk):
     """
-    Add a one-off custom line to a POS sale
-    (no InventoryMaster link, just description + price).
+    Add a one-off custom line to a POS sale (no InventoryMaster link).
     """
     sale = get_object_or_404(RetailSale, pk=pk)
     _guard_sale_unlocked(sale)
@@ -1382,11 +1389,11 @@ def sale_add_custom_line(request, pk):
         description=desc,
         qty=qty,
         unit_price=unit_price,
-        # line_total will be calculated in your totals logic or via model save
     )
 
     messages.success(request, f"Custom item '{desc}' added.")
     return redirect("retail:sale_detail", pk=sale.pk)
+
 
 @login_required
 def sale_receipt(request, pk):
@@ -1398,28 +1405,26 @@ def sale_receipt(request, pk):
     """
     sale = get_object_or_404(RetailSale, pk=pk)
 
-    # sale.lines related_name, or fallback to default
     lines_qs = getattr(sale, "lines", None) or sale.retailsaleline_set
     lines = list(lines_qs.all())
 
     subtotal, tax, total = _compute_sale_totals(sale)
-    cash = getattr(sale, "cash_record", None)  # RetailCashSale or None
+    cash = getattr(sale, "cash_record", None)
 
     context = {
-            "sale": sale,
-            "lines": lines,
-            "subtotal": subtotal,
-            "tax": tax,
-            "total": total,
-            "cash": cash,  # None for account sales
-        }
+        "sale": sale,
+        "lines": lines,
+        "subtotal": subtotal,
+        "tax": tax,
+        "total": total,
+        "cash": cash,
+    }
 
-        # If called via HTMX (for the modal), render modal partial instead of full page
     if getattr(request, "htmx", False):
         return render(request, "retail/modals/receipt_modal.html", context)
 
-    # Normal full-page printable receipt
     return render(request, "retail/receipt.html", context)
+
 
 @login_required
 def retail_pricing_admin(request):
@@ -1430,7 +1435,6 @@ def retail_pricing_admin(request):
         .order_by("name")
     )
 
-    # Optional editing logic can go here (POST to update one row)
     paginator = Paginator(items, 50)
     page = request.GET.get("page")
     page_obj = paginator.get_page(page)
@@ -1441,27 +1445,28 @@ def retail_pricing_admin(request):
     }
     return render(request, "inventory/retail_pricing_admin.html", context)
 
+
 @require_POST
 @login_required
 def sale_update_line_price(request, sale_pk, line_pk):
     sale = get_object_or_404(RetailSale, pk=sale_pk)
     _guard_sale_unlocked(sale)
-
     line = get_object_or_404(RetailSaleLine, pk=line_pk, sale=sale)
+
+    # 🔹 capture old values before changes
+    old_qty = line.qty
+    old_item = line.inventory
 
     qty_str = request.POST.get("qty")
     raw_price = request.POST.get("unit_price")
     update_default = bool(request.POST.get("update_default_price"))
 
-    # --- qty (optional, fall back to existing) ---
     if qty_str is not None:
         try:
             line.qty = Decimal(qty_str)
         except (InvalidOperation, TypeError):
-            # bad input – keep existing qty
             pass
 
-    # --- price (optional, fall back to existing) ---
     new_price = None
     if raw_price is not None:
         try:
@@ -1472,7 +1477,6 @@ def sale_update_line_price(request, sale_pk, line_pk):
     if new_price is not None:
         line.unit_price = new_price
 
-    # keep any existing line_total field in sync if you have it
     if hasattr(line, "line_total"):
         qty = line.qty or Decimal("0")
         price = line.unit_price or Decimal("0")
@@ -1480,22 +1484,17 @@ def sale_update_line_price(request, sale_pk, line_pk):
 
     line.save()
 
-    # --- optionally update default retail pricing override for this item ---
+    # 🔹 NEW: ledger adjust for qty change (if any)
+    record_pos_inventory_for_line(line, old_qty=old_qty, old_item=old_item)
+
     if update_default and line.inventory_id:
         inv = line.inventory
-
-        # get or create the pricing row without nuking existing override unless we set it
         rp = ensure_retail_pricing(inv, reset_override=False)
-
-        # store the POS override as the new "override price"
         rp.override_price = line.unit_price
-
-        # keep purchase / calculated in sync (optional but nice)
         rp.purchase_price = inv.unit_cost or Decimal("0.00")
         rp.calculated_price = compute_retail_price(inv)
         rp.save()
 
-    # figure out row number for "#" column
     line_ids = list(
         sale.lines.order_by("id").values_list("id", flat=True)
     )
@@ -1504,20 +1503,20 @@ def sale_update_line_price(request, sale_pk, line_pk):
     except ValueError:
         rownum = 1
 
-    # HTMX request => return updated row partial
+    _attach_on_hand_to_line(line)
+
     if request.headers.get("HX-Request") == "true":
         resp = render(
             request,
             "retail/partials/line_row.html",
             {"sale": sale, "line": line, "rownum": rownum},
         )
-        # tell totals panel to refresh itself
         resp["HX-Trigger"] = "retail-totals-changed"
         return resp
 
-    # non-HTMX fallback
     messages.success(request, "Line updated.")
     return redirect("retail:sale_detail", pk=sale.pk)
+
 
 @require_POST
 @login_required
@@ -1541,6 +1540,8 @@ def sale_update_line_variation(request, sale_pk, line_pk):
 
     line.save()
 
+    _attach_on_hand_to_line(line)
+
     html = render_to_string(
         "retail/partials/line_row.html",
         {
@@ -1551,6 +1552,11 @@ def sale_update_line_variation(request, sale_pk, line_pk):
         request=request,
     )
     return HttpResponse(html)
+
+# --------------------------------------------------------------------------------------
+# POS reports
+# --------------------------------------------------------------------------------------
+
 
 @login_required
 def pos_qty_sold_report(request):
@@ -1586,6 +1592,7 @@ def pos_qty_sold_report(request):
     }
     return render(request, "retail/reports/pos_qty_sold_report.html", context)
 
+
 @login_required
 def pos_qty_sold_item_detail(request, item_id):
     """
@@ -1616,8 +1623,7 @@ def pos_qty_sold_item_detail(request, item_id):
     item = get_object_or_404(InventoryMaster, pk=item_id)
 
     entries = (
-        InventoryLedger.objects
-        .filter(
+        InventoryLedger.objects.filter(
             inventory_item=item,
             source_type__in=["POS_SALE", "POS_REFUND"],
             when__gte=start_dt,
@@ -1626,7 +1632,6 @@ def pos_qty_sold_item_detail(request, item_id):
         .order_by("-when")
     )
 
-    # net sold in this period = -sum(qty_delta)
     agg = entries.aggregate(qty_delta_sum=Sum("qty_delta"))
     qty_delta_sum = agg["qty_delta_sum"] or 0
     net_sold = -qty_delta_sum
@@ -1641,6 +1646,11 @@ def pos_qty_sold_item_detail(request, item_id):
     }
     return render(request, "retail/reports/pos_qty_sold_item_detail.html", context)
 
+# --------------------------------------------------------------------------------------
+# Inventory variation + receipts
+# --------------------------------------------------------------------------------------
+
+
 @login_required
 def inventory_variation_modal(request, sale_pk, inventory_pk):
     """
@@ -1653,13 +1663,13 @@ def inventory_variation_modal(request, sale_pk, inventory_pk):
     item = get_object_or_404(InventoryMaster, pk=inventory_pk)
     variations = InventoryQtyVariations.objects.filter(inventory=item).order_by("id")
 
-    # If no variations, we still let them enter qty as base units.
     context = {
         "sale": sale,
         "item": item,
         "variations": variations,
     }
     return render(request, "retail/modals/inventory_variation_modal.html", context)
+
 
 @login_required
 def sale_receipt_modal(request, pk):
@@ -1669,7 +1679,7 @@ def sale_receipt_modal(request, pk):
     lines = list(lines_qs.all())
 
     subtotal, tax, total = _compute_sale_totals(sale)
-    cash = getattr(sale, "cash_record", None)  # RetailCashSale or None
+    cash = getattr(sale, "cash_record", None)
 
     context = {
         "sale": sale,
@@ -1681,6 +1691,11 @@ def sale_receipt_modal(request, pk):
     }
 
     return render(request, "retail/modals/receipt_modal.html", context)
+
+# --------------------------------------------------------------------------------------
+# Delivery: toggle on sale, report, reorder, date changes
+# --------------------------------------------------------------------------------------
+
 
 @require_POST
 @login_required
@@ -1698,7 +1713,7 @@ def sale_toggle_delivery(request, pk):
             status=STATUS_PENDING,
         ).update(status=STATUS_CANCELLED)
 
-        sync_workorder_delivery_from_sale(sale)  # will clear requires_delivery/delivery_date
+        sync_workorder_delivery_from_sale(sale)
         delivery_date = None
 
     # Turn ON
@@ -1709,7 +1724,7 @@ def sale_toggle_delivery(request, pk):
         scheduled_date = get_sticky_delivery_date(request)
 
         delivery = ensure_sale_delivery(sale, scheduled_date)
-        ensure_route_entry_for_customer(delivery)  # your existing helper
+        ensure_route_entry_for_customer(delivery)  # existing helper usage
 
         set_sticky_delivery_date(request, scheduled_date)
         sync_workorder_delivery_from_sale(sale, scheduled_date)
@@ -1723,23 +1738,63 @@ def sale_toggle_delivery(request, pk):
     )
     return HttpResponse(html)
 
+
+def _get_sorted_deliveries_for_date(selected_date):
+    """
+    Return deliveries for the given date, ordered by the customer's
+    DeliveryRouteEntry.sort_order, then customer name.
+    """
+    route_qs = DeliveryRouteEntry.objects.filter(
+        customer=OuterRef("customer")
+    ).values("sort_order")[:1]
+
+    qs = (
+        Delivery.objects
+        .select_related("customer", "sale", "workorder")
+        .filter(
+            scheduled_date=selected_date,
+            status=STATUS_PENDING,
+        )
+        .annotate(
+            route_sort_raw=Subquery(route_qs, output_field=IntegerField()),
+            route_sort=Coalesce(
+                "route_sort_raw",
+                Value(999999, output_field=IntegerField()),
+            ),
+        )
+        .order_by("route_sort", "customer__company_name", "pk")
+    )
+
+    return qs
+
+
 @login_required
 def delivery_report(request):
-    date_str = request.GET.get("date") or ""
+    deliveries_qs = (
+        Delivery.objects
+        .select_related("customer", "sale", "workorder")
+        .filter(delivered_at__isnull=True)
+        .order_by("scheduled_date", "sort_order", "id")
+    )
+
+    date_str = (request.GET.get("date") or "").strip()
+    selected_date = None
+
     if date_str:
         try:
-            selected_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            selected_date = date_cls.fromisoformat(date_str)
+            deliveries_qs = deliveries_qs.filter(scheduled_date=selected_date)
         except ValueError:
-            selected_date = timezone.localdate()
-    else:
-        selected_date = timezone.localdate()
-
-    deliveries_sorted = _get_sorted_deliveries_for_date(selected_date)
+            selected_date = None
 
     context = {
+        "deliveries": deliveries_qs,
         "selected_date": selected_date,
-        "deliveries": deliveries_sorted,
     }
+
+    if request.headers.get("HX-Request") == "true":
+        return render(request, "retail/partials/delivery_report_table.html", context)
+
     return render(request, "retail/delivery_report.html", context)
 
 
@@ -1755,7 +1810,6 @@ def _adjust_delivery_order(move: str, delivery_id: str) -> None:
 
     entry = ensure_route_entry_for_customer(customer)
 
-    # Load all entries in current order
     entries = list(
         DeliveryRouteEntry.objects
         .select_related("customer")
@@ -1765,7 +1819,6 @@ def _adjust_delivery_order(move: str, delivery_id: str) -> None:
     if not entries:
         return
 
-    # 🔧 Normalize sort_order to 10, 20, 30, ... based on current order
     changed_any = False
     for idx, e in enumerate(entries):
         desired = (idx + 1) * 10
@@ -1776,10 +1829,8 @@ def _adjust_delivery_order(move: str, delivery_id: str) -> None:
     if changed_any:
         DeliveryRouteEntry.objects.bulk_update(entries, ["sort_order"])
 
-    # Rebuild the list sorted by the normalized values
     entries.sort(key=lambda e: e.sort_order)
 
-    # Find current index of this customer's entry
     index = None
     for i, e in enumerate(entries):
         if e.pk == entry.pk:
@@ -1789,7 +1840,6 @@ def _adjust_delivery_order(move: str, delivery_id: str) -> None:
     if index is None:
         return
 
-    # Decide which neighbor to swap with
     if move == "up" and index > 0:
         other = entries[index - 1]
     elif move == "down" and index < len(entries) - 1:
@@ -1797,33 +1847,84 @@ def _adjust_delivery_order(move: str, delivery_id: str) -> None:
     else:
         return
 
-    # Swap the two sort_order values
     entry.sort_order, other.sort_order = other.sort_order, entry.sort_order
     entry.save(update_fields=["sort_order"])
     other.save(update_fields=["sort_order"])
 
+
 @require_POST
 @login_required
 def delivery_reorder(request):
-    move = request.POST.get("move") or ""
-    delivery_id = request.POST.get("delivery_id") or ""
-    date_str = request.POST.get("date") or ""
-    try:
-        selected_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-    except ValueError:
-        selected_date = timezone.localdate()
+    move = (request.POST.get("move") or "").strip()          # "up" or "down"
+    delivery_id = (request.POST.get("delivery_id") or "").strip()
+    date_str = (request.POST.get("date") or "").strip()
 
-    if move and delivery_id:
-        _adjust_delivery_order(move, delivery_id)
+    # The delivery we clicked on
+    delivery = get_object_or_404(Delivery, pk=delivery_id)
 
-    deliveries_sorted = _get_sorted_deliveries_for_date(selected_date)
+    # Decide which date's list we're reordering:
+    # - If the filter date was posted, use that.
+    # - Otherwise, default to the clicked delivery's scheduled_date.
+    selected_date = None
+    if date_str:
+        try:
+            selected_date = date_cls.fromisoformat(date_str)
+        except ValueError:
+            selected_date = None
 
-    html = render_to_string(
-        "retail/partials/delivery_report_table.html",
-        {"selected_date": selected_date, "deliveries": deliveries_sorted},
-        request=request,
+    if not selected_date:
+        selected_date = delivery.scheduled_date
+
+    # Get all outstanding deliveries for that date
+    group_qs = (
+        Delivery.objects
+        .select_related("customer", "sale", "workorder")
+        .filter(delivered_at__isnull=True, scheduled_date=selected_date)
+        .order_by("sort_order", "id")
     )
-    return HttpResponse(html)
+
+    deliveries = list(group_qs)
+
+    # Normalize sort_order within this date: 0..n-1
+    for i, d in enumerate(deliveries):
+        if d.sort_order != i:
+            Delivery.objects.filter(pk=d.pk).update(sort_order=i)
+            d.sort_order = i
+
+    # Find index of the clicked delivery in this date's list
+    idx = None
+    for i, d in enumerate(deliveries):
+        if d.id == delivery.id:
+            idx = i
+            break
+
+    # Swap with neighbor in memory
+    if idx is not None:
+        if move == "up" and idx > 0:
+            deliveries[idx - 1], deliveries[idx] = deliveries[idx], deliveries[idx - 1]
+        elif move == "down" and idx < len(deliveries) - 1:
+            deliveries[idx + 1], deliveries[idx] = deliveries[idx], deliveries[idx + 1]
+
+    # Persist new order: 0..n-1 again in this date group
+    for i, d in enumerate(deliveries):
+        if d.sort_order != i:
+            Delivery.objects.filter(pk=d.pk).update(sort_order=i)
+            d.sort_order = i
+
+    # Final queryset for rendering: same date, fresh order
+    deliveries_final = (
+        Delivery.objects
+        .select_related("customer", "sale", "workorder")
+        .filter(delivered_at__isnull=True, scheduled_date=selected_date)
+        .order_by("sort_order", "id")
+    )
+
+    context = {
+        "deliveries": deliveries_final,
+        "selected_date": selected_date,
+    }
+    return render(request, "retail/partials/delivery_report_table.html", context)
+
 
 @require_POST
 @login_required
@@ -1832,13 +1933,11 @@ def delivery_update_date(request):
     date_str = request.POST.get("date") or ""
     current_date_str = request.POST.get("current_date") or ""
 
-    # Parse the "report date" – what the page is currently on
     try:
         current_date = datetime.strptime(current_date_str, "%Y-%m-%d").date()
     except ValueError:
         current_date = timezone.localdate()
 
-    # Parse the *new* scheduled date for this delivery
     new_date = None
     if date_str:
         try:
@@ -1849,14 +1948,11 @@ def delivery_update_date(request):
     try:
         delivery = Delivery.objects.select_related("customer").get(pk=delivery_id)
     except Delivery.DoesNotExist:
-        # If somehow missing, just rebuild table for current_date
         deliveries_sorted = _get_sorted_deliveries_for_date(current_date)
     else:
         if new_date:
             delivery.scheduled_date = new_date
             delivery.save()
-        # After updating a single row, always show the table
-        # for the current report date, not the new date
         deliveries_sorted = _get_sorted_deliveries_for_date(current_date)
 
     html = render_to_string(
@@ -1865,6 +1961,7 @@ def delivery_update_date(request):
         request=request,
     )
     return HttpResponse(html)
+
 
 @require_POST
 @login_required
@@ -1878,17 +1975,13 @@ def sale_update_delivery_date(request, pk):
     except Exception:
         new_date = timezone.localdate()
 
-    # make sure the sale itself is flagged for delivery
     if not sale.requires_delivery:
         sale.requires_delivery = True
         sale.save()
 
     delivery = ensure_sale_delivery(sale, new_date)
 
-    # sticky default for future sales / workorders
     set_sticky_delivery_date(request, new_date)
-
-    # keep linked workorder in sync, if any
     sync_workorder_delivery_from_sale(sale, new_date)
 
     html = render_to_string(

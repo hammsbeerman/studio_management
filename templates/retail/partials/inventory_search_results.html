@@ -1,34 +1,51 @@
 {% if results %}
   <ul class="list-group list-group-flush">
     {% for item in results %}
-    <button
-      type="button"
-      class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-      hx-get="{% url 'retail:inventory_variation_modal' sale.id item.id %}"
-      hx-target="#dialog"
-      hx-swap="innerHTML"
-      hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-    >
-      <div class="text-start">
-        <strong>{{ item.name }}</strong><br>
-        {% if item.primary_vendor_part_number %}
-          <small class="text-muted">PN: {{ item.primary_vendor_part_number }}</small><br>
-        {% endif %}
-        <small class="text-muted">
-          On hand: {{ item.on_hand }}
-        </small>
+      <button
+        type="button"
+        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+        hx-get="{% url 'retail:inventory_variation_modal' sale.id item.id %}"
+        hx-target="#dialog"
+        hx-swap="innerHTML"
+        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+      >
+        <div class="text-start">
+          <strong>{{ item.name }}</strong><br>
+
+          {% if item.primary_vendor_part_number %}
+            <small class="text-muted">
+              PN: {{ item.primary_vendor_part_number }}
+            </small><br>
+          {% endif %}
+
+          {% if item.on_hand is not None %}
+            {% if item.on_hand < 0 %}
+              <small class="text-danger fw-bold">
+                On hand: {{ item.on_hand }} (NEGATIVE)
+              </small>
+            {% elif item.on_hand < 5 %}
+              <small class="text-warning">
+                On hand: {{ item.on_hand }} (Low)
+              </small>
+            {% else %}
+              <small class="text-muted">
+                On hand: {{ item.on_hand }}
+              </small>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <div class="text-end">
+          {# optional: show price preview later if you want #}
+          {# ${{ compute_retail_price(item)|floatformat:2 }} #}
+          <span class="badge bg-secondary">Add</span>
+        </div>
+      </button>
+    {% empty %}
+      <div class="list-group-item text-muted">
+        No items found.
       </div>
-      <div class="text-end">
-        {# optional: show price preview #}
-        {# ${{ compute_retail_price(item)|floatformat:2 }} #}
-        <span class="badge bg-secondary">Add</span>
-      </div>
-    </button>
-  {% empty %}
-    <div class="list-group-item text-muted">
-      No items found.
-    </div>
-  {% endfor %}
+    {% endfor %}
   </ul>
 {% else %}
   <p class="text-muted small mb-0">No items found.</p>

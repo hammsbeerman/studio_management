@@ -42,6 +42,25 @@
           </div>
         {% endif %}
       {% endwith %}
+
+      {# 🔹 On-hand info (expects inventory.on_hand to be attached in the view) #}
+      {% if line.inventory.on_hand is not None %}
+        <div class="mt-1">
+          {% if line.inventory.on_hand < 0 %}
+            <small class="text-danger fw-bold">
+              On hand: {{ line.inventory.on_hand }} (NEGATIVE)
+            </small>
+          {% elif line.inventory.on_hand < 5 %}
+            <small class="text-warning">
+              On hand: {{ line.inventory.on_hand }} (Low)
+            </small>
+          {% else %}
+            <small class="text-muted">
+              On hand: {{ line.inventory.on_hand }}
+            </small>
+          {% endif %}
+        </div>
+      {% endif %}
     {% else %}
       {{ line.description }}
     {% endif %}

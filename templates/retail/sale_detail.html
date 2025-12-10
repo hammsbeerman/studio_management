@@ -203,6 +203,7 @@
       </div>
     </div>
 
+    {# === FIXED TOTALS CARD === #}
     <div class="card mb-3">
       <div class="card-header d-flex justify-content-between align-items-center">
         <span>Totals</span>
@@ -214,14 +215,15 @@
           {% csrf_token %}
           {% if sale.tax_exempt %}
             <button type="submit" class="btn btn-sm btn-outline-secondary">
-              Charge tax on this sale
+              Tax: OFF
             </button>
           {% else %}
-            <button type="submit" class="btn btn-sm btn-outline-warning">
-              Don’t charge tax on this sale
+            <button type="submit" class="btn btn-sm btn-success">
+              Tax: ON
             </button>
           {% endif %}
         </form>
+      </div>
 
       <div
         class="card-body p-2"

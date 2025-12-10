@@ -328,42 +328,57 @@ display: flex;
               <th class="tr">Qty Packed</th>
             </tr>
           </thead>
-          <tbody>
-            {% for item in items %}
-              {% if item.child == 0 %}
-              <tr style="height: 45px;">
-                <td>{{ forloop.counter }}</td>
-                <td>{% if item.description%}{{item.description}}{% endif %}</td>
-                <td>{% if item.quantity%}{% if item.show_qty_on_wo %}{{item.quantity}}{% endif %}{% endif %}</td>
-                <td style="text-align: left;">_________</td>        
-              </tr>
-              {% if item.show_notes %}
-              <tr>
-                <td colspan='5'>{{item.notes}}</td>
-              </tr>
-              {% endif %}
-              <tr></tr>
-              {% endif %}
-            {% endfor %}
+            <tbody>
+              {# --- Krueger WO items --- #}
+              {% for item in items %}
+                {% if item.child == 0 %}
+                  <tr style="height: 45px;">
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                      {% if item.description %}
+                        {{ item.description }}
+                      {% endif %}
+                    </td>
+                    {# Qty Ordered: right aligned #}
+                    <td class="tr">
+                      {% if item.quantity and item.show_qty_on_wo %}
+                        {{ item.quantity }}
+                      {% endif %}
+                    </td>
+                    {# Qty Packed: blank line, left is fine #}
+                    <td style="text-align: left;">_________</td>
+                  </tr>
+
+                  {% if item.show_notes %}
+                    <tr>
+                      <td colspan="4">{{ item.notes }}</td>
+                    </tr>
+                  {% endif %}
+                  <tr></tr>
+                {% endif %}
+              {% endfor %}
+
+              {# --- POS items --- #}
               {% if pos_items %}
                 <tr>
-                  <td colspan="5" style="font-weight:bold; padding-top:10px;">
+                  <td colspan="4" style="font-weight:bold; padding-top:10px;">
                     Retail POS Items
                   </td>
                 </tr>
-                {% for pos in pos_items %}
-                <tr>
-                  <td>{{ pos.description }}</td>
-                  <td style="text-align:right;">{{ pos.quantity }}</td>
-                  <td style="text-align:right;">${{ pos.unit_price|floatformat:2 }}</td>
-                  <td style="text-align:right;">${{ pos.total_price|floatformat:2 }}</td>
-                  <td></td>
-                </tr>
-                {% endfor %}
-              {% endif %}
 
-			
-          </tbody>
+                {% with base=top_line_count %}
+                  {% for pos in pos_items %}
+                    <tr style="height: 45px;">
+                      <td>{{ forloop.counter|add:base }}</td>
+                      <td>{{ pos.description }}</td>
+                      {# Qty Ordered: also right aligned #}
+                      <td class="tr">{{ pos.quantity }}</td>
+                      <td style="text-align: left;">_________</td>
+                    </tr>
+                  {% endfor %}
+                {% endwith %}
+              {% endif %}
+            </tbody>
         </table>
       </div>
 

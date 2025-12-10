@@ -25,6 +25,7 @@ from .views import (
     negative_stock_report,
     stock_valuation_report,
     master_inventory_modal,
+    inventory_adjust,
 )
 
 app_name='inventory'
@@ -52,4 +53,5 @@ urlpatterns = [
     path('reports/negative-stock/', negative_stock_report, name='negative_stock_report'),
     path('reports/stock-valuation/', stock_valuation_report, name='stock_valuation_report'),
     path('master/<int:pk>/inventories/', master_inventory_modal, name='master_inventory_modal'),
+    path("adjust/", inventory_adjust, name="inventory_adjust"),
 ]

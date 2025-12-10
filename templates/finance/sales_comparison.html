@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h4>Sales Comparison</h4>
+<p class="text-muted small">
+  Compare customer sales between two date ranges, grouped by company.
+</p>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      {% csrf_token %}
+      <div class="col-md-3">
+        {{ form.period1_start|as_crispy_field }}
+      </div>
+      <div class="col-md-3">
+        {{ form.period1_end|as_crispy_field }}
+      </div>
+      <div class="col-md-3">
+        {{ form.period2_start|as_crispy_field }}
+      </div>
+      <div class="col-md-3">
+        {{ form.period2_end|as_crispy_field }}
+      </div>
+
+      <div class="col-md-4">
+        {{ form.customer|as_crispy_field }}
+      </div>
+
+      <div class="col-md-4">
+        {{ form.companies|as_crispy_field }}
+      </div>
+
+      <div class="col-md-4">
+        {{ form.combine_companies|as_crispy_field }}
+      </div>
+
+      <div class="col-md-12">
+        <button type="submit" class="btn btn-primary btn-sm mt-2">
+          Run Report
+        </button>
+        {% if company_groups %}
+          <button
+            type="submit"
+            name="export"
+            value="csv"
+            class="btn btn-outline-secondary btn-sm mt-2 ms-2"
+          >
+            Export CSV
+          </button>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if company_groups %}
+  <p>
+    <strong>Period 1:</strong> {{ period1_label }}<br>
+    <strong>Period 2:</strong> {{ period2_label }}
+  </p>
+
+  {% for group in company_groups %}
+    <h5 class="mt-4">{{ group.company }}</h5>
+    <table class="table table-sm table-striped align-middle">
+      <thead>
+        <tr>
+          {# CUSTOMER HEADER (sort=name) #}
+          <th>
+            <a
+              href="?{% if base_qs %}{{ base_qs }}&{% endif %}sort=name&dir={% if current_sort == 'name' and current_dir == 'asc' %}desc{% else %}asc{% endif %}"
+              class="text-decoration-none"
+            >
+              Customer
+              {% if current_sort == 'name' %}
+                {% if current_dir == 'asc' %}
+                  ▲
+                {% else %}
+                  ▼
+                {% endif %}
+              {% endif %}
+            </a>
+          </th>
+
+          {# PERIOD 1 HEADER (sort=p1, default desc) #}
+          <th class="text-end">
+            <a
+              href="?{% if base_qs %}{{ base_qs }}&{% endif %}sort=p1&dir={% if current_sort == 'p1' and current_dir == 'desc' %}asc{% else %}desc{% endif %}"
+              class="text-decoration-none"
+            >
+              Period 1
+              {% if current_sort == 'p1' %}
+                {% if current_dir == 'asc' %}
+                  ▲
+                {% else %}
+                  ▼
+                {% endif %}
+              {% endif %}
+            </a>
+          </th>
+
+          {# PERIOD 2 HEADER (sort=p2, default desc) #}
+          <th class="text-end">
+            <a
+              href="?{% if base_qs %}{{ base_qs }}&{% endif %}sort=p2&dir={% if current_sort == 'p2' and current_dir == 'desc' %}asc{% else %}desc{% endif %}"
+              class="text-decoration-none"
+            >
+              Period 2
+              {% if current_sort == 'p2' %}
+                {% if current_dir == 'asc' %}
+                  ▲
+                {% else %}
+                  ▼
+                {% endif %}
+              {% endif %}
+            </a>
+          </th>
+
+          {# CHANGE (not sorted directly – follows main sort) #}
+          <th class="text-end">
+            Change
+          </th>
+
+          {# PERCENT CHANGE HEADER (sort=pct, default desc) #}
+          <th class="text-end">
+            <a
+              href="?{% if base_qs %}{{ base_qs }}&{% endif %}sort=pct&dir={% if current_sort == 'pct' and current_dir == 'desc' %}asc{% else %}desc{% endif %}"
+              class="text-decoration-none"
+            >
+              % Change
+              {% if current_sort == 'pct' %}
+                {% if current_dir == 'asc' %}
+                  ▲
+                {% else %}
+                  ▼
+                {% endif %}
+              {% endif %}
+            </a>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in group.rows %}
+          <tr>
+            <td>{{ row.customer_name }}</td>
+            <td class="text-end">
+              ${{ row.p1_total|floatformat:2 }}
+            </td>
+            <td class="text-end">
+              ${{ row.p2_total|floatformat:2 }}
+            </td>
+            <td class="text-end">
+              {% if row.delta >= 0 %}
+                +${{ row.delta|floatformat:2 }}
+              {% else %}
+                -${{ row.delta|floatformat:2|slice:"1:" }}
+              {% endif %}
+            </td>
+            <td class="text-end">
+              {% if row.pct_change is not None %}
+                {{ row.pct_change|floatformat:1 }}%
+              {% else %}
+                &mdash;
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="fw-bold">
+          <td class="text-end">Totals:</td>
+          <td class="text-end">
+            ${{ group.total_p1|floatformat:2 }}
+          </td>
+          <td class="text-end">
+            ${{ group.total_p2|floatformat:2 }}
+          </td>
+          <td class="text-end">
+            {% if group.total_delta >= 0 %}
+              +${{ group.total_delta|floatformat:2 }}
+            {% else %}
+              -${{ group.total_delta|floatformat:2|slice:"1:" }}
+            {% endif %}
+          </td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  {% endfor %}
+{% else %}
+  <p class="text-muted">
+    No results yet. Adjust the dates and run the report.
+  </p>
+{% endif %}
+{% endblock %}

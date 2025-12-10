@@ -85,6 +85,33 @@ class Workorder(models.Model):
     def get_item_url(self):
         return reverse("workorders:workorder_item_list", kwargs={"id": self.workorder})
     
+    # def save(self, *args, **kwargs):
+    #     """
+    #     On transition to completed=True for LK Design / Office Supplies,
+    #     automatically mark invoice_sent + checked_and_verified.
+    #     """
+    #     just_completed = False
+
+    #     if self.pk:
+    #         # Existing workorder: compare previous 'completed' state
+    #         try:
+    #             prev = Workorder.objects.get(pk=self.pk)
+    #         except Workorder.DoesNotExist:
+    #             prev = None
+
+    #         if prev is not None and not prev.completed and self.completed:
+    #             just_completed = True
+    #     else:
+    #         # New workorder: if it's being created as completed (rare)
+    #         if self.completed:
+    #             just_completed = True
+
+    #     if just_completed and self.internal_company in ["LK Design", "Office Supplies"]:
+    #         self.invoice_sent = True
+    #         self.checked_and_verified = True
+
+    #     super().save(*args, **kwargs)
+    
     def __str__(self):
         return self.workorder
 
