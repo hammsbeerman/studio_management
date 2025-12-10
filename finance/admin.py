@@ -22,3 +22,4 @@ class WorkorderPaymentAdmin(admin.ModelAdmin):
     list_display = ('workorder', 'payment', 'payment_amount', 'date')
 
 admin.site.register(WorkorderPayment, WorkorderPaymentAdmin)
+
