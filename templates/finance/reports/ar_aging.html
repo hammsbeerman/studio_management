@@ -46,13 +46,13 @@ Total outstanding: {{ total_balance.open_balance__sum|floatformat:2 }}
     {% endfor %}
     <tr>
       <td><b>Totals:</b></td>
-      <td>{{ total_billed_today|floatformat:2 }}</td>
       <td>{{ total_current.current__sum|floatformat:2 }}</td>
       <td>{{ total_thirty.thirty__sum|floatformat:2 }}</td>
       <td>{{ total_sixty.sixty__sum|floatformat:2 }}</td>
       <td>{{ total_ninety.ninety__sum|floatformat:2 }}</td>
       <td>{{ total_onetwenty.onetwenty__sum|floatformat:2 }}</td>
       <td>{{ total_balance.open_balance__sum|floatformat:2 }}</td>
+      <td>{{ total_billed_today|floatformat:2 }}</td>
     </tr>
   </tbody>
 </table>
