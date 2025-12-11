@@ -26,6 +26,10 @@ from .views import (
     stock_valuation_report,
     master_inventory_modal,
     inventory_adjust,
+    inventory_cleanup_overview,
+    merge_inventory_items,
+    item_units_editor,
+    search_existing_items,
 )
 
 app_name='inventory'
@@ -54,4 +58,8 @@ urlpatterns = [
     path('reports/stock-valuation/', stock_valuation_report, name='stock_valuation_report'),
     path('master/<int:pk>/inventories/', master_inventory_modal, name='master_inventory_modal'),
     path("adjust/", inventory_adjust, name="inventory_adjust"),
+    path("cleanup/", inventory_cleanup_overview, name="inventory_cleanup_overview"),
+    path("merge/", merge_inventory_items, name="inventory_merge"),
+    path("item/<int:pk>/units/", item_units_editor, name="item_units_editor"),
+    path("search-existing/", search_existing_items, name="inventory_search_existing"),
 ]

@@ -57,6 +57,7 @@ from .views import (
     pickup_call_report,
     workorder_delivery_block_view,
     pos_for_workorder,
+    pickup_mark_called,
     #shipping_status,
     # removed,
 
@@ -123,6 +124,7 @@ urlpatterns = [
     path("workorders/<int:pk>/delivery/date/", workorder_update_delivery_date, name="update_delivery_date"),
     path("workorders/<int:pk>/pickup/toggle/", workorder_toggle_pickup, name="toggle_pickup"),
     path("workorders/<int:pk>/pickup/date/", workorder_update_pickup_date, name="update_pickup_date"),
+    path("workorders/<int:pk>/pickup/called/", pickup_mark_called, name="pickup_mark_called"),
     path("pickup-call-report/", pickup_call_report, name="pickup_call_report"),
     path("workorders/<int:pk>/delivery/block/", workorder_delivery_block_view, name="workorder_delivery_block"),
     path("pos/workorder/<int:workorder_id>/", pos_for_workorder, name="pos_for_workorder"),

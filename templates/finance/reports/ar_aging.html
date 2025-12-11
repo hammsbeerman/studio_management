@@ -33,14 +33,14 @@ Total outstanding: {{ total_balance.open_balance__sum|floatformat:2 }}
                 {{ x.hr_customer }}
               </div>
             </u>
-          </td>
-          <td>{{ x.billed_today|floatformat:2 }}</td>
+          </td> 
           <td>{{ x.current|floatformat:2 }}</td>
           <td>{{ x.thirty|floatformat:2 }}</td>
           <td>{{ x.sixty|floatformat:2 }}</td>
           <td>{{ x.ninety|floatformat:2 }}</td>
           <td>{{ x.onetwenty|floatformat:2 }}</td>
-          <td>{{ x.total|floatformat:2 }}</td>  
+          <td>{{ x.total|floatformat:2 }}</td>
+          <td>{{ x.billed_today|floatformat:2 }}</td>  
         </tr>
       {% endif %}
     {% endfor %}

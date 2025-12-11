@@ -1,27 +1,34 @@
 import json
-from django.shortcuts import render, redirect, get_object_or_404
+from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.utils import timezone
-from django.http import JsonResponse, HttpResponse
-from django.db.models import OuterRef, Subquery
 from django.core.paginator import Paginator
-from django.db.models import Q
-from decimal import Decimal
+from django.db import transaction
+from django.db.models import OuterRef, Subquery, Q, Count
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.utils import timezone
+from .services.ledger import get_on_hand
+from .forms import AddVendorForm, RetailCategoryForm, RetailCategoryMarkupForm, InventoryItemPricingForm, InventoryAdjustmentForm
+from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut, Inventory, VendorItemDetail, InventoryLedger, InventoryMerge
+from .utils import merged_set_for
 from controls.forms import AddItemtoListForm
 from controls.models import RetailInventoryCategory
-from .forms import AddVendorForm, RetailCategoryForm, RetailCategoryMarkupForm, InventoryItemPricingForm, InventoryAdjustmentForm
-from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut, Inventory
 from finance.models import InvoiceItem, AccountsPayable#, AllInvoiceItem
-from .utils import merged_set_for
-from inventory.services.pricing import compute_retail_price
 from inventory.services.ledger import (
     get_negative_stock_items,
     get_on_hand,
     get_stock_valuation_for_item,
     get_stock_alerts,
     get_on_hand,
+    record_inventory_movement
 )
+from inventory.services.pricing import compute_retail_price
+from onlinestore.models import StoreItemDetails
+from retail.models import RetailSaleLine
+
+
 #from inventory.models import Inventory
 
 # Create your views here.
@@ -842,3 +849,315 @@ def inventory_adjust(request):
         "form": form,
     }
     return render(request, "inventory/inventory_adjust.html", context)
+
+
+# --------- Inventory Cleanup ----------------------------------------------------------------
+@login_required
+@permission_required("inventory.view_inventorymaster", raise_exception=True)
+def inventory_cleanup_overview(request):
+    """
+    Dashboard showing likely duplicate InventoryMaster items,
+    grouped by (vendor + vendor PN) and (vendor + name).
+
+    Optional GET params:
+      - vendor: vendor id filter
+      - mode, cluster_vendor, cluster_key: used to show a focused cluster for merging.
+    """
+    vendor_filter = request.GET.get("vendor")
+    base_qs = (
+        InventoryMaster.objects
+        .filter(active=True)
+        .select_related("primary_vendor", "primary_base_unit")
+    )
+
+    if vendor_filter:
+        try:
+            vendor_id = int(vendor_filter)
+            base_qs = base_qs.filter(primary_vendor_id=vendor_id)
+        except (TypeError, ValueError):
+            vendor_filter = None  # ignore bad filter
+
+    # --- Group 1: duplicates by vendor + vendor PN ---
+    vendor_pn_dupes = (
+        base_qs.exclude(primary_vendor__isnull=True)
+        .exclude(primary_vendor_part_number__isnull=True)
+        .exclude(primary_vendor_part_number__exact="")
+        .values("primary_vendor_id", "primary_vendor__name", "primary_vendor_part_number")
+        .annotate(item_count=Count("id"))
+        .filter(item_count__gt=1)
+        .order_by("primary_vendor__name", "primary_vendor_part_number")
+    )
+
+    # --- Group 2: duplicates by vendor + name ---
+    name_dupes = (
+        base_qs.exclude(primary_vendor__isnull=True)
+        .values("primary_vendor_id", "primary_vendor__name", "name")
+        .annotate(item_count=Count("id"))
+        .filter(item_count__gt=1)
+        .order_by("primary_vendor__name", "name")
+    )
+
+    # --- Optional: focused cluster detail for merge UI ---
+    cluster_mode = request.GET.get("mode")          # "vendorpn" or "name"
+    cluster_vendor = request.GET.get("cluster_vendor")
+    cluster_key = request.GET.get("cluster_key")
+
+    cluster_items = None
+    if cluster_mode and cluster_vendor and cluster_key:
+        try:
+            v_id = int(cluster_vendor)
+        except (TypeError, ValueError):
+            v_id = None
+
+        if v_id:
+            if cluster_mode == "vendorpn":
+                cluster_qs = (
+                    base_qs.filter(
+                        primary_vendor_id=v_id,
+                        primary_vendor_part_number=cluster_key,
+                    )
+                    .select_related("primary_vendor", "primary_base_unit")
+                    .prefetch_related("inventoryqtyvariations_set", "ledger_entries", "retail_lines")
+                )
+            elif cluster_mode == "name":
+                cluster_qs = (
+                    base_qs.filter(
+                        primary_vendor_id=v_id,
+                        name=cluster_key,
+                    )
+                    .select_related("primary_vendor", "primary_base_unit")
+                    .prefetch_related("inventoryqtyvariations_set", "ledger_entries", "retail_lines")
+                )
+            else:
+                cluster_qs = InventoryMaster.objects.none()
+
+            # Build a list of dicts with precomputed stats
+            cluster_items = []
+            for item in cluster_qs:
+                cluster_items.append({
+                    "item": item,
+                    "onhand": get_on_hand(item),
+                    "ledger_count": item.ledger_entries.count(),
+                    "retail_count": item.retail_lines.count(),
+                })
+
+    vendors = Vendor.objects.order_by("name")
+
+    context = {
+        "vendors": vendors,
+        "vendor_filter": vendor_filter,
+        "vendor_pn_dupes": vendor_pn_dupes,
+        "name_dupes": name_dupes,
+        "cluster_mode": cluster_mode,
+        "cluster_vendor": cluster_vendor,
+        "cluster_key": cluster_key,
+        "cluster_items": cluster_items,  # list of {item, onhand, ledger_count, retail_count}
+    }
+    return render(request, "inventory/cleanup_overview.html", context)
+
+
+@login_required
+@permission_required("inventory.change_inventorymaster", raise_exception=True)
+@transaction.atomic
+def merge_inventory_items(request):
+    """
+    POST-only view that merges duplicate InventoryMaster items into a chosen 'keeper'.
+
+    Expected POST params:
+      - keeper_id: the canonical item
+      - merge_ids: list of ids to merge INTO keeper (duplicates)
+      - redirect_url: where to go after (usually cleanup_overview with cluster params)
+    """
+    if request.method != "POST":
+        return redirect("inventory:inventory_cleanup_overview")
+
+    keeper_id = request.POST.get("keeper_id")
+    merge_ids = request.POST.getlist("merge_ids")
+    redirect_url = request.POST.get("redirect_url") or reverse(
+        "inventory:inventory_cleanup_overview"
+    )
+
+    try:
+        keeper = InventoryMaster.objects.select_for_update().get(pk=keeper_id)
+    except (InventoryMaster.DoesNotExist, ValueError, TypeError):
+        messages.error(request, "Invalid keeper item.")
+        return redirect(redirect_url)
+
+    merge_qs = InventoryMaster.objects.select_for_update().filter(pk__in=merge_ids)
+    merge_items = [m for m in merge_qs if m.pk != keeper.pk]
+
+    if not merge_items:
+        messages.warning(request, "No items selected to merge.")
+        return redirect(redirect_url)
+
+    for src in merge_items:
+        # 1) Update all references from src → keeper
+
+        InventoryLedger.objects.filter(inventory_item=src).update(
+            inventory_item=keeper
+        )
+        Inventory.objects.filter(internal_part_number=src).update(
+            internal_part_number=keeper
+        )
+        VendorItemDetail.objects.filter(internal_part_number=src).update(
+            internal_part_number=keeper
+        )
+        RetailSaleLine.objects.filter(inventory=src).update(inventory=keeper)
+        InvoiceItem.objects.filter(internal_part_number=src).update(
+            internal_part_number=keeper
+        )
+        StoreItemDetails.objects.filter(item=src).update(item=keeper)
+
+        # 2) Move variations (clone if not already present)
+        existing_variations = set(
+            InventoryQtyVariations.objects.filter(inventory=keeper).values_list(
+                "variation_id", "variation_qty"
+            )
+        )
+
+        for v in InventoryQtyVariations.objects.filter(inventory=src):
+            key = (v.variation_id, v.variation_qty)
+            if key not in existing_variations:
+                v.pk = None
+                v.inventory = keeper
+                v.save()
+
+        # 3) Record merge history
+        InventoryMerge.objects.get_or_create(
+            from_item=src,
+            to_item=keeper,
+            defaults={
+                "reason": "Merged via inventory cleanup tool",
+                "created_by": request.user if request.user.is_authenticated else None,
+            },
+        )
+
+        # 4) Archive the duplicate instead of deleting (because InventoryMerge uses PROTECT)
+        src.active = False
+        src.save()
+
+    messages.success(
+        request,
+        f"Merged {len(merge_items)} duplicate item(s) into {keeper.name} (#{keeper.id}).",
+    )
+    return redirect(redirect_url)
+
+
+# --- Item units & variations editor -----------------------------------------
+
+
+@login_required
+@permission_required("inventory.change_inventorymaster", raise_exception=True)
+def item_units_editor(request, pk):
+    """
+    Simple editor for:
+      - InventoryMaster.primary_base_unit
+      - InventoryMaster.units_per_base_unit
+      - Existing InventoryQtyVariations.variation_qty
+    (No add/remove yet; just cleaning up existing data.)
+    """
+    item = get_object_or_404(
+        InventoryMaster.objects.select_related("primary_base_unit"), pk=pk
+    )
+    variations = InventoryQtyVariations.objects.select_related("variation").filter(
+        inventory=item
+    )
+
+    if request.method == "POST":
+        # Base unit + units_per_base_unit
+        base_unit_id = request.POST.get("primary_base_unit") or None
+        units_per = request.POST.get("units_per_base_unit") or None
+
+        if base_unit_id:
+            try:
+                item.primary_base_unit_id = int(base_unit_id)
+            except (TypeError, ValueError):
+                pass
+
+        if units_per:
+            try:
+                item.units_per_base_unit = Decimal(units_per)
+            except (TypeError, ValueError):
+                item.units_per_base_unit = None
+        else:
+            item.units_per_base_unit = None
+
+        item.save()
+
+        # Variation quantities
+        for v in variations:
+            key = f"variation_{v.id}_qty"
+            val = request.POST.get(key)
+            if val:
+                try:
+                    v.variation_qty = Decimal(val)
+                    v.save()
+                except (TypeError, ValueError):
+                    # ignore bad inputs for that row
+                    continue
+
+        messages.success(request, "Units and variations updated.")
+        return redirect(
+            reverse("inventory:item_units_editor", kwargs={"pk": item.pk})
+        )
+
+    context = {
+        "item": item,
+        "variations": variations,
+    }
+    return render(request, "inventory/item_units_editor.html", context)
+
+
+# --- Duplicate check for new items (HTMX-friendly partial) ------------------
+
+
+@login_required
+def search_existing_items(request):
+    """
+    Lightweight search endpoint to help avoid new duplicates.
+
+    GET params:
+      - vendor: vendor id
+      - term: free-text (name / description)
+      - pn: vendor part number
+    """
+    vendor_id = request.GET.get("vendor")
+    term = (request.GET.get("term") or "").strip()
+    pn = (request.GET.get("pn") or "").strip()
+
+    qs = InventoryMaster.objects.select_related("primary_vendor", "primary_base_unit")
+
+    if vendor_id:
+        try:
+            qs = qs.filter(primary_vendor_id=int(vendor_id))
+        except (TypeError, ValueError):
+            pass
+
+    q_filter = Q()
+
+    if pn:
+        q_filter |= Q(primary_vendor_part_number__iexact=pn)
+        q_filter |= Q(primary_vendor_part_number__icontains=pn)
+
+    if term:
+        q_filter |= Q(name__icontains=term) | Q(description__icontains=term)
+
+    if not q_filter:
+        items = []
+    else:
+        items = (
+            qs.filter(q_filter)
+            .order_by("primary_vendor__name", "name")
+            .distinct()[:10]
+        )
+
+    context = {
+        "items": items,
+        "term": term,
+        "pn": pn,
+    }
+    return render(
+        request,
+        "inventory/partials/search_existing_items.html",
+        context,
+    )

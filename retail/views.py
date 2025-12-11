@@ -1929,38 +1929,152 @@ def delivery_reorder(request):
 @require_POST
 @login_required
 def delivery_update_date(request):
-    delivery_id = request.POST.get("delivery_id") or ""
-    date_str = request.POST.get("date") or ""
-    current_date_str = request.POST.get("current_date") or ""
+    """
+    Update Delivery.scheduled_date from the delivery report and keep the
+    related Workorder.delivery_date in sync.
 
-    try:
-        current_date = datetime.strptime(current_date_str, "%Y-%m-%d").date()
-    except ValueError:
-        current_date = timezone.localdate()
+    POST:
+      - delivery_id: Delivery.pk
+      - date: new scheduled date (YYYY-MM-DD) from the row input
+      - current_date: the report's active filter date (YYYY-MM-DD or empty)
+    """
+    from retail.models import Delivery  # should already exist, but safe
+    # Workorder is reached via delivery.workorder; no direct import needed
 
+    delivery_id = (request.POST.get("delivery_id") or "").strip()
+    date_str = (request.POST.get("date") or "").strip()
+    current_date_str = (request.POST.get("current_date") or "").strip()
+
+    # 1) Parse the report's active filter date (can be blank)
+    selected_date = None
+    if current_date_str:
+        try:
+            selected_date = date_cls.fromisoformat(current_date_str)
+        except ValueError:
+            selected_date = None
+
+    # 2) Parse the new delivery date from the row input
     new_date = None
     if date_str:
         try:
-            new_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            new_date = date_cls.fromisoformat(date_str)
         except ValueError:
             new_date = None
 
+    # 3) Load and update the Delivery + related Workorder
     try:
-        delivery = Delivery.objects.select_related("customer").get(pk=delivery_id)
+        delivery = (
+            Delivery.objects
+            .select_related("workorder")
+            .get(pk=delivery_id)
+        )
     except Delivery.DoesNotExist:
-        deliveries_sorted = _get_sorted_deliveries_for_date(current_date)
+        # If something weird happened, just rebuild using the filter
+        deliveries_qs = (
+            Delivery.objects
+            .select_related("customer", "sale", "workorder")
+            .filter(delivered_at__isnull=True)
+        )
+        if selected_date:
+            deliveries_qs = deliveries_qs.filter(scheduled_date=selected_date)
+        deliveries_qs = deliveries_qs.order_by("scheduled_date", "sort_order", "id")
     else:
         if new_date:
+            # Persist Delivery.scheduled_date
             delivery.scheduled_date = new_date
-            delivery.save()
-        deliveries_sorted = _get_sorted_deliveries_for_date(current_date)
+            delivery.save(update_fields=["scheduled_date"])
+
+            # Persist Workorder.delivery_date if linked
+            wo = delivery.workorder
+            if wo is not None:
+                wo.delivery_date = new_date
+                # keep it clearly a delivery job
+                if hasattr(wo, "requires_delivery"):
+                    wo.requires_delivery = True
+                    wo.delivery_pickup = "Delivery"
+                    wo.save(
+                        update_fields=[
+                            "delivery_date",
+                            "requires_delivery",
+                            "delivery_pickup",
+                        ]
+                    )
+                else:
+                    wo.save(update_fields=["delivery_date"])
+
+        # Now rebuild queryset exactly like delivery_report
+        deliveries_qs = (
+            Delivery.objects
+            .select_related("customer", "sale", "workorder")
+            .filter(delivered_at__isnull=True)
+        )
+        if selected_date:
+            deliveries_qs = deliveries_qs.filter(scheduled_date=selected_date)
+        deliveries_qs = deliveries_qs.order_by("scheduled_date", "sort_order", "id")
+
+    context = {
+        "deliveries": deliveries_qs,
+        "selected_date": selected_date,
+    }
 
     html = render_to_string(
         "retail/partials/delivery_report_table.html",
-        {"selected_date": current_date, "deliveries": deliveries_sorted},
+        context,
         request=request,
     )
     return HttpResponse(html)
+
+@require_POST
+@login_required
+def delivery_mark_delivered(request):
+    delivery_id = request.POST.get("delivery_id")
+    date_str = request.POST.get("date") or ""
+
+    # Parse page’s active filter date (may be empty)
+    selected_date = None
+    if date_str:
+        try:
+            selected_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except ValueError:
+            selected_date = None
+
+    delivery = get_object_or_404(
+        Delivery.objects.select_related("workorder"),
+        pk=delivery_id,
+    )
+
+    # 1) Mark delivery completed
+    delivery.status = Delivery.STATUS_DELIVERED
+    delivery.delivered_at = timezone.now()
+    delivery.save(update_fields=["status", "delivered_at"])
+
+    # 2) Update Workorder flags — AND PREVENT OTHER SYNC FROM OVERRIDING IT
+    wo = delivery.workorder
+    if wo:
+        # If the user has not set a date, use scheduled_date or today
+        new_delivery_date = delivery.scheduled_date or timezone.localdate()
+
+        wo.delivered = True
+        wo.delivery_date = new_delivery_date
+        wo.requires_delivery = True  # Keep it consistent
+        wo.save(update_fields=["delivered", "delivery_date", "requires_delivery"])
+
+    # 3) Rebuild the list using SAME filter logic as delivery_report
+    deliveries_qs = (
+        Delivery.objects
+        .select_related("customer", "sale", "workorder")
+        .filter(delivered_at__isnull=True)
+        .order_by("scheduled_date", "sort_order", "id")
+    )
+
+    if selected_date:
+        deliveries_qs = deliveries_qs.filter(scheduled_date=selected_date)
+
+    return render(
+        request,
+        "retail/partials/delivery_report_table.html",
+        {"deliveries": deliveries_qs, "selected_date": selected_date},
+    )
 
 
 @require_POST

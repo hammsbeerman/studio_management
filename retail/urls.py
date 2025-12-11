@@ -64,6 +64,7 @@ from .views import (
     delivery_reorder,
     delivery_update_date,
     sale_update_delivery_date,
+    delivery_mark_delivered,
 
 
 )
@@ -155,4 +156,5 @@ urlpatterns = [
     path("delivery-report/", delivery_report, name="delivery_report"),
     path("delivery-report/reorder/", delivery_reorder, name="delivery_reorder"),
     path("delivery-report/update-date/", delivery_update_date, name="delivery_update_date"),
+    path("delivery-report/mark-delivered/", delivery_mark_delivered, name="delivery_mark_delivered"),
 ]

@@ -9,14 +9,15 @@
   class="mb-3"
   hx-get="{% url 'retail:delivery_report' %}"
   hx-target="#delivery-report-table"
-  hx-swap="outerHTML"
-  hx-trigger="change from:input[name='date']"
+  hx-swap="innerHTML"
+  hx-trigger="change from:#delivery-report-date"
 >
   <label class="form-label small mb-1">Filter by date</label>
   <div class="input-group input-group-sm" style="max-width: 260px;">
     <input
       type="date"
       name="date"
+      id="delivery-report-date"
       class="form-control"
       value="{{ selected_date|date:'Y-m-d' }}"
     >
@@ -26,13 +27,15 @@
   </div>
 </form>
 
-
+<div id="delivery-report-table">
+  {# HTMX will replace this div's contents when filter/date changes #}
   {% include "retail/partials/delivery_report_table.html" %}
+</div>
 
-  <div class="modal fade" id="modal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div id="dialog">
-      <!-- your modal-content (the snippet you pasted) gets swapped in here -->
+      <!-- Customer edit modal content gets swapped in here via HTMX -->
     </div>
   </div>
 </div>
@@ -42,11 +45,11 @@
 {% block scripts %}
 
 <script>
-  document.body.addEventListener("CustomerAdded", function (event) {
+  // Close the customer edit modal when the CustomerAdded trigger fires
+  document.body.addEventListener("CustomerAdded", function () {
     const modalEl = document.getElementById("modal");
     if (!modalEl) return;
 
-    // Get existing Bootstrap instance or bail
     const modal = bootstrap.Modal.getInstance(modalEl);
     if (modal) {
       modal.hide();
@@ -54,4 +57,4 @@
   });
 </script>
 
-{% endblock scripts%}
+{% endblock scripts %}

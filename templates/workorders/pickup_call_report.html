@@ -8,63 +8,148 @@
   </small>
 </div>
 
-{% if workorders %}
-  <table class="table table-sm table-striped align-middle">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Customer</th>
-        <th>Phone</th>
-        <th>Workorder</th>
-        <th>Company</th>
-        <th>Job Description</th>
-        <th>Due Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for wo in workorders %}
+{% if workorders_top or workorders_lk %}
+
+  {% if workorders_top %}
+    <h5>Krueger Printing / Office Supplies</h5>
+    <table class="table table-sm table-striped align-middle">
+      <thead>
         <tr>
-          <td>{{ forloop.counter }}</td>
-          <td><a
-              href="#"
-              hx-get="{% url 'customers:edit_customer' %}?customer={{ wo.customer.id }}"
-              hx-target="#dialog"
-              hx-swap="innerHTML"
-              data-bs-toggle="modal"
-              data-bs-target="#modal"
-            >
-              {{ wo.customer.company_name }}
-            </a>
-          </td>
-          <td>
-            {% if wo.contact and wo.contact.phone1 %}
-              {{ wo.contact.phone1 }}
-            {% elif wo.customer.phone1 %}
-              {{ wo.customer.phone1 }}
-            {% elif wo.customer.phone2 %}
-              {{ wo.customer.phone2 }}
-            {% else %}
-              <span class="text-muted">N/A</span>
-            {% endif %}
-          </td>
-          <td>
-            <a href="{{ wo.get_absolute_url }}">
-              WO #{{ wo.workorder }}
-            </a>
-          </td>
-          <td>{{ wo.internal_company }}</td>
-          <td>{{ wo.job_description|truncatechars:60 }}</td>
-          <td>
-            {% if wo.due_date %}
-              {{ wo.due_date|date:"Y-m-d" }}
-            {% else %}
-              <span class="text-muted">N/A</span>
-            {% endif %}
-          </td>
+          <th>#</th>
+          <th>Customer</th>
+          <th>Phone</th>
+          <th>Workorder</th>
+          <th>Company</th>
+          <th>Job Description</th>
+          <th>Due Date</th>
+          <th>Called</th>
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for wo in workorders_top %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              <a
+                href="#"
+                hx-get="{% url 'customers:edit_customer' %}?customer={{ wo.customer.id }}"
+                hx-target="#dialog"
+                hx-swap="innerHTML"
+                data-bs-toggle="modal"
+                data-bs-target="#modal"
+              >
+                {{ wo.customer.company_name }}
+              </a>
+            </td>
+            <td>
+              {% if wo.contact and wo.contact.phone1 %}
+                {{ wo.contact.phone1 }}
+              {% elif wo.customer.phone1 %}
+                {{ wo.customer.phone1 }}
+              {% elif wo.customer.phone2 %}
+                {{ wo.customer.phone2 }}
+              {% else %}
+                <span class="text-muted">N/A</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ wo.get_absolute_url }}">
+                WO #{{ wo.workorder }}
+              </a>
+            </td>
+            <td>{{ wo.internal_company }}</td>
+            <td>{{ wo.job_description|truncatechars:60 }}</td>
+            <td>
+              {% if wo.due_date %}
+                {{ wo.due_date|date:"Y-m-d" }}
+              {% else %}
+                <span class="text-muted">N/A</span>
+              {% endif %}
+            </td>
+            <td>
+              <form method="post" action="{% url 'workorders:pickup_mark_called' wo.id %}" class="mb-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-success">
+                  Called
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if workorders_lk %}
+    <h5 class="mt-4">LK Design</h5>
+    <table class="table table-sm table-striped align-middle">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Customer</th>
+          <th>Phone</th>
+          <th>Workorder</th>
+          <th>Company</th>
+          <th>Job Description</th>
+          <th>Due Date</th>
+          <th>Called</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for wo in workorders_lk %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              <a
+                href="#"
+                hx-get="{% url 'customers:edit_customer' %}?customer={{ wo.customer.id }}"
+                hx-target="#dialog"
+                hx-swap="innerHTML"
+                data-bs-toggle="modal"
+                data-bs-target="#modal"
+              >
+                {{ wo.customer.company_name }}
+              </a>
+            </td>
+            <td>
+              {% if wo.contact and wo.contact.phone1 %}
+                {{ wo.contact.phone1 }}
+              {% elif wo.customer.phone1 %}
+                {{ wo.customer.phone1 }}
+              {% elif wo.customer.phone2 %}
+                {{ wo.customer.phone2 }}
+              {% else %}
+                <span class="text-muted">N/A</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ wo.get_absolute_url }}">
+                WO #{{ wo.workorder }}
+              </a>
+            </td>
+            <td>{{ wo.internal_company }}</td>
+            <td>{{ wo.job_description|truncatechars:60 }}</td>
+            <td>
+              {% if wo.due_date %}
+                {{ wo.due_date|date:"Y-m-d" }}
+              {% else %}
+                <span class="text-muted">N/A</span>
+              {% endif %}
+            </td>
+            <td>
+              <form method="post" action="{% url 'workorders:pickup_mark_called' wo.id %}" class="mb-0">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-success">
+                  Called
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
 {% else %}
   <p class="text-muted">No workorders are waiting for pickup calls.</p>
 {% endif %}

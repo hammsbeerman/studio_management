@@ -2387,14 +2387,60 @@ def shiptype(request, id):
     }
     return render(request, "workorders/partials/shiptype.html", context)
 
+@require_POST
+@login_required
 def delivered(request, id):
+    """
+    Toggle workorder.delivered from the Delivered checkbox on the workorder.
+
+    - When set to True:
+        * workorder.delivered = True
+        * any PENDING deliveries for this workorder are marked DELIVERED
+          and given delivered_at=now
+
+    - When set to False:
+        * workorder.delivered = False
+        * any deliveries for this workorder are reset back to PENDING
+          (delivered_at cleared) so they show back up in the delivery report
+        * if no Delivery exists yet, one is created based on
+          workorder.delivery_date (or today)
+    """
     workorder = get_object_or_404(Workorder, id=id)
 
-    if request.method == "POST":
-        value = request.POST.get("delivered")
-        # Checkbox returns "on" if checked
-        workorder.delivered = True if value == "on" else False
-        workorder.save()
+    value = request.POST.get("delivered")
+    delivered_flag = True if value == "on" else False
+
+    workorder.delivered = delivered_flag
+
+    # Import here to avoid circulars at module import time
+    from retail.models import Delivery
+    from retail.delivery_utils import ensure_workorder_delivery
+
+    if delivered_flag:
+        # Mark all pending deliveries for this WO as delivered
+        Delivery.objects.filter(
+            workorder=workorder,
+            status=Delivery.STATUS_PENDING,
+        ).update(
+            status=Delivery.STATUS_DELIVERED,
+            delivered_at=timezone.now(),
+        )
+        workorder.save(update_fields=["delivered"])
+    else:
+        # Un-deliver: WO should appear back on the report
+        # 1) Reset deliveries back to pending + clear delivered_at
+        qs = Delivery.objects.filter(workorder=workorder)
+        if qs.exists():
+            qs.update(
+                status=Delivery.STATUS_PENDING,
+                delivered_at=None,
+            )
+        else:
+            # If no delivery exists yet, create one using delivery_date or today
+            scheduled = workorder.delivery_date or timezone.localdate()
+            ensure_workorder_delivery(workorder, scheduled)
+
+        workorder.save(update_fields=["delivered"])
 
     context = {"workorder": workorder}
     return render(request, "workorders/partials/delivered.html", context)
@@ -2643,15 +2689,33 @@ def pickup_call_report(request):
             date_called__isnull=True,
             void=0,
             quote="0",
+            # completed=1,  # keep or drop based on your latest business rule
         )
         .select_related("customer")
         .order_by("customer__company_name", "id")
     )
 
+    # LK Design at the bottom, Krueger/Office Supplies at the top.
+    lk_design_qs = qs.filter(internal_company="LK Design")
+    other_qs = qs.exclude(internal_company="LK Design")
+
     context = {
-        "workorders": qs,
+        "workorders_top": other_qs,
+        "workorders_lk": lk_design_qs,
     }
     return render(request, "workorders/pickup_call_report.html", context)
+
+@require_POST
+@login_required
+def pickup_mark_called(request, pk):
+    """
+    Mark a workorder as called today and bounce back to the pickup call report.
+    """
+    wo = get_object_or_404(Workorder, pk=pk)
+    wo.date_called = timezone.localdate()
+    wo.save(update_fields=["date_called"])
+    messages.success(request, f"Marked WO {wo.workorder} as called.")
+    return redirect("workorders:pickup_call_report")
 
 @login_required
 def workorder_delivery_block_view(request, pk):
