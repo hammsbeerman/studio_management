@@ -232,3 +232,6 @@ z_notes/
 todo.txt
 test.py
 data_110525.json
+templates/inventory/cleanup_overview.html
+templates/inventory/item_units_editor.html
+templates/inventory/partials/search_existing_items.html

@@ -129,6 +129,22 @@
             </li>
           {% endif %}
 
+          {% comment %}
+          Uncomment this section when ready to do inventory migration. Also, delete file names from .gitignore file
+          {# Inventory #}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+              Inventory
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+              {% if request.user.is_staff %}
+                <li><a class="dropdown-item" href="{% url 'inventory:inventory_cleanup_overview' %}">Inventory Cleanup Overview</a></li>
+              {% endif %}
+            </ul>
+          </li>
+          {% endcomment %}
+
           {# Admin / System tools (staff only) #}
           {% if request.user.is_staff %}
             <li class="nav-item dropdown">
