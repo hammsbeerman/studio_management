@@ -101,19 +101,18 @@
   <p></p>
 
   <div id="invoices" class="mb-3">
-    {% if vendor.supplier %}
-      <button
-        hx-trigger="click"
-        hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id %}"
-        hx-target="#remainder"
-        class="btn btn-danger"
-        {% if invoice.posted %}
-        onclick="return confirm('This invoice is marked as POSTED. Adding new items may affect accounting history. Continue?');"
-        {% endif %}
-      >
-        Add Invoice Item
-      </button>
-    {% endif %}
+        <button
+          hx-trigger="click"
+          hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id %}"
+          hx-target="#remainder"
+          class="btn btn-danger"
+          {% if invoice.posted %}
+          onclick="return confirm('This invoice is marked as POSTED. Adding new items may affect accounting history. Continue?');"
+          {% endif %}
+        >
+          Add Inventory Item
+        </button>
+
 
     {% if vendor.online_store_vendor %}
       <button
