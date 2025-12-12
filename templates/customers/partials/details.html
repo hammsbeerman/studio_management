@@ -125,7 +125,7 @@
                 <a href="{{ x.get_absolute_url }}">{{ x.workorder }} — {{ x.description }}</a>
               </td>
               <td class="text-end" style="width:40px;">
-                {% if x.workorder_status %}
+                {% if x.workorder_status and x.workorder_status.icon %}
                   <img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">
                 {% endif %}
               </td>
@@ -207,7 +207,7 @@
             <a href="{{ x.get_absolute_url }}">{{ x.workorder }} — {{ x.description }}</a>
           </td>
           <td class="text-end" style="width:40px;">
-            {% if x.workorder_status %}
+            {% if x.workorder_status and x.workorder_status.icon %}
               <img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">
             {% endif %}
           </td>

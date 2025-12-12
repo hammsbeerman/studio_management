@@ -792,7 +792,11 @@ def expanded_detail(request, id=None):
         "payments": payments,
     }
 
-    return render(request, "customers/partials/details.html", context)
+    # ✅ This is the key:
+    if request.htmx:
+        return render(request, "customers/partials/details.html", context)
+
+    return render(request, "customers/search_detail.html", context)
         
 @login_required
 def edit_shipto(request):
