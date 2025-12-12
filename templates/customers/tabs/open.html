@@ -1,0 +1,12 @@
+<table class="table table-sm">
+  {% for x in page %}
+    <tr>
+      <td><a href="{{ x.get_absolute_url }}">{{ x.workorder }} — {{ x.description }}</a></td>
+      <td class="text-end">{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
+    </tr>
+  {% empty %}
+    <tr><td class="text-muted">No active workorders.</td></tr>
+  {% endfor %}
+</table>
+
+{% include "customers/tabs/pager.html" with page_obj=page url_name="customers:customer_tab_open" customer_id=customer.id target="#pane-open" %}

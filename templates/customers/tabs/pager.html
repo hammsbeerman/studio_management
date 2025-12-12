@@ -1,0 +1,17 @@
+<nav class="d-flex gap-2">
+  {% if page_obj.has_previous %}
+    <a class="btn btn-sm btn-outline-secondary"
+       hx-get="{% url url_name customer_id %}?page={{ page_obj.previous_page_number }}"
+       hx-target="{{ target }}" hx-swap="innerHTML">Prev</a>
+  {% endif %}
+
+  <span class="align-self-center text-muted">
+    Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+  </span>
+
+  {% if page_obj.has_next %}
+    <a class="btn btn-sm btn-outline-secondary"
+       hx-get="{% url url_name customer_id %}?page={{ page_obj.next_page_number }}"
+       hx-target="{{ target }}" hx-swap="innerHTML">Next</a>
+  {% endif %}
+</nav>

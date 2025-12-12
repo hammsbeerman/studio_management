@@ -1,20 +1,24 @@
 import os
-from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.db import transaction
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Count, Min, Sum, F, Q
-from django.utils import timezone
-from django.utils.text import slugify
-from django.http import HttpResponse
 import datetime
 from datetime import datetime, timedelta
+from decimal import Decimal
+from django.core.paginator import Paginator
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.db.models import Avg, Count, Min, Sum, F, Q
+from django.db.models.functions import Coalesce
+from django.http import HttpResponse
+from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.utils import timezone
+from django.utils.text import slugify
 from .models import Customer, Contact, ShipTo, MailingCustomer
 from .forms import CustomerForm, ContactForm, CustomerNoteForm, ShipToForm, MailingCustomerForm
 from controls.models import Numbering
-from workorders.models import Workorder
-from workorders.forms import WorkorderForm
 from finance.models import Payments
+from workorders.forms import WorkorderForm
+from workorders.models import Workorder
+
 
 @login_required
 def customer_info(request):
@@ -656,92 +660,138 @@ def dashboard(request):
 
 @login_required
 def expanded_detail(request, id=None):
-    # resolve customer id
-    customer_id = id or request.GET.get("customers")
-    search = 1 if id else 0
+    """
+    Customer dashboard details.
 
-    # keep this light if it’s just for a dropdown/list
+    - If called via HTMX (dropdown change), returns the partial
+      templates/customers/partials/details.html (swapped into #customers)
+    - If called as a normal page load with /customers/dashboard/details/<id>/,
+      also renders the same partial (works fine as a full page too).
+    """
+    customer_id = id or request.GET.get("customers")
     customers = Customer.objects.only("id", "company_name").order_by("company_name")
 
     if not customer_id:
-        # no customer selected yet
-        context = {"customers": customers}
-        return render(request, "customers/partials/details.html", context)
+        return render(request, "customers/partials/details.html", {"customers": customers})
 
     customer = get_object_or_404(Customer, id=customer_id)
 
-    # Base querysets for this customer
-    base = Workorder.objects.filter(customer_id=customer.id).exclude(workorder=1111)
+    # optional "primary" contact (safe)
+    contact = (
+        Contact.objects.filter(customer_id=customer.id)
+        .only("id")
+        .order_by("-id")
+        .first()
+    )
+
+    base = (
+        Workorder.objects
+        .filter(customer_id=customer.id)
+        .exclude(workorder=1111)
+        .exclude(void=1)
+        .select_related("workorder_status")
+    )
+
+    # keep fields tight but include what template touches
+    base_fields = (
+        "id",
+        "workorder",
+        "description",
+        "created",
+        "date_completed",
+        "workorder_total",
+        "total_balance",
+        "open_balance",
+        "billed",
+        "paid_in_full",
+        "aging",
+        "quote",
+        "void",
+        "completed",
+        "workorder_status",
+        "workorder_status__icon",
+    )
 
     history = (
-        base.exclude(workorder=customer_id)   # (odd, but preserving your logic)
+        base.exclude(workorder=customer_id)  # preserving your legacy logic
             .order_by("-workorder")
-            .only("id", "workorder", "created", "total_balance", "open_balance")[:5]
+            .only(*base_fields)[:5]
     )
 
     workorders = (
         base.exclude(completed=1, quote=1, void=1)
             .order_by("-workorder")
-            .only("id", "workorder", "created", "workorder_status", "total_balance", "open_balance")[:25]
+            .only(*base_fields)[:25]
     )
 
+    # cap these so big customers don't time out
     completed = (
-        base.exclude(completed=0).exclude(quote=1)
+        base.filter(completed=1)
+            .exclude(quote=1)
             .order_by("-workorder")
-            .only("id", "workorder", "date_completed", "total_balance", "open_balance")
+            .only(*base_fields)[:200]
     )
 
     quote = (
-        base.exclude(quote=0)
+        base.filter(quote=1)
             .order_by("-workorder")
-            .only("id", "workorder", "created", "total_balance", "open_balance")
+            .only(*base_fields)[:100]
     )
 
-    balance = base.exclude(quote=1).aggregate(balance=Sum("total_balance"))
+    # quick overall balance
+    balance = base.exclude(quote=1).aggregate(
+        balance=Coalesce(Sum("total_balance"), Decimal("0.00"))
+    )
 
-    # Aging buckets computed from date_billed (no per-row updates)
-    today = timezone.now().date()
+    # Aging buckets (DateField-friendly, no __date lookup)
+    today = timezone.localdate()
     d30 = today - timedelta(days=30)
     d60 = today - timedelta(days=60)
     d90 = today - timedelta(days=90)
     d120 = today - timedelta(days=120)
 
-    ar_base = base.filter(billed=1, paid_in_full=0).exclude(quote=1)
+    ar_base = base.filter(billed=1, paid_in_full=0).exclude(quote=1).exclude(void=1)
 
     buckets = ar_base.aggregate(
-        current=Sum("open_balance", filter=Q(date_billed__gte=d30)),
-        thirty=Sum("open_balance", filter=Q(date_billed__lt=d30, date_billed__gte=d60)),
-        sixty=Sum("open_balance", filter=Q(date_billed__lt=d60, date_billed__gte=d90)),
-        ninety=Sum("open_balance", filter=Q(date_billed__lt=d90, date_billed__gte=d120)),
-        onetwenty=Sum("open_balance", filter=Q(date_billed__lt=d120)),
+        current=Coalesce(Sum("open_balance", filter=Q(date_billed__gte=d30)), Decimal("0.00")),
+        thirty=Coalesce(Sum("open_balance", filter=Q(date_billed__lt=d30, date_billed__gte=d60)), Decimal("0.00")),
+        sixty=Coalesce(Sum("open_balance", filter=Q(date_billed__lt=d60, date_billed__gte=d90)), Decimal("0.00")),
+        ninety=Coalesce(Sum("open_balance", filter=Q(date_billed__lt=d90, date_billed__gte=d120)), Decimal("0.00")),
+        onetwenty=Coalesce(Sum("open_balance", filter=Q(date_billed__lt=d120)), Decimal("0.00")),
     )
 
     payments = (
-        Payments.objects.filter(customer_id=customer.id)
+        Payments.objects
+        .filter(customer_id=customer.id)
         .exclude(void=1)
+        .select_related("payment_type")
         .order_by("-date")
-        .only("id", "date", "amount", "memo")
+        .only("id", "date", "amount", "memo", "payment_type", "check_number", "giftcard_number")[:200]
     )
 
     context = {
+        "customers": customers,
+        "customer": customer,
+        "cust": customer.id,
+        "contact": contact,
+
+        "history": history,
         "workorders": workorders,
         "completed": completed,
         "quote": quote,
-        "cust": customer.id,
-        "customers": customers,
-        "customer": customer,
-        "history": history,
+
         "balance": balance,
+
+        # keep your legacy keys the finance partial expects
         "current": {"open_balance__sum": buckets["current"]},
         "thirty": {"open_balance__sum": buckets["thirty"]},
         "sixty": {"open_balance__sum": buckets["sixty"]},
         "ninety": {"open_balance__sum": buckets["ninety"]},
         "onetwenty": {"open_balance__sum": buckets["onetwenty"]},
+
         "payments": payments,
     }
 
-    if search:
-        return render(request, "customers/search_detail.html", context)
     return render(request, "customers/partials/details.html", context)
         
 @login_required
@@ -1025,6 +1075,52 @@ def customer_edit_modal(request, pk):
         "customers/modals/edit_customer.html",
         {"form": form, "customer": customer},
     )
+
+@login_required
+def customer_tab_open(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    qs = (Workorder.objects.filter(customer_id=customer.id)
+          .exclude(workorder=1111)
+          .exclude(completed=1, quote=1, void=1)
+          .select_related("workorder_status")
+          .order_by("-workorder"))
+
+    page = Paginator(qs, 25).get_page(request.GET.get("page") or 1)
+    return render(request, "customers/tabs/open.html", {"customer": customer, "page": page})
+
+@login_required
+def customer_tab_quotes(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    qs = (Workorder.objects.filter(customer_id=customer.id)
+          .exclude(workorder=1111)
+          .filter(quote=1)
+          .select_related("workorder_status")
+          .order_by("-workorder"))
+
+    page = Paginator(qs, 25).get_page(request.GET.get("page") or 1)
+    return render(request, "customers/tabs/quotes.html", {"customer": customer, "page": page})
+
+@login_required
+def customer_tab_completed(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    qs = (Workorder.objects.filter(customer_id=customer.id)
+          .exclude(workorder=1111)
+          .filter(completed=1)
+          .exclude(quote=1)
+          .order_by("-workorder"))
+
+    page = Paginator(qs, 50).get_page(request.GET.get("page") or 1)
+    return render(request, "customers/tabs/completed.html", {"customer": customer, "page": page})
+
+@login_required
+def customer_tab_payments(request, customer_id):
+    customer = get_object_or_404(Customer, pk=customer_id)
+    qs = (Payments.objects.filter(customer_id=customer.id)
+          .exclude(void=1)
+          .order_by("-date"))
+
+    page = Paginator(qs, 50).get_page(request.GET.get("page") or 1)
+    return render(request, "customers/tabs/payments.html", {"customer": customer, "page": page})
 
 
 

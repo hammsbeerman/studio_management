@@ -27,6 +27,10 @@ from .views import (
     add_mailing_customer,
     edit_mailing_customer,
     delete_mailing_customer,
+    customer_tab_open,
+    customer_tab_quotes,
+    customer_tab_completed,
+    customer_tab_payments,
 )
 
 app_name='customers'
@@ -59,6 +63,10 @@ urlpatterns = [
     path("add_mailing_customer/", add_mailing_customer, name='add_mailing_customer'),
     path("edit_mailing_customer/<int:mailing>/", edit_mailing_customer, name='edit_mailing_customer'),
     path("delete_mailing_customer/<int:mailing>/", delete_mailing_customer, name='delete_mailing_customer'),
+    path("customer/<int:customer_id>/tab/open/", customer_tab_open, name="customer_tab_open"),
+    path("customer/<int:customer_id>/tab/quotes/", customer_tab_quotes, name="customer_tab_quotes"),
+    path("customer/<int:customer_id>/tab/completed/", customer_tab_completed, name="customer_tab_completed"),
+    path("customer/<int:customer_id>/tab/payments/", customer_tab_payments, name="customer_tab_payments"),
 
     
     
