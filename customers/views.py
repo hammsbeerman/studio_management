@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.db import transaction
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg, Count, Min, Sum, F
+from django.db.models import Avg, Count, Min, Sum, F, Q
 from django.utils import timezone
 from django.utils.text import slugify
 from django.http import HttpResponse
@@ -656,61 +656,93 @@ def dashboard(request):
 
 @login_required
 def expanded_detail(request, id=None):
-    if not id:
-        id = request.GET.get('customers')
-        search = 0
-    else:
-        search = 1
-    customers = Customer.objects.all()
-    print(id)
-    if id:
-        aging = Workorder.objects.all().exclude(billed=0).exclude(paid_in_full=1)
-        today = timezone.now()
-        for x in aging:
-            if not x.date_billed:
-                x.date_billed = today
-            age = x.date_billed - today
-            age = abs((age).days)
-            print(type(age))
-            Workorder.objects.filter(pk=x.pk).update(aging = age)
-        
-        customer = Customer.objects.get(id=id)
-        cust = customer.id
-        history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).order_by("-workorder")[:5]
-        workorder = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")[:25]
-        completed = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
-        quote = Workorder.objects.filter(customer_id=customer).exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
-        balance = Workorder.objects.filter(customer_id=customer).exclude(quote=1).aggregate(Sum('total_balance'))
-        current = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
-        thirty = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lte = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
-        sixty = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
-        ninety = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
-        onetwenty = Workorder.objects.filter(customer_id=customer).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
-        #current = list(current.values())[0]
-        #current = round(current, 2)
-        payments = Payments.objects.filter(customer=id).exclude(void=1).order_by('-date')
+    # resolve customer id
+    customer_id = id or request.GET.get("customers")
+    search = 1 if id else 0
 
+    # keep this light if it’s just for a dropdown/list
+    customers = Customer.objects.only("id", "company_name").order_by("company_name")
 
-        context = {
-            'workorders': workorder,
-            'completed': completed,
-            'quote': quote,
-            'cust': cust,
-            'customers':customers,
-            'customer': customer,
-            'history': history,
-            'balance': balance,
-            'current':current,
-            'thirty':thirty,
-            'sixty':sixty,
-            'ninety':ninety,
-            'onetwenty':onetwenty,
-            'payments':payments,
-                            }
-        if search:
-            return render(request, "customers/search_detail.html", context)
-        else:
-            return render(request, "customers/partials/details.html", context)
+    if not customer_id:
+        # no customer selected yet
+        context = {"customers": customers}
+        return render(request, "customers/partials/details.html", context)
+
+    customer = get_object_or_404(Customer, id=customer_id)
+
+    # Base querysets for this customer
+    base = Workorder.objects.filter(customer_id=customer.id).exclude(workorder=1111)
+
+    history = (
+        base.exclude(workorder=customer_id)   # (odd, but preserving your logic)
+            .order_by("-workorder")
+            .only("id", "workorder", "created", "total_balance", "open_balance")[:5]
+    )
+
+    workorders = (
+        base.exclude(completed=1, quote=1, void=1)
+            .order_by("-workorder")
+            .only("id", "workorder", "created", "workorder_status", "total_balance", "open_balance")[:25]
+    )
+
+    completed = (
+        base.exclude(completed=0).exclude(quote=1)
+            .order_by("-workorder")
+            .only("id", "workorder", "date_completed", "total_balance", "open_balance")
+    )
+
+    quote = (
+        base.exclude(quote=0)
+            .order_by("-workorder")
+            .only("id", "workorder", "created", "total_balance", "open_balance")
+    )
+
+    balance = base.exclude(quote=1).aggregate(balance=Sum("total_balance"))
+
+    # Aging buckets computed from date_billed (no per-row updates)
+    today = timezone.now().date()
+    d30 = today - timedelta(days=30)
+    d60 = today - timedelta(days=60)
+    d90 = today - timedelta(days=90)
+    d120 = today - timedelta(days=120)
+
+    ar_base = base.filter(billed=1, paid_in_full=0).exclude(quote=1)
+
+    buckets = ar_base.aggregate(
+        current=Sum("open_balance", filter=Q(date_billed__gte=d30)),
+        thirty=Sum("open_balance", filter=Q(date_billed__lt=d30, date_billed__gte=d60)),
+        sixty=Sum("open_balance", filter=Q(date_billed__lt=d60, date_billed__gte=d90)),
+        ninety=Sum("open_balance", filter=Q(date_billed__lt=d90, date_billed__gte=d120)),
+        onetwenty=Sum("open_balance", filter=Q(date_billed__lt=d120)),
+    )
+
+    payments = (
+        Payments.objects.filter(customer_id=customer.id)
+        .exclude(void=1)
+        .order_by("-date")
+        .only("id", "date", "amount", "memo")
+    )
+
+    context = {
+        "workorders": workorders,
+        "completed": completed,
+        "quote": quote,
+        "cust": customer.id,
+        "customers": customers,
+        "customer": customer,
+        "history": history,
+        "balance": balance,
+        "current": {"open_balance__sum": buckets["current"]},
+        "thirty": {"open_balance__sum": buckets["thirty"]},
+        "sixty": {"open_balance__sum": buckets["sixty"]},
+        "ninety": {"open_balance__sum": buckets["ninety"]},
+        "onetwenty": {"open_balance__sum": buckets["onetwenty"]},
+        "payments": payments,
+    }
+
+    if search:
+        return render(request, "customers/search_detail.html", context)
+    return render(request, "customers/partials/details.html", context)
         
 @login_required
 def edit_shipto(request):

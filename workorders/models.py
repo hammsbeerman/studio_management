@@ -75,6 +75,18 @@ class Workorder(models.Model):
     requires_pickup = models.BooleanField(default=False)
     date_called = models.DateField(null=True, blank=True)
 
+    class Meta:
+        indexes = [
+            # Main customer detail lists
+            models.Index(fields=["customer", "void", "quote", "completed", "-workorder"], name="wo_cust_list_idx"),
+
+            # AR / aging buckets (date range scans)
+            models.Index(fields=["customer", "billed", "paid_in_full", "date_billed"], name="wo_ar_idx"),
+
+            # “open work” list
+            models.Index(fields=["customer", "completed", "quote", "void"], name="wo_open_idx"),
+        ]
+
 
     def get_absolute_url(self):
         return reverse("workorders:overview", kwargs={"id": self.workorder})

@@ -73,6 +73,15 @@ class Payments(models.Model):
     void = models.BooleanField('Void Payment', default=False, blank=False, null=False)
     workorder_applied = models.ManyToManyField(Workorder, through='WorkorderPayment')
 
+    class Meta:
+        indexes = [
+            # customer detail page: filter(customer=...), exclude(void=1), order_by('-date')
+            models.Index(fields=["customer", "void", "-date"], name="pay_cust_void_date_idx"),
+
+            # if you ever list payments for a specific workorder
+            models.Index(fields=["workorder", "void", "-date"], name="pay_wo_void_date_idx"),
+        ]
+
 
     def __str__(self):
         return self.customer.company_name + ' -- ' + self.payment_type.name
