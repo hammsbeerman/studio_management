@@ -1,12 +1,79 @@
-<table class="table table-sm">
-  {% for x in page %}
-    <tr>
-      <td><a href="{{ x.get_absolute_url }}">{{ x.workorder }} — {{ x.description }}</a></td>
-      <td class="text-end">{% if x.workorder_status %}<img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</td>
-    </tr>
-  {% empty %}
-    <tr><td class="text-muted">No active workorders.</td></tr>
-  {% endfor %}
-</table>
+{% load static %}
 
-{% include "customers/tabs/pager.html" with page_obj=page url_name="customers:customer_tab_open" customer_id=customer.id target="#pane-open" %}
+<div class="row g-3">
+
+  <div class="col-lg-4">
+    <div class="card">
+      <div class="card-header">Active (not completed)</div>
+      <div class="card-body p-2">
+        <table class="table table-sm mb-0">
+          {% for x in active %}
+            <tr>
+              <td>
+                <a href="{{ x.get_absolute_url }}">{{ x.workorder }} — {{ x.description }}</a>
+              </td>
+              <td class="text-end" style="width:36px;">
+                {% if x.workorder_status and x.workorder_status.icon and x.workorder_status.icon.name %}
+                  <img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td class="text-muted">No active workorders.</td></tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header">Open (completed, not paid)</div>
+      <div class="card-body p-2">
+        <table class="table table-sm mb-0">
+          {% for x in open_workorders %}
+            <tr>
+              <td>
+                <a href="{{ x.get_absolute_url }}">{{ x.workorder }} — {{ x.description }}</a>
+                {% if x.date_completed %}
+                  <div class="text-muted small">{{ x.date_completed|date:"M d, Y" }}</div>
+                {% endif %}
+              </td>
+              <td class="text-end" style="width:120px;">
+                {{ x.open_balance }}
+              </td>
+              <td class="text-end" style="width:36px;">
+                {% if x.workorder_status and x.workorder_status.icon and x.workorder_status.icon.name %}
+                  <img src="{{ x.workorder_status.icon.url }}" style="width:20px;height:20px;">
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td class="text-muted">No open balances.</td></tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-3">
+    <div class="card">
+      <div class="card-header">Recent History (last 10)</div>
+      <div class="card-body p-2">
+        <table class="table table-sm mb-0">
+          {% for x in recent %}
+            <tr>
+              <td>
+                <a href="{{ x.get_absolute_url }}">{{ x.workorder }} — {{ x.description }}</a>
+                <div class="text-muted small">{{ x.created|date:"M d, Y" }}</div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td class="text-muted">No history.</td></tr>
+          {% endfor %}
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

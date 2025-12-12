@@ -19,6 +19,25 @@ from finance.models import Payments
 from workorders.forms import WorkorderForm
 from workorders.models import Workorder
 
+def _customers_qs():
+    return Customer.objects.only("id", "company_name").order_by("company_name")
+
+
+def _wo_base(customer_id):
+    # Always exclude fake WO + voided
+    return (
+        Workorder.objects
+        .filter(customer_id=customer_id)
+        .exclude(workorder=1111)
+        .exclude(void=1)
+        .select_related("workorder_status")
+    )
+
+
+def _safe_icon_ok(ws):
+    # template checks handle this, but leaving note here
+    return True
+
 
 @login_required
 def customer_info(request):
@@ -660,143 +679,70 @@ def dashboard(request):
 
 @login_required
 def expanded_detail(request, id=None):
-    """
-    Customer dashboard details.
-
-    - If called via HTMX (dropdown change), returns the partial
-      templates/customers/partials/details.html (swapped into #customers)
-    - If called as a normal page load with /customers/dashboard/details/<id>/,
-      also renders the same partial (works fine as a full page too).
-    """
     customer_id = id or request.GET.get("customers")
-    customers = Customer.objects.only("id", "company_name").order_by("company_name")
+    customers = _customers_qs()
 
     if not customer_id:
         return render(request, "customers/partials/details.html", {"customers": customers})
 
     customer = get_object_or_404(Customer, id=customer_id)
 
-    # optional "primary" contact (safe)
+    base = _wo_base(customer.id)
+
+    # --- Overview tab needs these ---
+    # contact: best-effort "first active contact"
     contact = (
-        Contact.objects.filter(customer_id=customer.id)
-        .only("id")
+        Contact.objects
+        .filter(customer_id=customer.id)
         .order_by("-id")
         .first()
     )
 
-    base = (
-        Workorder.objects
-        .filter(customer_id=customer.id)
-        .exclude(workorder=1111)
-        .exclude(void=1)
-        .select_related("workorder_status")
-    )
-
-    # keep fields tight but include what template touches
-    base_fields = (
-        "id",
-        "workorder",
-        "description",
-        "created",
-        "date_completed",
-        "workorder_total",
-        "total_balance",
-        "open_balance",
-        "billed",
-        "paid_in_full",
-        "aging",
-        "quote",
-        "void",
-        "completed",
-        "workorder_status",
-        "workorder_status__icon",
-    )
-
+    # history card: last 10 non-quote (fast)
     history = (
-        base.exclude(workorder=customer_id)  # preserving your legacy logic
+        base.exclude(quote=1)
             .order_by("-workorder")
-            .only(*base_fields)[:5]
+            .only("id", "workorder", "created", "description", "workorder_status__icon")[:10]
     )
 
-    workorders = (
-        base.exclude(completed=1, quote=1, void=1)
-            .order_by("-workorder")
-            .only(*base_fields)[:25]
-    )
+    # finance card: totals + aging buckets as aggregates only (fast)
+    balance = base.exclude(quote=1).aggregate(balance=Sum("total_balance"))["balance"] or 0
 
-    # cap these so big customers don't time out
-    completed = (
-        base.filter(completed=1)
-            .exclude(quote=1)
-            .order_by("-workorder")
-            .only(*base_fields)[:200]
-    )
-
-    quote = (
-        base.filter(quote=1)
-            .order_by("-workorder")
-            .only(*base_fields)[:100]
-    )
-
-    # quick overall balance
-    balance = base.exclude(quote=1).aggregate(
-        balance=Coalesce(Sum("total_balance"), Decimal("0.00"))
-    )
-
-    # Aging buckets (DateField-friendly, no __date lookup)
     today = timezone.localdate()
     d30 = today - timedelta(days=30)
     d60 = today - timedelta(days=60)
     d90 = today - timedelta(days=90)
     d120 = today - timedelta(days=120)
 
-    ar_base = base.filter(billed=1, paid_in_full=0).exclude(quote=1).exclude(void=1)
+    ar_base = base.filter(billed=1, paid_in_full=0).exclude(quote=1)
 
     buckets = ar_base.aggregate(
-        current=Coalesce(Sum("open_balance", filter=Q(date_billed__gte=d30)), Decimal("0.00")),
-        thirty=Coalesce(Sum("open_balance", filter=Q(date_billed__lt=d30, date_billed__gte=d60)), Decimal("0.00")),
-        sixty=Coalesce(Sum("open_balance", filter=Q(date_billed__lt=d60, date_billed__gte=d90)), Decimal("0.00")),
-        ninety=Coalesce(Sum("open_balance", filter=Q(date_billed__lt=d90, date_billed__gte=d120)), Decimal("0.00")),
-        onetwenty=Coalesce(Sum("open_balance", filter=Q(date_billed__lt=d120)), Decimal("0.00")),
+        current=Sum("open_balance", filter=Q(date_billed__gte=d30)),
+        thirty=Sum("open_balance", filter=Q(date_billed__lt=d30, date_billed__gte=d60)),
+        sixty=Sum("open_balance", filter=Q(date_billed__lt=d60, date_billed__gte=d90)),
+        ninety=Sum("open_balance", filter=Q(date_billed__lt=d90, date_billed__gte=d120)),
+        onetwenty=Sum("open_balance", filter=Q(date_billed__lt=d120)),
     )
 
-    payments = (
-        Payments.objects
-        .filter(customer_id=customer.id)
-        .exclude(void=1)
-        .select_related("payment_type")
-        .order_by("-date")
-        .only("id", "date", "amount", "memo", "payment_type", "check_number", "giftcard_number")[:200]
-    )
-
-    context = {
+    ctx = {
         "customers": customers,
         "customer": customer,
-        "cust": customer.id,
         "contact": contact,
-
         "history": history,
-        "workorders": workorders,
-        "completed": completed,
-        "quote": quote,
-
-        "balance": balance,
-
-        # keep your legacy keys the finance partial expects
-        "current": {"open_balance__sum": buckets["current"]},
-        "thirty": {"open_balance__sum": buckets["thirty"]},
-        "sixty": {"open_balance__sum": buckets["sixty"]},
-        "ninety": {"open_balance__sum": buckets["ninety"]},
-        "onetwenty": {"open_balance__sum": buckets["onetwenty"]},
-
-        "payments": payments,
+        "balance": {"total_balance__sum": balance},
+        "current": {"open_balance__sum": buckets["current"] or 0},
+        "thirty": {"open_balance__sum": buckets["thirty"] or 0},
+        "sixty": {"open_balance__sum": buckets["sixty"] or 0},
+        "ninety": {"open_balance__sum": buckets["ninety"] or 0},
+        "onetwenty": {"open_balance__sum": buckets["onetwenty"] or 0},
     }
 
-    # ✅ This is the key:
+    # HTMX dropdown swap → partial only
     if request.htmx:
-        return render(request, "customers/partials/details.html", context)
+        return render(request, "customers/partials/details.html", ctx)
 
-    return render(request, "customers/search_detail.html", context)
+    # Direct/search entry → full page wrapper so base loads
+    return render(request, "customers/search_detail.html", ctx)
         
 @login_required
 def edit_shipto(request):
@@ -1082,49 +1028,111 @@ def customer_edit_modal(request, pk):
 
 @login_required
 def customer_tab_open(request, customer_id):
-    customer = get_object_or_404(Customer, pk=customer_id)
-    qs = (Workorder.objects.filter(customer_id=customer.id)
-          .exclude(workorder=1111)
-          .exclude(completed=1, quote=1, void=1)
-          .select_related("workorder_status")
-          .order_by("-workorder"))
+    """
+    OPEN TAB shows 3 blocks on the SAME tab:
+      - Active: anything NOT completed (and not quote)
+      - Open: completed AND not paid (and not quote)
+      - Recent history: last 10 workorders (not quote)
+    Always excludes voided.
+    """
+    base = _wo_base(customer_id).exclude(quote=1)
 
-    page = Paginator(qs, 25).get_page(request.GET.get("page") or 1)
-    return render(request, "customers/tabs/open.html", {"customer": customer, "page": page})
+    active = (
+        base.filter(completed=0)
+        .order_by("-workorder")
+        .only(
+            "id", "workorder", "description", "created", "completed",
+            "total_balance", "open_balance",
+            "workorder_status__icon",
+        )[:50]
+    )
+
+    open_wo = (
+        base.filter(completed=1, paid_in_full=0)
+        .order_by("-workorder")
+        .only(
+            "id", "workorder", "description", "date_completed", "completed",
+            "workorder_total", "total_balance", "open_balance",
+            "billed", "paid_in_full", "aging",
+            "workorder_status__icon",
+        )[:200]
+    )
+
+    recent = (
+        base.order_by("-workorder")
+        .only(
+            "id", "workorder", "description", "created", "completed",
+            "workorder_total", "total_balance", "open_balance",
+            "workorder_status__icon",
+        )[:10]
+    )
+
+    return render(
+        request,
+        "customers/tabs/open.html",
+        {"active": active, "open_workorders": open_wo, "recent": recent},
+    )
 
 @login_required
 def customer_tab_quotes(request, customer_id):
-    customer = get_object_or_404(Customer, pk=customer_id)
-    qs = (Workorder.objects.filter(customer_id=customer.id)
-          .exclude(workorder=1111)
-          .filter(quote=1)
-          .select_related("workorder_status")
-          .order_by("-workorder"))
+    """
+    Quotes = quote=1, excluding voided.
+    """
+    quotes = (
+        _wo_base(customer_id)
+        .filter(quote=1)
+        .order_by("-workorder")
+        .only(
+            "id", "workorder", "description", "created",
+            "total_balance", "open_balance",
+            "workorder_status__icon",
+        )[:500]
+    )
 
-    page = Paginator(qs, 25).get_page(request.GET.get("page") or 1)
-    return render(request, "customers/tabs/quotes.html", {"customer": customer, "page": page})
+    return render(
+        request,
+        "customers/tabs/quotes.html",
+        {"quotes": quotes},
+    )
 
 @login_required
 def customer_tab_completed(request, customer_id):
-    customer = get_object_or_404(Customer, pk=customer_id)
-    qs = (Workorder.objects.filter(customer_id=customer.id)
-          .exclude(workorder=1111)
-          .filter(completed=1)
-          .exclude(quote=1)
-          .order_by("-workorder"))
+    """
+    Completed = completed workorders (paid OR unpaid), excluding quotes + voided.
+    """
+    base = _wo_base(customer_id).exclude(quote=1)
 
-    page = Paginator(qs, 50).get_page(request.GET.get("page") or 1)
-    return render(request, "customers/tabs/completed.html", {"customer": customer, "page": page})
+    completed = (
+        base.filter(completed=1)
+        .order_by("-workorder")
+        .only(
+            "id", "workorder", "description", "date_completed",
+            "workorder_total", "billed", "paid_in_full", "aging",
+            "workorder_status__icon",
+        )[:500]
+    )
+
+    return render(
+        request,
+        "customers/tabs/completed.html",
+        {"completed": completed},
+    )
 
 @login_required
 def customer_tab_payments(request, customer_id):
-    customer = get_object_or_404(Customer, pk=customer_id)
-    qs = (Payments.objects.filter(customer_id=customer.id)
-          .exclude(void=1)
-          .order_by("-date"))
+    payments = (
+        Payments.objects
+        .filter(customer_id=customer_id)
+        .exclude(void=1)
+        .order_by("-date")
+        .only("id", "date", "amount", "payment_type", "check_number", "giftcard_number", "memo")[:500]
+    )
 
-    page = Paginator(qs, 50).get_page(request.GET.get("page") or 1)
-    return render(request, "customers/tabs/payments.html", {"customer": customer, "page": page})
+    return render(
+        request,
+        "customers/tabs/payments.html",
+        {"payments": payments},
+    )
 
 
 

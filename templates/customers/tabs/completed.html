@@ -1,22 +1,40 @@
+{% load static %}
+
 <table class="table table-sm table-striped">
   <thead>
     <tr>
       <th>Workorder</th>
       <th>Date</th>
+      <th class="text-center">Days Past Due</th>
+      <th class="text-center">Paid</th>
       <th class="text-end">Amount</th>
     </tr>
   </thead>
   <tbody>
-    {% for x in page %}
+    {% for x in completed %}
       <tr>
         <td><a href="{{ x.get_absolute_url }}">{{ x.workorder }} — {{ x.description }}</a></td>
         <td>{{ x.date_completed|date:"M d, Y" }}</td>
-        <td class="text-end">{{ x.workorder_total }}</td>
+        <td class="text-center">
+          {% if x.billed and not x.paid_in_full and x.aging %}
+            {{ x.aging }}
+          {% endif %}
+        </td>
+        <td class="text-center">
+          {% if x.billed %}
+            {% if x.paid_in_full %}
+              <img src="{% static 'img/site/paidbill-50.png' %}" style="width:20px;height:20px;" title="Paid in Full">
+            {% elif x.aging and x.aging > 30 %}
+              <img src="{% static 'img/site/overduebill-50.png' %}" style="width:20px;height:20px;" title="Past 30 Days">
+            {% else %}
+              <img src="{% static 'img/site/billed-50.png' %}" style="width:20px;height:20px;" title="Billed Out">
+            {% endif %}
+          {% endif %}
+        </td>
+        <td class="text-end">{{ x.workorder_total|floatformat:2 }}</td>
       </tr>
     {% empty %}
-      <tr><td colspan="3" class="text-muted">No completed workorders.</td></tr>
+      <tr><td colspan="5" class="text-muted">No completed workorders.</td></tr>
     {% endfor %}
   </tbody>
 </table>
-
-{% include "customers/tabs/pager.html" with page_obj=page url_name="customers:customer_tab_completed" customer_id=customer.id target="#pane-completed" %}
