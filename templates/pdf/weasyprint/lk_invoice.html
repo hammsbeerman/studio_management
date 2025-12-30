@@ -18,15 +18,47 @@
         print-color-adjust: exact !important;
 		box-sizing: border-box;
       }
-      @page {
-        margin: 0;
-      }
-      body {
-        margin: 0;
-		color: #000;
-        font-family: 'mission_gothiclight';
-        font-size: 13px;
-      }
+
+      /* =========================
+   WEASYPRINT PAGE RULES
+   ========================= */
+
+@page {
+  size: 8.5in 11in;
+
+  /* default margins (pages 2+) */
+  margin-top: 10mm;
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 15mm;
+
+  /* centered footer */
+  @bottom-center {
+    content: "Page " counter(page) " of " counter(pages);
+    font-size: 9px;
+    color: #666;
+  }
+}
+
+/* first page stays tighter */
+@page:first {
+  margin-top: 0;
+}
+
+/* footer hidden on final page */
+@page:last {
+  @bottom-center {
+    content: "";
+  }
+}
+
+body {
+  margin: 0;
+  color: #000;
+  font-family: 'mission_gothiclight';
+  font-size: 13px;
+}
+
 img {
   -webkit-user-drag: none;
   -khtml-user-drag: none;
@@ -37,10 +69,10 @@ img {
 	  
       .sheet {
         margin: 0;
-        overflow: hidden;
+        overflow: visible;
         position: relative;
         box-sizing: border-box;
-        page-break-after: always;
+        page-break-after: auto;
       }
 
       /** Paper sizes **/
@@ -48,7 +80,8 @@ img {
        /* width: 210mm;
         height: 296mm;*/
         width: 8.5in;
-        height: 11in;
+        /* IMPORTANT: allow pagination (do NOT force 11in height) */
+        height: auto;
       }
 
       /** Padding area **/
@@ -72,14 +105,16 @@ img {
       }
 
       /*Main Style here*/
-      @page {size: 8.5in 11in;}
 
-.fix{overflow:hidden;}
+.fix{overflow:visible;}
 table{border-collapse: collapse;}
 /*header*/
 .header{overflow: hidden;overflow: hidden;}
 .header img{max-width:100%;}
 .address {text-align: center;margin-bottom: 30px;overflow: hidden;}
+
+thead { display: table-header-group; } /* repeat header each page */
+tr { page-break-inside: avoid; }       /* avoid splitting a row */
 
 
 /*Order-Info*/
@@ -96,8 +131,30 @@ table.ordert-first {margin-bottom: 11px;}
 	    
 
 /*items area*/
-.items-area {overflow: hidden;    border: 1px solid #000;height: 425px;}
-.items-area table {width: 100%;border-collapse: collapse;margin-bottom:10px;}
+/* no border on wrapper */
+.items-area { border: 0; }
+/* table draws the outer box so it ALWAYS has a bottom line */
+.items-area table{
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #000;   /* <-- guarantees final bottom line */
+}
+/* header borders stay */
+.items-area thead th{
+  border: 1px solid #000;
+}
+/* body cells: only verticals (no horizontal row lines) */
+.items-area tbody td{
+  border-left: 1px solid #000;
+  border-right: 1px solid #000;
+  border-top: 0;
+  border-bottom: 0;
+}
+/* connect header to body cleanly */
+.items-area tbody tr:first-child td{
+  border-top: 1px solid #000;
+}
+
 .items-area tr td {text-align: center;padding: 5px;line-height: normal;}
 .items-area table tr th, .items-area table tr td {border: 1px solid #000;}
 .items-area table tr td {border-top: 0 !important; border-bottom: 0 !important;}
@@ -110,14 +167,28 @@ table.ordert-first {margin-bottom: 11px;}
 .last-table{width:100%;text-align:center;}
 .last-table tr td{    padding: 10px;/* border: 1px solid #ddd;*/}
 
-
-
+/* =========================
+   KEEP BOTTOM BLOCK TOGETHER
+   ========================= */
+.last-table-area{
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.last-table,
+.last-table tr,
+.last-table td{
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
 
 
 
     </style>
   </head>
   <body class="A4">
+
+    
+
     <section class="sheet padding-10mm">
 	<!-- Header -->
 	
@@ -127,8 +198,6 @@ table.ordert-first {margin-bottom: 11px;}
 	<div class="address fix">170 E. Main Street, Reedsburg, WI 53959  •  608 768 0092  lindsey@lkdesignstudio.com  •  www.lkdesignstudio.com</div>
 	
 	
-
-
 <!-- Order info -->
       <div class="order-info fix">
         <div class="order-left">
@@ -163,8 +232,6 @@ table.ordert-first {margin-bottom: 11px;}
         </div>
       </div>
 
-
-
 <!-- main table -->
       <div class="items-area fix">
         <table>
@@ -193,9 +260,6 @@ table.ordert-first {margin-bottom: 11px;}
               {% endif %}
               {% endif %}
             {% endfor %}
-            {% autoescape off %}
-                {{ rows }}
-            {% endautoescape %}
 
             {% if pos_items %}
             <tr>
@@ -221,12 +285,6 @@ table.ordert-first {margin-bottom: 11px;}
             </tr>
             {% endfor %}
           {% endif %}
-
-  
-              
-
-
-			
           </tbody>
         </table>
       </div>
@@ -234,6 +292,7 @@ table.ordert-first {margin-bottom: 11px;}
 {% if workorder.show_notes %}
     <span style ='color:red'>{{ workorder.notes }}</span>
     {% endif %}
+
 <!-- Total table -->
 <div class="last-table-area fix">
 	<table class="last-table">
@@ -275,10 +334,6 @@ table.ordert-first {margin-bottom: 11px;}
 
 </div>
 
-
-
-	  
-	  
     </section>
   </body>
 </html>

@@ -36,8 +36,12 @@ def invoice_pdf(request, id):
     response["Content-Transfer-Encoding"] = "binary"
 
     # Base workorder + items
-    items = WorkorderItem.objects.filter(workorder=id)
-    item_length = len(items)
+    items = (
+        WorkorderItem.objects
+        .filter(workorder=id)
+        .order_by("id")
+    )
+    item_length = items.count()
 
     workorder = Workorder.objects.get(id=id)
 
@@ -108,18 +112,30 @@ def invoice_pdf(request, id):
 
     l = len(items)
 
-    # Paging + filler rows for layout
-    if item_length > 15:
-        items = WorkorderItem.objects.filter(workorder=id)[:15]
-        items2 = WorkorderItem.objects.filter(workorder=id)[15:30]
-        rows2 = ""
-        n = 60
-        for x in range(n):
-            string = "<tr><td></td><td></td><td></td><td></td><td></td></tr>"
-            rows2 += string
-    else:
-        items2 = ""
-        rows2 = ""
+    # # Paging + filler rows for layout
+    # if item_length > 15:
+    #     items = WorkorderItem.objects.filter(workorder=id)[:15]
+    #     items2 = WorkorderItem.objects.filter(workorder=id)[15:30]
+    #     rows2 = ""
+    #     n = 60
+    #     for x in range(n):
+    #         string = "<tr><td></td><td></td><td></td><td></td><td></td></tr>"
+    #         rows2 += string
+    # else:
+    #     items2 = ""
+    #     rows2 = ""
+
+    # Always use the full list; let WeasyPrint paginate
+    # items = (
+    #     WorkorderItem.objects
+    #     .filter(workorder=id)
+    #     .order_by("id")
+    # )
+
+    items2 = ""      # not used anymore for LK
+    rows = ""        # stop generating filler
+    rows2 = ""       # stop generating filler
+    packingslip_rows = ""
 
     n = 40 - l
     rows = ""
@@ -137,7 +153,7 @@ def invoice_pdf(request, id):
 
     context = {
         "items": items,
-        "items2": items2,
+        "items2": "",
         "workorder": workorder,
         "customer": customer,
         "payment": payment,
@@ -147,29 +163,19 @@ def invoice_pdf(request, id):
         "tax": tax,
         "total": total,
         "total_bal": total_bal,
-        "rows": rows,
-        "rows2": rows2,
-        "packingslip_rows": packingslip_rows,
+        "rows": "",
+        "rows2": "",
+        "packingslip_rows": "",
         # 🔹 POS-related
         "pos_items": pos_items,  # list with .invoice_total attached
         "pos_origin_sale": pos_origin_sale,
     }
 
     if workorder.internal_company == "LK Design":
-        if item_length < 15:
-            if workorder.quote == "0":
-                html_string = render_to_string("pdf/weasyprint/lk_invoice.html", context)
-            else:
-                html_string = render_to_string("pdf/weasyprint/lk_quote.html", context)
+        if workorder.quote == "0":
+            html_string = render_to_string("pdf/weasyprint/lk_invoice.html", context)
         else:
-            if workorder.quote == "0":
-                html_string = render_to_string(
-                    "pdf/weasyprint/lk_invoice_long.html", context
-                )
-            else:
-                html_string = render_to_string(
-                    "pdf/weasyprint/lk_quote_long.html", context
-                )
+            html_string = render_to_string("pdf/weasyprint/lk_quote.html", context)
     else:
         if workorder.quote == "0":
             html_string = render_to_string(
