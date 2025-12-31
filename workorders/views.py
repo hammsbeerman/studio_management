@@ -1713,6 +1713,167 @@ def copy_workorder(request, id=None):
             c.save()
     return redirect('workorders:overview', id=newworkorder)
 
+#This duplicates a workorder as a quote
+@login_required
+def copy_workorder_to_quote(request, id=None):
+    print (id)
+    #Get data from current workorder
+    obj = Workorder.objects.get(id=id)
+    lastworkorder = obj.workorder
+    n = Numbering.objects.get(pk=4)
+    #Update settings for new workorder
+    obj.workorder = n.value
+    obj.quote = 1
+    obj.quote_number = n.value
+    obj.completed = 0
+    obj.original_order = lastworkorder
+    obj.billed = 0
+    obj.date_billed = None
+    obj.open_balance = obj.workorder_total
+    obj.total_balance = obj.workorder_total
+    obj.paid_in_full = 0
+    obj.amount_paid = None
+    obj.open_balance = None
+    obj.total_balance = None
+    obj.invoice_sent = 0
+    obj.date_completed = None
+    obj.payment_id = None
+    obj.date_paid = None
+    obj.abandon_quote = 0
+    obj.tax = None
+    obj.subtotal = None
+    obj.workorder_total = None
+    obj.days_to_pay = ''
+    obj.aging = None
+    obj.void = 0
+    obj.void_memo = None
+    obj.workorder_status_id = 1
+    obj.lk_workorder = None
+    obj.printleader_workorder = None
+    obj.kos_workorder = None
+    obj.checked_and_verified = 0
+    obj.delivered_or_pickedup = 0
+    #Increment workorder number
+    newworkorder = obj.workorder
+    #Update numbering table
+    inc = int('1')
+    n.value = n.value + inc
+    n.save()
+    #save workorder with new workorder number
+    obj.pk=None
+    #obj.
+    obj.save()
+    new_workorder_id=obj.pk
+    print(id)
+    print(newworkorder)
+    #print(new_id)
+    workorder_item = WorkorderItem.objects.filter(workorder_id=id)
+    for item in workorder_item:
+        #print('workorder item id')
+        #print(item.id)
+        oldid = item.id
+        workorder = item.workorder_hr
+        price = item.total_price
+        #jobitem = item.pk
+        print(workorder)
+        print(price)
+        item.workorder_id=new_workorder_id
+        item.pk=None
+        item.workorder_hr=newworkorder
+        item.last_item_order=workorder
+        item.void = 0
+        item.void_memo = None
+        item.completed = 0
+        item.job_status_id = 1
+        if item.absolute_price:
+            item.last_item_price = item.absolute_price
+        else:
+            item.last_item_price=price            
+        item.save()
+        #Copy kruegerjobdetail for each item
+        print(item.pk)
+        try:
+            objdetail = KruegerJobDetail.objects.get(workorder_item=oldid)
+            objdetail.pk = None
+            print('New workorder')
+            print(new_workorder_id)
+            objdetail.workorder_item = item.pk
+            objdetail.workorder_id = new_workorder_id
+            objdetail.hr_workorder = newworkorder
+            objdetail.last_item_order = lastworkorder
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.price_total
+            objdetail.save()
+        except Exception as e:
+            print("The error is:", e)
+        try: 
+            objdetail = WideFormat.objects.get(workorder_item=oldid)
+            objdetail.pk = None
+            #objdetail.workorder_item = obj.pk
+            objdetail.workorder_item = item.pk
+            objdetail.workorder_id = new_workorder_id
+            objdetail.hr_workorder = newworkorder
+            objdetail.last_item_order = lastworkorder
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.price_total
+            objdetail.save()
+            print('hello')
+        except Exception as e:
+            print("The error is:", e)
+        try:
+            objdetail = OrderOut.objects.get(workorder_item=oldid)
+            print('hello')
+            objdetail.workorder_item = item.pk
+            objdetail.workorder_id = new_workorder_id
+            objdetail.pk = None
+            objdetail.hr_workorder = newworkorder
+            objdetail.last_item_order = lastworkorder
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.total_price
+            objdetail.save()
+        except Exception as e:
+            print("The error is:", e)
+        try:
+            objdetail = SetPrice.objects.get(workorder_item=oldid)
+            objdetail.workorder_item = item.pk
+            objdetail.workorder_id = new_workorder_id
+            objdetail.pk = None
+            print(objdetail.description)
+            objdetail.hr_workorder = newworkorder
+            objdetail.last_item_order = lastworkorder
+            if objdetail.override_price:
+                objdetail.last_item_price = objdetail.override_price
+            else:
+                objdetail.last_item_price = objdetail.total_price
+            objdetail.save()
+        except Exception as e:
+            print("The error is:", e)
+    print(newworkorder)
+    workorder_parent = WorkorderItem.objects.filter(workorder_hr=newworkorder, parent=1)
+    for item in workorder_parent:
+        parent = item.id
+        oldparent = item.parent_item
+        print(item.created)
+        print(item.id)
+        print('oldparent')
+        print(item.parent_item)
+        print(oldparent)
+        print('parent')
+        print(parent)
+        children = WorkorderItem.objects.filter(workorder_hr=newworkorder, parent_item=oldparent)
+        for c in children:
+            c.parent_item = item.id
+            print(c.parent_item)
+            print(item.id)
+            c.save()
+    return redirect('workorders:overview', id=newworkorder)
+
 @login_required
 def subcategory(request):
     cat = request.GET.get('item_category')

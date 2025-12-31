@@ -58,6 +58,7 @@ from .views import (
     workorder_delivery_block_view,
     pos_for_workorder,
     pickup_mark_called,
+    copy_workorder_to_quote
     #shipping_status,
     # removed,
 
@@ -78,6 +79,7 @@ urlpatterns = [
     #path('items/<int:pk>/edit/<int:cat>', edit_print_item, name='edit_print_item'),
     path('items/<int:pk>/remove/', remove_workorder_item, name='remove_item'),
     path('items/copy_workorder/<int:id>', copy_workorder, name='copy_workorder'),
+    path('items/copy_workorder_to_quote/<int:id>', copy_workorder_to_quote, name='copy_workorder_to_quote'),
     path('items/<int:pk>/copy/', copy_workorder_item, name='copy_workorder_item'),
     path('items/<int:pk>/copy/<str:workorder>', copy_workorder_item, name='copy_workorder_item'),
     path("item/<int:id>/", workorder_item_list, name='workorder_item_list'),

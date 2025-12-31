@@ -41,6 +41,7 @@
         <a href="{% url 'workorders:abandon_quote'  %}?quote={{workorder.quote_number}}" class="btn btn-primary btn-sm" role="button">Reject Quote</a>
       {% else %}
         <a href="{% url 'workorders:copy_workorder' id=workid %}" class="btn btn-primary btn-sm" role="button">Duplicate Workorder</a>
+        <a href="{% url 'workorders:copy_workorder_to_quote' id=workid %}" class="btn btn-primary btn-sm" role="button">Duplicate as Quote</a>
         {% if workorder.completed == 0 %}
           <a href="{% url 'workorders:complete_status'  %}?workorder={{workorder.id}}" class="btn btn-primary btn-sm" role="button">Complete Workorder</a>
           <p>
