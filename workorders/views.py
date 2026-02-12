@@ -1396,488 +1396,457 @@ def remove_workorder_item(request, pk):
 
 
 @login_required
+@transaction.atomic
 def copy_workorder_item(request, pk, workorder=None):
-    #Copy line item to current workorder
-    if workorder:
-        print(pk)
-        obj = WorkorderItem.objects.get(pk=pk)
-        obj.pk = None
-        print('asdakldmakldamsl')
-        obj.added_to_parent = 0
-        obj.parent = 0
-        obj.parent_item = None
-        obj.child = 0
-        obj.void = 0
-        obj.void_memo = None
-        obj.completed = 0
-        obj.job_status_id = 1
-        obj.save()
-        #print(obj.pk)
-        #print(pk)
-        #Copy coresponding kruegerjobdetail item
-        try: 
-            objdetail = KruegerJobDetail.objects.get(workorder_item=pk)
-            print(objdetail)
-            objdetail.pk = None
-            objdetail.workorder_item = obj.pk
-            objdetail.last_item_order = obj.workorder_hr
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.price_total
-            objdetail.save()
-        except Exception as e:
-            print(1)
-            print("The error is:", e)
-        try: 
-            objdetail = WideFormat.objects.get(workorder_item=pk)
-            objdetail.pk = None
-            objdetail.workorder_item = obj.pk
-            objdetail.last_item_order = obj.workorder_hr
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.price_total
-            objdetail.save()
-        except Exception as e:
-            print(2)
-            print("The error is:", e)
+    """
+    Fixes:
+      - When copying to a specific workorder (workorder param), actually assigns new item to it.
+      - For POST "copy to different workorder", updates workorder_id/hr_workorder on ALL detail models.
+      - Handles MultipleObjectsReturned by copying the newest matching detail row.
+    """
+
+    def _one_or_none(Model, **filters):
         try:
-            objdetail = OrderOut.objects.get(workorder_item=pk)
-            objdetail.pk = None
-            objdetail.workorder_item = obj.pk
-            objdetail.last_item_order = obj.workorder_hr
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.total_price
-            objdetail.save()
-        except Exception as e:
-            print(3)
-            print("The error is:", e)
-        try:
-            objdetail = SetPrice.objects.get(workorder_item=pk)
-            objdetail.pk = None
-            objdetail.workorder_item = obj.pk
-            objdetail.last_item_order = obj.workorder_hr
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.total_price
-            objdetail.save()
-        except Exception as e:
-            print(4)
-            print("The error is:", e)
-        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
-    #Copy line item to different workorder
-    #This section is called from copy item modal
-    if request.method == "POST":
-        #Workorder to copy to
-        workorder = request.POST.get('workorder')
-        #Get info from workorder being copied to
-        new = Workorder.objects.get(workorder=workorder)
-        # print('Workorder copying to')
-        # print(new.pk)
-        # print('Current workorder item pk')
-        # print(pk)
-        #copy data from existing line item
-        obj = WorkorderItem.objects.get(pk=pk)
-        obj.pk = None
-        last_workorder = obj.workorder_hr
-        obj.workorder_hr = workorder
-        obj.workorder_id = new.pk
-        #Fill in missing data in new line item
-        obj.last_item_order = last_workorder
-        if obj.absolute_price:
-            obj.last_item_price = obj.absolute_price
+            return Model.objects.get(**filters)
+        except Model.DoesNotExist:
+            return None
+        except Model.MultipleObjectsReturned:
+            return Model.objects.filter(**filters).order_by("-id").first()
+
+    def _copy_detail(Model, *, old_item_id: int, new_item_id: int, new_wo):
+        src = _one_or_none(Model, workorder_item=old_item_id)
+        if not src:
+            return
+
+        src.pk = None
+        src.workorder_item = new_item_id
+
+        # keep these in sync when the model has the fields
+        if hasattr(src, "workorder_id"):
+            src.workorder_id = new_wo.pk
+        if hasattr(src, "hr_workorder"):
+            src.hr_workorder = new_wo.workorder
+
+        # preserve your last item logic
+        if hasattr(src, "last_item_order"):
+            src.last_item_order = str(new_wo.workorder)
+
+        if getattr(src, "override_price", None):
+            if hasattr(src, "last_item_price"):
+                src.last_item_price = src.override_price
         else:
-            obj.last_item_price = obj.total_price
-        # print(obj.last_item_order)
-        obj.save()
-        #Copy corresponding kruegerjobdetail to new object
-        try:
-            objdetail = KruegerJobDetail.objects.get(workorder_item=pk)
-            objdetail.pk = None
-            objdetail.workorder_item = obj.pk
-            objdetail.workorder_id = new.pk
-            objdetail.hr_workorder = new.workorder
-            objdetail.last_item_order = last_workorder
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.price_total
-            objdetail.save()
-        except Exception as e:
-            print("The error is:", e)
-        try: 
-            objdetail = WideFormat.objects.get(workorder_item=pk)
-            objdetail.pk = None
-            objdetail.workorder_item = obj.pk
-            objdetail.last_item_order = obj.workorder_hr
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.price_total
-            objdetail.save()  
-        except Exception as e:
-            print("The error is:", e)      
-        try:
-            objdetail = OrderOut.objects.get(workorder_item=pk)
-            print('hello')
-            objdetail.pk = None
-            objdetail.workorder_item = obj.pk
-            objdetail.last_item_order = obj.workorder_hr
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.total_price
-            objdetail.save()
-        except Exception as e:
-            print("The error is:", e)
-        try:
-            objdetail = SetPrice.objects.get(workorder_item=pk)
-            objdetail.pk = None
-            print(objdetail.description)
-            objdetail.workorder_item = obj.pk
-            objdetail.last_item_order = obj.workorder_hr
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.total_price
-            objdetail.save()
-        except Exception as e:
-            print("The error is:", e)
-        return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
-    obj = WorkorderItem.objects.get(pk=pk)
+            # different models use different "total" fields in your code
+            for field in ("price_total", "total_price"):
+                if hasattr(src, field) and getattr(src, field, None) is not None:
+                    if hasattr(src, "last_item_price"):
+                        src.last_item_price = getattr(src, field)
+                    break
+
+        src.save()
+
+    # ------------------------------------------------------------
+    # Copy line item to *current* workorder (this branch is used by your "Copy" button)
+    # BUT you passed workorder=object.workorder (string) in the template
+    # so this should be "copy into that workorder", not "duplicate in place".
+    # ------------------------------------------------------------
+    if workorder:
+        # workorder here is a workorder number/string, not pk
+        target_wo = get_object_or_404(Workorder.objects.select_for_update(), workorder=workorder)
+
+        src_item = get_object_or_404(WorkorderItem, pk=pk)
+        new_item = src_item
+        new_item.pk = None
+
+        # reset flags like you had
+        new_item.added_to_parent = 0
+        new_item.parent = 0
+        new_item.parent_item = None
+        new_item.child = 0
+        new_item.void = 0
+        new_item.void_memo = None
+        new_item.completed = 0
+        new_item.job_status_id = 1
+
+        # ✅ actually point to target workorder
+        new_item.workorder_id = target_wo.pk
+        new_item.workorder_hr = target_wo.workorder
+
+        new_item.save()
+
+        # copy detail rows + keep them pointed at the new workorder
+        _copy_detail(KruegerJobDetail, old_item_id=pk, new_item_id=new_item.pk, new_wo=target_wo)
+        _copy_detail(WideFormat,       old_item_id=pk, new_item_id=new_item.pk, new_wo=target_wo)
+        _copy_detail(OrderOut,         old_item_id=pk, new_item_id=new_item.pk, new_wo=target_wo)
+        _copy_detail(SetPrice,         old_item_id=pk, new_item_id=new_item.pk, new_wo=target_wo)
+
+        return HttpResponse(status=204, headers={"HX-Trigger": "itemListChanged"})
+
+    # ------------------------------------------------------------
+    # Copy line item to a different workorder (from modal)
+    # ------------------------------------------------------------
+    if request.method == "POST":
+        workorder_num = request.POST.get("workorder")
+        target_wo = get_object_or_404(Workorder.objects.select_for_update(), workorder=workorder_num)
+
+        src_item = get_object_or_404(WorkorderItem, pk=pk)
+        last_workorder = src_item.workorder_hr
+
+        new_item = src_item
+        new_item.pk = None
+        new_item.workorder_id = target_wo.pk
+        new_item.workorder_hr = target_wo.workorder
+
+        new_item.last_item_order = last_workorder
+        if new_item.absolute_price:
+            new_item.last_item_price = new_item.absolute_price
+        else:
+            new_item.last_item_price = new_item.total_price
+
+        new_item.save()
+
+        # ✅ update workorder_id/hr_workorder for ALL detail models (not just KruegerJobDetail)
+        _copy_detail(KruegerJobDetail, old_item_id=pk, new_item_id=new_item.pk, new_wo=target_wo)
+        _copy_detail(WideFormat,       old_item_id=pk, new_item_id=new_item.pk, new_wo=target_wo)
+        _copy_detail(OrderOut,         old_item_id=pk, new_item_id=new_item.pk, new_wo=target_wo)
+        _copy_detail(SetPrice,         old_item_id=pk, new_item_id=new_item.pk, new_wo=target_wo)
+
+        return HttpResponse(status=204, headers={"HX-Trigger": "itemListChanged"})
+
+    # GET -> show modal
+    obj = get_object_or_404(WorkorderItem, pk=pk)
     workorders = Workorder.objects.all().exclude(workorder=1111).exclude(billed=1).order_by("-workorder")
-    context = {
-        'obj': obj,
-        'workorders': workorders,
-        #'workorder': workorder
-    }
-    return render(request, 'workorders/modals/copy_item.html', context)
+    return render(request, "workorders/modals/copy_item.html", {"obj": obj, "workorders": workorders})
 
 #This is for the duplicate workorder button
 @login_required
+@transaction.atomic
 def copy_workorder(request, id=None):
-    print (id)
-    #Get data from current workorder
-    obj = Workorder.objects.get(id=id)
-    lastworkorder = obj.workorder
-    n = Numbering.objects.get(pk=1)
-    #Update settings for new workorder
-    obj.workorder = n.value
-    obj.quote = 0
-    obj.quote_number = ''
-    obj.completed = 0
-    obj.original_order = lastworkorder
-    obj.billed = 0
-    obj.date_billed = None
-    obj.open_balance = obj.workorder_total
-    obj.total_balance = obj.workorder_total
-    obj.paid_in_full = 0
-    obj.amount_paid = None
-    obj.open_balance = None
-    obj.total_balance = None
-    obj.invoice_sent = 0
-    obj.date_completed = None
-    obj.payment_id = None
-    obj.date_paid = None
-    obj.abandon_quote = 0
-    obj.tax = None
-    obj.subtotal = None
-    obj.workorder_total = None
-    obj.days_to_pay = ''
-    obj.aging = None
-    obj.void = 0
-    obj.void_memo = None
-    obj.workorder_status_id = 1
-    obj.lk_workorder = None
-    obj.printleader_workorder = None
-    obj.kos_workorder = None
-    obj.checked_and_verified = 0
-    obj.delivered_or_pickedup = 0
-    #Increment workorder number
-    newworkorder = obj.workorder
-    #Update numbering table
-    inc = int('1')
-    n.value = n.value + inc
-    n.save()
-    #save workorder with new workorder number
-    obj.pk=None
-    #obj.
-    obj.save()
-    new_workorder_id=obj.pk
-    print(id)
-    print(newworkorder)
-    #print(new_id)
-    workorder_item = WorkorderItem.objects.filter(workorder_id=id)
-    for item in workorder_item:
-        #print('workorder item id')
-        #print(item.id)
+    """
+    Duplicate a workorder + all its WorkorderItems + any attached detail rows.
+
+    Fixes in this drop-in:
+      ✅ Numbering is atomic (select_for_update + increment)
+      ✅ Detail rows are copied reliably (handles missing / duplicates)
+      ✅ Avoids "bounce back to old workorder" by ensuring new detail rows
+         point at the new WorkorderItem + new workorder/hr_workorder.
+      ✅ Keeps your existing field-reset logic and parent/child remap logic.
+    """
+    # --- Load original workorder (row-locked) ---
+    original = get_object_or_404(Workorder.objects.select_for_update(), id=id)
+    lastworkorder = original.workorder
+
+    # --- Atomic numbering (row-locked) ---
+    n = Numbering.objects.select_for_update().get(pk=1)
+    newworkorder = n.value
+    Numbering.objects.filter(pk=n.pk).update(value=F("value") + 1)
+
+    # --- Prepare the new Workorder (preserve your existing resets) ---
+    original.workorder = newworkorder
+    original.quote = 0
+    original.quote_number = ""
+    original.completed = 0
+    original.original_order = lastworkorder
+    original.billed = 0
+    original.date_billed = None
+    original.paid_in_full = 0
+    original.amount_paid = None
+    original.invoice_sent = 0
+    original.date_completed = None
+    original.payment_id = None
+    original.date_paid = None
+    original.abandon_quote = 0
+    original.tax = None
+    original.subtotal = None
+    original.workorder_total = None
+    original.days_to_pay = ""
+    original.aging = None
+    original.void = 0
+    original.void_memo = None
+    original.workorder_status_id = 1
+    original.lk_workorder = None
+    original.printleader_workorder = None
+    original.kos_workorder = None
+    original.checked_and_verified = 0
+
+    # Keep whatever your actual field name is; try both safely
+    if hasattr(original, "delivered_or_pickedup"):
+        original.delivered_or_pickedup = 0
+    elif hasattr(original, "delivery_pickup"):
+        # don't change unless you want to; leaving as-is is safer
+        pass
+
+    # Your original code set balances then wiped them; keep end-result the same:
+    original.open_balance = None
+    original.total_balance = None
+
+    # New DB row
+    original.pk = None
+    original.created = timezone.now() if hasattr(original, "created") else None
+    original.updated = timezone.now() if hasattr(original, "updated") else None
+    original.save()
+    new_workorder_id = original.pk
+
+    # --- helpers ---
+    def _pick_one(qs):
+        # prefer newest row if duplicates exist
+        return qs.order_by("-id").first()
+
+    def _copy_detail_row(Model, *, old_workorder_item_id: int, new_workorder_item_id: int):
+        """
+        Copies a detail row that is linked by workorder_item=oldid.
+        - If none exists, we do nothing (keeps current behavior)
+        - If multiple exist, we copy the newest (avoids MultipleObjectsReturned)
+        """
+        try:
+            src = Model.objects.get(workorder_item=old_workorder_item_id)
+        except Model.DoesNotExist:
+            return
+        except Model.MultipleObjectsReturned:
+            src = _pick_one(Model.objects.filter(workorder_item=old_workorder_item_id))
+            if not src:
+                return
+
+        src.pk = None
+
+        # these fields exist on your detail models in your code
+        if hasattr(src, "workorder_item"):
+            src.workorder_item = new_workorder_item_id
+        if hasattr(src, "workorder_id"):
+            src.workorder_id = new_workorder_id
+        if hasattr(src, "hr_workorder"):
+            src.hr_workorder = newworkorder
+
+        # preserve your "last item" behavior
+        if hasattr(src, "last_item_order"):
+            src.last_item_order = lastworkorder
+
+        # preserve your "last item price" behavior per model
+        # (your old code used different fields per model; keep that logic)
+        if hasattr(src, "override_price") and getattr(src, "override_price", None):
+            if hasattr(src, "last_item_price"):
+                src.last_item_price = src.override_price
+        else:
+            for candidate in ("price_total", "total_price"):
+                if hasattr(src, candidate) and getattr(src, candidate, None) is not None:
+                    if hasattr(src, "last_item_price"):
+                        src.last_item_price = getattr(src, candidate)
+                    break
+
+        src.save()
+
+    # --- Copy line items ---
+    workorder_items = list(WorkorderItem.objects.filter(workorder_id=id))
+
+    for item in workorder_items:
         oldid = item.id
-        workorder = item.workorder_hr
-        price = item.total_price
-        #jobitem = item.pk
-        print(workorder)
-        print(price)
-        item.workorder_id=new_workorder_id
-        item.pk=None
-        item.workorder_hr=newworkorder
-        item.last_item_order=workorder
+        old_workorder_hr = item.workorder_hr
+        old_total_price = item.total_price
+
+        # mutate in-place to create a new row (same pattern you used)
+        item.workorder_id = new_workorder_id
+        item.pk = None
+        item.workorder_hr = newworkorder
+        item.last_item_order = old_workorder_hr
         item.void = 0
         item.void_memo = None
         item.completed = 0
         item.job_status_id = 1
+
         if item.absolute_price:
             item.last_item_price = item.absolute_price
         else:
-            item.last_item_price=price            
+            item.last_item_price = old_total_price
+
         item.save()
-        #Copy kruegerjobdetail for each item
-        print(item.pk)
+
+        # Copy attached detail rows (safe for missing/duplicates)
         try:
-            objdetail = KruegerJobDetail.objects.get(workorder_item=oldid)
-            objdetail.pk = None
-            print('New workorder')
-            print(new_workorder_id)
-            objdetail.workorder_item = item.pk
-            objdetail.workorder_id = new_workorder_id
-            objdetail.hr_workorder = newworkorder
-            objdetail.last_item_order = lastworkorder
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.price_total
-            objdetail.save()
-        except Exception as e:
-            print("The error is:", e)
-        try: 
-            objdetail = WideFormat.objects.get(workorder_item=oldid)
-            objdetail.pk = None
-            #objdetail.workorder_item = obj.pk
-            objdetail.workorder_item = item.pk
-            objdetail.workorder_id = new_workorder_id
-            objdetail.hr_workorder = newworkorder
-            objdetail.last_item_order = lastworkorder
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.price_total
-            objdetail.save()
-            print('hello')
-        except Exception as e:
-            print("The error is:", e)
+            _copy_detail_row(KruegerJobDetail, old_workorder_item_id=oldid, new_workorder_item_id=item.pk)
+        except Exception:
+            logger.exception("copy_workorder: failed copying KruegerJobDetail old_item=%s", oldid)
+
         try:
-            objdetail = OrderOut.objects.get(workorder_item=oldid)
-            print('hello')
-            objdetail.workorder_item = item.pk
-            objdetail.workorder_id = new_workorder_id
-            objdetail.pk = None
-            objdetail.hr_workorder = newworkorder
-            objdetail.last_item_order = lastworkorder
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.total_price
-            objdetail.save()
-        except Exception as e:
-            print("The error is:", e)
+            _copy_detail_row(WideFormat, old_workorder_item_id=oldid, new_workorder_item_id=item.pk)
+        except Exception:
+            logger.exception("copy_workorder: failed copying WideFormat old_item=%s", oldid)
+
         try:
-            objdetail = SetPrice.objects.get(workorder_item=oldid)
-            objdetail.workorder_item = item.pk
-            objdetail.workorder_id = new_workorder_id
-            objdetail.pk = None
-            print(objdetail.description)
-            objdetail.hr_workorder = newworkorder
-            objdetail.last_item_order = lastworkorder
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.total_price
-            objdetail.save()
-        except Exception as e:
-            print("The error is:", e)
-    print(newworkorder)
-    workorder_parent = WorkorderItem.objects.filter(workorder_hr=newworkorder, parent=1)
-    for item in workorder_parent:
-        parent = item.id
-        oldparent = item.parent_item
-        print(item.created)
-        print(item.id)
-        print('oldparent')
-        print(item.parent_item)
-        print(oldparent)
-        print('parent')
-        print(parent)
-        children = WorkorderItem.objects.filter(workorder_hr=newworkorder, parent_item=oldparent)
-        for c in children:
-            c.parent_item = item.id
-            print(c.parent_item)
-            print(item.id)
-            c.save()
-    return redirect('workorders:overview', id=newworkorder)
+            _copy_detail_row(OrderOut, old_workorder_item_id=oldid, new_workorder_item_id=item.pk)
+        except Exception:
+            logger.exception("copy_workorder: failed copying OrderOut old_item=%s", oldid)
+
+        try:
+            _copy_detail_row(SetPrice, old_workorder_item_id=oldid, new_workorder_item_id=item.pk)
+        except Exception:
+            logger.exception("copy_workorder: failed copying SetPrice old_item=%s", oldid)
+
+    # --- Remap parent/child groups (keep your logic, but safer) ---
+    # Your old code used:
+    #   workorder_parent = WorkorderItem.objects.filter(workorder_hr=newworkorder, parent=1)
+    #   oldparent = item.parent_item
+    #
+    # That "oldparent" is the original parent's id; we need a mapping to new ids.
+    new_parents = list(WorkorderItem.objects.filter(workorder_id=new_workorder_id, parent=1))
+    old_parent_ids = [p.parent_item for p in new_parents if p.parent_item]  # parent_item stores "old parent id" in your schema
+    if old_parent_ids:
+        # children currently still point at old parent ids; re-point them to the new parent id
+        for p in new_parents:
+            old_parent_id = p.parent_item
+            if not old_parent_id:
+                continue
+            WorkorderItem.objects.filter(workorder_id=new_workorder_id, parent_item=old_parent_id).update(parent_item=p.id)
+
+    return redirect("workorders:overview", id=newworkorder)
 
 #This duplicates a workorder as a quote
 @login_required
+@transaction.atomic
 def copy_workorder_to_quote(request, id=None):
-    print (id)
-    #Get data from current workorder
-    obj = Workorder.objects.get(id=id)
-    lastworkorder = obj.workorder
-    n = Numbering.objects.get(pk=4)
-    #Update settings for new workorder
-    obj.workorder = n.value
-    obj.quote = 1
-    obj.quote_number = n.value
-    obj.completed = 0
-    obj.original_order = lastworkorder
-    obj.billed = 0
-    obj.date_billed = None
-    obj.open_balance = obj.workorder_total
-    obj.total_balance = obj.workorder_total
-    obj.paid_in_full = 0
-    obj.amount_paid = None
-    obj.open_balance = None
-    obj.total_balance = None
-    obj.invoice_sent = 0
-    obj.date_completed = None
-    obj.payment_id = None
-    obj.date_paid = None
-    obj.abandon_quote = 0
-    obj.tax = None
-    obj.subtotal = None
-    obj.workorder_total = None
-    obj.days_to_pay = ''
-    obj.aging = None
-    obj.void = 0
-    obj.void_memo = None
-    obj.workorder_status_id = 1
-    obj.lk_workorder = None
-    obj.printleader_workorder = None
-    obj.kos_workorder = None
-    obj.checked_and_verified = 0
-    obj.delivered_or_pickedup = 0
-    #Increment workorder number
-    newworkorder = obj.workorder
-    #Update numbering table
-    inc = int('1')
-    n.value = n.value + inc
-    n.save()
-    #save workorder with new workorder number
-    obj.pk=None
-    #obj.
-    obj.save()
-    new_workorder_id=obj.pk
-    print(id)
-    print(newworkorder)
-    #print(new_id)
-    workorder_item = WorkorderItem.objects.filter(workorder_id=id)
-    for item in workorder_item:
-        #print('workorder item id')
-        #print(item.id)
+    # source workorder
+    src = get_object_or_404(Workorder.objects.select_for_update(), pk=id)
+    lastworkorder = src.workorder
+
+    # lock numbering row
+    n = Numbering.objects.select_for_update().get(pk=4)
+    newworkorder = n.value  # quote number
+
+    # --- clone header safely (don't mutate src) ---
+    src.pk = None
+    src.workorder = newworkorder
+    src.quote = 1
+    src.quote_number = newworkorder
+
+    src.completed = 0
+    src.original_order = lastworkorder
+    src.billed = 0
+    src.date_billed = None
+
+    # balances/totals should start blank on a quote copy
+    src.amount_paid = None
+    src.open_balance = None
+    src.total_balance = None
+    src.paid_in_full = 0
+    src.invoice_sent = 0
+    src.date_completed = None
+    src.payment_id = None
+    src.date_paid = None
+
+    src.abandon_quote = 0
+    src.tax = None
+    src.subtotal = None
+    src.workorder_total = None
+    src.days_to_pay = ""
+    src.aging = None
+
+    src.void = 0
+    src.void_memo = None
+    src.workorder_status_id = 1
+
+    src.lk_workorder = None
+    src.printleader_workorder = None
+    src.kos_workorder = None
+    src.checked_and_verified = 0
+
+    # ✅ fix wrong field name
+    src.delivery_pickup = None
+    src.delivered = False
+    src.requires_delivery = False
+    src.requires_pickup = False
+    src.delivery_date = None
+    src.date_called = None
+
+    src.save()
+    new_workorder_id = src.pk
+
+    # increment numbering
+    n.value = n.value + 1
+    n.save(update_fields=["value"])
+
+    # helper: tolerate duplicate detail rows
+    def one_or_none(Model, **filters):
+        try:
+            return Model.objects.get(**filters)
+        except Model.DoesNotExist:
+            return None
+        except Model.MultipleObjectsReturned:
+            return Model.objects.filter(**filters).order_by("-id").first()
+
+    # clone items
+    items = WorkorderItem.objects.filter(workorder_id=id)
+    for item in items:
         oldid = item.id
-        workorder = item.workorder_hr
+        old_workorder_hr = item.workorder_hr
         price = item.total_price
-        #jobitem = item.pk
-        print(workorder)
-        print(price)
-        item.workorder_id=new_workorder_id
-        item.pk=None
-        item.workorder_hr=newworkorder
-        item.last_item_order=workorder
+
+        item.pk = None
+        item.workorder_id = new_workorder_id
+        item.workorder_hr = newworkorder
+        item.last_item_order = old_workorder_hr
+
         item.void = 0
         item.void_memo = None
         item.completed = 0
         item.job_status_id = 1
-        if item.absolute_price:
-            item.last_item_price = item.absolute_price
-        else:
-            item.last_item_price=price            
+
+        # ✅ important: don't keep “edited/custom pricing” flags on a duplicated item
+        if hasattr(item, "pricesheet_modified"):
+            item.pricesheet_modified = 0
+
+        item.last_item_price = item.absolute_price if item.absolute_price else price
         item.save()
-        #Copy kruegerjobdetail for each item
-        print(item.pk)
-        try:
-            objdetail = KruegerJobDetail.objects.get(workorder_item=oldid)
-            objdetail.pk = None
-            print('New workorder')
-            print(new_workorder_id)
-            objdetail.workorder_item = item.pk
-            objdetail.workorder_id = new_workorder_id
-            objdetail.hr_workorder = newworkorder
-            objdetail.last_item_order = lastworkorder
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.price_total
-            objdetail.save()
-        except Exception as e:
-            print("The error is:", e)
-        try: 
-            objdetail = WideFormat.objects.get(workorder_item=oldid)
-            objdetail.pk = None
-            #objdetail.workorder_item = obj.pk
-            objdetail.workorder_item = item.pk
-            objdetail.workorder_id = new_workorder_id
-            objdetail.hr_workorder = newworkorder
-            objdetail.last_item_order = lastworkorder
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.price_total
-            objdetail.save()
-            print('hello')
-        except Exception as e:
-            print("The error is:", e)
-        try:
-            objdetail = OrderOut.objects.get(workorder_item=oldid)
-            print('hello')
-            objdetail.workorder_item = item.pk
-            objdetail.workorder_id = new_workorder_id
-            objdetail.pk = None
-            objdetail.hr_workorder = newworkorder
-            objdetail.last_item_order = lastworkorder
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.total_price
-            objdetail.save()
-        except Exception as e:
-            print("The error is:", e)
-        try:
-            objdetail = SetPrice.objects.get(workorder_item=oldid)
-            objdetail.workorder_item = item.pk
-            objdetail.workorder_id = new_workorder_id
-            objdetail.pk = None
-            print(objdetail.description)
-            objdetail.hr_workorder = newworkorder
-            objdetail.last_item_order = lastworkorder
-            if objdetail.override_price:
-                objdetail.last_item_price = objdetail.override_price
-            else:
-                objdetail.last_item_price = objdetail.total_price
-            objdetail.save()
-        except Exception as e:
-            print("The error is:", e)
-    print(newworkorder)
+        new_item_id = item.pk
+
+        # copy detail models and correctly point them to NEW workorder + new item id
+        jd = one_or_none(KruegerJobDetail, workorder_item=oldid)
+        if jd:
+            jd.pk = None
+            jd.workorder_item = new_item_id
+            jd.workorder_id = new_workorder_id
+            jd.hr_workorder = newworkorder
+            jd.last_item_order = lastworkorder
+            jd.last_item_price = jd.override_price if jd.override_price else jd.price_total
+            jd.save()
+
+        wf = one_or_none(WideFormat, workorder_item=oldid)
+        if wf:
+            wf.pk = None
+            wf.workorder_item = new_item_id
+            wf.workorder_id = new_workorder_id
+            wf.hr_workorder = newworkorder
+            wf.last_item_order = lastworkorder
+            wf.last_item_price = wf.override_price if wf.override_price else wf.price_total
+            wf.save()
+
+        oo = one_or_none(OrderOut, workorder_item=oldid)
+        if oo:
+            oo.pk = None
+            oo.workorder_item = new_item_id
+            oo.workorder_id = new_workorder_id
+            oo.hr_workorder = newworkorder
+            oo.last_item_order = lastworkorder
+            oo.last_item_price = oo.override_price if oo.override_price else oo.total_price
+            oo.save()
+
+        sp = one_or_none(SetPrice, workorder_item=oldid)
+        if sp:
+            sp.pk = None
+            sp.workorder_item = new_item_id
+            sp.workorder_id = new_workorder_id
+            sp.hr_workorder = newworkorder
+            sp.last_item_order = lastworkorder
+            sp.last_item_price = sp.override_price if sp.override_price else sp.total_price
+            sp.save()
+
+    # fix parent/child links (same as you had)
     workorder_parent = WorkorderItem.objects.filter(workorder_hr=newworkorder, parent=1)
-    for item in workorder_parent:
-        parent = item.id
-        oldparent = item.parent_item
-        print(item.created)
-        print(item.id)
-        print('oldparent')
-        print(item.parent_item)
-        print(oldparent)
-        print('parent')
-        print(parent)
+    for p in workorder_parent:
+        oldparent = p.parent_item
         children = WorkorderItem.objects.filter(workorder_hr=newworkorder, parent_item=oldparent)
         for c in children:
-            c.parent_item = item.id
-            print(c.parent_item)
-            print(item.id)
-            c.save()
-    return redirect('workorders:overview', id=newworkorder)
+            c.parent_item = p.id
+            c.save(update_fields=["parent_item"])
+
+    return redirect("workorders:overview", id=newworkorder)
 
 @login_required
 def subcategory(request):

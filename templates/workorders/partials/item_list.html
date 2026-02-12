@@ -16,7 +16,10 @@
                     <a href="{% url 'pricesheet:edit_wideformat_item' pk=object.pk cat=object.item_category_id %}" class="btn btn-primary btn-sm" role="button">Edit</a>
                     {% else %}
                     <!-- Edit Category items with predefined templates-->
-                    <a href="{{ object.edit_template_item_url }}" class="btn btn-primary btn-sm" role="button">Edit</a>
+                    <a href="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}"
+                    class="btn btn-primary btn-sm" role="button">
+                    Edit
+                    </a>
                     {% endif %}
                 {% else %}
                     <!-- Edit category item without template -->
