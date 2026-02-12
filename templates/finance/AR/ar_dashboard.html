@@ -19,7 +19,7 @@
     </select>
 
     {# Hidden field used by hx-include (reliable with Select2) #}
-    <input type="hidden" id="ar_customer" name="customer" value="">
+    <input type="hidden" id="ar_customer" name="customer" value="{{ selected_customer_id|default:'' }}">
   </div>
 
   <div class="col-sm-4 text-end">
@@ -168,6 +168,9 @@
     $cust.on("change select2:select select2:clear", function () {
       setTimeout(syncAndTrigger, 0);
     });
+
+    syncAndTrigger();
+
   });
 
   // --- Modal #1 (dialog) ---
