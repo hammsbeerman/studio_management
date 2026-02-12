@@ -26,47 +26,88 @@
           <th style="width:1%;"></th>
         </tr>
       </thead>
+
       <tbody>
         {% for c in page.object_list %}
-          {% for c in page.object_list %}
-            <tr>
-              <td>
-                <button type="button"
-                        class="btn btn-link btn-sm p-0"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#credits-{{ c.id }}"
-                        aria-expanded="false">
-                  {{ c.company_name }}
-                </button>
-              </td>
-              <td class="text-end">{{ c.unapplied_payments|floatformat:2 }}</td>
-              <td class="text-end">{{ c.open_credit_memos|floatformat:2 }}</td>
-              <td class="text-end">{{ c.unused_giftcerts|floatformat:2 }}</td>
-              <td class="text-end fw-semibold">{{ c.total_credits|floatformat:2 }}</td>
-              <td class="text-end">
-                <button type="button"
-                        class="btn btn-sm btn-outline-primary"
-                        hx-get="{% url 'finance:credits_report_customer_row' %}?customer={{ c.id }}"
-                        hx-target="#credits-body-{{ c.id }}"
-                        hx-swap="innerHTML">
-                  Load details
-                </button>
-              </td>
-            </tr>
+          <tr>
+            <td>
+              <button
+                type="button"
+                class="btn btn-link btn-sm p-0"
+                data-bs-toggle="collapse"
+                data-bs-target="#credits-{{ c.id }}"
+                aria-expanded="false"
+                aria-controls="credits-{{ c.id }}"
+              >
+                {{ c.company_name }}
+              </button>
 
-            <tr class="collapse" id="credits-{{ c.id }}">
-              <td colspan="6" class="p-0">
-                <div class="p-2 border-top">
-                  <div id="credits-body-{{ c.id }}" class="text-muted small">
-                    Click “Load details”
-                  </div>
+              {# Optional: open a full modal view using your modal endpoint #}
+              {# 
+              <button type="button"
+                      class="btn btn-link btn-sm p-0 ms-2"
+                      hx-get="{% url 'finance:credits_report_customer_modal' %}?customer={{ c.id }}"
+                      hx-target="#dialog2"
+                      hx-swap="innerHTML"
+                      data-bs-toggle="modal"
+                      data-bs-target="#modal2">
+                (open)
+              </button>
+              #}
+            </td>
+
+            <td class="text-end">{{ c.unapplied_payments|floatformat:2 }}</td>
+            <td class="text-end">{{ c.open_credit_memos|floatformat:2 }}</td>
+            <td class="text-end">{{ c.unused_giftcerts|floatformat:2 }}</td>
+            <td class="text-end fw-semibold">{{ c.total_credits|floatformat:2 }}</td>
+
+            <td class="text-end">
+              <div class="btn-group btn-group-sm">
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-primary"
+                hx-get="{% url 'finance:credits_report_customer_row' %}?customer={{ c.id }}"
+                hx-target="#credits-body-{{ c.id }}"
+                hx-swap="innerHTML"
+                hx-indicator="#credits-loading-{{ c.id }}"
+                onclick="
+                  const row = document.getElementById('credits-{{ c.id }}');
+                  if (row && !row.classList.contains('show')) {
+                    row.classList.add('show');
+                  }
+                "
+              >
+                Load details
+              </button>
+              <a
+                  href="{% url 'finance:ar_dashboard' %}?customer={{ c.id }}"
+                  target="_blank"
+                  class="btn btn-outline-secondary"
+                >
+                  AR
+              </a>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="collapse" id="credits-{{ c.id }}">
+            <td colspan="6" class="p-0">
+              <div class="p-2 border-top">
+                <div id="credits-loading-{{ c.id }}" class="htmx-indicator text-muted small">
+                  Loading…
                 </div>
-              </td>
-            </tr>
-          {% endfor %}
+
+                <div id="credits-body-{{ c.id }}" class="text-muted small">
+                  Click “Load details”
+                </div>
+              </div>
+            </td>
+          </tr>
 
         {% empty %}
-          <tr><td colspan="6" class="text-muted">No customers with credits.</td></tr>
+          <tr>
+            <td colspan="6" class="text-muted">No customers with credits.</td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -97,12 +138,12 @@
   </nav>
 </div>
 
-
+{# Modals (optional, only needed if you use the modal button) #}
 <div id="modal" class="modal fade">
-    <div id="dialog" class="modal-dialog" hx-target="this"></div>
-  </div>
-  
-  <div id="modal2" class="modal fade">
-    <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
-  </div>
+  <div id="dialog" class="modal-dialog" hx-target="this"></div>
+</div>
+
+<div id="modal2" class="modal fade">
+  <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
+</div>
 {% endblock %}

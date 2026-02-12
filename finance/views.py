@@ -81,10 +81,17 @@ def bill_list(request):
 
 @login_required
 def ar_dashboard(request):
-    #item_status = ''
-    customers = Customer.objects.all()
+    customers = Customer.objects.all().order_by("company_name")
+
+    customer_id = (request.GET.get("customer") or "").strip()
+    selected_customer = None
+    if customer_id.isdigit():
+        selected_customer = customers.filter(pk=int(customer_id)).first()
+
     context = {
-        'customers':customers,
+        "customers": customers,
+        "selected_customer": selected_customer,
+        "selected_customer_id": int(customer_id) if customer_id.isdigit() else None,
     }
     return render(request, "finance/AR/ar_dashboard.html", context)
 
@@ -820,9 +827,17 @@ def unapply_payment(request):
         reversed_total += amt
 
     # Restore workorder to unpaid state
-    total = workorder.total_balance or Decimal("0.00")
+    invoice_total = workorder.workorder_total or Decimal("0.00")   # <-- adjust field name
+    new_open = workorder.total_balance or Decimal("0.00")
+
+    # never allow open_balance to exceed invoice total
+    # clamp to [0, invoice_total]
+    new_open = max(Decimal("0.00"), min(new_open, invoice_total))
+
+    
+
     Workorder.objects.filter(pk=pk).update(
-        open_balance=total,
+        open_balance=new_open,
         amount_paid=Decimal("0.00"),
         paid_in_full=0,
         date_paid=None,
@@ -4769,7 +4784,7 @@ def credits_report(request):
         .filter(
             Q(unapplied_payments__gt=0) | Q(open_credit_memos__gt=0) | Q(unused_giftcerts__gt=0)
         )
-        .order_by("-total_credits", "company_name")
+        .order_by("company_name", "-total_credits")
     )
 
     if q:

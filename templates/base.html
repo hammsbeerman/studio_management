@@ -11,7 +11,30 @@
       <link href="{% static 'js/jquery-ui-1.13.2/jquery-ui.theme.min.css' %}" rel="stylesheet">
         
       <script src="{% static 'js/jquery-3.7.0.min.js' %}"></script>
+      <script>
+        // jQuery fallback (only if local didn't load)
+        if (typeof window.jQuery === "undefined") {
+          document.write('<script src="https://code.jquery.com/jquery-3.7.0.min.js"><\/script>');
+        }
+      </script>
+
       <script src="{% static 'js/jquery-ui-1.13.2/jquery-ui.js' %}"></script>
+      <script>
+        // jQuery UI fallback (only if local didn't load)
+        (function () {
+          function hasJqui() {
+            return !!(window.jQuery && window.jQuery.fn && typeof window.jQuery.fn.datepicker === "function");
+          }
+          if (!hasJqui()) {
+            document.write('<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"><\/script>');
+            // optional theme CSS fallback (only if you want)
+            var link = document.createElement("link");
+            link.rel = "stylesheet";
+            link.href = "https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.min.css";
+            document.head.appendChild(link);
+          }
+        })();
+      </script>
 
       <!--Datepicker-->
       <script src="{% static 'js/datepicker.js' %}"></script>

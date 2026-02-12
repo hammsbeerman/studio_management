@@ -10,9 +10,11 @@
 <div class="row mb-3">
   <div class="col-sm-8">
     <select class="custom-select mb-2" id="customers" name="customer">
-      <option value="" selected>Select Customer</option>
+      <option value="" {% if not selected_customer_id %}selected{% endif %}>Select Customer</option>
       {% for x in customers %}
-        <option value="{{ x.id }}">{{ x.company_name }}</option>
+        <option value="{{ x.id }}" {% if x.id == selected_customer_id %}selected{% endif %}>
+          {{ x.company_name }}
+        </option>
       {% endfor %}
     </select>
 
