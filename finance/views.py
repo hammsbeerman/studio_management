@@ -15,6 +15,7 @@ from django.utils import timezone
 from datetime import timedelta, datetime, date
 from datetime import date as date_cls
 from decimal import Decimal, InvalidOperation
+from typing import Tuple
 import logging
 from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment, Krueger_Araging, CreditMemo, WorkorderCreditMemo, GiftCertificate, GiftCertificateRedemption, CreditAdjustment
 from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm, DateRangeForm
@@ -32,6 +33,49 @@ from retail.models import RetailCashSale
 from finance.helpers_ar import ar_open_workorders_qs, recompute_customer_open_balance, apply_amount_to_workorder, reverse_amount_from_workorder, hx_ar_changed_204
 
 logger = logging.getLogger(__file__)
+
+def _money(val) -> Decimal:
+    """
+    Safe money parsing:
+      - Decimal -> Decimal
+      - "1,234.56" -> Decimal("1234.56")
+      - "" / None -> Decimal("0.00")
+    """
+    if val is None:
+        return Decimal("0.00")
+    if isinstance(val, Decimal):
+        return val
+    s = str(val).strip().replace(",", "")
+    if not s:
+        return Decimal("0.00")
+    try:
+        return Decimal(s)
+    except (InvalidOperation, ValueError):
+        return Decimal("0.00")
+
+
+def _invoice_total(wo) -> Decimal:
+    """
+    Invoice total cap for open_balance.
+    Prefers parsed workorder_total (CharField), falls back to total_balance (DecimalField).
+    """
+    wt = _money(getattr(wo, "workorder_total", None))  # CharField
+    if wt > 0:
+        return wt
+    return _money(getattr(wo, "total_balance", None))
+
+
+def _clamp_balances(wo, proposed_open: Decimal) -> Tuple[Decimal, Decimal, bool]:
+    """
+    Returns (open_balance, amount_paid, paid_in_full) with invariant:
+      0 <= open_balance <= invoice_total
+      amount_paid = max(0, invoice_total - open_balance)
+    """
+    inv = _invoice_total(wo)
+    new_open = max(Decimal("0.00"), min(_money(proposed_open), inv))
+    new_paid = max(Decimal("0.00"), inv - new_open)
+    paid = (new_open == Decimal("0.00") and inv > Decimal("0.00"))
+    return new_open, new_paid, paid
 
 def _recalc_avg_days_to_pay(customer_id):
     return (
@@ -826,20 +870,14 @@ def unapply_payment(request):
 
         reversed_total += amt
 
-    # Restore workorder to unpaid state
-    invoice_total = workorder.workorder_total or Decimal("0.00")   # <-- adjust field name
-    new_open = workorder.total_balance or Decimal("0.00")
-
-    # never allow open_balance to exceed invoice total
-    # clamp to [0, invoice_total]
-    new_open = max(Decimal("0.00"), min(new_open, invoice_total))
-
-    
+    # Restore workorder to unpaid state (CLAMPED)
+    # Restore workorder to unpaid state (CLAMPED to invoice total)
+    inv = _invoice_total(workorder)
 
     Workorder.objects.filter(pk=pk).update(
-        open_balance=new_open,
+        open_balance=inv,
         amount_paid=Decimal("0.00"),
-        paid_in_full=0,
+        paid_in_full=False,
         date_paid=None,
     )
 
@@ -2938,19 +2976,16 @@ def unapply_workorder_payment(request, wop_id):
     current_avail = pay.available or Decimal("0.00")
     Payments.objects.filter(pk=pay.pk).update(available=current_avail + amt)
 
-    # 3) restore workorder balances
-    wo_open = wo.open_balance or Decimal("0.00")
-    wo_paid = wo.amount_paid or Decimal("0.00")
+    # 3) restore workorder balances (CLAMPED)
+    wo_open = _money(wo.open_balance)
+    proposed_open = wo_open + amt
 
-    new_open = wo_open + amt
-    new_paid = wo_paid - amt
-    if new_paid < 0:
-        new_paid = Decimal("0.00")
+    new_open, new_paid, paid = _clamp_balances(wo, proposed_open)
 
     Workorder.objects.filter(pk=wo.pk).update(
         open_balance=new_open,
         amount_paid=new_paid,
-        paid_in_full=False,
+        paid_in_full=paid,
         date_paid=None,
     )
 
@@ -3413,18 +3448,15 @@ def unapply_creditmemo(request, wocm_id):
     CreditMemo.objects.filter(pk=cm.pk).update(open_balance=cm_open + amt)
 
     # 3) restore workorder balances like payment reverse
-    wo_open = wo.open_balance or Decimal("0.00")
-    wo_paid = wo.amount_paid or Decimal("0.00")
+    wo_open = _money(wo.open_balance)
+    proposed_open = wo_open + amt
 
-    new_open = wo_open + amt
-    new_paid = wo_paid - amt
-    if new_paid < 0:
-        new_paid = Decimal("0.00")
+    new_open, new_paid, paid = _clamp_balances(wo, proposed_open)
 
     Workorder.objects.filter(pk=wo.pk).update(
         open_balance=new_open,
         amount_paid=new_paid,
-        paid_in_full=False,
+        paid_in_full=paid,
         date_paid=None,
     )
 
@@ -3779,18 +3811,15 @@ def unapply_giftcert(request, gcr_id):
     GiftCertificate.objects.filter(pk=gc.pk).update(balance=bal + amt)
 
     # 3) restore workorder balances like payment reverse
-    wo_open = wo.open_balance or Decimal("0.00")
-    wo_paid = wo.amount_paid or Decimal("0.00")
+    wo_open = _money(wo.open_balance)
+    proposed_open = wo_open + amt
 
-    new_open = wo_open + amt
-    new_paid = wo_paid - amt
-    if new_paid < 0:
-        new_paid = Decimal("0.00")
+    new_open, new_paid, paid = _clamp_balances(wo, proposed_open)
 
     Workorder.objects.filter(pk=wo.pk).update(
         open_balance=new_open,
         amount_paid=new_paid,
-        paid_in_full=False,
+        paid_in_full=paid,
         date_paid=None,
     )
 
