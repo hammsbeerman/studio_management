@@ -2,29 +2,40 @@
 {% load crispy_forms_tags %}
 <script src="{% static 'js/datepicker.js' %}"></script>
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
-<form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
-    
-    <div class="modal-header">
-        <h5 class="modal-title">Edit Workorder</h5>
-      </div>
-      <div class="modal-body">
-        <form hx-post="{% url 'workorders:edit_workorder' %}"> 
-          {% csrf_token %}
-          {{message}}
-        {{ form|crispy }}
-      </div>
-      <div class="modal-footer">
-        {% if void.void == 1 %}
-          <button type="button" class="btn btn-danger" hx-post="{% url 'workorders:void_workorder' pk=workorder void=1 %}">Restore Workorder</button>
-          <span class="flex-grow-1"></span>
-        {% else %}
-          <button type="button" class="btn btn-info" hx-get="{% url 'workorders:void_workorder' %}?pk={{workorder}}" hx-target="#dialog">
-            Void
-          </button><span class="flex-grow-1"></span>
-        {% endif %}
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save</button>
-      </div>
-      <input type="hidden" id="workorder" name="workorder" value="{{ workorder }}">
-    </form>
-    {% endwith %}
+<form
+  class="modal-content"
+  hx-post="{% url 'workorders:edit_workorder' %}?workorder={{ workorder }}"
+  hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+>
+  <div class="modal-header">
+    <h5 class="modal-title">Edit Workorder</h5>
+  </div>
+
+  <div class="modal-body">
+    {{ message }}
+    {{ form|crispy }}
+  </div>
+
+  <div class="modal-footer">
+    {% if void.void == 1 %}
+      <button type="button" class="btn btn-danger"
+        hx-post="{% url 'workorders:void_workorder' pk=workorder void=1 %}">
+        Restore Workorder
+      </button>
+      <span class="flex-grow-1"></span>
+    {% else %}
+      <button type="button" class="btn btn-info"
+        hx-get="{% url 'workorders:void_workorder' %}?pk={{ workorder }}"
+        hx-target="#dialog">
+        Void
+      </button>
+      <span class="flex-grow-1"></span>
+    {% endif %}
+
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+
+  <input type="hidden" id="workorder" name="workorder" value="{{ workorder }}">
+</form>
+{% endwith %}

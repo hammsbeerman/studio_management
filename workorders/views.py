@@ -35,6 +35,8 @@ from retail.delivery_utils import (
     sync_workorder_delivery_from_sale,
 )
 from retail.models import Delivery
+import logging
+logger = logging.getLogger(__name__)
 
 def _next_number(counter_id: int) -> int:
     with transaction.atomic():
@@ -438,6 +440,9 @@ def edit_workorder(request):
         workorder_num = request.POST.get("workorder")
         print(workorder_num)
         customer = request.POST.get('customer')
+        logger.warning("edit_workorder POST keys=%s", list(request.POST.keys()))
+        logger.warning("edit_workorder customer raw=%r", request.POST.get("customer"))
+        logger.warning("edit_workorder customer_id raw=%r", request.POST.get("customer_id"))
         customer = Customer.objects.get(pk=customer)
         print(customer)
         print(customer.company_name)
