@@ -45,4 +45,14 @@
   document.addEventListener("shown.bs.modal", function (e) {
     initDatepickers(e.target);
   });
+
+  // ✅ Most reliable for HTMX swaps
+  document.body.addEventListener("htmx:afterSwap", function (e) {
+    initDatepickers(e.target);
+  });
+
+  // (Optional) also afterSettle for cases where the DOM finishes later
+  document.body.addEventListener("htmx:afterSettle", function (e) {
+    initDatepickers(e.target);
+  });
 })();
