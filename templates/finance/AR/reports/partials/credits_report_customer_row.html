@@ -1,0 +1,97 @@
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="fw-semibold mb-1">Unapplied Payments</div>
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Date</th><th>Type</th><th class="text-end">Avail</th><th style="width:1%;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in payments %}
+          <tr>
+            <td style="white-space:nowrap;">{{ p.date }}</td>
+            <td>{{ p.payment_type }}{% if p.check_number %}<div class="text-muted small">#{{ p.check_number }}</div>{% endif %}</td>
+            <td class="text-end">{{ p.available|floatformat:2 }}</td>
+            <td class="text-end">
+              <button type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      hx-get="{% url 'finance:adjust_credit_modal' %}?kind=payment&id={{ p.id }}"
+                      hx-target="#dialog2"
+                      hx-swap="innerHTML">
+                Adjust
+              </button>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="text-muted">None.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="fw-semibold mb-1">Open Credit Memos</div>
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Date</th><th>Memo</th><th class="text-end">Open</th><th style="width:1%;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cm in credit_memos %}
+          <tr>
+            <td style="white-space:nowrap;">{{ cm.date }}</td>
+            <td>{{ cm.memo_number|default:cm.id }}</td>
+            <td class="text-end">{{ cm.open_balance|floatformat:2 }}</td>
+            <td class="text-end">
+              <button type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      hx-get="{% url 'finance:adjust_credit_modal' %}?kind=creditmemo&id={{ cm.id }}"
+                      hx-target="#dialog2"
+                      hx-swap="innerHTML">
+                Adjust
+              </button>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="text-muted">None.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="fw-semibold mb-1">Unused Gift Certs</div>
+    <table class="table table-sm align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Issued</th><th>Number</th><th class="text-end">Bal</th><th style="width:1%;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for gc in giftcerts %}
+          <tr>
+            <td style="white-space:nowrap;">{{ gc.issued_date }}</td>
+            <td>
+              {{ gc.certificate_number|default:gc.id }}
+              {% if gc.sold_to %}<div class="text-muted small">Sold to: {{ gc.sold_to }}</div>{% endif %}
+            </td>
+            <td class="text-end">{{ gc.balance|floatformat:2 }}</td>
+            <td class="text-end">
+              <button type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      hx-get="{% url 'finance:adjust_credit_modal' %}?kind=giftcert&id={{ gc.id }}"
+                      hx-target="#dialog2"
+                      hx-swap="innerHTML">
+                Adjust
+              </button>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4" class="text-muted">None.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

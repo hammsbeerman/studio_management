@@ -1,0 +1,39 @@
+<tr>
+  <td>{{ p.date }}</td>
+  <td>{{ p.id }}</td>
+  <td>{{ p.customer.company_name }}</td>
+  <td>{{ p.payment_type.name }}</td>
+  <td class="text-end">{{ p.amount|floatformat:2 }}</td>
+  <td class="text-end">{{ p.available|default_if_none:0|floatformat:2 }}</td>
+  <td class="text-end">{{ p.applied_count|default:0 }}</td>
+
+  <td class="text-end">
+    {% if p.still_orphan %}
+      <span class="badge bg-warning text-dark me-2">Still orphan</span>
+    {% endif %}
+
+    <button class="btn btn-sm btn-outline-secondary"
+            hx-post="{% url 'finance:recompute_payment_available' p.id %}"
+            hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+            hx-target="closest tr"
+            hx-swap="outerHTML">
+      Recompute
+    </button>
+
+    <button class="btn btn-sm btn-outline-primary"
+            hx-get="{% url 'finance:orphan_payment_force_apply_modal' p.id %}"
+            hx-target="#dialog2"
+            hx-swap="innerHTML">
+      Force apply
+    </button>
+
+    <button class="btn btn-sm btn-outline-danger"
+            hx-post="{% url 'finance:orphan_payment_void' p.id %}"
+            hx-confirm="Void payment #{{ p.id }}?"
+            hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+            hx-target="closest tr"
+            hx-swap="outerHTML">
+      Void
+    </button>
+  </td>
+</tr>

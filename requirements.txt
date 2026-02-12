@@ -24,3 +24,4 @@ weasyprint
 djangorestframework
 sentry-sdk
 django-crontab
+django-extensions

@@ -5,125 +5,241 @@
 {% block content %}
 
 <center><h4>A/R Dashboard</h4></center>
-
 <br/>
-<div class="row">
-  <div class="col-sm-4">
+
+<div class="row mb-3">
+  <div class="col-sm-8">
+    <select class="custom-select mb-2" id="customers" name="customer">
+      <option value="" selected>Select Customer</option>
+      {% for x in customers %}
+        <option value="{{ x.id }}">{{ x.company_name }}</option>
+      {% endfor %}
+    </select>
+
+    {# Hidden field used by hx-include (reliable with Select2) #}
+    <input type="hidden" id="ar_customer" name="customer" value="">
   </div>
-  <div class="col-sm-4">
-  </div>
-  <div class="col-sm-4">
-    <button hx-get="{% url 'finance:recieve_payment' %}" hx-target="#dialog" class="btn btn-success">Recieve Payment</button>
-    <button hx-get="{% url 'finance:remove_payment' %}" hx-target="#dialog" class="btn btn-danger">Remove Payment</button>
+
+  <div class="col-sm-4 text-end">
+    <span id="ar-action-buttons"
+          hx-get="{% url 'finance:ar_action_buttons' %}"
+          hx-trigger="customerChanged from:body, arChanged from:body"
+          hx-include="#ar_customer"
+          hx-swap="innerHTML">
+      {% include "finance/AR/partials/ar_action_buttons.html" with customer_id=None %}
+    </span>
   </div>
 </div>
 
-<p>
-<div class="row">
-    <div id="workorders" class="col-sm-12">
-      <select class="custom-select mb-4" id="customers" hx-trigger="change, itemListChanged from:body" name="customers" hx-get="{% url 'finance:open_workorders' %}" hx-target="#workorders">
-      <option selected>Select Customer</option>
-          {% for x in customers %}
-            <option value="{{ x.id }}">{{ x.company_name }}</option>
-          {% endfor %}
-      </select>
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <div>
+          <strong>Open Workorders</strong>
+          <span class="text-muted ms-2" id="ar-selected-customer-label"></span>
+        </div>
+      </div>
+
+      <div class="card-body" id="workorders-panel"
+           hx-get="{% url 'finance:open_workorders' %}"
+           hx-trigger="customerChanged from:body, arChanged from:body"
+           hx-include="#ar_customer"
+           hx-swap="innerHTML">
+        <div class="text-muted">Select a customer to load open workorders.</div>
+      </div>
     </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card mb-3">
+      <div class="card-header d-flex align-items-center justify-content-between">
+      <strong>Payment History</strong>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-primary"
+                hx-get="{% url 'finance:recieve_payment' %}"
+                hx-target="#dialog"
+                hx-swap="innerHTML"
+                hx-include="#ar_customer"
+                {% comment %} disable when no customer selected {% endcomment %}
+                hx-disabled-elt="this">
+          Receive Payment
+        </button>
+        <button type="button"
+                class="btn btn-sm btn-outline-primary"
+                hx-get="{% url 'finance:unused_giftcerts_apply_modal' %}"
+                hx-target="#dialog"
+                hx-swap="innerHTML"
+                hx-include="#ar_customer"
+                hx-disabled-elt="this">
+          Apply Gift Cert
+        </button>
+        <a class="btn btn-sm btn-outline-secondary"
+          id="customer-full-report"
+          href="#"
+          onclick="return false;">
+          Full Report
+        </a>
+
+        <script>
+        (function () {
+          function syncReportLink() {
+            const cust = document.getElementById("ar_customer")?.value || "";
+            const a = document.getElementById("customer-full-report");
+            if (!a) return;
+
+            if (!cust) {
+              a.classList.add("disabled");
+              a.setAttribute("href", "#");
+              return;
+            }
+
+            a.classList.remove("disabled");
+            a.setAttribute("href", "{% url 'finance:customer_full_report' %}?customer=" + encodeURIComponent(cust));
+            a.onclick = null;
+          }
+
+          document.body.addEventListener("customerChanged", syncReportLink);
+          syncReportLink();
+        })();
+        </script>
+      </div>
+    </div>
+
+      <div class="card-body" id="payment-history-panel"
+           hx-get="{% url 'finance:payment_history_customer' %}"
+           hx-trigger="load, customerChanged from:body, arChanged from:body"
+           hx-include="#ar_customer"
+           hx-swap="innerHTML">
+        <div class="text-muted">Select a customer to view payment history.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <strong>Unapplied / Credits</strong>
+      </div>
+
+      <div class="card-body" id="unapplied-panel"
+           hx-get="{% url 'finance:unapplied_and_credits_customer' %}"
+           hx-trigger="customerChanged from:body, arChanged from:body"
+           hx-include="#ar_customer"
+           hx-swap="innerHTML">
+        <div class="text-muted">Select a customer to load unapplied payments and credits.</div>
+      </div>
+    </div>
+  </div>
 </div>
 
+{# ---- Modals ---- #}
+<div id="modal" class="modal fade" tabindex="-1">
+  <div id="dialog" class="modal-dialog" hx-target="this"></div>
+</div>
 
-
-
-
-
-
-
-
-
-<div id="modal" class="modal fade">
-    <div id="dialog" class="modal-dialog" hx-target="this"></div>
-  </div>
-  
-  <div id="modal2" class="modal fade">
-    <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
-  </div>
-
-
-
-
+<div id="modal2" class="modal fade" tabindex="-1">
+  <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
+</div>
 
 {% endblock content %}
 
-
-
-
 {% block scripts %}
-
-
 <script>
+  // --- Customer selector -> sync hidden input + trigger HTMX reloads ---
+  $(function () {
+    const $cust = $("#customers");
+    const $arCustomer = $("#ar_customer");
 
+    if ($cust.length) $cust.select2();
 
-    $(document).ready(function () {
-      $("#customers").select2();
-      $('#customers').on('select2:select', (e) => {
-        htmx.trigger("#customers", "change")
-      });
-    })
+    function syncAndTrigger() {
+      const custId = $cust.val() || "";
+      $arCustomer.val(custId);
 
+      $("#ar-selected-customer-label").text($cust.find("option:selected").text() || "");
 
-    $(document).ready(function() {
-      $(window).keydown(function(event){
-        if(event.keyCode == 13) {
-          event.preventDefault();
-          return false;
-        }
-      });
+      if (!custId) return;
+
+      if (window.htmx) htmx.trigger(document.body, "customerChanged");
+    }
+
+    $cust.on("change select2:select select2:clear", function () {
+      setTimeout(syncAndTrigger, 0);
+    });
+  });
+
+  // --- Modal #1 (dialog) ---
+  (function () {
+    const modalEl = document.getElementById("modal");
+    const dialogEl = document.getElementById("dialog");
+    if (!modalEl || !dialogEl || !window.bootstrap || !window.htmx) return;
+
+    const modal = new bootstrap.Modal(modalEl);
+
+    htmx.on("htmx:afterSwap", (e) => {
+      if (e.detail.target && e.detail.target.id === "dialog") {
+        modal.show();
+
+        // Re-init datepicker for HTMX-injected content
+        try {
+          if (window.initDatepickers) {
+            window.initDatepickers();
+          }
+        } catch (err) {}
+      }
     });
 
+    htmx.on("htmx:beforeSwap", (e) => {
+      if (e.detail.target && e.detail.target.id === "dialog" && !e.detail.xhr.response) {
+        modal.hide();
+        e.detail.shouldSwap = false;
+      }
+    });
 
-    const modal = new bootstrap.Modal(document.getElementById("modal"))
+    modalEl.addEventListener("hidden.bs.modal", () => {
+      dialogEl.innerHTML = "";
+      // when modal closes (204 empty swap), refresh panels
+      if (window.htmx) htmx.trigger(document.body, "arChanged");
+    });
+  })();
+
+  // --- Modal #2 (dialog2) ---
+  (function () {
+    const modal2El = document.getElementById("modal2");
+    const dialog2El = document.getElementById("dialog2");
+    if (!modal2El || !dialog2El || !window.bootstrap || !window.htmx) return;
+
+    const modal2 = new bootstrap.Modal(modal2El);
 
     htmx.on("htmx:afterSwap", (e) => {
-      // Response targeting #dialog => show the modal
-      if (e.detail.target.id == "dialog") {
-        modal.show()
-      }
-    })
+      if (e.detail.target && e.detail.target.id === "dialog2") modal2.show();
+    });
 
     htmx.on("htmx:beforeSwap", (e) => {
-      // Empty response targeting #dialog => hide the modal
-      if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
-        modal.hide()
-        e.detail.shouldSwap = false
+      if (e.detail.target && e.detail.target.id === "dialog2" && !e.detail.xhr.response) {
+        modal2.hide();
+        e.detail.shouldSwap = false;
       }
-    })
+    });
 
-    htmx.on("hidden.bs.modal", () => {
-      document.getElementById("dialog").innerHTML = ""
-    })
-    
+    modal2El.addEventListener("hidden.bs.modal", () => {
+      dialog2El.innerHTML = "";
+      if (window.htmx) htmx.trigger(document.body, "arChanged");
+    });
+  })();
 
-    const modal2 = new bootstrap.Modal(document.getElementById("modal2"))
+  // --- Central refresh ---
+  document.body.addEventListener("arVoidChanged", function () {
+    if (window.htmx) htmx.trigger(document.body, "arChanged");
+  });
 
-    htmx.on("htmx:afterSwap", (e) => {
-      // Response targeting #dialog => show the modal
-      if (e.detail.target.id == "dialog2") {
-        modal2.show()
-      }
-    })
+  document.body.addEventListener("arChanged", function () {
+    const customer = document.querySelector("#ar_customer")?.value || "";
+    if (!customer) return;
 
-    htmx.on("htmx:beforeSwap", (e) => {
-      // Empty response targeting #dialog => hide the modal
-      if (e.detail.target.id == "dialog2" && !e.detail.xhr.response) {
-        modal2.hide()
-        e.detail.shouldSwap = false
-      }
-    })
-
-    htmx.on("hidden.bs.modal", () => {
-      document.getElementById("dialog2").innerHTML = ""
-    })
-
-
+    htmx.ajax("GET", "{% url 'finance:payment_history_customer' %}?customer=" + customer, { target: "#payment-history-panel", swap: "innerHTML" });
+    htmx.ajax("GET", "{% url 'finance:open_workorders' %}?customers=" + customer, { target: "#workorders-panel", swap: "innerHTML" });
+    htmx.ajax("GET", "{% url 'finance:unapplied_and_credits_customer' %}?customer=" + customer, { target: "#unapplied-panel", swap: "innerHTML" });
+  });
 </script>
-
-{% endblock %}
+{% endblock scripts %}

@@ -2,43 +2,67 @@
 {% load crispy_forms_tags %}
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
 {% load static %}
-<script src="{% static 'js/datepicker.js' %}"></script>
 
-
-<form hx-post="{% url 'finance:recieve_payment' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
+<form hx-post="{% url 'finance:recieve_payment' %}"
+      hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+      class="modal-content">
+  {% csrf_token %}
   <div class="modal-header">
     <h5 class="modal-title">Recieve Payment</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
-  <div class="modal-body">
 
+  <div class="modal-body">
     <div class="container">
       <p style="color:red">{{ message }}</p>
       <div class="row">
         <div class="col-sm">
-            Customer: {{ customer.company_name }}
+          Customer: {{ customer.company_name }}
 
-            {{form.date|as_crispy_field}}
-      
-      
+          {{ form.date|as_crispy_field }}
 
-            <select class="custom-select mb-4" id="payment_type" hx-trigger="change" name="payment_type" hx-get="{% url 'finance:payment_detail' %}" hx-target="#payment_detail">
-              <option selected>Payment Type</option>
-                  {% for x in paymenttype %}
-                    <option value="{{ x.id }}">{{ x.name }}</option>
-                  {% endfor %}
-              </select>
-              <div id="payment_detail">
-                
-              </div>
+          <script>
+            (function () {
+              const root = document.currentScript.closest(".modal-content") || document;
+              const el = root.querySelector("#id_date");
+              if (!el) return;
 
-            {{form.amount|as_crispy_field}}
+              // If crispy rendered type="date", replace with a text input so jQuery UI can attach
+              if (el.type === "date") {
+                const replacement = el.cloneNode(true);
+                replacement.type = "text";
+                replacement.classList.add("datepicker");
+                replacement.setAttribute("autocomplete", "off");
+                el.parentNode.replaceChild(replacement, el);
+              } else {
+                el.classList.add("datepicker");
+                el.setAttribute("autocomplete", "off");
+              }
 
-            {{form.memo|as_crispy_field}}
+              if (window.initDatepickers) window.initDatepickers(root);
+            })();
+          </script>
 
-            <input type="hidden" id="customer" name="customer" value="{{ customer.id }}">
-            <input type="hidden" id="modal" name="modal" value="1">
-          </div>
+          <select class="custom-select mb-4"
+                  id="payment_type"
+                  hx-trigger="change"
+                  name="payment_type"
+                  hx-get="{% url 'finance:payment_detail' %}"
+                  hx-target="#payment_detail">
+            <option selected>Payment Type</option>
+            {% for x in paymenttype %}
+              <option value="{{ x.id }}">{{ x.name }}</option>
+            {% endfor %}
+          </select>
+
+          <div id="payment_detail"></div>
+
+          {{ form.amount|as_crispy_field }}
+          {{ form.memo|as_crispy_field }}
+
+          <input type="hidden" id="customer" name="customer" value="{{ customer.id }}">
+          <input type="hidden" id="modal" name="modal" value="1">
+        </div>
         <div class="col-sm">
           <table class="table">
             <thead>
@@ -57,7 +81,15 @@
                 <td>{{ x.workorder }}</td>
                 <td>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}} {% elif x.kos_workorder %}KOS: {{ x.kos_workorder}}{% endif %}</td>
                 <td>{{ x.open_balance }}</td>
-                <td><input name="payment" type="checkbox" value="{{ x.id }}" /></td>
+                <td>
+                  <input
+                    name="payment"
+                    type="checkbox"
+                    value="{{ x.id }}"
+                    class="js-wo-check"
+                    data-balance="{{ x.open_balance|default_if_none:0 }}"
+                  />
+                </td>
                 <td>{{x.date_billed }}</td>
             </tr>
         {% endfor %}
@@ -65,6 +97,13 @@
               <td>Total:</td>
               <td></td>
               <td>{{ total_balance.open_balance__sum|floatformat:2 }}</td>
+            </tr>
+            <tr>
+              <td><b>Selected:</b></td>
+              <td></td>
+              <td><span id="selected_total">0.00</span></td>
+              <td></td>
+              <td></td>
             </tr>
               
     
@@ -80,7 +119,12 @@
   <div class="modal-footer">
     
     <span class="flex-grow-1"></span>
-    
+    <button type="button" class="btn btn-outline-primary" 
+      hx-get="{% url 'finance:unused_giftcerts_apply_modal' %}" 
+      hx-swap="innerHTML" 
+      hx-include="input[name='customer']"> 
+      Apply Gift Cert 
+    </button>
     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
       Cancel
     </button>
@@ -88,3 +132,33 @@
   </div>
 </form>
 {% endwith %}
+
+<script>
+  function parseMoney(val) {
+    // handles "1,234.56" etc
+    if (val == null) return 0;
+    const cleaned = String(val).replace(/,/g, "").trim();
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function updateSelectedTotal(root) {
+    let sum = 0;
+    root.querySelectorAll(".js-wo-check:checked").forEach((cb) => {
+      sum += parseMoney(cb.dataset.balance);
+    });
+    root.querySelector("#selected_total").textContent = sum.toFixed(2);
+  }
+
+  (function initSelectedTotal(){
+    const root = document.currentScript.closest(".modal-content") || document;
+    // initial
+    updateSelectedTotal(root);
+    // on change
+    root.addEventListener("change", (e) => {
+      if (e.target.classList && e.target.classList.contains("js-wo-check")) {
+        updateSelectedTotal(root);
+      }
+    });
+  })();
+</script>

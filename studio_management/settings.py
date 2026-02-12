@@ -100,6 +100,7 @@ THIRD_PARTY_APPS = [
     'import_export',
     'rest_framework',
     'django_crontab',
+    'django_extensions',
 ]
 
 LOCAL_APPS = [

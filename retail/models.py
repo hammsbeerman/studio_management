@@ -80,6 +80,7 @@ class RetailSaleLine(models.Model):
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     sold_variation = models.ForeignKey(InventoryQtyVariations, on_delete=models.SET_NULL, null=True, blank=True, related_name="retail_sale_lines", help_text="If set, qty represents this variation; base units = qty * sold_variation.variation_qty.")
+    is_gift_certificate = models.BooleanField(default=False, db_index=True)
 
     @property
     def extended(self):

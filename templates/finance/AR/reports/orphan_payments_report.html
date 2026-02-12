@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<h4>Orphan Payments</h4>
+<div class="text-muted mb-2">
+  Payments with <strong>available = 0</strong> (or null) and <strong>no non-void WorkorderPayment</strong>.
+</div>
+
+<table class="table table-sm table-striped align-middle">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>ID</th>
+      <th>Customer</th>
+      <th>Type</th>
+      <th class="text-end">Amount</th>
+      <th class="text-end">Available</th>
+      <th class="text-end">Applied</th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody id="orphan-payments-body">
+    {% for p in payments %}
+      {% include "finance/AR/reports/_orphan_payment_row.html" with p=p %}
+    {% empty %}
+      <tr><td colspan="8" class="text-muted">No orphan payments found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{# Modal container for force apply #}
+<div id="modal2" class="modal fade" tabindex="-1">
+  <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // If your base already sets up modal2 handlers, you can delete this whole block.
+  (function() {
+    if (!window.bootstrap || !window.htmx) return;
+
+    const modalEl = document.getElementById("modal2");
+    if (!modalEl) return;
+
+    const modal2 = new bootstrap.Modal(modalEl);
+
+    htmx.on("htmx:afterSwap", (e) => {
+      if (e.detail.target && e.detail.target.id === "dialog2") modal2.show();
+    });
+
+    htmx.on("htmx:beforeSwap", (e) => {
+      if (e.detail.target && e.detail.target.id === "dialog2" && !e.detail.xhr.response) {
+        modal2.hide();
+        e.detail.shouldSwap = false;
+      }
+    });
+
+    modalEl.addEventListener("hidden.bs.modal", () => {
+      const dlg = document.getElementById("dialog2");
+      if (dlg) dlg.innerHTML = "";
+    });
+
+    // After a successful force-apply, refresh the page list (simple + reliable)
+    document.body.addEventListener("orphanPaymentsChanged", function () {
+      htmx.ajax("GET", window.location.href, { target: "#orphan-payments-body", swap: "innerHTML" });
+    });
+  })();
+</script>
+{% endblock %}

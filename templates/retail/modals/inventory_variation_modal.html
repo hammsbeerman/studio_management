@@ -46,7 +46,7 @@
                 {% if forloop.first %}checked{% endif %}
               >
               <label class="form-check-label" for="variation-{{ v.id }}">
-                {{ v.variation.name }} (×{{ v.variation_qty }})
+                {{ v.variation.name }} (×{{ v.variation_qty }}){% if v.retail_price %} — ${{ v.retail_price|floatformat:2 }}{% endif %}
               </label>
             </div>
           {% endfor %}

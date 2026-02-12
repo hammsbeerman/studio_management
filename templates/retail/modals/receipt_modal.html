@@ -48,6 +48,20 @@
         </tbody>
       </table>
 
+      {% if issued_giftcerts %}
+        <hr class="my-2">
+        <div class="mb-2">
+          <strong>Gift Certificates Issued</strong>
+          <ul class="mb-0">
+            {% for gc in issued_giftcerts %}
+              <li>
+                {{ gc.certificate_number }} — {{ gc.original_amount|floatformat:2 }}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
       <hr class="my-2">
 
       <div class="text-end">
@@ -72,7 +86,7 @@
     <button type="button" class="btn btn-sm btn-primary" onclick="window.print()">
       Print
     </button>
-    <a href="{% url 'retail:sale_receipt' sale.id %}" target="_blank" class="btn btn-sm btn-outline-secondary">
+    <a href="{% url 'retail:sale_receipt_modal' sale.id %}" target="_blank" class="btn btn-sm btn-outline-secondary">
       Open full receipt
     </a>
   </div>

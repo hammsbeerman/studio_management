@@ -4,12 +4,12 @@
 {% load static %}
 <script src="{% static 'js/datepicker.js' %}"></script>
 
-
-<form hx-post="{% url 'finance:apply_payment' %}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
+<div class="modal-content">
   <div class="modal-header">
     <h5 class="modal-title">Open Invoices</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
+
   <div class="modal-body">
 
     Total outstanding: {{ total_balance.open_balance__sum|floatformat:2 }}
@@ -19,64 +19,96 @@
     {% if message %}<p style="color: red">{{message}}</p>{% endif %}
 
     <table class="table">
-        <thead>
-          <tr>
-            <th scope="col" class="">Workorder</th>
-            <th scope="col" class="">Description</th>
-            <th scope="col" class=""></th>
-            <th scope="col" class="">Amount</th>
-            <th scope="col" class="">Date Billed</th>
-            <th scope="col" class="">Partial Payment</th>
-            <th scope="col" class=""></th>
-            <th scope="col" class=""></th>
-            <th scope="col" class=""></th>
-          </tr>
-        </thead>
-        <tbody>
-
-    {% for x in workorders %}
+      <thead>
         <tr>
-            <form hx-post="{% url 'finance:apply_payment' %}">
-              {% csrf_token %}
+          <th scope="col" class="">Workorder</th>
+          <th scope="col" class="">Description</th>
+          <th scope="col" class=""></th>
+          <th scope="col" class="">Amount</th>
+          <th scope="col" class="">Date Billed</th>
+          <th scope="col" class="">Partial Payment</th>
+          <th scope="col" class=""></th>
+          <th scope="col" class=""></th>
+          <th scope="col" class=""></th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for x in workorders %}
+          <tr>
             <td>{{ x.workorder }}</td>
             <td>{{ x.description }}</td>
-            <td>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}}{% endif %}</td>
+            <td>
+              {% if x.lk_workorder %}LK: {{ x.lk_workorder }}
+              {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}}{% endif %}
+            </td>
             <td>{{ x.open_balance }}</td>
             <td>{{ x.date_billed }}</td>
-            <td><input type="text" name="partial_payment" class="text form-control" id="partial_payment" size="10"></td>
+
+            {# ✅ Put the form ONLY around the inputs + button, keep your cells #}
             <td>
-                <input type="hidden" id="pk" name="pk" value="{{x.id}}">
-                <input type="hidden" id="customer" name="customer" value="{{customer}}">
+              <form
+                hx-post="{% url 'finance:apply_payment' %}"
+                hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+                class="m-0 p-0"
+              >
+                <input
+                  type="text"
+                  name="partial_payment"
+                  class="text form-control"
+                  size="10"
+                >
+            </td>
+
+            <td>
+                <input type="hidden" name="pk" value="{{ x.id }}">
+                <input type="hidden" name="customer" value="{{ customer }}">
                 <button class="btn btn-primary btn-sm" type="submit">Pay</button>
             </td>
-            <td>
-              <select class="custom-select mb-4" id="payment" name="payment">
-                <option selected>Payment</option>
-                    {% for x in payments %}
-                      {% if x.available > 0 %}
-                      <option value="{{ x.id }}">{{ x.available }} - {{x.payment_type}} - {{x.date}}</option>
-                      {% endif %}
-                    {% endfor %}
-                </select>
-              </td>
-        </tr>
-       </form>
-        {% endfor %}
-        
-        </table>
 
-      
+            <td>
+                <select class="custom-select mb-4" name="payment" required>
+                  <option value="" selected disabled>Payment</option>
+                  {% for p in payments %}
+                    {% if p.available > 0 %}
+                      <option value="{{ p.id }}">{{ p.available }} - {{ p.payment_type }} - {{ p.date }}</option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </form>
+            </td>
+
+            <td></td>
+          </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
 
     <input type="hidden" id="customer" name="customer" value="{{ customer }}">
-    <input type="hidden" id="id" name="id" value="{{ pk }}">
-    <input type="hidden" id="test" name="test" value="1">
-  </div>
-  <div class="modal-footer">
-    <button hx-get="{% url 'finance:open_invoices_recieve_payment' pk=customer %}" hx-target="#dialog2" class="btn btn-success">Recieve Payment</button>
-    <span class="flex-grow-1"></span>
-    <button hx-get="{% url 'finance:apply_other' cust=customer %}" hx-target="#dialog2" class="btn btn-success">Apply Elsewhere</button>
-    <button hx-get="{% url 'workorders:close_pay_modal' %}" class="btn btn-secondary">Close</button>
 
   </div>
-</form>
+
+  <div class="modal-footer">
+    <button hx-get="{% url 'finance:open_invoices_recieve_payment' pk=customer %}"
+            hx-target="#dialog2"
+            class="btn btn-success"
+            type="button">
+      Recieve Payment
+    </button>
+    <span class="flex-grow-1"></span>
+    <button hx-get="{% url 'finance:apply_other' cust=customer %}"
+            hx-target="#dialog2"
+            class="btn btn-success"
+            type="button">
+      Apply Elsewhere
+    </button>
+    <button hx-get="{% url 'workorders:close_pay_modal' %}"
+            class="btn btn-secondary"
+            type="button">
+      Close
+    </button>
+  </div>
+</div>
+
 {% endwith %}

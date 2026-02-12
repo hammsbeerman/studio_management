@@ -2,7 +2,7 @@
   <td class="text-center">{{ rownum }}</td>
 
   {# DESCRIPTION (clickable for inventory items) #}
-  <td>
+  <td style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
     {% if line.inventory_id %}
       <button
         type="button"
@@ -22,7 +22,7 @@
             <select
               class="form-select form-select-sm d-inline-block"
               style="width:auto; display:inline-block;"
-              name="sold_variation"
+              name="variation_id"
               hx-post="{% url 'retail:sale_update_line_variation' sale.id line.id %}"
               hx-trigger="change"
               hx-target="#line-{{ line.id }}"
@@ -66,68 +66,92 @@
     {% endif %}
   </td>
 
-  {# PRICE COLUMN #}
+  {# QTY COLUMN (editable) #}
   <td class="text-end">
-    <form
-      method="post"
-      action="{% url 'retail:sale_update_line_price' sale.id line.id %}"
-      class="d-inline-flex align-items-center justify-content-end flex-nowrap"
-      style="gap: 0.25rem;"
+    <input
+      type="number"
+      step="0.01"
+      name="qty"
+      value="{{ line.qty|floatformat:2 }}"
+      class="form-control form-control-sm text-end"
+      style="width: 70px; display:inline-block;"
+      hx-post="{% url 'retail:sale_update_line_qty' sale.id line.id %}"
+      hx-trigger="change delay:300ms"
+      hx-target="#line-{{ line.id }}"
+      hx-swap="outerHTML"
+      hx-vals='{"rownum":"{{ rownum }}"}'
     >
-      {% csrf_token %}
-
-      {# Price input triggers update #}
-      {% if line.inventory and line.inventory.unit_cost and line.unit_price and line.unit_price < line.inventory.unit_cost %}
-        <input
-          type="number"
-          step="0.01"
-          name="unit_price"
-          value="{{ line.unit_price|floatformat:2 }}"
-          class="form-control form-control-sm text-end text-danger fw-bold"
-          style="width: 80px;"
-
-          hx-post="{% url 'retail:sale_update_line_price' sale.id line.id %}"
-          hx-trigger="change delay:300ms"
-          hx-target="#line-{{ line.id }}"
-          hx-swap="outerHTML"
-        >
-      {% else %}
-        <input
-          type="number"
-          step="0.01"
-          name="unit_price"
-          value="{{ line.unit_price|floatformat:2 }}"
-          class="form-control form-control-sm text-end"
-          style="width: 80px;"
-
-          hx-post="{% url 'retail:sale_update_line_price' sale.id line.id %}"
-          hx-trigger="change delay:300ms"
-          hx-target="#line-{{ line.id }}"
-          hx-swap="outerHTML"
-        >
-      {% endif %}
-
-      {# Save checkbox also triggers update so override can be stored #}
-      {% if line.inventory %}
-        <div class="form-check d-inline-block mb-0">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            name="update_default_price"
-            id="update-default-{{ line.id }}"
-
-            hx-post="{% url 'retail:sale_update_line_price' sale.id line.id %}"
-            hx-trigger="change"
-            hx-target="#line-{{ line.id }}"
-            hx-swap="outerHTML"
-          >
-          <label class="form-check-label small" for="update-default-{{ line.id }}">
-            Save
-          </label>
-        </div>
-      {% endif %}
-    </form>
   </td>
+
+  {# PRICE COLUMN #}
+<td class="text-end align-top">
+  <form
+    method="post"
+    action="{% url 'retail:sale_update_line_price' sale.id line.id %}"
+    class="d-flex flex-column align-items-end"
+    style="gap: 0.25rem;"
+  >
+    {% csrf_token %}
+
+    {# Price input #}
+    {% if line.inventory and line.inventory.unit_cost and line.unit_price and line.unit_price < line.inventory.unit_cost %}
+      <input
+        type="number"
+        step="0.01"
+        name="unit_price"
+        value="{{ line.unit_price|floatformat:2 }}"
+        class="form-control form-control-sm text-end text-danger fw-bold"
+        style="width: 80px;"
+        hx-post="{% url 'retail:sale_update_line_price' sale.id line.id %}"
+        hx-trigger="change delay:300ms"
+        hx-target="#line-{{ line.id }}"
+        hx-swap="outerHTML"
+      >
+    {% else %}
+      <input
+        type="number"
+        step="0.01"
+        name="unit_price"
+        value="{{ line.unit_price|floatformat:2 }}"
+        class="form-control form-control-sm text-end"
+        style="width: 80px;"
+        hx-post="{% url 'retail:sale_update_line_price' sale.id line.id %}"
+        hx-trigger="change delay:300ms"
+        hx-target="#line-{{ line.id }}"
+        hx-swap="outerHTML"
+      >
+    {% endif %}
+
+    {# Save checkbox (under price) #}
+    {% if line.inventory %}
+      <div class="form-check mt-1">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          name="update_default_price"
+          id="update-default-{{ line.id }}"
+          hx-post="{% url 'retail:sale_update_line_price' sale.id line.id %}"
+          hx-trigger="change"
+          hx-target="#line-{{ line.id }}"
+          hx-swap="outerHTML"
+        >
+        <label class="form-check-label small" for="update-default-{{ line.id }}">
+          Save
+        </label>
+      </div>
+      <button
+        type="button"
+        class="btn btn-link p-0 small text-muted"
+        hx-post="{% url 'retail:sale_reset_line_price' sale.id line.id %}"
+        hx-target="#line-{{ line.id }}"
+        hx-swap="outerHTML"
+        hx-vals='{"rownum":"{{ rownum }}"}'
+      >
+        Reset
+      </button>
+    {% endif %}
+  </form>
+</td>
 
   {# AMOUNT COLUMN: qty * price, red if below cost #}
   <td class="text-end">

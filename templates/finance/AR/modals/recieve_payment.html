@@ -4,53 +4,56 @@
 {% load static %}
 <script src="{% static 'js/datepicker.js' %}"></script>
 
+<form hx-post="{{ request.path }}"
+      hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+      class="modal-content">
 
-<form hx-post="{{ request.path }}" hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}' class="modal-content">
   <div class="modal-header">
-    <h5 class="modal-title">Recieve Payment</h5>
+    <h5 class="modal-title">Receive Payment</h5>
     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
+
   <div class="modal-body">
-    {{form.date|as_crispy_field}}<br/>
-    
-    Add Customer:<button  class="btn btn-primary-outline" hx-get="{% url 'customers:new_customer' %}" hx-target="#dialog"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;"></button>
-    
+    {% render_field form.date class+="datepicker" autocomplete="off" %}<br/>
 
-    <br/>
-    <select class="custom-select mb-4" name="customer">
-      <option selected>Customer</option>
-          {% for x in customers %}
-            <option value="{{ x.id }}">{{ x.company_name }}</option>
-          {% endfor %}
-    </select>
-    
-    <br/>
-    <select class="custom-select mb-4" id="payment_type" hx-trigger="change" name="payment_type" hx-get="{% url 'finance:payment_detail' %}" hx-target="#payment_detail">
-      <option selected>Payment Type</option>
-          {% for x in paymenttype %}
-            <option value="{{ x.id }}">{{ x.name }}</option>
-          {% endfor %}
-      </select>
-      <div id="payment_detail">
-        
+    {% if selected_customer_id %}
+      <input type="hidden" name="customer" value="{{ selected_customer_id }}">
+      <div class="alert alert-info py-2">
+        Customer is locked from A/R dashboard.
       </div>
+    {% else %}
+      <div class="alert alert-danger">
+        No customer selected. Close this and select a customer first.
+      </div>
+    {% endif %}
 
-    {{form.amount|as_crispy_field}}
+    <select class="custom-select mb-4"
+            id="payment_type"
+            name="payment_type"
+            hx-trigger="change"
+            hx-get="{% url 'finance:payment_detail' %}"
+            hx-target="#payment_detail"
+            required>
+      <option value="">Payment Type</option>
+      {% for x in paymenttype %}
+        <option value="{{ x.id }}">{{ x.name }}</option>
+      {% endfor %}
+    </select>
 
-    {{form.memo|as_crispy_field}}
+    <div id="payment_detail"></div>
 
-    <input type="hidden" id="cat" name="cat" value="{{ cat}}">
-    <input type="hidden" id="id" name="id" value="{{ pk }}">
-    <input type="hidden" id="test" name="test" value="1">
+    {{ form.amount|as_crispy_field }}
+    {{ form.memo|as_crispy_field }}
+
+    <input type="hidden" name="cat" value="{{ cat }}">
+    <input type="hidden" name="id" value="{{ pk }}">
+    <input type="hidden" name="test" value="1">
   </div>
+
   <div class="modal-footer">
-    
     <span class="flex-grow-1"></span>
-    
-    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-      Cancel
-    </button>
-    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn btn-primary" {% if not selected_customer_id %}disabled{% endif %}>Save</button>
   </div>
 </form>
 {% endwith %}

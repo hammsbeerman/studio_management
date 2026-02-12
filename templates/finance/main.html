@@ -20,7 +20,7 @@
         </div>
         <div class="card-body py-2">
           <ul class="list-unstyled mb-0">
-            <li><a href="{% url 'finance:add_invoice' %}">Add bill to be paid</a></li>
+            <li><a href="{% url 'finance:ap_add_invoice' %}">Add bill to be paid</a></li>
             <li><a href="{% url 'finance:view_bills_payable' %}">View bills to be paid</a></li>
             <li><a href="{% url 'finance:bills_by_vendor' %}">View bills by vendor</a></li>
           </ul>
@@ -31,7 +31,7 @@
             <li><a href="{% url 'inventory:vendor_list' %}">Vendor list</a></li>
             <li><a href="{% url 'inventory:item_variations' %}">Item variations</a></li>
             <li><a href="{% url 'inventory:item_details' %}">Item details</a></li>
-            <li><a href="{% url 'finance:add_inventory_item' baseitem=1 %}">Add item</a></li>
+            <li><a href="{% url 'finance:add_inventory_item_baseitem' baseitem=1 %}">Add item</a></li>
           </ul>
         </div>
       </div>
@@ -121,6 +121,8 @@
             <li><a href="{% url 'finance:krueger_ar' %}">Krueger outstanding invoices</a></li>
             <li><a href="{% url 'finance:lk_ar' %}">LK outstanding invoices</a></li>
             <li><a href="{% url 'finance:all_lk' %}">All LK invoices</a></li>
+            <li><a href="{% url 'finance:orphan_payments_report' %}">Orphaned Payment Report</a></li>
+            <li><a href="{% url 'finance:credits_report' %}">Credits Report</a></li>
           </ul>
         </div>
       </div>

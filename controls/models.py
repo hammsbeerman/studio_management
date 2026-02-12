@@ -148,7 +148,7 @@ class UserGroup(models.Model):
     
 class PaymentType(models.Model):
     name = models.CharField('Name', max_length=100, null = True)
-    detail_field = models.CharField('Detail Field', max_length=100, blank=True, null = True)
+    detail_field = models.CharField('Detail Field', max_length=100, blank=True, null = True, help_text="Leave blank unless this payment type requires extra info (check #, gift card #, etc.)")
 
     def __str__(self):
         return self.name

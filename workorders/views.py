@@ -2389,7 +2389,14 @@ def void_status(request):
         total = 0
     billed = workorder.billed
     customer = workorder.customer.id
-    payments = WorkorderPayment.objects.filter(workorder=pk)
+
+    payments = (
+        WorkorderPayment.objects
+        .filter(workorder=workorder, void=False)
+        .select_related("payment", "payment__payment_type")
+        .order_by("date", "id")
+    )
+    
     print(customer)
     print('void')
     print(void)

@@ -1,0 +1,143 @@
+{% csrf_token %}
+
+{% if not customer %}
+  <div class="text-muted">No customer selected.</div>
+{% else %}
+  {% if not history %}
+    <div class="text-muted">No payment / credit activity for this customer.</div>
+  {% else %}
+    <div class="text-muted">History rows: {{ history|length }}</div>
+
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th style="white-space:nowrap;">Date</th>
+            <th>Type</th>
+            <th class="text-end">Amount</th>
+            <th class="text-end">Available</th>
+            <th>Applied To</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for row in history %}
+            <tr>
+              <td style="white-space:nowrap;">{{ row.date }}</td>
+
+              <td>
+                {{ row.label }}
+                {% if row.ref %}
+                  <div class="text-muted small">#{{ row.ref }}</div>
+                {% endif %}
+              </td>
+
+              <td class="text-end">{{ row.amount|floatformat:2 }}</td>
+
+              <td class="text-end">
+                {% if row.kind == "payment_unapplied" or row.kind == "payment_applied" %}
+                  {{ row.available|default_if_none:0|floatformat:2 }}
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+
+              <td>
+                {# 1) Payment applied to a workorder (supports Reverse) #}
+                {% if row.kind == "payment_applied" %}
+                  <div class="d-flex align-items-center justify-content-between" style="gap:10px;">
+                    <div style="white-space:nowrap;">
+                      WO {{ row.workorder.workorder }} — {{ row.amount|floatformat:2 }}
+                    </div>
+
+                    <button
+                      class="btn btn-outline-danger btn-sm"
+                      hx-post="{% url 'finance:unapply_workorder_payment' wop_id=row.wop_id %}"
+                      hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+                      hx-swap="none"
+                      hx-on::after-request="
+                        if (event.detail.successful) {
+                          htmx.ajax('GET', '{% url 'finance:payment_history_customer' %}?customer={{ customer.id }}', { target: '#payment-history-panel' });
+                          htmx.ajax('GET', '{% url 'finance:open_workorders' %}?customers={{ customer.id }}', { target: '#workorders-panel' });
+                          htmx.ajax('GET', '{% url 'finance:unapplied_and_credits_customer' %}?customer={{ customer.id }}', { target: '#unapplied-panel' });
+                        }
+                      "
+                    >
+                      Reverse
+                    </button>
+                  </div>
+
+                {# 2) Payment unapplied (supports Apply) #}
+                {% elif row.kind == "payment_unapplied" %}
+                  <div class="d-flex align-items-center justify-content-between" style="gap:10px;">
+                    <span class="text-muted">Unapplied</span>
+
+                    <button type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      hx-get="{% url 'finance:apply_unapplied_payment_modal' payment_id=row.payment_id %}"
+                      hx-target="#dialog"
+                      hx-swap="innerHTML">
+                      → Apply
+                    </button>
+                  </div>
+
+                {# 3) Credit memo applied (supports Reverse) #}
+                {% elif row.kind == "creditmemo_applied" %}
+                  <div class="d-flex align-items-center justify-content-between" style="gap:10px;">
+                    <div style="white-space:nowrap;">
+                      WO {{ row.workorder.workorder }} — {{ row.amount|floatformat:2 }}
+                    </div>
+
+                    <button
+                      class="btn btn-outline-danger btn-sm"
+                      hx-post="{% url 'finance:unapply_creditmemo' wocm_id=row.wocm_id %}"
+                      hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+                      hx-swap="none"
+                      hx-on::after-request="
+                        if (event.detail.successful) {
+                          htmx.ajax('GET', '{% url 'finance:payment_history_customer' %}?customer={{ customer.id }}', { target: '#payment-history-panel' });
+                          htmx.ajax('GET', '{% url 'finance:open_workorders' %}?customers={{ customer.id }}', { target: '#workorders-panel' });
+                          htmx.ajax('GET', '{% url 'finance:unapplied_and_credits_customer' %}?customer={{ customer.id }}', { target: '#unapplied-panel' });
+                        }
+                      "
+                    >
+                      Reverse
+                    </button>
+                  </div>
+
+                {# 4) Gift cert applied (supports Reverse) #}
+                {% elif row.kind == "giftcert_applied" %}
+                  <div class="d-flex align-items-center justify-content-between" style="gap:10px;">
+                    <div style="white-space:nowrap;">
+                      WO {{ row.workorder.workorder }} — {{ row.amount|floatformat:2 }}
+                    </div>
+
+                    <button
+                      class="btn btn-outline-danger btn-sm"
+                      hx-post="{% url 'finance:unapply_giftcert' gcr_id=row.gcr_id %}"
+                      hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+                      hx-swap="none"
+                      hx-on::after-request="
+                        if (event.detail.successful) {
+                          htmx.ajax('GET', '{% url 'finance:payment_history_customer' %}?customer={{ customer.id }}', { target: '#payment-history-panel' });
+                          htmx.ajax('GET', '{% url 'finance:open_workorders' %}?customers={{ customer.id }}', { target: '#workorders-panel' });
+                          htmx.ajax('GET', '{% url 'finance:unapplied_and_credits_customer' %}?customer={{ customer.id }}', { target: '#unapplied-panel' });
+                        }
+                      "
+                    >
+                      Reverse
+                    </button>
+                  </div>
+
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+  {% endif %}
+{% endif %}

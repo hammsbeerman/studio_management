@@ -14,16 +14,22 @@
       <div class="col-sm-3">
         <p>
           <p>
-            <form method="POST" action="{% url 'finance:add_invoice' %}">
-                {% csrf_token %}
-                {% if message %}<mark class="red">{{ message }}</mark>{% endif %}
-                <select class="custom-select mb-4" id="id_vendor" hx-trigger="change" name="vendor" hx-get="{% url 'finance:bills_by_vendor' %}" hx-target="#vendor_invoices">
-                  <option selected>Select Item</option>
-                  {% for x in vendors %}
-                    <option value="{{ x.id }}">{{ x.name }}</option>
-                  {% endfor %}
-                </select>
-                <br/>
+            <form method="POST" action="{% url 'finance:ap_add_invoice' %}">
+              {% csrf_token %}
+              {% if message %}<mark class="red">{{ message }}</mark>{% endif %}
+
+              <select class="custom-select mb-4"
+                      id="id_vendor"
+                      name="vendor"
+                      hx-get="{% url 'finance:bills_by_vendor' %}"
+                      hx-target="#vendor_invoices">
+                <option value="" selected disabled>Select Vendor</option>
+                {% for x in vendors %}
+                  <option value="{{ x.id }}">{{ x.name }}</option>
+                {% endfor %}
+              </select>
+
+              <br/>
                 {{ form.as_p }}
     
 
@@ -42,7 +48,7 @@
       
       <div class="col-sm-9">
         <div id="vendor_invoices">
-          <a href="{% url 'finance:add_invoice' %}">All Bills except Essendant</a> | <a href="{% url 'finance:add_invoice' vendor=1 %}">Show Essendant Bills</a><br>
+          <a href="{% url 'finance:ap_add_invoice' %}">All Bills except Essendant</a> | <a href="{% url 'finance:ap_add_invoice_vendor' vendor=1 %}">Show Essendant Bills</a><br>
             <table class="table">
               <thead>
                 <tr>
@@ -70,8 +76,8 @@
                         <td>{{ x.invoice_number }}</td>
                         <td>{{ x.date_due }}</td>
                         <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
-                        <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
-                        <td><button  class="btn btn-primary-outline" hx-get="{% url 'finance:bulk_edit_invoices' vendor=x.vendor.id %}" hx-target="#dialog"><img src="{% static 'img/site/bulk-edit.svg' %}" style="width:20px;height:20px;"></button></td>
+                        <td><a href="{% url 'finance:ap_edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
+                        <td><button  class="btn btn-primary-outline" hx-get="{% url 'finance:ap_bulk_edit_invoices_vendor' vendor=x.vendor.id %}" hx-target="#dialog"><img src="{% static 'img/site/bulk-edit.svg' %}" style="width:20px;height:20px;"></button></td>
                     </tr>
                   {% endif %}
                 {% endfor %}

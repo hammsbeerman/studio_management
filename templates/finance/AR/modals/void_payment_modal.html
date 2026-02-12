@@ -1,0 +1,97 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Void Payment #{{ p.id }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  </div>
+
+  <div class="modal-body">
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+    <div class="text-muted mb-2">
+      Amount: <strong>{{ p.amount|floatformat:2 }}</strong>
+      {% if p.check_number %} • Check: <strong>#{{ p.check_number }}</strong>{% endif %}
+      {% if p.payment_type %} • Type: <strong>{{ p.payment_type }}</strong>{% endif %}
+    </div>
+
+    {% if applied_rows %}
+      <div class="alert alert-warning">
+        This payment is applied to <strong>{{ applied_rows|length }}</strong> invoice{{ applied_rows|length|pluralize }}.
+        Remove it from invoices first, then you can void it.
+      </div>
+
+      <form
+        hx-post="{% url 'finance:ar_void_payment_modal' p.id %}"
+        hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+        hx-swap="none">
+
+        <div class="table-responsive mb-2">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th style="width:1%; white-space:nowrap;">Select</th>
+                <th>Invoice</th>
+                <th class="text-end">Applied</th>
+                <th style="white-space:nowrap;">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for a in applied_rows %}
+                <tr>
+                  <td>
+                    <input class="form-check-input" type="checkbox" name="wop_ids" value="{{ a.id }}" checked>
+                  </td>
+                  <td style="white-space:nowrap;">
+                    {% if a.workorder %}
+                      WO {{ a.workorder.workorder }}
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-end">{{ a.payment_amount|floatformat:2 }}</td>
+                  <td style="white-space:nowrap;">{{ a.date }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <label class="form-label mt-3">Reason (required)</label>
+        <textarea class="form-control" name="reason" rows="3" required></textarea>
+
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="also_void" name="also_void" value="1">
+          <label class="form-check-label" for="also_void">
+            After removing from invoices, also void the payment
+          </label>
+        </div>
+
+        <div class="mt-3 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+
+          <button type="submit" class="btn btn-outline-danger" name="action" value="remove_selected">
+            Remove from selected
+          </button>
+
+          <button type="submit" class="btn btn-danger" name="action" value="remove_all">
+            Remove from all
+          </button>
+        </div>
+      </form>
+
+    {% else %}
+      <form
+        hx-post="{% url 'finance:ar_void_payment_modal' p.id %}"
+        hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+        hx-swap="none">
+
+        <label class="form-label">Reason (required)</label>
+        <textarea class="form-control" name="reason" rows="3" required></textarea>
+
+        <div class="mt-3 d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Void payment</button>
+        </div>
+      </form>
+    {% endif %}
+  </div>
+</div>

@@ -1,45 +1,48 @@
-$( function() {
-    $( "#id_date_recieved" ).datepicker();
-  } );
+(function () {
+  function hasJquiDatepicker() {
+    return !!(window.jQuery && window.jQuery.fn && typeof window.jQuery.fn.datepicker === "function");
+  }
 
-$( function() {
-    $( "#id_discount_date_due" ).datepicker();
-  } );
+  function initDatepickers(root) {
+    if (!hasJquiDatepicker()) return;
 
-$( function() {
-    $( "#id_date_paid" ).datepicker();
-  } );
+    const $ = window.jQuery;
+    const $root = root ? $(root) : $(document);
 
-$( function() {
-    $( "#id_date" ).datepicker();
-  } );
+    // ✅ support BOTH conventions site-wide
+    const selector = "input.datepicker, input.dateinput, input[data-datepicker='1']";
 
-$( function() {
-  $( "#id_deadline" ).datepicker();
-} );
+    $root.find(selector).each(function () {
+      const $el = $(this);
 
-$( function() {
-  $( "#id_invoice_date" ).datepicker();
-} );
+      // prevent double-init (jQuery UI adds this class)
+      if ($el.hasClass("hasDatepicker")) return;
 
-$( function() {
-  $( "#id_invoice_date" ).datepicker();
-} );
+      $el.attr("autocomplete", "off");
 
-$( function() {
-  $( "#id_date_due" ).datepicker();
-} );
+      $el.datepicker({
+        dateFormat: "mm/dd/yy",
+        changeMonth: true,
+        changeYear: true,
+      });
+    });
+  }
 
-$( function() {
-  $( "#date_paid" ).datepicker();
-} );
+  // expose globally (so you can call it from templates if needed)
+  window.initDatepickers = initDatepickers;
 
-$( function() {
-  $( "#start_date" ).datepicker();
-} );
+  // DOM ready
+  document.addEventListener("DOMContentLoaded", function () {
+    initDatepickers(document);
+  });
 
-$( function() {
-  $( "#end_date" ).datepicker();
-} );
+  // HTMX content swaps
+  document.addEventListener("htmx:load", function (e) {
+    initDatepickers(e.target);
+  });
 
-Test
+  // Bootstrap modal shown
+  document.addEventListener("shown.bs.modal", function (e) {
+    initDatepickers(e.target);
+  });
+})();

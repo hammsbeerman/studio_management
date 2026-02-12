@@ -116,6 +116,7 @@ class InventoryQtyVariations(models.Model):
     # variation = models.ForeignKey(ItemQtyVariations, on_delete=models.CASCADE)
     variation = models.ForeignKey(Measurement, null=True, on_delete=models.SET_NULL)
     variation_qty = models.DecimalField('Variation Qty', max_digits=15, decimal_places=4, blank=False, null=False)
+    retail_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Optional explicit retail price for this unit (e.g., dozen = 2.00). If blank, POS can compute from base price × multiplier.")
 
     # def __str__(self):
     #     variation_qty = str(self.variation_qty)

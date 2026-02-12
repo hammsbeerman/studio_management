@@ -1,5 +1,8 @@
-from django.db import models
+from django.db import models, transaction, IntegrityError
+import uuid
 from django.urls import reverse
+from django.conf import settings
+from django.utils import timezone
 from datetime import datetime
 from decimal import Decimal
 from django.db.models import Max, Sum
@@ -40,7 +43,7 @@ class AccountsPayable(models.Model):
     posted = models.BooleanField(default=False, help_text="If checked, this invoice is considered posted. Edits should be rare.")
 
     def get_absolute_url(self):
-        return reverse("finance:invoice_detail", kwargs={"id": self.id})
+        return reverse("finance:ap_invoice_detail_id", kwargs={"id": self.id})
 
 
     def __str__(self):
@@ -71,7 +74,14 @@ class Payments(models.Model):
     available = models.DecimalField('Amount Available', max_digits=10, decimal_places=2, default=None, null=True)
     memo = models.CharField('Memo', max_length=500, blank=True, null=True)
     void = models.BooleanField('Void Payment', default=False, blank=False, null=False)
+    refunded = models.BooleanField(default=False)
     workorder_applied = models.ManyToManyField(Workorder, through='WorkorderPayment')
+    void_reason = models.TextField(blank=True, null=True)
+    voided_at = models.DateTimeField(blank=True, null=True)
+    voided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="voided_payments"
+    )
 
     class Meta:
         indexes = [
@@ -92,6 +102,11 @@ class WorkorderPayment(models.Model):
     payment_amount = models.DecimalField('Payment Amount', max_digits=10, decimal_places=2, default=None, null=True)
     date= models.DateField(auto_now=False, auto_now_add=False, blank=False, null=False)
     void = models.BooleanField('Void Payment', default=False, blank=False, null=False)
+    voided_at = models.DateTimeField(null=True, blank=True)
+    voided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="voided_workorder_payments"
+    )
 
     def __str__(self):
         return self.workorder.workorder
@@ -165,6 +180,190 @@ class InvoiceItem(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class CreditMemo(models.Model):
+    date = models.DateField(default=timezone.now)
+    customer = models.ForeignKey("customers.Customer", on_delete=models.DO_NOTHING)
+
+    memo_number = models.CharField(max_length=50, blank=True, null=True)
+    description = models.CharField(max_length=500, blank=True, null=True)
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    open_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    void = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    void_reason = models.TextField(blank=True, null=True)
+    voided_at = models.DateTimeField(blank=True, null=True)
+    voided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="voided_credit_memos"
+    )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["customer", "void", "-date"], name="cm_cust_void_date_idx"),
+        ]
+
+    def __str__(self):
+        label = self.memo_number or f"CM {self.pk}"
+        return f"{self.customer.company_name} — {label}"
+
+
+class WorkorderCreditMemo(models.Model):
+    workorder = models.ForeignKey("workorders.Workorder", null=True, on_delete=models.SET_NULL)
+    credit_memo = models.ForeignKey(CreditMemo, null=True, on_delete=models.SET_NULL)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    date = models.DateField(default=timezone.now)
+    void = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"WO {self.workorder_id} — CM {self.credit_memo_id}"
+
+
+class GiftCertificate(models.Model):
+    issued_date = models.DateField(default=timezone.now)
+    customer = models.ForeignKey("customers.Customer", blank=True, null=True, on_delete=models.SET_NULL)
+
+    certificate_number = models.CharField(max_length=100, blank=True, unique=True, null=True, db_index=True)
+    description = models.CharField(max_length=500, blank=True, null=True)
+
+    original_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    # --- Sale tracking (NEW) ---
+    sold_to = models.CharField(max_length=255, blank=True, null=True)
+    sold_payment_type = models.ForeignKey(
+        "controls.PaymentType",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="giftcert_sales",
+    )
+    sold_retail_sale = models.ForeignKey(
+        "retail.RetailSale",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="giftcerts_issued",
+    )
+    sold_reference = models.CharField(max_length=255, blank=True, null=True)
+    sold_at = models.DateTimeField(blank=True, null=True)
+    sold_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="giftcerts_sold",
+    )
+
+    void = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    void_reason = models.TextField(blank=True, null=True)
+    voided_at = models.DateTimeField(blank=True, null=True)
+    voided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="voided_giftcerts"
+    )
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["customer", "void", "-issued_date"], name="gc_cust_void_date_idx"),
+            models.Index(fields=["certificate_number"], name="gc_number_idx"),
+            models.Index(fields=["void", "-created_at"], name="gc_void_created_idx"),
+        ]
+
+    def _generate_certificate_number(self):
+        """
+        Generates a unique GC number like:
+        GC-2026-000123
+        """
+        year = timezone.now().year
+
+        # Get last numeric sequence for this year
+        last = (
+            GiftCertificate.objects
+            .filter(certificate_number__startswith=f"GC-{year}-")
+            .order_by("-certificate_number")
+            .values_list("certificate_number", flat=True)
+            .first()
+        )
+
+        if last:
+            try:
+                last_seq = int(last.split("-")[-1])
+            except Exception:
+                last_seq = 0
+        else:
+            last_seq = 0
+
+        new_seq = last_seq + 1
+        return f"GC-{year}-{new_seq:06d}"
+
+    def save(self, *args, **kwargs):
+        if self.certificate_number:
+            return super().save(*args, **kwargs)
+
+        # Generate and retry on race collisions
+        for _ in range(10):
+            self.certificate_number = self._generate_certificate_number()
+            try:
+                return super().save(*args, **kwargs)
+            except IntegrityError:
+                self.certificate_number = None
+
+        # Fallback: ultra-unique if something is weird with sequences
+        self.certificate_number = f"GC-{uuid.uuid4().hex[:10].upper()}"
+        return super().save(*args, **kwargs)
+
+    def __str__(self):
+        label = self.certificate_number or f"GC {self.pk}"
+        who = self.customer.company_name if self.customer_id else "Unassigned"
+        return f"{who} — {label}"
+
+
+class GiftCertificateRedemption(models.Model):
+    gift_certificate = models.ForeignKey(GiftCertificate, null=True, on_delete=models.SET_NULL)
+    workorder = models.ForeignKey("workorders.Workorder", null=True, on_delete=models.SET_NULL)
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    date = models.DateField(default=timezone.now)
+    void = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"GC {self.gift_certificate_id} — WO {self.workorder_id}"
+    
+
+class CreditAdjustment(models.Model):
+    KIND_PAYMENT = "payment"
+    KIND_CREDITMEMO = "creditmemo"
+    KIND_GIFTCERT = "giftcert"
+    KIND_CHOICES = [
+        (KIND_PAYMENT, "Unapplied Payment"),
+        (KIND_CREDITMEMO, "Credit Memo"),
+        (KIND_GIFTCERT, "Gift Certificate"),
+    ]
+
+    kind = models.CharField(max_length=20, choices=KIND_CHOICES)
+    customer = models.ForeignKey("customers.Customer", on_delete=models.CASCADE)
+
+    payment = models.ForeignKey("finance.Payments", null=True, blank=True, on_delete=models.CASCADE)
+    credit_memo = models.ForeignKey("finance.CreditMemo", null=True, blank=True, on_delete=models.CASCADE)
+    gift_certificate = models.ForeignKey("finance.GiftCertificate", null=True, blank=True, on_delete=models.CASCADE)
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2)  # positive reduces available/open/balance
+    reason = models.CharField(max_length=255, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"{self.get_kind_display()} adj {self.amount} for {self.customer}"
+
+
     
 # class AllInvoiceItem(models.Model):
 #     invoice_item = models.ForeignKey(InvoiceItem, null=True, on_delete=models.CASCADE)

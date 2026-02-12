@@ -1,0 +1,21 @@
+{% if customer_id %}
+  <button type="button"
+          class="btn btn-outline-primary"
+          hx-get="{% url 'finance:creditmemo_create' %}?customer={{ customer_id }}"
+          hx-target="#dialog"
+          hx-swap="innerHTML">
+    Add Credit Memo
+  </button>
+{% endif %}
+
+<button type="button"
+        class="btn btn-outline-primary"
+        {% if customer_id %}
+          hx-get="{% url 'finance:giftcertificate_issue' %}?customer={{ customer_id }}"
+        {% else %}
+          hx-get="{% url 'finance:giftcertificate_issue' %}"
+        {% endif %}
+        hx-target="#dialog2"
+        hx-swap="innerHTML">
+  Issue Gift Cert
+</button>

@@ -1,0 +1,348 @@
+{% csrf_token %}
+
+<div id="unapplied-and-credits-panel">
+{% if not customer %}
+  <div class="text-muted">Select a customer to load unapplied payments, credits, and gift certificates.</div>
+{% else %}
+
+  <div class="mb-2 fw-semibold">Unapplied Payments</div>
+  {% if not unapplied %}
+    <div class="text-muted mb-3">None.</div>
+  {% else %}
+    <div class="table-responsive mb-3">
+      <table class="table table-sm mb-0 align-middle">
+        <thead>
+          <tr>
+            <th style="white-space:nowrap;">Date</th>
+            <th>Type</th>
+            <th class="text-end">Available</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in unapplied %}
+            <tr>
+              <td style="white-space:nowrap;">{{ p.date }}</td>
+              <td>
+                {{ p.payment_type }}
+                {% if p.check_number %}
+                  <div class="text-muted small">#{{ p.check_number }}</div>
+                {% endif %}
+              </td>
+              <td class="text-end">{{ p.available|floatformat:2 }}</td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button"
+                    class="btn btn-outline-secondary"
+                    hx-get="{% url 'finance:apply_unapplied_payment_modal' payment_id=p.id %}"
+                    hx-target="#dialog"
+                    hx-swap="innerHTML">
+                    → Apply
+                  </button>
+
+                  <button type="button"
+                    class="btn btn-outline-danger"
+                    hx-get="{% url 'finance:ar_void_payment_modal' p.id %}"
+                    hx-target="#dialog"
+                    hx-swap="innerHTML">
+                    Void
+                  </button>
+
+                  <button type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    hx-get="{% url 'finance:adjust_credit_modal' %}?kind=payment&id={{ p.id }}"
+                    hx-target="#dialog2"
+                    hx-swap="innerHTML">
+                    Adjust
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <div class="mb-2 fw-semibold">Credit Memos</div>
+  {% if not credit_memos %}
+    <div class="text-muted mb-3">None.</div>
+  {% else %}
+    <div class="table-responsive mb-3">
+      <table class="table table-sm mb-0 align-middle">
+        <thead>
+          <tr>
+            <th style="white-space:nowrap;">Date</th>
+            <th>Memo</th>
+            <th>Description</th>
+            <th class="text-end">Available</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cm in credit_memos %}
+            <tr>
+              <td style="white-space:nowrap;">{{ cm.date }}</td>
+              <td>{{ cm.memo_number|default:cm.id }}</td>
+              <td>{{ cm.description|default:"—" }}</td>
+              <td class="text-end">{{ cm.open_balance|floatformat:2 }}</td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button"
+                    class="btn btn-outline-primary"
+                    hx-get="{% url 'finance:apply_creditmemo_modal' %}?customer={{ customer.id }}&cm={{ cm.id }}"
+                    hx-target="#dialog"
+                    hx-swap="innerHTML">
+                    Apply
+                  </button>
+
+                  <button type="button"
+                    class="btn btn-outline-danger"
+                    hx-get="{% url 'finance:ar_void_creditmemo_modal' cm.id %}"
+                    hx-target="#dialog"
+                    hx-swap="innerHTML">
+                    Void
+                  </button>
+
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <div class="fw-semibold">Gift Certificates</div>
+    <div class="btn-group btn-group-sm" role="group">
+      <button type="button"
+        class="btn btn-outline-primary"
+        hx-get="{% url 'finance:apply_giftcert_by_number_modal' %}?customer={{ customer.id }}"
+        hx-target="#dialog"
+        hx-swap="innerHTML">
+        Apply by #
+      </button>
+    </div>
+  </div>
+  {% if not giftcerts %}
+    <div class="text-muted mb-3">None.</div>
+  {% else %}
+    <div class="table-responsive mb-3">
+      <table class="table table-sm mb-0 align-middle">
+        <thead>
+          <tr>
+            <th style="white-space:nowrap;">Issued</th>
+            <th>Number</th>
+            <th>Description</th>
+            <th class="text-end">Balance</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for gc in giftcerts %}
+            <tr>
+              <td style="white-space:nowrap;">{{ gc.issued_date }}</td>
+              <td>{{ gc.certificate_number|default:gc.id }}</td>
+              <td>{{ gc.description|default:"—" }}</td>
+              <td class="text-end">{{ gc.balance|floatformat:2 }}</td>
+              <td class="text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button"
+                    class="btn btn-outline-primary"
+                    hx-get="{% url 'finance:apply_giftcert_modal' %}?customer={{ customer.id }}&gc={{ gc.id }}"
+                    hx-target="#dialog"
+                    hx-swap="innerHTML">
+                    Apply
+                  </button>
+
+                  <button type="button"
+                    class="btn btn-outline-danger"
+                    hx-get="{% url 'finance:ar_void_giftcert_modal' gc.id %}"
+                    hx-target="#dialog"
+                    hx-swap="innerHTML">
+                    Void
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <div class="mb-2 fw-semibold mt-3">Voided</div>
+
+  {% if not voided_payments and not voided_credit_memos and not voided_giftcerts %}
+    <div class="text-muted">None.</div>
+  {% else %}
+
+    {% if voided_payments %}
+      <div class="text-muted small mb-1">Payments</div>
+      <div class="table-responsive mb-3">
+        <table class="table table-sm mb-0 align-middle">
+          <thead>
+            <tr>
+              <th style="white-space:nowrap;">Date</th>
+              <th>Type</th>
+              <th class="text-end">Amount</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in voided_payments %}
+              <tr>
+                <td style="white-space:nowrap;">{{ p.date }}</td>
+                <td>
+                  {{ p.payment_type }}
+                  {% if p.check_number %}
+                    <div class="text-muted small">#{{ p.check_number }}</div>
+                  {% endif %}
+                </td>
+                <td class="text-end">{{ p.amount|floatformat:2 }}</td>
+                <td class="small text-muted">{{ p.void_reason|default:"—" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {% if voided_credit_memos %}
+      <div class="text-muted small mb-1">Credit Memos</div>
+      <div class="table-responsive mb-3">
+        <table class="table table-sm mb-0 align-middle">
+          <thead>
+            <tr>
+              <th style="white-space:nowrap;">Date</th>
+              <th>Memo</th>
+              <th class="text-end">Amount</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cm in voided_credit_memos %}
+              <tr>
+                <td style="white-space:nowrap;">{{ cm.date }}</td>
+                <td>{{ cm.memo_number|default:cm.id }}</td>
+                <td class="text-end">{{ cm.amount|floatformat:2 }}</td>
+                <td class="small text-muted">{{ cm.void_reason|default:"—" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {% if voided_giftcerts %}
+      <div class="text-muted small mb-1">Gift Certificates</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0 align-middle">
+          <thead>
+            <tr>
+              <th style="white-space:nowrap;">Issued</th>
+              <th>Number</th>
+              <th class="text-end">Orig</th>
+              <th class="text-end">Balance</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for gc in voided_giftcerts %}
+              <tr>
+                <td style="white-space:nowrap;">{{ gc.issued_date }}</td>
+                <td>{{ gc.certificate_number|default:gc.id }}</td>
+                <td class="text-end">{{ gc.original_amount|floatformat:2 }}</td>
+                <td class="text-end">{{ gc.balance|floatformat:2 }}</td>
+                <td class="small text-muted">{{ gc.void_reason|default:"—" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+  {% endif %}
+
+    <div class="mt-3">
+    <div class="mb-2 fw-semibold">Adjustments</div>
+
+  {% if not adjustments %}
+    <div class="text-muted">None.</div>
+  {% else %}
+
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
+          <tr>
+            <th style="white-space:nowrap;">Date</th>
+            <th>Type</th>
+            <th>Reference</th>
+            <th class="text-end">Amount</th>
+            <th>By</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in adjustments %}
+            <tr class="small">
+              <td style="white-space:nowrap;">
+                {{ a.created_at|date:"Y-m-d" }}
+              </td>
+
+              <!-- TYPE -->
+              <td>
+                {{ a.get_kind_display }}
+                {% if a.kind == "payment" and a.payment and a.payment.payment_type %}
+                  <div class="text-muted small">
+                    {{ a.payment.payment_type }}
+                  </div>
+                {% endif %}
+              </td>
+
+              <!-- REFERENCE -->
+              <td>
+                {% if a.kind == "payment" and a.payment %}
+                  Payment #{{ a.payment.id }}
+                  {% if a.payment.check_number %}
+                    <div class="text-muted small">
+                      Check #{{ a.payment.check_number }}
+                    </div>
+                  {% endif %}
+                {% elif a.kind == "creditmemo" and a.credit_memo %}
+                  Memo {{ a.credit_memo.memo_number|default:a.credit_memo.id }}
+                {% elif a.kind == "giftcert" and a.gift_certificate %}
+                  Gift Cert {{ a.gift_certificate.certificate_number|default:a.gift_certificate.id }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+
+              <!-- AMOUNT -->
+              <td class="text-end text-danger">
+                -{{ a.amount|floatformat:2 }}
+              </td>
+
+              <!-- BY -->
+              <td>
+                {{ a.created_by|default:"—" }}
+              </td>
+
+              <!-- REASON -->
+              <td>
+                {{ a.reason|default:"—" }}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="text-muted">No adjustments.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% endif %}
+
+{% endif %}
+</div>

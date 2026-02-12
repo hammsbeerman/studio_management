@@ -1,0 +1,96 @@
+{% csrf_token %}
+
+{% if not customer %}
+  <div class="text-muted">Select a customer to load open workorders.</div>
+{% else %}
+  {% if not rows %}
+    <div class="text-muted">No open workorders for {{ customer.company_name }}.</div>
+  {% else %}
+    <div class="table-responsive">
+      <table class="table table-sm mb-0 align-middle">
+        <thead>
+          <tr>
+            <th style="white-space:nowrap;">WO</th>
+            <th>Description</th>
+            <th class="text-end" style="white-space:nowrap;">Total</th>
+            <th class="text-end">Open</th>
+            <th style="white-space:nowrap;">Date Billed</th>
+            <th>Applied</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+            {% with wo=r.wo %}
+              <tr>
+                <td style="white-space:nowrap;">{{ wo.workorder }}</td>
+                <td>{{ wo.description }}</td>
+
+                <td class="text-end" style="white-space:nowrap;">
+                  {% if wo.workorder_total %}
+                    {{ wo.workorder_total }}
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+
+                <td class="text-end">{{ wo.open_balance|floatformat:2 }}</td>
+                <td style="white-space:nowrap;">{{ wo.date_billed }}</td>
+
+                <td>
+                  {% for a in wo.workorderpayment_set.all %}
+                    <div class="d-flex align-items-center justify-content-between" style="gap:10px;">
+                      <div style="white-space:nowrap;">
+                        Payment #{{ a.payment.id }} — {{ a.payment_amount|floatformat:2 }}
+                      </div>
+                      <button
+                        class="btn btn-outline-danger btn-sm"
+                        hx-post="{% url 'finance:unapply_workorder_payment' wop_id=a.id %}"
+                        hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+                        hx-swap="none">
+                        Reverse
+                      </button>
+                    </div>
+                  {% endfor %}
+
+                  {% for c in wo.workordercreditmemo_set.all %}
+                    <div class="d-flex align-items-center justify-content-between" style="gap:10px;">
+                      <div style="white-space:nowrap;">
+                        Credit Memo {{ c.credit_memo.memo_number|default:c.credit_memo.id }} — {{ c.amount|floatformat:2 }}
+                      </div>
+                      <button
+                        class="btn btn-outline-danger btn-sm"
+                        hx-post="{% url 'finance:unapply_creditmemo' wocm_id=c.id %}"
+                        hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+                        hx-swap="none">
+                        Reverse
+                      </button>
+                    </div>
+                  {% endfor %}
+
+                  {% for g in wo.giftcertificateredemption_set.all %}
+                    <div class="d-flex align-items-center justify-content-between" style="gap:10px;">
+                      <div style="white-space:nowrap;">
+                        Gift Cert {{ g.gift_certificate.certificate_number|default:g.gift_certificate.id }} — {{ g.amount|floatformat:2 }}
+                      </div>
+                      <button
+                        class="btn btn-outline-danger btn-sm"
+                        hx-post="{% url 'finance:unapply_giftcert' gcr_id=g.id %}"
+                        hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+                        hx-swap="none">
+                        Reverse
+                      </button>
+                    </div>
+                  {% endfor %}
+
+                  {% if not wo.workorderpayment_set.all and not wo.workordercreditmemo_set.all and not wo.giftcertificateredemption_set.all %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endif %}

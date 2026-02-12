@@ -89,6 +89,43 @@ logger = logging.getLogger(__name__)
 # POS helpers (ledger, totals, workorder sync, etc.)
 # --------------------------------------------------------------------------------------
 
+def get_default_unit_price_for_line(line):
+    """
+    Returns the default unit price for the line based on:
+    - variation explicit price (if selected)
+    - base pricing engine (ensure_retail_pricing + compute_retail_price)
+    - multiplier for variation if no explicit price
+    """
+    inv = line.inventory
+    if not inv:
+        return line.unit_price  # custom line, keep whatever it is
+
+    # 1) Base price from your pricing engine
+    rp = ensure_retail_pricing(inv, reset_override=False)
+    base_price = None
+
+    # Prefer explicit override if it exists, else calculated.
+    if getattr(rp, "override_price", None) is not None:
+        base_price = rp.override_price
+    elif getattr(rp, "calculated_price", None) is not None:
+        base_price = rp.calculated_price
+    else:
+        # last resort: compute on the fly
+        base_price = compute_retail_price(inv)
+
+    base_price = base_price or Decimal("0.00")
+
+    # 2) If variation selected, prefer explicit variation retail_price
+    v = getattr(line, "sold_variation", None)
+    if v:
+        if getattr(v, "retail_price", None) is not None:
+            return v.retail_price
+
+        mult = getattr(v, "variation_qty", None) or Decimal("1")
+        return (base_price or Decimal("0.00")) * (mult or Decimal("1"))
+
+    return base_price
+
 
 def pos_line_qty_signed(sale, qty: Decimal) -> Decimal:
     """
@@ -207,9 +244,11 @@ def _record_pos_ledger_entries(sale: RetailSale, scale: Decimal = Decimal("1.0")
 
 def _compute_sale_totals(sale: RetailSale):
     """
-    Compute subtotal, tax, and total for a RetailSale based on its lines and tax flags.
+    Subtotal includes everything.
+    Tax applies ONLY to taxable subtotal (excludes gift certificate stored value).
     """
     subtotal = Decimal("0.00")
+    taxable_subtotal = Decimal("0.00")
 
     for line in sale.lines.all():
         qty = line.qty or 0
@@ -225,14 +264,20 @@ def _compute_sale_totals(sale: RetailSale):
         except Exception:
             unit_price_dec = Decimal("0")
 
-        subtotal += (qty_dec * unit_price_dec)
+        line_ext = (qty_dec * unit_price_dec)
+        subtotal += line_ext
+
+        # Gift certificates are stored value (non-taxable)
+        if not getattr(line, "is_gift_certificate", False):
+            taxable_subtotal += line_ext
 
     subtotal = subtotal.quantize(Decimal("0.01"))
+    taxable_subtotal = taxable_subtotal.quantize(Decimal("0.01"))
 
     if sale.tax_exempt or not sale.tax_rate:
         tax = Decimal("0.00")
     else:
-        tax = (subtotal * sale.tax_rate).quantize(Decimal("0.01"))
+        tax = (taxable_subtotal * sale.tax_rate).quantize(Decimal("0.01"))
 
     total = subtotal + tax
     return subtotal, tax, total
@@ -479,14 +524,7 @@ def retail_inventory_list(request):
 
 @login_required
 def retail_new_sale(request):
-    """
-    Start a new POS sale.
-
-    Reuse an existing blank open sale for this cashier
-    (no customer, no lines, no payments, not a refund),
-    otherwise create a new one.
-    """
-    sale = (
+    qs = (
         RetailSale.objects.filter(
             cashier=request.user,
             status=RetailSale.STATUS_OPEN,
@@ -494,19 +532,17 @@ def retail_new_sale(request):
             is_refund=False,
             customer__isnull=True,
         )
-        .annotate(
-            line_count=Count("lines"),
-            payment_count=Count("payments"),
-        )
-        .filter(
-            line_count=0,
-            payment_count=0,
-        )
-        .filter(
-            Q(notes__isnull=True) | Q(notes=""),
-        )
-        .first()
+        .annotate(line_count=Count("lines"), payment_count=Count("payments"))
+        .filter(line_count=0, payment_count=0)
+        .filter(Q(notes__isnull=True) | Q(notes=""))
+        .order_by("-created_at", "-id")
     )
+
+    sale = qs.first()
+
+    # If somehow multiple blank drafts exist, delete extras
+    if sale:
+      qs.exclude(pk=sale.pk).delete()
 
     if not sale:
         sale = RetailSale.objects.create(
@@ -521,7 +557,12 @@ def retail_new_sale(request):
 
 @login_required
 def retail_sale_detail(request, pk):
-    sale = get_object_or_404(RetailSale, pk=pk)
+    try:
+        sale = RetailSale.objects.get(pk=pk, cashier=request.user)
+    except RetailSale.DoesNotExist:
+        # If a draft got discarded (or user hit Back), just start fresh.
+        return redirect("retail:sale_start")
+    
     customers = Customer.objects.filter(active=True).order_by("company_name")
 
     open_invoices = closed_invoices = None
@@ -634,20 +675,22 @@ def add_line_from_inventory(request, pk, inventory_id):
         except InventoryQtyVariations.DoesNotExist:
             sold_variation = None
 
-    unit_price = get_effective_retail_price(item)
-
     variations = InventoryQtyVariations.objects.filter(inventory=item)
-    sold_variation = variations.first() if variations.count() == 1 else sold_variation
+    #sold_variation = variations.first() if variations.count() == 1 else sold_variation
 
+    # Create line with a placeholder price, then immediately compute via pricing engine + variation
     line = RetailSaleLine.objects.create(
         sale=sale,
         inventory=item,
         description=item.name,
         qty=qty,
-        unit_price=unit_price,
+        unit_price=Decimal("0.00"),
         tax_rate=Decimal("0.00"),
         sold_variation=sold_variation,
     )
+
+    line.unit_price = get_default_unit_price_for_line(line)
+    line.save(update_fields=["unit_price"])
 
     # 🔹 NEW: ledger entry for this new line
     record_pos_inventory_for_line(line)
@@ -734,7 +777,9 @@ def delete_line(request, line_id):
             logger.exception(f"Failed to record POS inventory delete for sale line {line.pk}")
 
     line.delete()
-    return HttpResponseClientRefresh()
+    resp = HttpResponse("", status=200)
+    resp["HX-Trigger"] = "retail-totals-changed"
+    return resp
 
 
 @require_POST
@@ -1107,6 +1152,7 @@ def sale_payment_submit(request, pk):
                 sale.tax_exempt = False
                 sale.tax_rate = Decimal("0.055")
             sale.save(update_fields=["customer", "tax_exempt", "tax_rate"])
+            _issue_giftcerts_from_sale(sale=sale, user=request.user, payment_method=payment_method, notes=notes)
 
         # Walk-in / cash path
         if _is_walkin_customer(cust):
@@ -1145,6 +1191,8 @@ def sale_payment_submit(request, pk):
             if not sale.paid_at:
                 sale.paid_at = timezone.now()
             sale.save(update_fields=["status", "locked", "paid_at"])
+            _issue_giftcerts_from_sale(sale=sale, user=request.user, payment_method=payment_method, notes=notes)
+
 
 
             messages.success(request, f"{kind} recorded for {signed_total}.")
@@ -1157,7 +1205,7 @@ def sale_payment_submit(request, pk):
         if not wo:
             messages.error(request, "Unable to create workorder for this sale.")
             resp = HttpResponse("")
-            resp["HX-Redirect"] = reverse("retail:sale_receipt", args=[sale.pk])
+            resp["HX-Redirect"] = reverse("retail:sale_receipt_modal", args=[sale.pk])
             return resp
 
         if sale.workorder_id is None:
@@ -1209,7 +1257,7 @@ def sale_payment_submit(request, pk):
             wo.save(update_fields=["workorder_status"])
 
         resp = HttpResponse("")
-        resp["HX-Redirect"] = reverse("retail:sale_receipt", args=[sale.pk])
+        resp["HX-Redirect"] = reverse("retail:sale_receipt_modal", args=[sale.pk])
         return resp
 
 
@@ -1489,11 +1537,20 @@ def sale_update_line_price(request, sale_pk, line_pk):
 
     if update_default and line.inventory_id:
         inv = line.inventory
-        rp = ensure_retail_pricing(inv, reset_override=False)
-        rp.override_price = line.unit_price
-        rp.purchase_price = inv.unit_cost or Decimal("0.00")
-        rp.calculated_price = compute_retail_price(inv)
-        rp.save()
+
+        # If selling in a selected unit (e.g. dozen), save that unit price on the variation
+        if line.sold_variation_id:
+            v = line.sold_variation
+            v.retail_price = line.unit_price
+            v.save(update_fields=["retail_price"])
+
+        # Otherwise save base/default retail price for the inventory item
+        else:
+            rp = ensure_retail_pricing(inv, reset_override=False)
+            rp.override_price = line.unit_price
+            rp.purchase_price = inv.unit_cost or Decimal("0.00")
+            rp.calculated_price = compute_retail_price(inv)
+            rp.save()
 
     line_ids = list(
         sale.lines.order_by("id").values_list("id", flat=True)
@@ -1526,10 +1583,11 @@ def sale_update_line_variation(request, sale_pk, line_pk):
 
     line = get_object_or_404(RetailSaleLine, pk=line_pk, sale=sale)
 
-    variation_id = request.POST.get("variation_id") or ""
+    variation_id = (request.POST.get("variation_id") or "").strip()
     rownum = request.POST.get("rownum") or "0"
 
-    if variation_id:
+    # Set the selected unit (or base)
+    if variation_id and line.inventory_id:
         try:
             v = InventoryQtyVariations.objects.get(pk=variation_id, inventory=line.inventory)
             line.sold_variation = v
@@ -1538,20 +1596,21 @@ def sale_update_line_variation(request, sale_pk, line_pk):
     else:
         line.sold_variation = None
 
-    line.save()
+    # Option B: qty unchanged, refresh unit_price from pricing engine + variation rules
+    line.unit_price = get_default_unit_price_for_line(line)
+
+    line.save(update_fields=["sold_variation", "unit_price"])
 
     _attach_on_hand_to_line(line)
 
     html = render_to_string(
         "retail/partials/line_row.html",
-        {
-            "sale": sale,
-            "line": line,
-            "rownum": rownum,
-        },
+        {"sale": sale, "line": line, "rownum": rownum},
         request=request,
     )
-    return HttpResponse(html)
+    resp = HttpResponse(html)
+    resp["HX-Trigger"] = "retail-totals-changed"
+    return resp
 
 # --------------------------------------------------------------------------------------
 # POS reports
@@ -1681,6 +1740,12 @@ def sale_receipt_modal(request, pk):
     subtotal, tax, total = _compute_sale_totals(sale)
     cash = getattr(sale, "cash_record", None)
 
+    # ✅ Gift certs issued by this sale (if any)
+    issued_giftcerts = list(
+        getattr(sale, "giftcerts_issued", None).filter(void=False).order_by("id")
+        if hasattr(sale, "giftcerts_issued") else []
+    )
+
     context = {
         "sale": sale,
         "lines": lines,
@@ -1688,9 +1753,11 @@ def sale_receipt_modal(request, pk):
         "tax": tax,
         "total": total,
         "cash": cash,
+        "issued_giftcerts": issued_giftcerts,
     }
 
     return render(request, "retail/modals/receipt_modal.html", context)
+
 
 # --------------------------------------------------------------------------------------
 # Delivery: toggle on sale, report, reorder, date changes
@@ -2104,3 +2171,162 @@ def sale_update_delivery_date(request, pk):
         request=request,
     )
     return HttpResponse(html)
+
+@require_POST
+@login_required
+def sale_discard_if_empty(request, pk):
+    """
+    Delete an OPEN POS sale draft if it's still empty-ish.
+
+    We ONLY delete if:
+    - belongs to this cashier
+    - open + unlocked + not refund
+    - no lines
+    - no payments
+    - notes empty
+    """
+    sale = get_object_or_404(RetailSale, pk=pk, cashier=request.user)
+
+    qs = (
+        RetailSale.objects
+        .filter(
+            pk=sale.pk,
+            cashier=request.user,
+            status=RetailSale.STATUS_OPEN,
+            locked=False,
+            is_refund=False,
+        )
+        .annotate(
+            line_count=Count("lines", distinct=True),
+            pay_count=Count("payments", distinct=True),
+        )
+        .filter(line_count=0, pay_count=0)
+        .filter(Q(notes__isnull=True) | Q(notes=""))
+    )
+
+    qs.delete()
+    return HttpResponse("", status=204)
+
+
+@require_POST
+@login_required
+def sale_update_line_qty(request, sale_pk, line_pk):
+    sale = get_object_or_404(RetailSale, pk=sale_pk)
+    _guard_sale_unlocked(sale)
+
+    line = get_object_or_404(RetailSaleLine, pk=line_pk, sale=sale)
+
+    old_qty = line.qty
+    old_item = line.inventory
+
+    raw = (request.POST.get("qty") or "").strip()
+    try:
+        qty = Decimal(raw)
+    except (InvalidOperation, ValueError, TypeError):
+        return HttpResponseBadRequest("Invalid qty")
+
+    if qty < 0:
+        qty = Decimal("0")
+
+    line.qty = qty
+    line.save(update_fields=["qty"])
+
+    # ledger adjust for qty change
+    record_pos_inventory_for_line(line, old_qty=old_qty, old_item=old_item)
+
+    rownum = request.POST.get("rownum") or "0"
+    _attach_on_hand_to_line(line)
+
+    html = render_to_string(
+        "retail/partials/line_row.html",
+        {"sale": sale, "line": line, "rownum": rownum},
+        request=request,
+    )
+    resp = HttpResponse(html)
+    resp["HX-Trigger"] = "retail-totals-changed"
+    return resp
+
+@require_POST
+@login_required
+def sale_reset_line_price(request, sale_pk, line_pk):
+    sale = get_object_or_404(RetailSale, pk=sale_pk)
+    _guard_sale_unlocked(sale)
+
+    line = get_object_or_404(RetailSaleLine, pk=line_pk, sale=sale)
+
+    line.unit_price = get_default_unit_price_for_line(line)
+    line.save(update_fields=["unit_price"])
+
+    rownum = request.POST.get("rownum") or "0"
+    _attach_on_hand_to_line(line)
+
+    html = render_to_string(
+        "retail/partials/line_row.html",
+        {"sale": sale, "line": line, "rownum": rownum},
+        request=request,
+    )
+    resp = HttpResponse(html)
+    resp["HX-Trigger"] = "retail-totals-changed"
+    return resp
+
+@login_required
+def sale_add_giftcert_line(request, pk):
+    sale = get_object_or_404(RetailSale, pk=pk)
+    _guard_sale_unlocked(sale)
+
+    amt_raw = (request.POST.get("amount") or "").strip()
+    try:
+        amt = Decimal(amt_raw)
+    except Exception:
+        amt = Decimal("0")
+
+    if amt <= 0:
+        messages.error(request, "Gift certificate amount must be > 0.")
+        return redirect("retail:sale_detail", pk=sale.pk)
+
+    RetailSaleLine.objects.create(
+        sale=sale,
+        inventory=None,
+        description="Gift Certificate",
+        qty=Decimal("1"),
+        unit_price=amt,
+        tax_rate=Decimal("0"),
+        is_gift_certificate=True,
+    )
+
+    messages.success(request, "Gift certificate line added.")
+    return redirect("retail:sale_detail", pk=sale.pk)
+
+def _issue_giftcerts_from_sale(*, sale: RetailSale, user, payment_method: str, notes: str):
+    from finance.models import GiftCertificate  # avoid import cycles
+    from controls.models import PaymentType
+    from customers.models import Customer
+
+    # Map Retail payment_method to controls.PaymentType (best-effort)
+    pt = PaymentType.objects.filter(name__iexact=payment_method).first()
+
+    # If sale is walk-in, gift cert should be UNASSIGNED (stored value)
+    customer = sale.customer
+    if customer and customer.company_name.strip().lower() == "walk-in / cash sale":
+        customer = None
+
+    for line in sale.lines.filter(is_gift_certificate=True):
+        amt = (line.qty or Decimal("0")) * (line.unit_price or Decimal("0"))
+        amt = amt.quantize(Decimal("0.01"))
+        if amt <= 0:
+            continue
+
+        GiftCertificate.objects.create(
+            customer=customer,              # None for walk-in POS
+            issued_date=timezone.localdate(),
+            description=f"POS Sale #{sale.id}",
+            original_amount=amt,
+            balance=amt,
+            void=False,
+            sold_to=sale.customer_name or None,
+            sold_payment_type=pt,
+            sold_reference=notes or None,
+            sold_at=timezone.now(),
+            sold_by=user,
+            sold_retail_sale=sale,
+        )

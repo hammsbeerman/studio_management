@@ -91,7 +91,7 @@
             <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
               {% if request.user.is_staff %}
                 <li><a class="dropdown-item" href="{% url 'finance:finance' %}">Finance Home</a></li>
-                <li><a class="dropdown-item" href="{% url 'finance:add_invoice' %}">Add AP Invoice</a></li>
+                <li><a class="dropdown-item" href="{% url 'finance:ap_add_invoice' %}">Add AP Invoice</a></li>
                 <li><a class="dropdown-item" href="{% url 'retail:invoice_list' %}">AP Invoices List</a></li>
                 <li><hr class="dropdown-divider"></li>
               {% endif %}
@@ -108,7 +108,7 @@
               </a>
               <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                 <li class="dropdown-header">POS</li>
-                <li><a class="dropdown-item" href="{% url 'retail:new_sale' %}">New Sale</a></li>
+                <li><a class="dropdown-item" href="{% url 'retail:sale_start' %}">New Sale</a></li>
                 <li><a class="dropdown-item" href="{% url 'retail:refund_lookup' %}">Start Refund</a></li>
                 <li><a class="dropdown-item" href="{% url 'retail:pos_sale_list' %}">POS Sale List</a></li>
                 <li><hr class="dropdown-divider"></li>

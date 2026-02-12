@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-3">
+  <div class="d-flex align-items-center justify-content-between mb-2">
+    <h4 class="mb-0">Customer Report — {{ customer.company_name }}</h4>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'finance:ar_dashboard' %}">Back</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th style="white-space:nowrap;">Date</th>
+          <th>Type</th>
+          <th class="text-end">Amount</th>
+          <th class="text-end">Available</th>
+          <th>Applied To</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in page.object_list %}
+          <tr>
+            <td style="white-space:nowrap;">{{ row.date }}</td>
+            <td>
+              {{ row.label }}
+              {% if row.ref %}<div class="text-muted small">#{{ row.ref }}</div>{% endif %}
+            </td>
+            <td class="text-end">{{ row.amount|floatformat:2 }}</td>
+            <td class="text-end">
+              {% if row.available is not None %}{{ row.available|floatformat:2 }}{% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td>
+              {% if row.workorder %}WO {{ row.workorder.workorder }}{% else %}<span class="text-muted">—</span>{% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-muted">No rows.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <nav class="mt-2">
+    <ul class="pagination pagination-sm">
+      {% if page.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?customer={{ customer.id }}&page={{ page.previous_page_number }}">Prev</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Prev</span></li>
+      {% endif %}
+
+      <li class="page-item disabled">
+        <span class="page-link">Page {{ page.number }} / {{ page.paginator.num_pages }}</span>
+      </li>
+
+      {% if page.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?customer={{ customer.id }}&page={{ page.next_page_number }}">Next</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">Next</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+</div>
+{% endblock %}

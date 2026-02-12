@@ -1,0 +1,46 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Apply Gift Certificate by Number — {{ customer.company_name }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  </div>
+
+  <form
+    hx-post="{% url 'finance:apply_giftcert_by_number' %}"
+    hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+    hx-swap="none"
+  >
+    <div class="modal-body">
+      <input type="hidden" name="customer" value="{{ customer.id }}">
+
+      <div class="mb-2">
+        <label class="form-label">Gift Certificate Number</label>
+        <input class="form-control" type="text" name="certificate_number" required>
+        <div class="form-text">Exact match (case-insensitive).</div>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Workorder</label>
+        <select class="form-select" name="workorder" required>
+          <option value="">Select workorder</option>
+          {% for wo in workorders %}
+            <option value="{{ wo.id }}">WO {{ wo.workorder }} — {{ wo.description }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label">Amount</label>
+        <input class="form-control" type="number" step="0.01" name="amount" required>
+      </div>
+
+      <div class="alert alert-info mb-0">
+        If the gift certificate is unassigned, it will be assigned to this customer on first use.
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+      <button class="btn btn-primary" type="submit">Apply</button>
+    </div>
+  </form>
+</div>

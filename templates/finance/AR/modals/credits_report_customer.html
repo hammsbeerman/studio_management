@@ -1,0 +1,109 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Credits — {{ customer.company_name }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  </div>
+
+  <div class="modal-body">
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% else %}
+
+      <div class="mb-3">
+        <div class="fw-semibold mb-1">Unapplied Payments</div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th style="white-space:nowrap;">Date</th>
+                <th>Type</th>
+                <th>Ref</th>
+                <th class="text-end">Amount</th>
+                <th class="text-end">Available</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for p in payments %}
+                <tr>
+                  <td style="white-space:nowrap;">{{ p.date }}</td>
+                  <td>{{ p.payment_type }}</td>
+                  <td>{{ p.check_number|default:"—" }}</td>
+                  <td class="text-end">{{ p.amount|floatformat:2 }}</td>
+                  <td class="text-end fw-semibold">{{ p.available|floatformat:2 }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="5" class="text-muted">None.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <div class="fw-semibold mb-1">Open Credit Memos</div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th style="white-space:nowrap;">Date</th>
+                <th>Memo</th>
+                <th>Description</th>
+                <th class="text-end">Open</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for cm in credit_memos %}
+                <tr>
+                  <td style="white-space:nowrap;">{{ cm.date }}</td>
+                  <td>{{ cm.memo_number|default:cm.id }}</td>
+                  <td>{{ cm.description|default:"—" }}</td>
+                  <td class="text-end fw-semibold">{{ cm.open_balance|floatformat:2 }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="4" class="text-muted">None.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="fw-semibold mb-1">Unused Gift Certificates</div>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead>
+              <tr>
+                <th style="white-space:nowrap;">Issued</th>
+                <th>Number</th>
+                <th>Description</th>
+                <th class="text-end">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for gc in giftcerts %}
+                <tr>
+                  <td style="white-space:nowrap;">{{ gc.issued_date }}</td>
+                  <td>{{ gc.certificate_number|default:gc.id }}</td>
+                  <td>
+                    {{ gc.description|default:"—" }}
+                    {% if gc.sold_to %}
+                      <div class="text-muted small">Sold to: {{ gc.sold_to }}</div>
+                    {% endif %}
+                  </td>
+                  <td class="text-end fw-semibold">{{ gc.balance|floatformat:2 }}</td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="4" class="text-muted">None.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    {% endif %}
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  </div>
+</div>
