@@ -39,10 +39,10 @@
                 <td>{{ x.unit_cost }}</td>
                 <td>{{ x.qty }}</td>
                 <td>
-                    <button hx-trigger="click" hx-get="{% url 'finance:edit_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Edit</button>
-                    <!-- <button hx-trigger="click" hx-get="{% url 'finance:delete_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Delete</button>
-                    <button hx-get="{% url 'finance:delete_invoice_item' invoice=invoice.id id=x.id %}" class="btn btn-secondary">Delete</button> -->
-                    <a href="{% url 'finance:delete_invoice_item'  invoice=invoice.id id=x.id %}" class="btn btn-secondary" role="button">Delete</a>
+                    <button hx-trigger="click" hx-get="{% url 'finance:ap_edit_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Edit</button>
+                    <!-- <button hx-trigger="click" hx-get="{% url 'finance:ap_delete_invoice_item' invoice=invoice.id id=x.id %}" hx-target="#invoices" class="btn btn-secondary">Delete</button>
+                    <button hx-get="{% url 'finance:ap_delete_invoice_item' invoice=invoice.id id=x.id %}" class="btn btn-secondary">Delete</button> -->
+                    <a href="{% url 'finance:ap_delete_invoice_item'  invoice=invoice.id id=x.id %}" class="btn btn-secondary" role="button">Delete</a>
                     
                 </tr>
 
@@ -56,7 +56,7 @@
 </div> -->
 
 <div id="invoices">
-    <button hx-trigger="click" hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=0 %}" hx-target="#invoices" class="btn btn-danger">Add an item</button>
+    <button hx-trigger="click" hx-get="{% url 'finance:ap_add_invoice_item_vendor' invoice=invoice.id vendor=0 %}" hx-target="#invoices" class="btn btn-danger">Add an item</button>
 </div>
 
 <div id="remainder"></div>

@@ -1,27 +1,30 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
 {% load static %}
-
 
 {% block content %}
 <script src="{% static 'js/order_out_form.js' %}"></script>
 <script src="{% static 'js/setprice_form.js' %}"></script>
+
 <div class="row">
-  <div id="customers" class="col-sm-12">
-    <select class="custom-select mb-4" id="customer" hx-trigger="change, itemListChanged from:body" name="customers" hx-get="{% url 'customers:expanded_detail' %}" hx-target="#customers">
-    <option selected>Select Customer</option>
-        {% for x in customers %}
-          <option value="{{ x.id }}">{{ x.company_name }}</option>
-        {% endfor %}
+  <div class="col-sm-12">
+    <select
+      class="custom-select mb-4"
+      id="customer"
+      name="customer"
+      hx-get="{% url 'customers:expanded_detail' %}"
+      hx-trigger="change"
+      hx-target="#customer_detail"
+      hx-swap="innerHTML"
+    >
+      <option value="" selected>Select Customer</option>
+      {% for x in customers %}
+        <option value="{{ x.id }}">{{ x.company_name }}</option>
+      {% endfor %}
     </select>
   </div>
 </div>
 
-
-
-
-
-
+<div id="customer_detail"></div>
 
 <div id="modal" class="modal fade">
   <div id="dialog" class="modal-dialog" hx-target="this"></div>
@@ -30,68 +33,30 @@
 <div id="modal2" class="modal fade">
   <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
 </div>
-
-
 {% endblock content %}
 
 {% block scripts %}
-
-
 <script>
+  function initCustomerSelect() {
+    const el = document.getElementById("customer");
+    if (!el || !window.jQuery || !$.fn.select2) return;
 
+    const $el = $(el);
 
-    $(document).ready(function () {
-      $("#customer").select2();
-      $('#customer').on('select2:select', (e) => {
-        htmx.trigger("#customer", "change")
-      });
-    })
+    // prevent double init
+    if ($el.hasClass("select2-hidden-accessible")) return;
 
-    const modal = new bootstrap.Modal(document.getElementById("modal"))
+    $el.select2({ width: "100%" });
 
-    htmx.on("htmx:afterSwap", (e) => {
-      // Response targeting #dialog => show the modal
-      if (e.detail.target.id == "dialog") {
-        modal.show()
-      }
-    })
+    // make select2 actually trigger htmx change
+    $el.on("select2:select", function () {
+      this.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
 
-    htmx.on("htmx:beforeSwap", (e) => {
-      // Empty response targeting #dialog => hide the modal
-      if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
-        modal.hide()
-        e.detail.shouldSwap = false
-      }
-    })
-
-    htmx.on("hidden.bs.modal", () => {
-      document.getElementById("dialog").innerHTML = ""
-    })
-    
-
-    const modal2 = new bootstrap.Modal(document.getElementById("modal2"))
-
-    htmx.on("htmx:afterSwap", (e) => {
-      // Response targeting #dialog => show the modal
-      if (e.detail.target.id == "dialog2") {
-        modal2.show()
-      }
-    })
-
-    htmx.on("htmx:beforeSwap", (e) => {
-      // Empty response targeting #dialog => hide the modal
-      if (e.detail.target.id == "dialog2" && !e.detail.xhr.response) {
-        modal2.hide()
-        e.detail.shouldSwap = false
-      }
-    })
-
-    htmx.on("hidden.bs.modal", () => {
-      document.getElementById("dialog2").innerHTML = ""
-    })
-
-
-
+  document.addEventListener("DOMContentLoaded", initCustomerSelect);
+  document.addEventListener("htmx:load", (e) => initCustomerSelect());
 </script>
 
+{# IMPORTANT: removed the old ContactChanged JS that used outerHTML and broke the card #}
 {% endblock %}

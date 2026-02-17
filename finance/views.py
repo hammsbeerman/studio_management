@@ -34,6 +34,7 @@ from finance.helpers_ar import ar_open_workorders_qs, recompute_customer_open_ba
 
 logger = logging.getLogger(__file__)
 
+
 def _money(val) -> Decimal:
     """
     Safe money parsing:
@@ -1383,7 +1384,7 @@ def add_invoice(request, vendor=None):
             form.instance.vendor_id = vendor
             form.save()
             invoice = form.instance.pk
-            return redirect ('finance:invoice_detail', id=invoice)
+            return redirect ('finance:ap_invoice_detail_id', id=invoice)
         else:
             print(form.errors)
         #invoices = RetailInvoices.objects.all().order_by('invoice_date')
@@ -1395,12 +1396,12 @@ def add_invoice(request, vendor=None):
     #vendors = Vendors.objects.filter(supplier=1)
     if vendor:
         bills = AccountsPayable.objects.filter().order_by('-invoice_date')
-        balance = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('total'))
-        calculated_total = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('calculated_total'))
+        balance = AccountsPayable.objects.filter().exclude(paid=1).exclude(void=True).aggregate(Sum('total'))
+        calculated_total = AccountsPayable.objects.filter().exclude(paid=1).exclude(void=True).aggregate(Sum('calculated_total'))
     else:
         bills = AccountsPayable.objects.filter().exclude(vendor=23).order_by('-invoice_date') 
-        balance = AccountsPayable.objects.filter().exclude(paid=1).exclude(vendor=23).aggregate(Sum('total'))
-        calculated_total = AccountsPayable.objects.filter().exclude(paid=1).exclude(vendor=23).aggregate(Sum('calculated_total'))  
+        balance = AccountsPayable.objects.filter().exclude(paid=1).exclude(vendor=23).exclude(void=True).aggregate(Sum('total'))
+        calculated_total = AccountsPayable.objects.filter().exclude(paid=1).exclude(vendor=23).exclude(void=True).aggregate(Sum('calculated_total'))  
     context = {
         'balance': balance,
         'calculated_total': calculated_total,
@@ -1415,20 +1416,31 @@ def edit_invoice(request, invoice=None, drop=None):
     print('invoice')
     print(invoice)
     pk=invoice
+    obj = get_object_or_404(AccountsPayable, id=invoice)
     print(drop)
     if request.method == "POST":
-        instance = AccountsPayable.objects.get(id=pk)
-        form = EditInvoiceForm(request.POST or None, instance=instance)
+        #instance = AccountsPayable.objects.get(id=pk)
+        form = EditInvoiceForm(request.POST or None, instance=obj)
         if form.is_valid():
-            form.save()
+            inv = form.save(commit=False)
             #InvoiceItem.objects.filter(pk=id).update(name=name, description=description, vendor_part_number=vendor_part_number, unit_cost=unit_cost, qty=qty)
             
+            # stamp/unstamp void time
+            if inv.void and not inv.voided_at:
+                inv.voided_at = timezone.now()
+            if not inv.void:
+                inv.voided_at = None
+                inv.void_reason = ""
+
+            inv.save()
+            messages.success(request, "Invoice updated.")
+
             return redirect ('finance:ap_add_invoice') 
             #return HttpResponse(status=204, headers={'HX-Trigger': 'itemChanged'})         
         else:        
             messages.success(request, "Something went wrong")
             return redirect ('finance:ap_add_invoice')
-    obj = get_object_or_404(AccountsPayable, id=invoice)
+    
     form = EditInvoiceForm(instance=obj)
     bills = AccountsPayable.objects.filter(pk=invoice).exclude(paid=1).order_by('invoice_date')
     #balance = AccountsPayable.objects.filter().exclude(paid=1).aggregate(Sum('total'))
@@ -1440,7 +1452,8 @@ def edit_invoice(request, invoice=None, drop=None):
         'vendors':vendors,
         'pk':pk,
         'bills':bills,
-        'form':form
+        'form':form,
+        "invoice_obj": obj,
     }
     return render (request, "finance/AP/edit_invoice.html", context)
 
@@ -1502,13 +1515,31 @@ def edit_invoice_modal(request, invoice=None):
 
 
 
+from decimal import Decimal, InvalidOperation
+from datetime import datetime
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import Sum, Max
+from django.shortcuts import get_object_or_404, redirect, render
+
+from controls.models import Measurement
+from finance.models import AccountsPayable, InvoiceItem  # adjust if your imports differ
+from inventory.models import InventoryMaster, InventoryQtyVariations, Inventory  # Inventory used later in your delete view
+from inventory.services.ledger import record_inventory_movement  # adjust if your import differs
+
+# make sure these exist where you already had them:
+# - AddInvoiceItemForm
+# - logger
+
+
 @login_required
 def invoice_detail(request, id=None):
     """
     AP Invoice detail + add/edit line items.
 
     - ppm behavior preserved
-    - inventory ledger: AP_RECEIPT / AP_RECEIPT_ADJUST
+    - inventory ledger: AP_RECEIPT / AP_RECEIPT_ADJUST / AP_RECEIPT_DELETE
     - posted flag: just used for warnings (no hard lock)
     - amount vs calculated_total: warns when difference > threshold
     """
@@ -1537,7 +1568,9 @@ def invoice_detail(request, id=None):
         else:
             form = AddInvoiceItemForm(request.POST)
 
+        # ------------------------------------------------------------
         # Determine or create the appropriate InventoryQtyVariations row
+        # ------------------------------------------------------------
         variation_qty = Decimal("1")
         variation_obj_id = None
 
@@ -1548,10 +1581,10 @@ def invoice_detail(request, id=None):
 
         if unit:
             # Create a new variation for this inventory item
-            try:
-                measurement = Measurement.objects.get(pk=unit)
-            except Measurement.DoesNotExist:
-                measurement = None
+            measurement = Measurement.objects.filter(pk=unit).first()
+            if not measurement:
+                messages.error(request, "Invalid unit selected.")
+                return redirect("finance:invoice_detail", id=invoice.pk)
 
             try:
                 variation_qty = Decimal(item_qty_raw or "1")
@@ -1559,35 +1592,63 @@ def invoice_detail(request, id=None):
                 variation_qty = Decimal("1")
 
             if base_item:
-                v = InventoryQtyVariations(
-                    inventory=base_item,
-                    variation=measurement,
-                    variation_qty=variation_qty,
+                # Optional: prevent exact dup rows
+                v = (
+                    InventoryQtyVariations.objects
+                    .filter(
+                        inventory=base_item,
+                        variation=measurement,
+                        variation_qty=variation_qty,
+                    )
+                    .first()
                 )
-                v.save()
+                if not v:
+                    v = InventoryQtyVariations.objects.create(
+                        inventory=base_item,
+                        variation=measurement,
+                        variation_qty=variation_qty,
+                        # mark as default receive uom if none exists
+                        is_default_receive_uom=not InventoryQtyVariations.objects.filter(
+                            inventory=base_item,
+                            is_default_receive_uom=True,
+                        ).exists(),
+                        active=True,
+                    )
                 variation_obj_id = v.pk
+
         elif variation_id:
-            v = InventoryQtyVariations.objects.filter(pk=variation_id).first()
+            # Use an existing variation
+            v = InventoryQtyVariations.objects.filter(pk=variation_id, active=True).first()
             if v and v.variation_qty:
                 variation_qty = Decimal(v.variation_qty)
                 variation_obj_id = v.pk
-        # else: default variation_qty = 1, no invoice_unit
+        # else: default variation_qty=1, variation_obj_id=None
+
+        # ------------------------------------------------------------
+        # Save + compute totals + ledger movement
+        # ------------------------------------------------------------
+        from inventory.services.uom import qty_to_base
 
         if form.is_valid():
             # --- Compute qty & unit_cost (price ea) using ppm rules ---
             invoice_qty = form.instance.invoice_qty or Decimal("0")
-            qty = invoice_qty * variation_qty
 
-            if form.instance.invoice_unit_cost:
-                if ppm_flag == "1":
-                    # Price is per 1000 units (Price Per M)
-                    unit_cost = form.instance.invoice_unit_cost / Decimal("1000")
-                else:
-                    # Price is per variation unit (e.g. a case of 10)
-                    unit_cost = form.instance.invoice_unit_cost / (variation_qty or Decimal("1"))
-                    ppm_flag = "0"
+            invoice_unit_obj = None
+            if variation_obj_id:
+                invoice_unit_obj = InventoryQtyVariations.objects.filter(pk=variation_obj_id).first()
+
+            if invoice_unit_obj and not getattr(invoice_unit_obj, "active", True):
+                messages.error(request, "That unit is inactive for this item.")
+                return redirect("finance:invoice_detail", id=invoice.pk)
+
+            mult = Decimal(getattr(invoice_unit_obj, "variation_qty", None) or "1")
+            qty = qty_to_base(invoice_qty, invoice_unit_obj)  # BASE units
+
+            raw_cost = form.instance.invoice_unit_cost or Decimal("0.00")
+            if raw_cost and ppm_flag == "1":
+                unit_cost = raw_cost / Decimal("1000")
             else:
-                unit_cost = Decimal("0.00")
+                unit_cost = raw_cost / (mult or Decimal("1"))
                 ppm_flag = "0"
 
             # --- Populate instance fields ---
@@ -1669,9 +1730,10 @@ def invoice_detail(request, id=None):
                 )
 
             messages.success(request, "Invoice line item saved.")
-            return redirect("finance:invoice_detail", id=invoice.pk)
+            return redirect("finance:ap_invoice_detail_id", id=invoice.pk)
 
         messages.error(request, "Please correct the errors below.")
+
     else:
         form = AddInvoiceItemForm(initial={"vendor": invoice.vendor})
 
@@ -1707,6 +1769,7 @@ def invoice_detail(request, id=None):
         "item_total": item_total,
     }
     return render(request, "finance/AP/invoice_detail.html", context)
+
 
 def invoice_detail_highlevel(request, id=None):
     invoice = get_object_or_404(AccountsPayable, id=id)
@@ -2062,7 +2125,7 @@ def delete_invoice_item(request, id=None, invoice=None):
     # Finally delete the item
     item_delete.delete()
 
-    return redirect("finance:invoice_detail", id=invoice)
+    return redirect("finance:ap_invoice_detail_id", id=invoice)
 
 def add_item_to_vendor(request, vendor=None, invoice=None):
     print('vendor')
@@ -2246,6 +2309,7 @@ def bills_by_vendor(request):
         .filter(vendor_id=vendor_id)
         .order_by("-invoice_date")
         .exclude(paid=1)
+        .exclude(void=True)
     )
 
     paid_bills = (
@@ -2253,12 +2317,14 @@ def bills_by_vendor(request):
         .filter(vendor_id=vendor_id)
         .order_by("-invoice_date")
         .exclude(paid=0)
+        .exclude(void=True)
     )
 
     balance = (
         AccountsPayable.objects
         .filter(vendor_id=vendor_id)
         .exclude(paid=1)
+        .exclude(void=True)
         .aggregate(Sum("total"))
     )
 
@@ -2266,6 +2332,7 @@ def bills_by_vendor(request):
         AccountsPayable.objects
         .filter(vendor_id=vendor_id)
         .exclude(paid=1)
+        .exclude(void=True)
         .aggregate(Sum("calculated_total"))
     )
 

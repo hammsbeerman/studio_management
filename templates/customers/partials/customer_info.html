@@ -1,34 +1,80 @@
 {% load static %}
 
+<div class="card-header">
+  Customer Info
+</div>
 
-                <div class="card-header">
-                    Customer Info
-                    </div>
-                    <div class="card-body" id="custinfo" hx-trigger="CustomerEdit from:body" hx-target="this" >
-                        <h5 class="card-title">{% if customer.company_name %}{{ customer.company_name }}</h5>
-            <p class="card-text">
-                {% if customer.mail_bounced_back %}<h4><span style="color:red;">Need New Address</span></h4><br/>{% endif %}
-                {% if not customer.active %}<h3><span style="color:red;">Inactive</span></h3><br/>{% endif %}
-                {% if customer.address1 %} Address: {{ customer.address1 }} <br/>
-                {% if customer.address2 %}{{customer.address2}}{% endif %}<br/>
-                {{ customer.city }}, {{customer.state}} {{customer.zipcode }}<br/>{% endif %}
-                {% if customer.phone1 %} Phone: {{ customer.phone1 }}<br/>{% endif %}
-                {% if customer.email %}Email: {{ customer.email }}<br/>{% endif %}
-                {% if customer.tax_exempt_paperwork %}<a href="{{ customer.tax_exempt_paperwork.url }}" target="_blank">Tax Exempt Paperwork</a>{% endif %}
-                {% endif %}
-                    </div>
-                    <div class="card-footer">
-                        <button hx-get="{% url 'customers:edit_customer' %}?customer={{ customer.id }}" hx-target="#dialog">Edit Customer</button>
-                        <button hx-get="{% url 'customers:cust_info' %}?customer={{ customer.id }}" hx-target="#customer-info-card">Refresh</button>
-                        {% if customer.notes %}
-                            <button class="btn btn-primary-outline" hx-get="{% url 'customers:customer_notes' pk=customer.id %}" hx-target="#dialog">
-                            <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
-                            </button>
-                        {% else %}
-                            <button class="btn btn-primary-outline" hx-get="{% url 'customers:customer_notes' pk=customer.id %}" hx-target="#dialog">
-                                    <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
-                            </button>
-                        {% endif %}
-                        {% if customer.tax_exempt_paperwork %}T{% endif %}
-                    
-                    </div>
+<div class="card-body" id="custinfo" hx-trigger="CustomerEdit from:body" hx-target="this">
+  {% if customer.company_name %}
+    <h5 class="card-title">{{ customer.company_name }}</h5>
+  {% endif %}
+
+  <p class="card-text">
+    {% if customer.mail_bounced_back %}
+      <h4><span style="color:red;">Need New Address</span></h4><br/>
+    {% endif %}
+
+    {% if not customer.active %}
+      <h3><span style="color:red;">Inactive</span></h3><br/>
+    {% endif %}
+
+    {% if customer.address1 or customer.address2 %}
+        Address:
+        {% if customer.address1 %}
+            {{ customer.address1 }}<br/>
+        {% endif %}
+        {% if customer.address2 %}
+            {{ customer.address2 }}<br/>
+        {% endif %}
+        {% if customer.city or customer.state or customer.zipcode %}
+            {{ customer.city }}{% if customer.city and customer.state %}, {% endif %}{{ customer.state }} {{ customer.zipcode }}<br/>
+        {% endif %}
+    {% endif %}
+
+    {% if customer.phone1 %}
+      Phone: {{ customer.phone1 }}<br/>
+    {% endif %}
+
+    {% if customer.email %}
+      Email: {{ customer.email }}<br/>
+    {% endif %}
+
+    {% if customer.tax_exempt_paperwork %}
+      <a href="{{ customer.tax_exempt_paperwork.url }}" target="_blank">Tax Exempt Paperwork</a>
+    {% endif %}
+  </p>
+</div>
+
+<div class="card-footer">
+  <button
+    type="button"
+    class="btn btn-primary"
+    hx-get="{% url 'customers:edit_customer' %}?customer={{ customer.id }}"
+    hx-target="#dialog2">
+    Edit Customer
+  </button>
+
+  <button
+    type="button"
+    class="btn btn-secondary"
+    hx-get="{% url 'customers:cust_info' %}?customer={{ customer.id }}"
+    hx-target="#customer-info-card">
+    Refresh
+  </button>
+
+  {% if customer.notes %}
+    <button class="btn btn-primary-outline"
+            hx-get="{% url 'customers:customer_notes' pk=customer.id %}"
+            hx-target="#dialog2">
+      <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+    </button>
+  {% else %}
+    <button class="btn btn-primary-outline"
+            hx-get="{% url 'customers:customer_notes' pk=customer.id %}"
+            hx-target="#dialog2">
+      <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
+    </button>
+  {% endif %}
+
+  {% if customer.tax_exempt_paperwork %}T{% endif %}
+</div>

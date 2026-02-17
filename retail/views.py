@@ -127,119 +127,143 @@ def get_default_unit_price_for_line(line):
     return base_price
 
 
-def pos_line_qty_signed(sale, qty: Decimal) -> Decimal:
+def pos_line_qty_signed(sale, qty_base: Decimal) -> Decimal:
     """
     Convert a positive 'qty' into a signed quantity based on sale type.
 
     - Normal sale: negative (stock out)
     - Refund sale: positive (stock in)
     """
-    if not qty:
+    qty_base = Decimal(qty_base or 0)
+    if qty_base == 0:
+        return Decimal("0")
+    return qty_base if sale.is_refund else -qty_base
+
+def _resolve_line_qty_base(line) -> Decimal:
+    """
+    Convert a RetailSaleLine's entered qty into base units.
+
+    If sold_variation is set: base = qty * variation_qty
+    Else: base = qty (already base units)
+    """
+    qty = Decimal(line.qty or 0)
+    if qty == 0:
         return Decimal("0")
 
-    if getattr(sale, "is_refund", False):
-        return Decimal(qty)  # stock in
-    return Decimal(qty) * Decimal("-1")  # stock out
+    v = getattr(line, "sold_variation", None)
+    mult = Decimal(getattr(v, "variation_qty", None) or 1)
+    return qty * mult
+
+def pos_line_delta_base(sale, qty_base: Decimal) -> Decimal:
+    """
+    Return the ledger delta for this line in BASE units.
+    - Normal sale: stock OUT => negative delta
+    - Refund sale: stock IN  => positive delta
+    """
+    qty_base = Decimal(qty_base or 0)
+    if qty_base == 0:
+        return Decimal("0")
+    return qty_base if sale.is_refund else -qty_base
 
 
 def record_pos_inventory_for_line(line, old_qty=None, old_item=None, source_suffix=""):
     """
-    Adjust the InventoryLedger for a RetailSaleLine create/edit.
+    Adjust InventoryLedger for RetailSaleLine create/edit using BASE units.
 
-    - line: RetailSaleLine instance (must have .sale and .inventory, .qty)
-    - old_qty: previous qty (Decimal) before edit (None on create)
-    - old_item: previous inventory FK before edit (None on create)
-
-    This mirrors the AP logic but with sign handling for sale vs refund.
+    - old_qty: OLD BASE qty (Decimal) before edit (None on create)
+    - old_item: OLD inventory FK before edit (None on create)
     """
     try:
         sale = line.sale
         new_item = line.inventory
-        new_qty_raw = line.qty or Decimal("0")
-        new_qty_signed = pos_line_qty_signed(sale, new_qty_raw)
+
+        new_qty_base = _resolve_line_qty_base(line)
+        new_delta = pos_line_delta_base(sale, new_qty_base)
 
         if old_qty is None and old_item is None:
             # CREATE
-            if new_item and new_qty_signed:
+            if new_item and new_delta:
                 record_inventory_movement(
                     inventory_item=new_item,
-                    qty_delta=new_qty_signed,
-                    source_type="POS_SALE" if not sale.is_refund else "POS_REFUND",
+                    qty_delta=new_delta,
+                    source_type="POS_REFUND" if sale.is_refund else "POS_SALE",
                     source_id=line.pk,
-                    note=f"POS sale {sale.pk} line {line.pk}{source_suffix}",
+                    note=f"POS {'refund' if sale.is_refund else 'sale'} {sale.pk} line {line.pk}{source_suffix}",
+                )
+            return
+
+        # EDIT
+        old_item = old_item or new_item
+        old_qty_base = Decimal(old_qty or 0)
+        old_delta = pos_line_delta_base(sale, old_qty_base)
+
+        if old_item == new_item:
+            delta = new_delta - old_delta
+            if delta:
+                record_inventory_movement(
+                    inventory_item=new_item,
+                    qty_delta=delta,
+                    source_type="POS_REFUND_ADJUST" if sale.is_refund else "POS_SALE_ADJUST",
+                    source_id=line.pk,
+                    note=f"Adjust POS {sale.pk} line {line.pk}{source_suffix}",
                 )
         else:
-            # EDIT
-            old_item = old_item or new_item
-            old_qty_raw = old_qty or Decimal("0")
-            old_qty_signed = pos_line_qty_signed(sale, old_qty_raw)
-
-            if old_item == new_item:
-                # same item, just adjust quantity
-                delta = new_qty_signed - old_qty_signed
-                if delta:
-                    record_inventory_movement(
-                        inventory_item=new_item,
-                        qty_delta=delta,
-                        source_type="POS_SALE_ADJUST" if not sale.is_refund else "POS_REFUND_ADJUST",
-                        source_id=line.pk,
-                        note=f"Adjust POS sale {sale.pk} line {line.pk}{source_suffix}",
-                    )
-            else:
-                # inventory item changed: reverse old, apply new
-                if old_item and old_qty_signed:
-                    record_inventory_movement(
-                        inventory_item=old_item,
-                        qty_delta=-old_qty_signed,
-                        source_type="POS_SALE_ADJUST" if not sale.is_refund else "POS_REFUND_ADJUST",
-                        source_id=line.pk,
-                        note=f"Reassign POS sale {sale.pk} line {line.pk} (old item){source_suffix}",
-                    )
-                if new_item and new_qty_signed:
-                    record_inventory_movement(
-                        inventory_item=new_item,
-                        qty_delta=new_qty_signed,
-                        source_type="POS_SALE_ADJUST" if not sale.is_refund else "POS_REFUND_ADJUST",
-                        source_id=line.pk,
-                        note=f"Reassign POS sale {sale.pk} line {line.pk} (new item){source_suffix}",
-                    )
+            # reverse old, apply new
+            if old_item and old_delta:
+                record_inventory_movement(
+                    inventory_item=old_item,
+                    qty_delta=-old_delta,  # reverse what we did before
+                    source_type="POS_REFUND_ADJUST" if sale.is_refund else "POS_SALE_ADJUST",
+                    source_id=line.pk,
+                    note=f"Reassign POS {sale.pk} line {line.pk} (old item){source_suffix}",
+                )
+            if new_item and new_delta:
+                record_inventory_movement(
+                    inventory_item=new_item,
+                    qty_delta=new_delta,
+                    source_type="POS_REFUND_ADJUST" if sale.is_refund else "POS_SALE_ADJUST",
+                    source_id=line.pk,
+                    note=f"Reassign POS {sale.pk} line {line.pk} (new item){source_suffix}",
+                )
 
     except Exception:
-        logger.exception(f"Failed to record POS inventory movement for sale line {getattr(line, 'pk', '?')}")
-
-
-def _record_pos_ledger_entries(sale: RetailSale, scale: Decimal = Decimal("1.0")):
-    """
-    Write InventoryLedger entries for this POS sale / refund.
-
-    - For normal sales (qty > 0), subtract stock (negative delta).
-    - For refunds (qty < 0 on refund sale), add stock back (positive delta).
-    - For partial refunds, `scale` lets us only move a fraction of that qty.
-    """
-    source_type = "POS_REFUND" if sale.is_refund else "POS_SALE"
-
-    for line in sale.lines.filter(inventory__isnull=False):
-        qty = line.qty or Decimal("0")
-        try:
-            qty_dec = Decimal(qty)
-        except Exception:
-            continue
-
-        if qty_dec == 0:
-            continue
-
-        # Sale:   qty=+3  -> delta=-3 (stock out)
-        # Refund: qty=-3  -> delta=+3 (restock)
-        # Partial refund: scale < 1.0 → only part of it.
-        qty_delta = (-qty_dec) * scale
-
-        record_inventory_movement(
-            inventory_item=line.inventory,
-            qty_delta=qty_delta,
-            source_type=source_type,
-            source_id=str(sale.id),
-            note=f"POS {'refund' if sale.is_refund else 'sale'} #{sale.id}",
+        logger.exception(
+            f"Failed to record POS inventory movement for sale line {getattr(line, 'pk', '?')}"
         )
+
+
+# def _record_pos_ledger_entries(sale: RetailSale, scale: Decimal = Decimal("1.0")):
+#     """
+#     Write InventoryLedger entries for this POS sale / refund.
+
+#     - For normal sales (qty > 0), subtract stock (negative delta).
+#     - For refunds (qty < 0 on refund sale), add stock back (positive delta).
+#     - For partial refunds, `scale` lets us only move a fraction of that qty.
+#     """
+#     source_type = "POS_REFUND" if sale.is_refund else "POS_SALE"
+
+#     for line in sale.lines.filter(inventory__isnull=False):
+#         qty = line.qty or Decimal("0")
+#         try:
+#             qty_dec = Decimal(qty)
+#         except Exception:
+#             continue
+
+#         if qty_dec == 0:
+#             continue
+
+#         # Sale:   qty=+3  -> delta=-3 (stock out)
+#         # Refund: qty=-3  -> delta=+3 (restock)
+#         # Partial refund: scale < 1.0 → only part of it.
+#         qty_delta = (-qty_dec) * scale
+
+#         record_inventory_movement(
+#             inventory_item=line.inventory,
+#             qty_delta=qty_delta,
+#             source_type=source_type,
+#             source_id=str(sale.id),
+#             note=f"POS {'refund' if sale.is_refund else 'sale'} #{sale.id}",
+#         )
 
 
 def _compute_sale_totals(sale: RetailSale):
@@ -727,8 +751,9 @@ def update_line_field(request, line_id):
         return HttpResponseBadRequest("Invalid field")
     
     # 🔹 capture old values for ledger
-    old_qty = line.qty
     old_item = line.inventory
+    old_qty_base = _resolve_line_qty_base(line)
+
 
     try:
         if field == "qty":
@@ -742,8 +767,8 @@ def update_line_field(request, line_id):
 
     line.save()
 
-    # 🔹 NEW: adjust ledger based on change
-    record_pos_inventory_for_line(line, old_qty=old_qty, old_item=old_item)
+    # adjust ledger based on change (edit path) — use OLD BASE qty
+    record_pos_inventory_for_line(line, old_qty=old_qty_base, old_item=old_item)
 
     response = render(
         request,
@@ -761,17 +786,18 @@ def delete_line(request, line_id):
     sale = line.sale
     _guard_sale_unlocked(sale)
 
-    # 🔹 NEW: reverse ledger movement for this line
-    if line.inventory_id and line.qty:
+    # reverse ledger movement for this line (BASE units)
+    if line.inventory_id:
         try:
-            signed_qty = pos_line_qty_signed(sale, line.qty)  # what we *originally* did
-            if signed_qty:
+            qty_base = _resolve_line_qty_base(line)
+            delta = pos_line_delta_base(sale, qty_base)  # what we originally posted
+            if delta:
                 record_inventory_movement(
                     inventory_item=line.inventory,
-                    qty_delta=-signed_qty,  # reverse it
-                    source_type="POS_SALE_DELETE" if not sale.is_refund else "POS_REFUND_DELETE",
+                    qty_delta=-delta,  # reverse it
+                    source_type="POS_REFUND_DELETE" if sale.is_refund else "POS_SALE_DELETE",
                     source_id=line.pk,
-                    note=f"Delete POS sale {sale.pk} line {line.pk}",
+                    note=f"Delete POS {sale.pk} line {line.pk}",
                 )
         except Exception:
             logger.exception(f"Failed to record POS inventory delete for sale line {line.pk}")
@@ -1302,6 +1328,9 @@ def _create_refund_sale_from(original: RetailSale, user) -> RetailSale:
             description=line.description,
             qty=-line.qty,
             unit_price=line.unit_price,
+            tax_rate=getattr(line, "tax_rate", Decimal("0")),
+            sold_variation=getattr(line, "sold_variation", None),
+            is_gift_certificate=getattr(line, "is_gift_certificate", False),
         )
 
     return refund
@@ -1502,8 +1531,8 @@ def sale_update_line_price(request, sale_pk, line_pk):
     line = get_object_or_404(RetailSaleLine, pk=line_pk, sale=sale)
 
     # 🔹 capture old values before changes
-    old_qty = line.qty
     old_item = line.inventory
+    old_qty_base = _resolve_line_qty_base(line)
 
     qty_str = request.POST.get("qty")
     raw_price = request.POST.get("unit_price")
@@ -1533,7 +1562,7 @@ def sale_update_line_price(request, sale_pk, line_pk):
     line.save()
 
     # 🔹 NEW: ledger adjust for qty change (if any)
-    record_pos_inventory_for_line(line, old_qty=old_qty, old_item=old_item)
+    record_pos_inventory_for_line(line, old_qty=old_qty_base, old_item=old_item)
 
     if update_default and line.inventory_id:
         inv = line.inventory
@@ -1583,6 +1612,9 @@ def sale_update_line_variation(request, sale_pk, line_pk):
 
     line = get_object_or_404(RetailSaleLine, pk=line_pk, sale=sale)
 
+    old_item = line.inventory
+    old_qty_base = _resolve_line_qty_base(line)
+
     variation_id = (request.POST.get("variation_id") or "").strip()
     rownum = request.POST.get("rownum") or "0"
 
@@ -1600,6 +1632,7 @@ def sale_update_line_variation(request, sale_pk, line_pk):
     line.unit_price = get_default_unit_price_for_line(line)
 
     line.save(update_fields=["sold_variation", "unit_price"])
+    record_pos_inventory_for_line(line, old_qty=old_qty_base, old_item=old_item)
 
     _attach_on_hand_to_line(line)
 
@@ -2216,8 +2249,8 @@ def sale_update_line_qty(request, sale_pk, line_pk):
 
     line = get_object_or_404(RetailSaleLine, pk=line_pk, sale=sale)
 
-    old_qty = line.qty
     old_item = line.inventory
+    old_qty_base = _resolve_line_qty_base(line)
 
     raw = (request.POST.get("qty") or "").strip()
     try:
@@ -2229,10 +2262,19 @@ def sale_update_line_qty(request, sale_pk, line_pk):
         qty = Decimal("0")
 
     line.qty = qty
-    line.save(update_fields=["qty"])
+
+    if hasattr(line, "line_total"):
+        line.line_total = (line.qty or Decimal("0")) * (line.unit_price or Decimal("0"))
+
+    update_fields = ["qty"]
+    if hasattr(line, "line_total"):
+        update_fields.append("line_total")
+
+    line.save(update_fields=update_fields)
+
 
     # ledger adjust for qty change
-    record_pos_inventory_for_line(line, old_qty=old_qty, old_item=old_item)
+    record_pos_inventory_for_line(line, old_qty=old_qty_base, old_item=old_item)
 
     rownum = request.POST.get("rownum") or "0"
     _attach_on_hand_to_line(line)
@@ -2255,7 +2297,15 @@ def sale_reset_line_price(request, sale_pk, line_pk):
     line = get_object_or_404(RetailSaleLine, pk=line_pk, sale=sale)
 
     line.unit_price = get_default_unit_price_for_line(line)
-    line.save(update_fields=["unit_price"])
+
+    if hasattr(line, "line_total"):
+        line.line_total = (line.qty or Decimal("0")) * (line.unit_price or Decimal("0"))
+
+    update_fields = ["unit_price"]
+    if hasattr(line, "line_total"):
+        update_fields.append("line_total")
+
+    line.save(update_fields=update_fields)
 
     rownum = request.POST.get("rownum") or "0"
     _attach_on_hand_to_line(line)

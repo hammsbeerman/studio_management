@@ -7,6 +7,8 @@ from datetime import timedelta, datetime
 from inventory.models import InventoryMaster, InventoryLedger, Inventory
 from retail.models import RetailSale, RetailSaleLine
 
+from inventory.services.uom import qty_to_base
+
 
 def record_inventory_movement(
     *,
@@ -69,33 +71,8 @@ def get_on_hand(item: InventoryMaster) -> Decimal:
 
     return fallback
 
-def _resolve_line_qty_base(line: RetailSaleLine) -> Decimal:
-    """
-    Resolve a POS line quantity into base units.
-
-    Rules:
-      - If line.sold_variation is set, treat `qty` as "how many of that
-        variation", and base units = qty * variation_qty.
-      - Else, fall back to qty as-is (current behavior).
-    """
-    qty = line.qty or Decimal("0")
-    try:
-        qty_dec = Decimal(qty)
-    except Exception:
-        qty_dec = Decimal("0")
-
-    if qty_dec == 0:
-        return Decimal("0")
-
-    variation = getattr(line, "sold_variation", None)
-    if variation and variation.variation_qty:
-        try:
-            return qty_dec * Decimal(variation.variation_qty)
-        except Exception:
-            # If something is off, fall back to qty
-            return qty_dec
-
-    return qty_dec
+def _resolve_line_qty_base(line) -> Decimal:
+    return qty_to_base(line.qty or 0, getattr(line, "sold_variation", None))
 
 def record_pos_sale_to_ledger(sale: RetailSale) -> None:
     """

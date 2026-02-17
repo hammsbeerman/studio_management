@@ -1,30 +1,3 @@
-{% load static %}
-
-<script>
-  $(document).ready(function () {
-    $("#customer").select2();
-    $('#customer').on('select2:select', () => htmx.trigger("#customer", "change"));
-  });
-</script>
-
-<select
-  class="custom-select mb-4"
-  id="customer"
-  name="customers"
-  hx-get="{% url 'customers:expanded_detail' %}"
-  hx-target="#customers"
-  hx-trigger="change"
->
-  {% if customer %}
-    <option value="{{ customer.id }}" selected>{{ customer }}</option>
-  {% else %}
-    <option value="" selected>Select Customer</option>
-  {% endif %}
-  {% for x in customers %}
-    <option value="{{ x.id }}">{{ x.company_name }}</option>
-  {% endfor %}
-</select>
-
 {% if customer %}
 
 <ul class="nav nav-tabs" id="customerTabs" role="tablist">
@@ -71,9 +44,11 @@
 
       <div class="col-md-3">
         <div id="contact-card" class="card"
-             hx-trigger="ContactChanged from:body"
-             hx-get="{% url 'customers:details_contact_info' %}?customer={{ customer.id }}{% if contact %}&contact={{ contact.id }}{% endif %}"
-             hx-target="this">
+            hx-trigger="ContactChanged from:body"
+            hx-get="{% url 'customers:details_contact_info' %}"
+            hx-include="#customer"
+            hx-target="this"
+            hx-swap="innerHTML">
           {% include 'customers/partials/details_contact_info.html' %}
         </div>
       </div>
@@ -133,4 +108,7 @@
   </div>
 
 </div>
+
+{% else %}
+  <div class="text-muted p-3">Select a customer.</div>
 {% endif %}

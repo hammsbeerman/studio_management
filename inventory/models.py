@@ -2,6 +2,7 @@
 from datetime import datetime
 from decimal import Decimal
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -96,6 +97,67 @@ class InventoryMaster(models.Model):
     retail_markup_flat = models.DecimalField("Retail Markup $", max_digits=15, decimal_places=4, blank=True, null=True, help_text="Flat dollars added over cost.")
     retail_category = models.ForeignKey("controls.RetailInventoryCategory", null=True, blank=True, on_delete=models.SET_NULL, related_name="inventory_items")
 
+
+    @property
+    def default_sell_uom(self):
+        return self.variations.filter(is_default_sell_uom=True, active=True).first() or self.base_uom
+
+    @property
+    def default_receive_uom(self):
+        return self.variations.filter(is_default_receive_uom=True, active=True).first() or self.base_uom
+    
+    @property
+    def base_uom(self):
+        v = self.variations.filter(is_base_unit=True, active=True).first()
+        if v:
+            return v
+
+        # fallback to legacy field (safe during migration)
+        if self.primary_base_unit_id:
+            # find a matching variation row if it exists
+            v = self.variations.filter(variation=self.primary_base_unit, variation_qty=Decimal("1.0000")).first()
+            if v:
+                return v
+
+        return None
+
+
+
+    # -----------------------
+    # Inventory migration / compatibility
+    # -----------------------
+    ledger_initialized = models.BooleanField(
+        default=False,
+        help_text="True once opening balance has been seeded into InventoryLedger for this item."
+    )
+    legacy_notes = models.TextField(blank=True, default="")
+
+    # -----------------------
+    # POS guardrails
+    # -----------------------
+    allow_price_override = models.BooleanField(default=True)
+
+    # discount cap relative to computed retail price (category/item markup result)
+    max_discount_percent_without_override = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text="Max % discount allowed without manager override. Example: 15.00"
+    )
+
+    # optional absolute floor (strong guardrail; if set, never allow below this without override)
+    price_floor = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Absolute minimum unit price allowed without manager override."
+    )
+
+    # optional margin floor using unit_cost
+    min_margin_percent = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text="Minimum margin % over unit_cost required without manager override."
+    )
+
+    # optional: require reason code on override
+    require_price_override_reason = models.BooleanField(default=False)
+
     def __str__(self):
         return self.name
     
@@ -112,20 +174,124 @@ class InventoryPricingGroup(models.Model):
         return reverse("controls:view_price_group_detail", kwargs={"id": self.group.id})
 
 class InventoryQtyVariations(models.Model):
-    inventory = models.ForeignKey(InventoryMaster, on_delete=models.CASCADE)
-    # variation = models.ForeignKey(ItemQtyVariations, on_delete=models.CASCADE)
-    variation = models.ForeignKey(Measurement, null=True, on_delete=models.SET_NULL)
-    variation_qty = models.DecimalField('Variation Qty', max_digits=15, decimal_places=4, blank=False, null=False)
-    retail_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Optional explicit retail price for this unit (e.g., dozen = 2.00). If blank, POS can compute from base price × multiplier.")
+    inventory = models.ForeignKey(
+        "InventoryMaster",
+        on_delete=models.CASCADE,
+        related_name="variations",
+    )
 
-    # def __str__(self):
-    #     variation_qty = str(self.variation_qty)
-    #     return self.inventory.name + ' -- ' +self.variation.name + ' -- ' + variation_qty 
+    variation = models.ForeignKey(
+        Measurement,
+        on_delete=models.PROTECT,
+    )
+
+    variation_qty = models.DecimalField(
+        "Variation Qty",
+        max_digits=12,
+        decimal_places=4,
+        default=Decimal("1.0000"),
+    )
+
+    # Optional explicit retail price for this unit (else computed from base × multiplier)
+    retail_price = models.DecimalField(
+        max_digits=12,
+        decimal_places=4,
+        null=True,
+        blank=True,
+    )
+
+    # base unit flag
+    is_base_unit = models.BooleanField(default=False)
+
+    # defaults
+    is_default_sell_uom = models.BooleanField(default=False)
+    is_default_receive_uom = models.BooleanField(default=False)
+
+    allow_fractional_qty = models.BooleanField(
+        default=False,
+        help_text="If true, POS/receiving can use fractional quantities in this UOM."
+    )
+
+    rounding_increment = models.DecimalField(
+        max_digits=12,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Optional rounding step for quantity entry (e.g. 1.0000 for whole packs)."
+    )
+
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["inventory", "variation"]),
+        ]
+
+    def clean(self):
+        # sanity
+        if self.variation_qty is None or self.variation_qty <= 0:
+            raise ValidationError("variation_qty must be > 0")
+
+        if self.rounding_increment is not None and self.rounding_increment <= 0:
+            raise ValidationError("rounding_increment must be > 0")
+
+        # 1) Base unit must have qty = 1
+        if self.is_base_unit and self.variation_qty != Decimal("1.0000"):
+            raise ValidationError("Base unit must have variation_qty = 1.0000")
+
+        # 2) Only one base unit per inventory
+        if self.is_base_unit:
+            qs = InventoryQtyVariations.objects.filter(
+                inventory=self.inventory,
+                is_base_unit=True,
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError("Only one base unit allowed per item.")
+
+        # 3) Only one default receive unit
+        if self.is_default_receive_uom:
+            qs = InventoryQtyVariations.objects.filter(
+                inventory=self.inventory,
+                is_default_receive_uom=True,
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError("Only one default receive unit allowed per item.")
+
+        # 4) Only one default sell unit
+        if self.is_default_sell_uom:
+            qs = InventoryQtyVariations.objects.filter(
+                inventory=self.inventory,
+                is_default_sell_uom=True,
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError("Only one default sell unit allowed per item.")
+
+        # 5) Base unit must always be active
+        if self.is_base_unit and not self.active:
+            raise ValidationError("Base unit cannot be inactive.")
+        
+        # If base unit, it should also be the fallback defaults unless explicitly set elsewhere
+        if self.is_base_unit and self.is_default_sell_uom is False:
+            pass  # ok, but normalize command should usually set it
+
+        # Default sell/receive must be active
+        if (self.is_default_sell_uom or self.is_default_receive_uom) and not self.active:
+            raise ValidationError("Default sell/receive UOM must be active.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         vname = self.variation.name if self.variation_id else "—"
         return f"{self.inventory.name} -- {vname} -- {self.variation_qty}"
-    
+
     def get_absolute_url(self):
         return reverse("inventory:item_variation_details", kwargs={"id": self.inventory.id})
     
@@ -505,3 +671,14 @@ def update_retail_pricing_on_inventory_add(sender, instance, created, **kwargs):
 
     # 🔹 here we DO reset override, because fresh inventory arrived
     ensure_retail_pricing(master, reset_override=True)
+
+
+class InventoryLegacyMapping(models.Model):
+    legacy_inventory_id = models.IntegerField(unique=True)  # old Inventory table PK, stored as int
+    master = models.ForeignKey("InventoryMaster", on_delete=models.CASCADE)
+
+    note = models.CharField(max_length=255, blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True
+    )

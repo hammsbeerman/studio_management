@@ -14,7 +14,7 @@
 <div class="container">
   <div class="row">
     <div class="col-sm-10">
-      <select class="custom-select mb-4" id="id_name" hx-trigger="change" name="name" hx-get="{% url 'finance:add_invoice_item' vendor=vendor invoice=invoice %}" hx-target="#remainder">
+      <select class="custom-select mb-4" id="id_name" hx-trigger="change" name="name" hx-get="{% url 'finance:ap_add_invoice_item_invoice_vendor' vendor=vendor invoice=invoice %}" hx-target="#remainder">
         <option selected>Select Item</option>
         {% for object in items %}
           <option value="{{ object.internal_part_number.id }}">{{ object.name }} -- {{object.description }} -- {{ object.vendor_part_number }}</option>
@@ -25,7 +25,7 @@
     <div class="col-sm-2">  
       &nbsp;
       <p>
-      <button  class="btn btn-primary-outline" hx-get="{% url 'finance:add_item_to_vendor' vendor=vendor invoice=invoice %}" hx-target="#remainder"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">Add Item to vendor</button>
+      <button  class="btn btn-primary-outline" hx-get="{% url 'finance:add_item_to_vendor_vendor_invoice' vendor=vendor invoice=invoice %}" hx-target="#remainder"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">Add Item to vendor</button>
     </div>
   </div>
 </div>

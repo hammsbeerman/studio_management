@@ -126,7 +126,7 @@ class SetPriceItemPrice(models.Model):
         return self.description
     
 class Measurement(models.Model):
-    name = models.CharField('Name', max_length=100, blank=False, null=True)
+    name = models.CharField('Name', max_length=100, blank=False, null=False, unique=True)
 
     def __str__(self):
         return self.name

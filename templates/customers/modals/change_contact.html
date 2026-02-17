@@ -1,27 +1,35 @@
 {% load crispy_forms_tags %}
 
-<div class="modal-content">
-    
-    <div class="modal-header">
-        <h5 class="modal-title">Change Contact</h5>
-      </div>
-      <div class="modal-body">
-        <form hx-post="{% url 'customers:change_contact' %}"> 
-          {% csrf_token %}
-          {{message}}
-          <select class="custom-select mb-4" id="id_contacts" name="contacts">
+<form
+  hx-post="{{ request.get_full_path }}"
+  hx-target="#contact-card"
+  hx-swap="innerHTML"
+  hx-on::after-request="window.bootstrap?.Modal?.getOrCreateInstance(document.getElementById('modal2'))?.hide()"
+  class="modal-content"
+>
+  {% csrf_token %}
 
-            <option value='' selected>Select Contact</option>
-            {% for object in obj %}
-              <option value="{{ object.id }}">{{ object.fname }} {% if object.lname %}{{object.lname }}{% endif %}</option>
-            {% endfor %}
-        </select>
-      </div>
-      <div class="modal-footer">
-        <button type="button" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit">Save</button>
-      </div>
-      <input type="hidden" id="workorder" name="workorder" value="{{ workorder }}">
-    </form>
+  <div class="modal-header">
+    <h5 class="modal-title">Change Contact</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+
+  <div class="modal-body">
+    <select class="form-select mb-3" id="id_contacts" name="contacts" required>
+      <option value="" selected>Select Contact</option>
+      {% for c in obj %}
+        <option value="{{ c.id }}">{{ c.fname }}{% if c.lname %} {{ c.lname }}{% endif %}</option>
+      {% endfor %}
+    </select>
+
+    <input type="hidden" name="customer" value="{{ customer }}">
+    <input type="hidden" name="workorder" value="{{ workorder }}">
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </div>
+</form>
 
   

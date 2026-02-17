@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Bulk UOM Update</h2>
+
+<form method="post" class="card p-3">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button class="btn btn-primary" type="submit">Run</button>
+</form>
+
+{% if result %}
+  <div class="mt-3">
+    <strong>Result:</strong>
+    matched={{ result.matched }},
+    changed={{ result.changed }},
+    created={{ result.created }},
+    skipped={{ result.skipped }}
+  </div>
+{% endif %}
+
+{% if preview_items %}
+  <h4 class="mt-4">Preview (first {{ preview_items|length }})</h4>
+  <ul>
+    {% for i in preview_items %}
+      <li>{{ i.name }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+{% endblock %}

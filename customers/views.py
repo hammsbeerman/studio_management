@@ -1,5 +1,6 @@
 import os
 import datetime
+import json
 from datetime import datetime, timedelta
 from decimal import Decimal
 from django.core.paginator import Paginator
@@ -299,40 +300,59 @@ def new_customer(request):
 
 @login_required
 def new_contact(request):
-    customer = request.GET.get('customer')
-    workorder = request.GET.get('workorder')
-    print(customer)
-    print(workorder)
+    customer_id = (request.GET.get("customer") or request.POST.get("customer") or "").strip()
+    workorder_id = (request.GET.get("workorder") or request.POST.get("workorder") or "").strip()
+    print("GET customer:", request.GET.get("customer"))
+    print("POST customer:", request.POST.get("customer"))
+    print("customer_id:", customer_id)
+
+    # normalize
+    if not workorder_id or workorder_id.lower() == "none":
+        workorder_id = ""
+
     if request.method == "POST":
         form = ContactForm(request.POST)
         if form.is_valid():
-            company_num = request.POST.get("customer")
-            workorder = request.POST.get("workorder")
-            print(workorder)
-            form.instance.customer_id = company_num
-            print(company_num)
-            print(form.instance.id)
-            form.save()
-            if workorder:
-                contact = form.instance.id
-                try:
-                    Workorder.objects.filter(pk=workorder).update(contact_id=contact)
-                except:
-                    return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
-                #obj = get_object_or_404(Workorder, pk=workorder)
-                #form2 = 
-                print(form.instance.id)
-                print('else')
-            return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
-            
-    else:
-        form = ContactForm()
-        context = {
-            'form': form,
-            'customer': customer,
-            'workorder': workorder
-        }
-    return render(request, 'customers/modals/newcontact_form.html', context)
+            if not customer_id.isdigit():
+                return HttpResponse("Missing customer id", status=400)
+
+            contact = form.save(commit=False)
+            contact.customer_id = int(customer_id)
+            contact.save()
+            form.save_m2m()
+
+            if workorder_id.isdigit():
+                Workorder.objects.filter(pk=int(workorder_id)).update(contact_id=contact.id)
+
+            return HttpResponse(
+                status=204,
+                headers={
+                    "HX-Trigger": json.dumps({
+                        "ContactChanged": {
+                            "customer": int(customer_id),
+                            "contact": int(contact.id),
+                        }
+                    })
+                },
+            )
+
+        # invalid -> re-render modal with errors
+        return render(request, "customers/modals/newcontact_form.html", {
+            "form": form,
+            "customer": customer_id,
+            "workorder": workorder_id,
+        })
+
+    # GET
+    if not customer_id.isdigit():
+        return HttpResponse("Missing customer id", status=400)
+
+    form = ContactForm()
+    return render(request, "customers/modals/newcontact_form.html", {
+        "form": form,
+        "customer": customer_id,
+        "workorder": workorder_id,
+    })
 
 @login_required
 def new_cust_contact(request):
@@ -444,26 +464,13 @@ def edit_customer(request):
 
 @login_required
 def cust_info(request):
-    if request.htmx:
-        customer = request.GET.get('customer')
-        print(customer)
-        customer = Customer.objects.get(id=customer)
-        print(customer.id)
-        context = { 'customer': customer,}
-        return render(request, 'customers/partials/customer_info.html', context)
-    #print('hello')
-    # workorder = Workorder.objects.get(workorder=id)
-    # customer = Customer.objects.get(id=workorder.customer_id)
-    # if workorder.contact_id:
-    #     contact = Contact.objects.get(id=workorder.contact_id)
-    # else: 
-    #     contact = ''
-    # context = {
-    #         'workorder': workorder,
-    #         'customer': customer,
-    #         'contact': contact,
-    #     }
-    #return render(request, 'customers/partials/customer_info.html', context)
+    customer_id = request.GET.get("customer")
+    customer = get_object_or_404(Customer, pk=customer_id)
+
+    return render(request, "customers/partials/customer_info.html", {
+        "customer": customer,          # ✅ object
+        "cust": customer.id,           # optional legacy
+    })
 
 @login_required
 def contact_info(request):
@@ -557,29 +564,23 @@ def contact_info(request):
 
 @login_required
 def details_contact_info(request):
-    #changeworkorder = request.GET.get('workorder')
-    customer = request.GET.get('customer')
-    contact = request.GET.get('contact')
-    print(contact)
-    print(customer)
-    #workorder = Workorder.objects.get(id=changeworkorder)
-    if contact:
-        contact = Contact.objects.filter(id=contact)
-    else:
-        contact = Contact.objects.filter(customer_id=customer).first
-    if contact:
-        print('hello')
-        context = { 'contact': contact,
-                    'cust':customer,
-                    }
-        return render(request, 'customers/partials/details_contact_info.html', context)
-    else:
-        print('hello2')
-        contact = ''
-        context = { 'contact': contact,
-                    'cust':customer,
-                    }
-        return render(request, 'customers/partials/details_contact_info.html', context)
+    customer_id = (request.GET.get("customer") or "").strip()
+    contact_id = (request.GET.get("contact") or "").strip()
+
+    customer_obj = get_object_or_404(Customer, pk=int(customer_id)) if customer_id.isdigit() else None
+
+    contact_obj = None
+
+    if contact_id.isdigit():
+        contact_obj = Contact.objects.filter(pk=int(contact_id)).first()
+    elif customer_obj:
+        contact_obj = Contact.objects.filter(customer_id=customer_obj.id).order_by("-id").first()
+
+    return render(request, "customers/partials/details_contact_info.html", {
+        "customer": customer_obj,
+        "contact": contact_obj,
+        "cust": customer_obj.id if customer_obj else "",
+    })
 
 
 @login_required
@@ -611,31 +612,34 @@ def edit_contact(request):
 
 @login_required
 def change_contact(request):
-    customer = request.GET.get('customer')
-    workorder = request.GET.get('workorder')
+    customer_id = (request.GET.get("customer") or request.POST.get("customer") or "").strip()
+    workorder_id = (request.GET.get("workorder") or request.POST.get("workorder") or "").strip()
+
     if request.method == "POST":
-        contact = request.POST.get('contacts')
-        workorder = request.POST.get('workorder')
-        #obj = get_object_or_404(Workorder, pk=workorder)
-        #form = WorkorderForm
-        print(contact)
-        print(workorder)
-        try:
-            obj = Workorder.objects.get(id=workorder)
-            obj.contact_id = contact
-            obj.save(update_fields=['contact_id'])
-            print('here')
-            return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
-        except:
-            return HttpResponse(status=204, headers={'HX-Trigger': 'ContactChanged'})
-    print(customer)
-    #print(workorder)
-    obj = Contact.objects.filter(customer=customer)
-    context = {
-        'obj': obj,
-        'workorder': workorder
-    }
-    return render(request, 'customers/modals/change_contact.html', context)
+        contact_id = (request.POST.get("contacts") or "").strip()
+
+        # Workorder mode (existing behavior)
+        if workorder_id.isdigit() and contact_id.isdigit():
+            Workorder.objects.filter(pk=int(workorder_id)).update(contact_id=int(contact_id))
+            return HttpResponse(status=204, headers={"HX-Trigger": "ContactChanged"})
+
+        # Dashboard mode: just re-render the contact card to the chosen contact
+        if customer_id.isdigit() and contact_id.isdigit():
+            contact_obj = Contact.objects.filter(pk=int(contact_id), customer_id=int(customer_id)).first()
+            return render(request, "customers/partials/details_contact_info.html", {
+                "contact": contact_obj,
+                "cust": customer_id,
+            })
+
+        return HttpResponse("Missing ids", status=400)
+
+    # GET: show list of contacts for the customer
+    qs = Contact.objects.filter(customer_id=int(customer_id)).order_by("-id") if customer_id.isdigit() else Contact.objects.none()
+    return render(request, "customers/modals/change_contact.html", {
+        "obj": qs,
+        "workorder": workorder_id,
+        "customer": customer_id,
+    })
 
 @login_required
 def customer_notes(request, pk=None):
@@ -679,7 +683,11 @@ def dashboard(request):
 
 @login_required
 def expanded_detail(request, id=None):
-    customer_id = id or request.GET.get("customers")
+    customer_id = (
+        id
+        or request.GET.get("customer")     # ✅ new standard
+        or request.GET.get("customers")    # ✅ backward-compat
+    )
     customers = _customers_qs()
 
     if not customer_id:

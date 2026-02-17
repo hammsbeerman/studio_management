@@ -30,7 +30,16 @@ from .views import (
     merge_inventory_items,
     item_units_editor,
     search_existing_items,
+    bulk_uom_admin,
+    uom_normalize_admin,
+    
 )
+
+from inventory.views_uom_audit import (
+    uom_audit_admin,
+    uom_audit_apply
+)
+
 
 app_name='inventory'
 
@@ -62,4 +71,8 @@ urlpatterns = [
     path("merge/", merge_inventory_items, name="inventory_merge"),
     path("item/<int:pk>/units/", item_units_editor, name="item_units_editor"),
     path("search-existing/", search_existing_items, name="inventory_search_existing"),
+    path("uom/bulk/", bulk_uom_admin, name="bulk_uom_admin"),
+    path("uom/normalize/", uom_normalize_admin, name="uom_normalize_admin"),
+    path("uom/audit/", uom_audit_admin, name="uom_audit_admin"),
+    path("uom/audit/apply/", uom_audit_apply, name="uom_audit_apply"),
 ]

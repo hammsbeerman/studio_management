@@ -7,7 +7,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from localflavor.us.forms import USStateSelect
 from decimal import Decimal
-from controls.models import RetailInventoryCategory
+from controls.models import RetailInventoryCategory, Measurement
+
 
 
 class AddVendorForm(forms.ModelForm):
@@ -162,6 +163,111 @@ class InventoryAdjustmentForm(forms.Form):
         return " — ".join([p for p in parts if p])
        
 
+class BulkUomUpdateForm(forms.Form):
+    measurement = forms.ModelChoiceField(queryset=Measurement.objects.order_by("name"))
+    variation_qty = forms.DecimalField(initial=Decimal("1.0000"), max_digits=12, decimal_places=4)
 
-       
-    
+    name_contains = forms.CharField(required=False)
+    vendor = forms.ModelChoiceField(queryset=Vendor.objects.order_by("name"), required=False)
+
+    set_as_base = forms.BooleanField(required=False)
+    set_as_default_sell = forms.BooleanField(required=False)
+    set_as_default_receive = forms.BooleanField(required=False)
+
+    apply = forms.BooleanField(required=False, help_text="If unchecked, this is a dry-run preview.")
+
+class NormalizeMeasurementsForm(forms.Form):
+    only_active = forms.BooleanField(required=False, initial=True)
+    vendor = forms.ModelChoiceField(queryset=Vendor.objects.all().order_by("name"), required=False)
+    name_contains = forms.CharField(required=False)
+
+    do_each = forms.BooleanField(required=False, initial=True, label="Normalize Ea → Each")
+    do_sht = forms.BooleanField(required=False, initial=True, label="Normalize Sheet/Sheets → Sht")
+
+    include_primary_base_unit = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Also normalize InventoryMaster.primary_base_unit",
+    )
+
+    # ✅ NEW (guardrails)
+    fix_missing_base_uom = forms.BooleanField(
+        required=False,
+        initial=False,
+        label="Fix missing Base UOM (set base = Each × 1.0000 if missing)",
+        help_text="Only touches items that have no base flagged in variations.",
+    )
+    fix_missing_defaults = forms.BooleanField(
+        required=False,
+        initial=False,
+        label="Fix missing Default Sell/Receive (use base UOM)",
+        help_text="Retail gets default sell; supplies gets default receive (only if missing).",
+    )
+
+    apply = forms.BooleanField(
+        required=False,
+        initial=False,
+        help_text="Check to APPLY changes (otherwise this is a dry run).",
+    )
+
+
+class UomAuditFilterForm(forms.Form):
+    only_active = forms.BooleanField(required=False, initial=True)
+    vendor = forms.ModelChoiceField(queryset=Vendor.objects.all().order_by("name"), required=False)
+    name_contains = forms.CharField(required=False)
+
+class UomFixActionForm(forms.Form):
+    item_id = forms.IntegerField()
+    variation_id = forms.IntegerField(required=False)
+    action = forms.ChoiceField(choices=[
+        ("set_base", "Set Base UOM"),
+        ("set_default_sell", "Set Default Sell UOM"),
+        ("set_default_receive", "Set Default Receive UOM"),
+        ("normalize_defaults", "Normalize Missing Defaults"),
+    ])
+
+class UomSetTripleForm(forms.Form):
+    item_id = forms.IntegerField(widget=forms.HiddenInput)
+
+    # Pick Measurement + qty for each role (optional)
+    base_measurement = forms.ModelChoiceField(
+        queryset=Measurement.objects.order_by("name"),
+        required=False,
+        empty_label="— no change —",
+        label="Base UOM",
+    )
+    base_qty = forms.DecimalField(
+        required=False,
+        initial=Decimal("1.0000"),
+        max_digits=12,
+        decimal_places=4,
+        label="Base qty",
+    )
+
+    sell_measurement = forms.ModelChoiceField(
+        queryset=Measurement.objects.order_by("name"),
+        required=False,
+        empty_label="— no change —",
+        label="Default Sell UOM",
+    )
+    sell_qty = forms.DecimalField(
+        required=False,
+        initial=Decimal("1.0000"),
+        max_digits=12,
+        decimal_places=4,
+        label="Sell qty",
+    )
+
+    receive_measurement = forms.ModelChoiceField(
+        queryset=Measurement.objects.order_by("name"),
+        required=False,
+        empty_label="— no change —",
+        label="Default Receive UOM",
+    )
+    receive_qty = forms.DecimalField(
+        required=False,
+        initial=Decimal("1.0000"),
+        max_digits=12,
+        decimal_places=4,
+        label="Receive qty",
+    )

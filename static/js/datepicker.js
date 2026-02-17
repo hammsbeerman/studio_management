@@ -10,10 +10,19 @@
     const $root = root ? $(root) : $(document);
 
     // ✅ support BOTH conventions site-wide
-    const selector = "input.datepicker, input.dateinput, input[data-datepicker='1']";
+    const selector = [
+      "input.datepicker",
+      "input.dateinput",
+      "input[data-datepicker='1']",
+      "input[type='date']",
+      "input[id*='date']",
+      "input[name*='date']"
+    ].join(", ");
 
     $root.find(selector).each(function () {
       const $el = $(this);
+
+    $root.find("input[type='date']").attr("type", "text");
 
       // prevent double-init (jQuery UI adds this class)
       if ($el.hasClass("hasDatepicker")) return;
@@ -47,12 +56,12 @@
   });
 
   // ✅ Most reliable for HTMX swaps
-  document.body.addEventListener("htmx:afterSwap", function (e) {
+  document.addEventListener("htmx:afterSwap", function (e) {
     initDatepickers(e.target);
   });
 
   // (Optional) also afterSettle for cases where the DOM finishes later
-  document.body.addEventListener("htmx:afterSettle", function (e) {
+  document.addEventListener("htmx:afterSettle", function (e) {
     initDatepickers(e.target);
   });
 })();

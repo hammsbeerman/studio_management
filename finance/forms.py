@@ -23,6 +23,7 @@ class AccountsPayableForm(forms.ModelForm):
         model = AccountsPayable
         fields = ['invoice_date', 'vendor', 'description', 'invoice_number', 'amount', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method', 'check_number', 'posted']
 
+
 class DailySalesForm(forms.ModelForm):
 
     required_css_class = 'required-field'
@@ -56,7 +57,7 @@ class AddInvoiceForm(forms.ModelForm):
 class EditInvoiceForm(forms.ModelForm):
    class Meta:
        model = AccountsPayable
-       fields = ['invoice_date', 'invoice_number', 'description', 'vendor', 'total', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method', 'check_number', 'posted']
+       fields = ['invoice_date', 'invoice_number', 'description', 'vendor', 'total', 'date_due', 'discount', 'discount_date_due', 'paid', 'date_paid', 'amount_paid', 'payment_method', 'check_number', 'posted', 'void', 'void_reason']
        labels = {
         }
        

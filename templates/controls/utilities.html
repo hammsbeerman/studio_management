@@ -29,6 +29,12 @@
         <a href="{% url 'controls:view_price_groups' %}">View Price Groups</a><br>
         <a href="{% url 'controls:add_base_qty_variation' %}">Add Base Qty Variation</a><br>
         <a href="{% url 'controls:add_to_item_list' %}">Add item to product list</a><br>
+        <a href="{% url 'inventory:bulk_uom_admin' %}">Update base units per item</a><br>
+      </div>
+      <div class="col-sm-3">
+        New Management Tools<br>
+        <a href="{% url 'inventory:uom_normalize_admin' %}">Update base units per item</a><br>
+        <a href="{% url 'inventory:uom_audit_admin' %}">UOM Audit</a><br>
       </div>
     </div>
 </div>

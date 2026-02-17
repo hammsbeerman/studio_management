@@ -2,173 +2,126 @@
 {% load crispy_forms_tags %}
 {% load static %}
 
-
 {% block content %}
 <script src="{% static 'js/order_out_form.js' %}"></script>
 <script src="{% static 'js/setprice_form.js' %}"></script>
+
 <div class="row">
   <div class="col-md-3 mb-sm-0">
-    <div id="customer-info-card" class="card" hx-trigger="CustomerAdded from:body" hx-get="{% url 'customers:cust_info'  %}?customer={{ customer.id }}" hx-target="this">
+    <div
+      id="customer-info-card"
+      class="card"
+      hx-trigger="CustomerAdded from:body"
+      hx-get="{% url 'customers:cust_info' %}?customer={{ customer.id }}"
+      hx-target="this"
+    >
       {% include 'customers/partials/customer_info.html' %}
-      </div>
+    </div>
   </div>
+
   <div class="col-md-3">
-    <div id="contact-card" class="card" hx-trigger="ContactChanged from:body" hx-get="{% url 'customers:contact_info'  %}?contact={{ contact.id }}&workorder={{changeworkorder}}&customer={{changecustomer}}" hx-target="this">
+    <div
+      id="contact-card"
+      class="card"
+      hx-trigger="ContactChanged from:body"
+      hx-get="{% url 'customers:contact_info' %}?contact={{ contact.id }}&workorder={{ changeworkorder }}&customer={{ changecustomer }}"
+      hx-target="this"
+    >
       {% include 'customers/partials/contact_info.html' %}
-      </div>
+    </div>
   </div>
+
   <div class="col-md-3">
-      
+    {# empty column #}
   </div>
+
   <div class="col-md-3">
-      <div class="card">
-          <div class="card-header">
-          Customer Order History
-          </div>
-          <div class="card-body">
-            {% include 'workorders/partials/workorder_history.html' %}
-          </div>
-          <div class="card-footer"></div>
+    <div class="card">
+      <div class="card-header">Customer Order History</div>
+      <div class="card-body">
+        {% include 'workorders/partials/workorder_history.html' %}
       </div>
+      <div class="card-footer"></div>
+    </div>
   </div>
 </div>
 
 <hr>
 
+{# =========================
+   Bootstrap Modals (HTMX)
+   ========================= #}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div id="modal" class="modal fade">
-  <div id="dialog" class="modal-dialog" hx-target="this"></div>
+{# Modal 1 (normal) #}
+<div id="modal" class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    {# IMPORTANT: hx-target should inject into .modal-content (not .modal-dialog) #}
+    <div id="dialog" class="modal-content"></div>
+  </div>
 </div>
 
-<div id="modal2" class="modal fade">
-  <div id="dialog2" class="modal-dialog modal-lg" hx-target="this"></div>
+{# Modal 2 (large) #}
+<div id="modal2" class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div id="dialog2" class="modal-content"></div>
+  </div>
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 {% endblock content %}
 
-
 {% block scripts %}
-
 <script src="{% static 'js/order_out_form.js' %}"></script>
 
 <script>
+  // Select2 -> HTMX change trigger
+  $(document).ready(function () {
+    $("#id_customer").select2();
+    $("#id_customer").on("select2:select", () => {
+      htmx.trigger("#id_customer", "change");
+    });
+  });
 
-  
+  // Bootstrap modal instances
+  const modalEl = document.getElementById("modal");
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
-    $(document).ready(function () {
-      $("#id_customer").select2();
-      $('#id_customer').on('select2:select', (e) => {
-        htmx.trigger("#id_customer", "change")
-      });
-    })
+  const modal2El = document.getElementById("modal2");
+  const modal2 = bootstrap.Modal.getOrCreateInstance(modal2El);
 
-    const modal = new bootstrap.Modal(document.getElementById("modal"))
+  // Show modal after HTMX swaps content into dialog containers
+  document.body.addEventListener("htmx:afterSwap", (e) => {
+    if (e.target && e.target.id === "dialog") {
+      modal.show();
+    }
+    if (e.target && e.target.id === "dialog2") {
+      modal2.show();
+    }
+  });
 
-    htmx.on("htmx:afterSwap", (e) => {
-      // Response targeting #dialog => show the modal
-      if (e.detail.target.id == "dialog") {
-        modal.show()
-      }
-    })
+  // If server returns empty response to dialog target, treat as "close"
+  document.body.addEventListener("htmx:beforeSwap", (e) => {
+    if (!e.target) return;
 
-    htmx.on("htmx:beforeSwap", (e) => {
-      // Empty response targeting #dialog => hide the modal
-      if (e.detail.target.id == "dialog" && !e.detail.xhr.response) {
-        modal.hide()
-        e.detail.shouldSwap = false
-      }
-    })
+    if (e.target.id === "dialog" && !e.detail.xhr.response) {
+      modal.hide();
+      e.detail.shouldSwap = false;
+      return;
+    }
 
-    htmx.on("hidden.bs.modal", () => {
-      document.getElementById("dialog").innerHTML = ""
-    })
-    
+    if (e.target.id === "dialog2" && !e.detail.xhr.response) {
+      modal2.hide();
+      e.detail.shouldSwap = false;
+      return;
+    }
+  });
 
-    const modal2 = new bootstrap.Modal(document.getElementById("modal2"))
+  // Clear dialog HTML when modals are fully hidden (Bootstrap event, not HTMX)
+  modalEl.addEventListener("hidden.bs.modal", () => {
+    document.getElementById("dialog").innerHTML = "";
+  });
 
-    htmx.on("htmx:afterSwap", (e) => {
-      // Response targeting #dialog => show the modal
-      if (e.detail.target.id == "dialog2") {
-        modal2.show()
-      }
-    })
-
-    htmx.on("htmx:beforeSwap", (e) => {
-      // Empty response targeting #dialog => hide the modal
-      if (e.detail.target.id == "dialog2" && !e.detail.xhr.response) {
-        modal2.hide()
-        e.detail.shouldSwap = false
-      }
-    })
-
-    htmx.on("hidden.bs.modal", () => {
-      document.getElementById("dialog2").innerHTML = ""
-    })
-
-
+  modal2El.addEventListener("hidden.bs.modal", () => {
+    document.getElementById("dialog2").innerHTML = "";
+  });
 </script>
-
 {% endblock %}

@@ -76,7 +76,7 @@ class RetailSaleLine(models.Model):
     sale = models.ForeignKey(RetailSale, on_delete=models.CASCADE, related_name="lines")
     inventory = models.ForeignKey(InventoryMaster, on_delete=models.PROTECT, related_name="retail_lines", null=True, blank=True)
     description = models.CharField(max_length=255)
-    qty = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    qty = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal("1.0000"))
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     sold_variation = models.ForeignKey(InventoryQtyVariations, on_delete=models.SET_NULL, null=True, blank=True, related_name="retail_sale_lines", help_text="If set, qty represents this variation; base units = qty * sold_variation.variation_qty.")
@@ -165,3 +165,43 @@ class Delivery(models.Model):
 
     def __str__(self):
         return f"Delivery for sale #{self.sale_id} to {self.customer}"
+    
+    
+class RetailSaleLineAudit(models.Model):
+    sale_line = models.ForeignKey("RetailSaleLine", on_delete=models.CASCADE, related_name="audits")
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="pos_line_audits")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    action = models.CharField(
+        max_length=32,
+        choices=[
+            ("PRICE_OVERRIDE", "Price override"),
+            ("ITEM_SWAP", "Item swap"),
+            ("UOM_CHANGE", "UOM change"),
+            ("QTY_CHANGE", "Qty change"),
+        ],
+    )
+
+    # store before/after
+    old_unit_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    new_unit_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    old_inventory_id = models.IntegerField(null=True, blank=True)
+    new_inventory_id = models.IntegerField(null=True, blank=True)
+
+    old_variation_id = models.IntegerField(null=True, blank=True)
+    new_variation_id = models.IntegerField(null=True, blank=True)
+
+    old_qty = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
+    new_qty = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
+
+    reason = models.CharField(max_length=255, blank=True, default="")
+
+    # optional manager override
+    manager_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True, blank=True,
+        related_name="pos_line_override_approvals",
+    )

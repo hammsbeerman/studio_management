@@ -41,6 +41,9 @@ class AccountsPayable(models.Model):
     order_out = models.BooleanField('Order Out', null=True, default=False)
     #workorder = models.ForeignKey(Workorder, blank=False, null=False, on_delete=models.DO_NOTHING)
     posted = models.BooleanField(default=False, help_text="If checked, this invoice is considered posted. Edits should be rare.")
+    void = models.BooleanField(default=False)
+    void_reason = models.CharField(max_length=255, blank=True)
+    voided_at = models.DateTimeField(null=True, blank=True)
 
     def get_absolute_url(self):
         return reverse("finance:ap_invoice_detail_id", kwargs={"id": self.id})
@@ -172,7 +175,7 @@ class InvoiceItem(models.Model):
     # variation_qty = models.DecimalField('Variation Qty', max_digits=8, decimal_places=2, blank=True, null=True)
     unit_cost = models.DecimalField('Unit Cost', max_digits=15, decimal_places=5, blank=True, null=True)
     #price_ea = models.DecimalField('Price Each', max_digits=15, decimal_places=4, blank=True, null=True)
-    qty = models.DecimalField('Qty', max_digits=8, decimal_places=2, blank=True, null=True)
+    qty = models.DecimalField('Qty', max_digits=8, decimal_places=4, blank=True, null=True)
     ppm = models.BooleanField('Price Per M', default=False, blank=False, null=False)
     line_total = models.DecimalField('Line Total', max_digits=8, decimal_places=2, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)

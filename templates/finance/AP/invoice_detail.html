@@ -7,7 +7,7 @@
 {# High-level header block (summary/edit header via HTMX) #}
 <div
   hx-trigger="load, itemChanged from:body"
-  hx-get="{% url 'finance:invoice_detail_highlevel' id=invoice.pk %}"
+  hx-get="{% url 'finance:ap_invoice_detail_highlevel' id=invoice.pk %}"
   hx-target="this">
 </div>
 
@@ -72,7 +72,7 @@
           <td class="text-end">
             <button
               hx-trigger="click"
-              hx-get="{% url 'finance:edit_invoice_item' invoice=invoice.id id=x.id %}"
+              hx-get="{% url 'finance:ap_edit_invoice_item_invoice' invoice=invoice.id id=x.id %}"
               hx-target="#invoices"
               class="btn btn-secondary btn-sm"
               {% if invoice.posted %}
@@ -83,7 +83,7 @@
             </button>
 
             <a
-              href="{% url 'finance:delete_invoice_item' invoice=invoice.id id=x.id %}"
+              href="{% url 'finance:ap_delete_invoice_item' invoice=invoice.id id=x.id %}"
               class="btn btn-danger btn-sm"
               {% if invoice.posted %}
               onclick="return confirm('This invoice is marked as POSTED. Deleting items may affect accounting history. Continue?');"
@@ -103,7 +103,7 @@
   <div id="invoices" class="mb-3">
         <button
           hx-trigger="click"
-          hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id %}"
+          hx-get="{% url 'finance:ap_add_invoice_item_invoice_vendor' invoice=invoice.id vendor=invoice.vendor.id %}"
           hx-target="#remainder"
           class="btn btn-danger"
           {% if invoice.posted %}
@@ -117,7 +117,7 @@
     {% if vendor.online_store_vendor %}
       <button
         hx-trigger="click"
-        hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id type=2 %}"
+        hx-get="{% url 'finance:ap_add_invoice_item_vendor_type' invoice=invoice.id vendor=invoice.vendor.id type=2 %}"
         hx-target="#remainder"
         class="btn btn-danger"
         {% if invoice.posted %}
@@ -130,7 +130,7 @@
 
     <button
       hx-trigger="click"
-      hx-get="{% url 'finance:add_invoice_item' invoice=invoice.id vendor=invoice.vendor.id type=1 %}"
+      hx-get="{% url 'finance:ap_add_invoice_item_invoice_vendor_type' invoice=invoice.id vendor=invoice.vendor.id type=1 %}"
       hx-target="#remainder"
       class="btn btn-danger"
       {% if invoice.posted %}

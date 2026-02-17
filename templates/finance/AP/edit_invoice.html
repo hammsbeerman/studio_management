@@ -23,7 +23,16 @@
                   {% endfor %}
                 </select>
                 <br/>
-                {{ form.as_p }}
+                {% for field in form %}
+                  {% if field.name != "void" and field.name != "void_reason" %}
+                    <p>
+                      {{ field.label_tag }}
+                      {{ field }}
+                      {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
+                      {% for error in field.errors %}<div class="text-danger">{{ error }}</div>{% endfor %}
+                    </p>
+                  {% endif %}
+                {% endfor %}
 
                 <!-- <input class="form-control" list="datalistOptions" id="exampleDataList" placeholder="Type to search...">
                 <datalist id="datalistOptions">
@@ -31,7 +40,25 @@
                     <option value="{{x.name}}">
                   {% endfor %}
                 </datalist> -->
+                <hr>
 
+              <div class="form-check mt-2">
+                {{ form.void }}
+                <label class="form-check-label" for="{{ form.void.id_for_label }}">
+                  Void this invoice
+                </label>
+              </div>
+
+              <div class="mt-2">
+                <label class="form-label" for="{{ form.void_reason.id_for_label }}">Void reason (optional)</label>
+                {{ form.void_reason }}
+              </div>
+
+              {% if invoice_obj.void and invoice_obj.voided_at %}
+                <div class="text-warning mt-2">
+                  Voided at: {{ invoice_obj.voided_at }}
+                </div>
+              {% endif %}
             <br/>
                 <button type="submit" class="btn btn-secondary">Update Invoice</button>
 
@@ -39,7 +66,7 @@
       </div>
       <div class="col-sm-9">
         <div id="vendor_invoices">
-          <a href="{% url 'finance:ap_add_invoice' %}">All Bills except Essendant</a> | <a href="{% url 'finance:ap_add_invoice' vendor=1 %}">Show Essendant Bills</a><br>
+          <a href="{% url 'finance:ap_add_invoice' %}">All Bills except Essendant</a> | <a href="{% url 'finance:ap_add_invoice_vendor' vendor=1 %}">Show Essendant Bills</a><br>
             <table class="table">
               <thead>
                 <tr>
@@ -66,7 +93,7 @@
                     <td>{{ x.invoice_number }}</td>
                     <td>{{ x.date_due }}</td>
                     <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
-                    <td><a href="{% url 'finance:edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
+                    <td><a href="{% url 'finance:ap_edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
                     <td>Bulk Edit</td>
                 </tr>
             {% endfor %}

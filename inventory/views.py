@@ -5,12 +5,12 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import OuterRef, Subquery, Q, Count
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from .services.ledger import get_on_hand
-from .forms import AddVendorForm, RetailCategoryForm, RetailCategoryMarkupForm, InventoryItemPricingForm, InventoryAdjustmentForm
+from .forms import AddVendorForm, RetailCategoryForm, RetailCategoryMarkupForm, InventoryItemPricingForm, InventoryAdjustmentForm, BulkUomUpdateForm, NormalizeMeasurementsForm, UomAuditFilterForm, UomFixActionForm
 from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut, Inventory, VendorItemDetail, InventoryLedger, InventoryMerge
 from .utils import merged_set_for
 from controls.forms import AddItemtoListForm
@@ -24,6 +24,15 @@ from inventory.services.ledger import (
     get_on_hand,
     record_inventory_movement
 )
+from inventory.services.measurement_normalize import (
+    build_item_queryset,
+    normalize_measurements_for_items
+)
+from inventory.services.uom_audit import (
+    set_base_uom,
+    set_default_receive_uom,
+    set_default_sell_uom,
+)
 from inventory.services.pricing import compute_retail_price
 from onlinestore.models import StoreItemDetails
 from retail.models import RetailSaleLine
@@ -33,9 +42,9 @@ from retail.models import RetailSaleLine
 
 # Create your views here.
 
-@login_required
-def list(request):
-    pass
+# @login_required
+# def inv_list(request):
+#     pass
 
 @login_required
 def add_vendor(request):
@@ -1161,3 +1170,160 @@ def search_existing_items(request):
         "inventory/partials/search_existing_items.html",
         context,
     )
+
+@login_required
+def bulk_uom_admin(request):
+    from decimal import Decimal
+    from django.contrib import messages
+    from django.shortcuts import render
+
+    import inspect
+    from inventory.services import uom_bulk
+
+    print("uom_bulk.build_item_queryset:", uom_bulk.build_item_queryset, inspect.getsourcefile(uom_bulk.build_item_queryset))
+    print("local build_item_queryset symbol:", globals().get("build_item_queryset"))
+
+    form = BulkUomUpdateForm(request.POST or None)
+    preview_items = []
+    result = None
+
+    if request.method == "POST" and form.is_valid():
+        measurement = form.cleaned_data["measurement"]
+        variation_qty = form.cleaned_data["variation_qty"] or Decimal("1.0000")
+        name_contains = (form.cleaned_data["name_contains"] or "").strip()
+        vendor = form.cleaned_data["vendor"]
+        dry_run = not bool(form.cleaned_data["apply"])
+
+        item_qs = uom_bulk.build_item_queryset(
+            only_active=True,
+            name_contains=name_contains,
+            vendor_id=vendor.id if vendor else None,
+        )
+
+        preview_items = list(item_qs.order_by("name")[:200])
+
+        result = uom_bulk.bulk_set_item_uom(
+            item_qs=item_qs,
+            measurement=measurement,
+            variation_qty=variation_qty,
+            set_as_base=form.cleaned_data["set_as_base"],
+            set_as_default_sell=form.cleaned_data["set_as_default_sell"],
+            set_as_default_receive=form.cleaned_data["set_as_default_receive"],
+            dry_run=dry_run,
+        )
+
+        if dry_run:
+            messages.info(request, f"Dry run: matched={result.matched}, would_change={result.changed}, would_create={result.created}.")
+        else:
+            messages.success(request, f"Applied: matched={result.matched}, changed={result.changed}, created={result.created}, skipped={result.skipped}.")
+
+    return render(request, "inventory/uom_bulk_admin.html", {"form": form, "preview_items": preview_items, "result": result})
+
+
+@login_required
+def uom_normalize_admin(request):
+    form = NormalizeMeasurementsForm(request.POST or None)
+    result = None
+
+    if request.method == "POST" and form.is_valid():
+        vendor = form.cleaned_data["vendor"]
+        only_active = bool(form.cleaned_data["only_active"])
+        name_contains = (form.cleaned_data["name_contains"] or "").strip()
+
+        do_each = bool(form.cleaned_data["do_each"])
+        do_sht = bool(form.cleaned_data["do_sht"])
+        include_primary = bool(form.cleaned_data["include_primary_base_unit"])
+
+        fix_missing_base_uom = bool(form.cleaned_data["fix_missing_base_uom"])
+        fix_missing_defaults = bool(form.cleaned_data["fix_missing_defaults"])
+
+        dry_run = not bool(form.cleaned_data["apply"])
+
+        item_qs = build_item_queryset(
+            only_active=only_active,
+            vendor_id=vendor.id if vendor else None,
+            name_contains=name_contains,
+        )
+
+        result = normalize_measurements_for_items(
+            item_qs=item_qs,
+            do_each=do_each,
+            do_sht=do_sht,
+            include_primary_base_unit=include_primary,
+            fix_missing_base_uom=fix_missing_base_uom,          # ✅ NEW
+            fix_missing_defaults=fix_missing_defaults,          # ✅ NEW
+            dry_run=dry_run,
+        )
+
+        if result.errors:
+            for e in result.errors:
+                messages.error(request, e)
+        else:
+            if dry_run:
+                messages.info(request, "Dry run preview only (no DB changes).")
+            else:
+                messages.success(request, "Normalization applied.")
+
+    return render(request, "inventory/uom_normalize_admin.html", {"form": form, "result": result})
+
+
+# @login_required
+# def uom_audit_admin(request):
+#     form = UomAuditFilterForm(request.GET or None)
+#     result = None
+
+#     if form.is_valid():
+#         vendor = form.cleaned_data.get("vendor")
+#         result = audit_uoms(
+#             only_active=bool(form.cleaned_data.get("only_active")),
+#             vendor_id=vendor.id if vendor else None,
+#             name_contains=(form.cleaned_data.get("name_contains") or "").strip(),
+#             limit=500,
+#         )
+
+#     return render(
+#         request,
+#         "inventory/uom_audit_admin.html",
+#         {"form": form, "result": result},
+#     )
+
+
+# @login_required
+# def uom_audit_apply(request):
+#     if request.method != "POST":
+#         return HttpResponseRedirect(reverse("inventory:uom_audit_admin"))
+
+#     form = UomFixActionForm(request.POST)
+#     if not form.is_valid():
+#         messages.error(request, "Invalid request.")
+#         return HttpResponseRedirect(reverse("inventory:uom_audit_admin"))
+
+#     item = get_object_or_404(InventoryMaster, pk=form.cleaned_data["item_id"])
+#     action = form.cleaned_data["action"]
+#     variation_id = form.cleaned_data.get("variation_id")
+
+#     try:
+#         if action == "set_base":
+#             if not variation_id:
+#                 raise ValueError("Missing variation_id")
+#             set_base_uom(item=item, variation_id=int(variation_id))
+#             messages.success(request, f"{item.name}: base UOM updated.")
+#         elif action == "set_default_sell":
+#             if not variation_id:
+#                 raise ValueError("Missing variation_id")
+#             set_default_sell_uom(item=item, variation_id=int(variation_id))
+#             messages.success(request, f"{item.name}: default SELL UOM updated.")
+#         elif action == "set_default_receive":
+#             if not variation_id:
+#                 raise ValueError("Missing variation_id")
+#             set_default_receive_uom(item=item, variation_id=int(variation_id))
+#             messages.success(request, f"{item.name}: default RECEIVE UOM updated.")
+#         elif action == "normalize_defaults":
+#             normalize_missing_defaults(item=item)
+#             messages.success(request, f"{item.name}: defaults normalized.")
+#         else:
+#             messages.error(request, "Unknown action.")
+#     except Exception as e:
+#         messages.error(request, f"Failed: {e}")
+
+#     return HttpResponseRedirect(reverse("inventory:uom_audit_admin"))

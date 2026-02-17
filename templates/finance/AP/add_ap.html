@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% load static %}
-<script src="{% static 'js/datepicker.js' %}"></script>
+
 
 {% block content %}
 
@@ -75,9 +75,25 @@
                         <td>{{ x.calculated_total }}</td>
                         <td>{{ x.invoice_number }}</td>
                         <td>{{ x.date_due }}</td>
-                        <td><a href='{{ x.get_absolute_url }}'class="btn btn-secondary" role="button">Add Items</a></td>
+                        <td>
+                          {% if x.void %}
+                            <span class="fw-bold text-danger">VOID</span>
+                          {% else %}
+                            <a href="{{ x.get_absolute_url }}" class="btn btn-secondary" role="button">Add Items</a>
+                          {% endif %}
+                        </td>
                         <td><a href="{% url 'finance:ap_edit_invoice' invoice=x.id %}" class="btn btn-secondary" role="button">Edit Invoice</a></td>
-                        <td><button  class="btn btn-primary-outline" hx-get="{% url 'finance:ap_bulk_edit_invoices_vendor' vendor=x.vendor.id %}" hx-target="#dialog"><img src="{% static 'img/site/bulk-edit.svg' %}" style="width:20px;height:20px;"></button></td>
+                        <td>
+                          {% if x.vendor_id %}
+                            <button class="btn btn-primary-outline"
+                                    hx-get="{% url 'finance:ap_bulk_edit_invoices_vendor' vendor=x.vendor_id %}"
+                                    hx-target="#dialog">
+                              <img src="{% static 'img/site/bulk-edit.svg' %}" style="width:20px;height:20px;">
+                            </button>
+                          {% else %}
+                            <span class="text-muted">—</span>
+                          {% endif %}
+                        </td>
                     </tr>
                   {% endif %}
                 {% endfor %}
@@ -118,6 +134,8 @@
 {% endblock content %}
 
 {% block scripts %}
+
+<script src="{% static 'js/datepicker.js' %}"></script>
 
 <script>
 
@@ -174,4 +192,33 @@
 
 </script>
 
+
+<script>
+    function initDatepickers(root) {
+      // root lets us re-init only swapped content
+      const $root = root ? $(root) : $(document);
+
+      // If you're using jQuery UI datepicker:
+      if ($.fn.datepicker) {
+        // Adjust selectors to match your inputs/classes
+        $root.find('input[type="date"], .datepicker').each(function () {
+          // avoid double-binding
+          if (!$(this).data("hasDatepicker")) {
+            $(this).datepicker({ dateFormat: "yy-mm-dd" });
+          }
+        });
+      }
+    }
+
+    $(document).ready(function () {
+      $("#id_vendor").select2();
+      $('#id_vendor').on('select2:select', (e) => htmx.trigger("#id_vendor", "change"));
+
+      initDatepickers(document);
+    });
+
+    document.body.addEventListener("htmx:afterSwap", function (e) {
+      initDatepickers(e.target);
+    });
+  </script>
 {% endblock %}

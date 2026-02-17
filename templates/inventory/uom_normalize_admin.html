@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container py-3">
+  <h3>Normalize Measurements</h3>
+  <p class="text-muted mb-3">
+    Normalizes alias Measurements to canonical names:
+    <strong>Ea → Each</strong> and <strong>Sheet/Sheets → Sht</strong>.
+    <br>
+    Optionally also fixes missing <strong>Base UOM</strong> + missing <strong>Default Sell/Receive</strong>.
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+
+    <button class="btn btn-primary" type="submit">Run</button>
+  </form>
+
+  {% if result %}
+    <hr>
+    <h5>Results {% if result.dry_run %}(Dry Run){% else %}(Applied){% endif %}</h5>
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-3">
+        <div class="border rounded p-2">
+          <div class="text-muted small">Matched items</div>
+          <div class="h5 mb-0">{{ result.matched_items }}</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="border rounded p-2">
+          <div class="text-muted small">Missing base items</div>
+          <div class="h5 mb-0">{{ result.missing_base_items }}</div>
+          <div class="small text-muted">Base set: {{ result.base_set_items }}</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="border rounded p-2">
+          <div class="text-muted small">Missing default SELL</div>
+          <div class="h5 mb-0">{{ result.missing_default_sell_items }}</div>
+          <div class="small text-muted">Set: {{ result.default_sell_set_items }}</div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="border rounded p-2">
+          <div class="text-muted small">Missing default RECEIVE</div>
+          <div class="h5 mb-0">{{ result.missing_default_receive_items }}</div>
+          <div class="small text-muted">Set: {{ result.default_receive_set_items }}</div>
+        </div>
+      </div>
+    </div>
+
+    {% if result.errors %}
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          {% for e in result.errors %}
+            <li>{{ e }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <table class="table table-sm table-striped">
+      <thead>
+        <tr>
+          <th>Canonical</th>
+          <th>Aliases</th>
+          <th>Variations matched</th>
+          <th>Variations changed</th>
+          <th>Primary base matched</th>
+          <th>Primary base changed</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in result.rows %}
+          <tr>
+            <td>{{ r.canonical_name }}{% if r.canonical_id %} (id={{ r.canonical_id }}){% endif %}</td>
+            <td>
+              {{ r.alias_names|join:", " }}
+              {% if r.alias_ids %} (ids={{ r.alias_ids|join:", " }}){% endif %}
+            </td>
+            <td>{{ r.matched_variations }}</td>
+            <td>{{ r.changed_variations }}</td>
+            <td>{{ r.matched_primary_base_units }}</td>
+            <td>{{ r.changed_primary_base_units }}</td>
+            <td>
+              {% if r.notes %}
+                <ul class="mb-0">
+                  {% for n in r.notes %}
+                    <li>{{ n }}</li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</div>
+{% endblock %}
