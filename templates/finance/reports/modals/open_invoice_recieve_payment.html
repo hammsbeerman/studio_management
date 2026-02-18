@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 {% with WIDGET_ERROR_CLASS='is-invalid' %}
 {% load static %}
+<script src="{% static 'js/datepicker.js' %}"></script>
 
 <form hx-post="{% url 'finance:recieve_payment' %}"
       hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'

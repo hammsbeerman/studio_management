@@ -43,7 +43,7 @@
                             <td>{{ invoice.payment_method }}</td>
                             <td>{{ invoice.paid }}</td>
                         {% endif %}
-                        <td><button hx-get="{% url 'finance:edit_invoice_modal' invoice=invoice.pk %}" hx-target="#dialog" class="btn btn-secondary">Edit</button></td>
+                        <td><button hx-get="{% url 'finance:ap_edit_invoice_modal' invoice=invoice.pk %}" hx-target="#dialog" class="btn btn-secondary">Edit</button></td>
                     </tr>
             </table>
         </div>

@@ -72,56 +72,5 @@
 {% block scripts %}
 <script src="{% static 'js/order_out_form.js' %}"></script>
 
-<script>
-  // Select2 -> HTMX change trigger
-  $(document).ready(function () {
-    $("#id_customer").select2();
-    $("#id_customer").on("select2:select", () => {
-      htmx.trigger("#id_customer", "change");
-    });
-  });
 
-  // Bootstrap modal instances
-  const modalEl = document.getElementById("modal");
-  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-
-  const modal2El = document.getElementById("modal2");
-  const modal2 = bootstrap.Modal.getOrCreateInstance(modal2El);
-
-  // Show modal after HTMX swaps content into dialog containers
-  document.body.addEventListener("htmx:afterSwap", (e) => {
-    if (e.target && e.target.id === "dialog") {
-      modal.show();
-    }
-    if (e.target && e.target.id === "dialog2") {
-      modal2.show();
-    }
-  });
-
-  // If server returns empty response to dialog target, treat as "close"
-  document.body.addEventListener("htmx:beforeSwap", (e) => {
-    if (!e.target) return;
-
-    if (e.target.id === "dialog" && !e.detail.xhr.response) {
-      modal.hide();
-      e.detail.shouldSwap = false;
-      return;
-    }
-
-    if (e.target.id === "dialog2" && !e.detail.xhr.response) {
-      modal2.hide();
-      e.detail.shouldSwap = false;
-      return;
-    }
-  });
-
-  // Clear dialog HTML when modals are fully hidden (Bootstrap event, not HTMX)
-  modalEl.addEventListener("hidden.bs.modal", () => {
-    document.getElementById("dialog").innerHTML = "";
-  });
-
-  modal2El.addEventListener("hidden.bs.modal", () => {
-    document.getElementById("dialog2").innerHTML = "";
-  });
-</script>
 {% endblock %}

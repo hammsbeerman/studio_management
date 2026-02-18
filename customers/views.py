@@ -446,11 +446,25 @@ def edit_customer(request):
                 form.instance.company_name = fn + ' ' + ln
                 #print(obj.company_name)
                 form.save()
-                return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+                return HttpResponse(
+                    status=204,
+                    headers={
+                        "HX-Trigger": json.dumps({
+                            "CustomerUpdated": {"customer": int(obj.id)}
+                        })
+                    },
+                )
             if cn:
                 print(cn)
                 form.save()
-                return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerAdded'})
+                return HttpResponse(
+                    status=204,
+                    headers={
+                        "HX-Trigger": json.dumps({
+                            "CustomerUpdated": {"customer": int(obj.id)}
+                        })
+                    },
+                )
             #form.save()
             #return HttpResponse(status=204, headers={'HX-Trigger': 'CustomerEdit'})
     else:

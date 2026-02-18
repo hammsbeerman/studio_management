@@ -35,9 +35,11 @@
     <div class="row">
       <div class="col-md-3 mb-sm-0">
         <div id="customer-info-card" class="card"
-             hx-trigger="CustomerAdded from:body"
-             hx-get="{% url 'customers:cust_info' %}?customer={{ customer.id }}"
-             hx-target="this">
+            hx-trigger="CustomerUpdated from:body"
+            hx-get="{% url 'customers:cust_info' %}"
+            hx-include="#customer"
+            hx-target="this"
+            hx-swap="innerHTML">
           {% include 'customers/partials/customer_info.html' %}
         </div>
       </div>
