@@ -2148,7 +2148,8 @@ def add_item_to_vendor(request, vendor=None, invoice=None):
             return redirect ('finance:invoice_detail', id=invoice)
         else:
             print(form.errors)
-    form = VendorItemDetailForm
+    else:
+        form = VendorItemDetailForm(initial={"vendor": vendor})
     #Get all inventory items
     items = InventoryMaster.objects.all()
     list = []

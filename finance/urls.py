@@ -91,13 +91,13 @@ urlpatterns = [
 
     # Inventory / vendor helpers
     path("add_inventory_item/", add_inventory_item, name="add_inventory_item"),
-    path("add_inventory_item/<int:vendor>/<int:invoice>", add_inventory_item, name="add_inventory_item_vendor_invoice"),
-    path("add_inventory_item/<int:baseitem>", add_inventory_item, name="add_inventory_item_baseitem"),
+    path("add_inventory_item/<int:vendor>/<int:invoice>/", add_inventory_item, name="add_inventory_item_vendor_invoice"),
+    path("add_inventory_item/<int:baseitem>/", add_inventory_item, name="add_inventory_item_baseitem"),
 
     path("add_item_to_vendor/", add_item_to_vendor, name="add_item_to_vendor"),
-    path("add_item_to_vendor/<int:vendor>/<int:invoice>", add_item_to_vendor, name="add_item_to_vendor_vendor_invoice"),
+    path("add_item_to_vendor/<int:vendor>/<int:invoice>/", add_item_to_vendor, name="add_item_to_vendor_vendor_invoice"),
 
-    path("vendor_item_remainder/<int:vendor>/<int:invoice>", vendor_item_remainder, name="vendor_item_remainder"),
+    path("vendor_item_remainder/<int:vendor>/<int:invoice>/", vendor_item_remainder, name="vendor_item_remainder"),
 
     # AP
     path("ap/bill_list/", bill_list, name="ap_bill_list"),
