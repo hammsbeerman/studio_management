@@ -38,15 +38,19 @@ def invoice_pdf(request, id):
     # Base workorder + items
     items = (
         WorkorderItem.objects
-        .filter(workorder=id)
-        .order_by("id")
+        .filter(workorder_id=id)
+        .order_by("sort_order", "id")
     )
     item_length = items.count()
 
     workorder = Workorder.objects.get(id=id)
 
     # 🔹 POS items attached to this workorder (queryset)
-    pos_items_qs = RetailWorkorderItem.objects.filter(workorder=workorder)
+    pos_items_qs = (
+        RetailWorkorderItem.objects
+        .filter(workorder=workorder)
+        .order_by("id")
+    )
 
     # 🔹 Compute a per-line total (qty × unit_price) for each POS item
     pos_items = []
@@ -74,8 +78,10 @@ def invoice_pdf(request, id):
     if first_pos is not None and getattr(first_pos, "sale_id", None):
         pos_origin_sale = first_pos.sale
 
+    totals = compute_workorder_totals(workorder)
+
     payment = workorder.amount_paid
-    open_bal = workorder.open_balance
+    open_bal = workorder.open_balance if workorder.open_balance is not None else totals.total - (workorder.amount_paid or Decimal("0"))
     total_bal = workorder.total_balance
     date = workorder.date_billed
     if not workorder.date_billed:
