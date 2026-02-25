@@ -170,6 +170,10 @@ class WorkorderItem(models.Model):
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     void = models.BooleanField('Void Workorder', blank=False, null=False, default=False)
     void_memo = models.CharField('Void Memo', max_length=100, blank=True, null=True)
+    sort_order = models.PositiveIntegerField(default=0, db_index=True)
+
+    class Meta:
+        ordering = ("sort_order", "id")
 
 
     def get_absolute_url(self):

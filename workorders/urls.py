@@ -58,9 +58,10 @@ from .views import (
     workorder_delivery_block_view,
     pos_for_workorder,
     pickup_mark_called,
-    copy_workorder_to_quote
+    copy_workorder_to_quote,
     #shipping_status,
     # removed,
+    workorder_items_reorder,
 
 )
 
@@ -130,6 +131,7 @@ urlpatterns = [
     path("pickup-call-report/", pickup_call_report, name="pickup_call_report"),
     path("workorders/<int:pk>/delivery/block/", workorder_delivery_block_view, name="workorder_delivery_block"),
     path("pos/workorder/<int:workorder_id>/", pos_for_workorder, name="pos_for_workorder"),
+    path("workorders/<int:id>/items/reorder/", workorder_items_reorder, name="workorder_items_reorder"),
 
 
 

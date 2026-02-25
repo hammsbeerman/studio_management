@@ -1,6 +1,7 @@
+import json
 from django.db import transaction
 from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
 from django.db.models import Avg, Count, Min, Sum, F
 from django.contrib.auth.decorators import login_required
@@ -651,10 +652,20 @@ def workorder_item_list(request, id=None):
     workorder = get_object_or_404(Workorder, id=id)
 
     # existing item list (non-POS items)
-    items = WorkorderItem.objects.filter(workorder=workorder)
+    items = (
+        WorkorderItem.objects
+        .filter(workorder=workorder)
+        .order_by("sort_order", "id")
+    )
 
     # 🔹 Unified totals (regular + POS)
     totals = compute_workorder_totals(workorder)
+
+    open_balance = (
+    workorder.open_balance
+    if workorder.open_balance is not None
+    else totals.total - (workorder.amount_paid or Decimal("0"))
+)
 
     context = {
         "test": "notes",          # preserving your existing context key
@@ -662,6 +673,8 @@ def workorder_item_list(request, id=None):
         "subtotal": totals.subtotal,
         "abs_tax": totals.tax,   # template uses `abs_tax` for tax display
         "total": totals.total,
+        "workorder": workorder,
+        "open_balance": open_balance,
     }
 
     if workorder.completed:
@@ -2927,3 +2940,41 @@ def pos_for_workorder(request, workorder_id):
 
     # 4) Redirect to normal POS sale detail
     return redirect("retail:sale_detail", pk=sale.pk)
+
+@require_POST
+@login_required
+@transaction.atomic
+def workorder_items_reorder(request, id):
+    """
+    Receives JSON: {"ids":[3,7,2,...]} in the new visual order.
+    Updates WorkorderItem.sort_order accordingly.
+    """
+    if not request.htmx:
+        return HttpResponseBadRequest("HTMX required")
+
+    workorder = get_object_or_404(Workorder, id=id)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8") or "{}")
+        ids = payload.get("ids") or []
+        ids = [int(x) for x in ids]
+    except Exception:
+        return HttpResponseBadRequest("Invalid JSON")
+
+    if not ids:
+        return HttpResponseBadRequest("No ids")
+
+    # Ensure all ids belong to this workorder
+    existing = set(
+        WorkorderItem.objects
+        .filter(workorder=workorder, id__in=ids)
+        .values_list("id", flat=True)
+    )
+    if len(existing) != len(set(ids)):
+        return HttpResponseBadRequest("Mismatched ids")
+
+    # Bulk update (simple loop; still fine for typical workorders)
+    for idx, item_id in enumerate(ids):
+        WorkorderItem.objects.filter(workorder=workorder, id=item_id).update(sort_order=idx)
+
+    return HttpResponse(status=204)

@@ -1,132 +1,128 @@
 {% load static %}
-{% for object in items %}
-    
-    <tr>
-        <td>{% if object.setprice_category %}{{ object.setprice_category}}{% else %}{{ object.item_category }}{% endif %}</td>
-        <td>{% if object.setprice_item %}{{ object.setprice_item}}{% else %}{{ object.item_subcategory.name }}{% endif %}</td>
-        <td>{{ object.description }}</td>
-        <td>{% if object.quantity %}{{ object.quantity }}{% endif %}</td>
-        <td>{% if object.unit_price %}{{ object.unit_price }}{% endif %}</td>
-        <td>{% if object.override_price %}{{object.override_price }}{% elif object.total_price %}{{ object.total_price }}{% endif %}</td>
-        <td>
-            <!-- Edit Items to big to fit in modal -->
-            {% if object.item_category.modal != 1 %}
-                {% if object.item_category.template == 1 or object.item_subcategory.template == 1 %}
-                    {% if object.item_category.wideformat == 1 %}
-                    <a href="{% url 'pricesheet:edit_wideformat_item' pk=object.pk cat=object.item_category_id %}" class="btn btn-primary btn-sm" role="button">Edit</a>
-                    {% else %}
-                    <!-- Edit Category items with predefined templates-->
-                    <a href="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}"
-                    class="btn btn-primary btn-sm" role="button">
-                    Edit
-                    </a>
-                    {% endif %}
-                {% else %}
-                    <!-- Edit category item without template -->
-                    <a href="{{ object.edit_print_item_url }}" class="btn btn-primary btn-sm" role="button">Edit</a>
-                {% endif %}
-            {% endif %}
-            <!-- Edit templates that fit in modals-->
-            {% if object.item_category.modal == 1 %}
-                <!-- Edit Design item-->
-                {% if object.item_category.formname == 'DesignItemForm' %}
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_design_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
-                {% elif object.item_category.formname == 'CustomItemForm' %}
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_custom_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
-                {% elif object.item_category.formname == 'OrderOutForm'%}
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_orderout_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
-                {% elif object.item_category.formname == 'SetPriceForm'%}
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_set_price_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Edit</button>
-                {% elif object.item_category.formname == 'ParentItemForm'%}
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_parent_item' pk=object.pk  workorder=object.workorder_id cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
-                {% elif object.item_category.formname == 'PostageItemForm'%}
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_postage_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
-                {% else %}
-                <!-- Edit other category with modal templates-->
-                    <button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Something's broken</button>
-                {% endif %}
-            {% endif %}
-        </td>
-        <td>   
-            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk workorder=object.workorder %}" hx-target="#dialog">Copy</button>
-            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk%}" hx-target="#dialog2">Copy To:</button>
-        </td>
-        <td>
-            {% if object.notes %}
-                <button class="btn btn-primary-outline" hx-get="{% url 'workorders:notes' pk=object.pk%}" hx-target="#dialog">
-                    <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
-                </button>
+
+
+  {% for object in items %}
+    <tr data-item-id="{{ object.id }}">
+      <td style="width:28px;">
+        <span class="btn btn-sm btn-light drag-handle" style="cursor:grab;">≡</span>
+      </td>
+
+      <td>{% if object.setprice_category %}{{ object.setprice_category }}{% else %}{{ object.item_category }}{% endif %}</td>
+      <td>{% if object.setprice_item %}{{ object.setprice_item }}{% else %}{{ object.item_subcategory.name }}{% endif %}</td>
+      <td>{{ object.description }}</td>
+      <td>{% if object.quantity %}{{ object.quantity }}{% endif %}</td>
+      <td>{% if object.unit_price %}{{ object.unit_price }}{% endif %}</td>
+      <td>{% if object.override_price %}{{ object.override_price }}{% elif object.total_price %}{{ object.total_price }}{% endif %}</td>
+
+      <td>
+        {# ...your Edit buttons exactly as-is... #}
+        <!-- Edit Items to big to fit in modal -->
+        {% if object.item_category.modal != 1 %}
+          {% if object.item_category.template == 1 or object.item_subcategory.template == 1 %}
+            {% if object.item_category.wideformat == 1 %}
+              <a href="{% url 'pricesheet:edit_wideformat_item' pk=object.pk cat=object.item_category_id %}" class="btn btn-primary btn-sm" role="button">Edit</a>
             {% else %}
-                <button class="btn btn-primary-outline" hx-get="{% url 'workorders:notes' pk=object.pk%}" hx-target="#dialog">
-                    <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
-                </button>
+              <a href="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" class="btn btn-primary btn-sm" role="button">Edit</a>
             {% endif %}
-
-                
-        </td>
-        <td id='billable_{{object.pk}}'>
-            {% if object.billable == 0 %}
-            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:billable_status' id=object.pk %}" hx-target="#billable_{{object.pk}}">NB</button>
-            {% else %}
-            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:billable_status' id=object.pk %}" hx-target="#billable_{{object.pk}}">B</button>
-            {% endif %}
-        </td>
-        <td id='taxexempt_{{object.pk}}'>
-            {% if object.tax_exempt == 0 %}
-            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=object.tax_exempt id=object.pk %}" hx-target="#taxexempt_{{object.pk}}">Tax</button>
-            {% else %}
-            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=object.tax_exempt id=object.pk %}" hx-target="#taxexempt_{{object.pk}}">NonTax</button>
-            {% endif %}
-        </td>
-
-
-        <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_status' pk=object.pk%}" hx-target="#dialog">{% if object.job_status %}<img src="{{ object.job_status.icon.url }}" style="width:20px;height:20px;">{% endif %}</button>
-        </td>
-        
-        
-        
-        
-        
-        <td><button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_details' pk=object.pk%}" hx-target="#dialog">
-            <img src="{% static 'img/site/details-24.png' %}" style="width:20px;height:20px;">
-        </button></td>
-
-       
-        {% if object.item_category.id == 2 or object.item_category.id == 6 %}
-        
-        <td><a href="{% url 'pdf:ticket_pdf' id=object.pk %}" target="_blank"><img src="{% static 'img/site/ticket-49.png' %}" style="width:20px;height:20px;"></a></td>
+          {% else %}
+            <a href="{{ object.edit_print_item_url }}" class="btn btn-primary btn-sm" role="button">Edit</a>
+          {% endif %}
         {% endif %}
-        
+
+        {% if object.item_category.modal == 1 %}
+          {% if object.item_category.formname == 'DesignItemForm' %}
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_design_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
+          {% elif object.item_category.formname == 'CustomItemForm' %}
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_custom_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
+          {% elif object.item_category.formname == 'OrderOutForm' %}
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_orderout_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
+          {% elif object.item_category.formname == 'SetPriceForm' %}
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_set_price_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Edit</button>
+          {% elif object.item_category.formname == 'ParentItemForm' %}
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_parent_item' pk=object.pk workorder=object.workorder_id cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
+          {% elif object.item_category.formname == 'PostageItemForm' %}
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:edit_postage_item' pk=object.pk cat=object.item_category_id %}" hx-target="#dialog">Edit</button>
+          {% else %}
+            <button class="btn btn-primary btn-sm" hx-get="{% url 'pricesheet:edititem' id=object.workorder_id pk=object.pk cat=object.item_category_id %}" hx-target="#dialog2">Something's broken</button>
+          {% endif %}
+        {% endif %}
+      </td>
+
+      <td>
+        <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk workorder=object.workorder %}" hx-target="#dialog">Copy</button>
+        <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:copy_workorder_item' pk=object.pk %}" hx-target="#dialog2">Copy To:</button>
+      </td>
+
+      <td>
+        <button class="btn btn-primary-outline" hx-get="{% url 'workorders:notes' pk=object.pk %}" hx-target="#dialog">
+          {% if object.notes %}
+            <img src="{% static 'img/site/alert-note-30.png' %}" style="width:20px;height:20px;">
+          {% else %}
+            <img src="{% static 'img/site/emptynote-32.png' %}" style="width:20px;height:20px;">
+          {% endif %}
+        </button>
+      </td>
+
+      <td id="billable_{{ object.pk }}">
+        {% if object.billable == 0 %}
+          <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:billable_status' id=object.pk %}" hx-target="#billable_{{object.pk}}">NB</button>
+        {% else %}
+          <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:billable_status' id=object.pk %}" hx-target="#billable_{{object.pk}}">B</button>
+        {% endif %}
+      </td>
+
+      <td id="taxexempt_{{ object.pk }}">
+        {% if object.tax_exempt == 0 %}
+          <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=object.tax_exempt id=object.pk %}" hx-target="#taxexempt_{{object.pk}}">Tax</button>
+        {% else %}
+          <button class="btn btn-primary btn-sm" hx-get="{% url 'workorders:tax' tax=object.tax_exempt id=object.pk %}" hx-target="#taxexempt_{{object.pk}}">NonTax</button>
+        {% endif %}
+      </td>
+
+      <td>
+        <button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_status' pk=object.pk %}" hx-target="#dialog">
+          {% if object.job_status %}<img src="{{ object.job_status.icon.url }}" style="width:20px;height:20px;">{% endif %}
+        </button>
+      </td>
+
+      <td>
+        <button class="btn btn-primary-outline" hx-get="{% url 'workorders:item_details' pk=object.pk %}" hx-target="#dialog">
+          <img src="{% static 'img/site/details-24.png' %}" style="width:20px;height:20px;">
+        </button>
+      </td>
+
+      {# ALWAYS render the ticket column so column counts match #}
+      <td>
+        {% if object.item_category.id == 2 or object.item_category.id == 6 %}
+          <a href="{% url 'pdf:ticket_pdf' id=object.pk %}" target="_blank">
+            <img src="{% static 'img/site/ticket-49.png' %}" style="width:20px;height:20px;">
+          </a>
+        {% endif %}
+      </td>
     </tr>
+  {% endfor %}
 
-{% endfor %}
-    
 
-    {% if total %} 
-    <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td><b>Subtotal:</b></td>
-        <td><b>{{ subtotal|floatformat:2 }}</b></td>
-        <td><b>Tax:</b></td>
-        <td><b>{{ abs_tax|floatformat:2 }}</b></td>
-        <td><b>Total:</td>
-        <td><b>{{ total|floatformat:2 }}</b></td>
-        <td></td>
-        <td></td>
-    </tr>
-    {% endif %}
+{% if total %}
 
-    <script>
+  <tr data-no-drag="1">
+    <td></td> {# drag column #}
+    <td></td>  {# Category #}
+    <td></td>  {# SubCategory #}
+    <td></td>  {# Description #}
+    <td></td>  {# Qty #}
+    <td><b>Subtotal:</b></td>
+    <td><b>{{ subtotal|floatformat:2 }}</b></td>
+    <td><b>Tax:</b></td>
+    <td><b>{{ abs_tax|floatformat:2 }}</b></td>
+    <td><b>Total:</b></td>
+    <td><b>{{ total|floatformat:2 }}</b></td>
+    <td colspan="2" class="text-end">
+        <b>Open Balance: {{ open_balance|floatformat:2 }}</b>
+    </td> {# status #}
+    <td></td>
+    <td></td> {# ticket #}
+  </tr>
+{% endif %}
 
-        $(document).ready(function () {
-          $("#id_paper_stock").select2();
-        })
 
-        $('#somepapers').select2({
-            dropdownParent: $('#modal3')
-        });
-      
-      </script>

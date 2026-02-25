@@ -63,27 +63,28 @@
 {% endfor %}
     
 
-    {% if total %} 
-    <tr>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td><b>Subtotal:</b></td>
-        <td><b>{{ subtotal|floatformat:2 }}</b></td>
-        <td><b>Tax:</b></td>
-        <td><b>{{ abs_tax }}</b></td>
-        <td><b>Total:</td>
-        <td><b>{{ total|floatformat:2 }}</b></td>
-        <td></td>
-        <td></td>
-    </tr>
-    {% endif %}
+    {% if total %}
+<tr data-no-drag="1">
+  <td></td>  {# Category #}
+  <td></td>  {# SubCategory #}
+  <td></td>  {# Description #}
+  <td></td>  {# Qty #}
 
-    <script>
+  <td><b>Subtotal:</b></td>                 {# Price/Unit col #}
+  <td><b>{{ subtotal|floatformat:2 }}</b></td>  {# Total Price col #}
 
-        $(document).ready(function () {
-          $("#id_paper_stock").select2();
-        })
-      
-      </script>
+  <td><b>Tax:</b></td>                      {# "--" col #}
+  <td><b>{{ abs_tax|floatformat:2 }}</b></td>   {# Copy To col #}
+
+  <td><b>Total:</b></td>                    {# Notes col #}
+  <td><b>{{ total|floatformat:2 }}</b></td>     {# Billable col #}
+
+  <td colspan="2" class="text-end">
+    <b>Open Balance: {{ open_balance|floatformat:2 }}</b>
+  </td> 
+  <td></td>  {# Details col #}
+    <td></td>
+
+  
+</tr>
+{% endif %}
