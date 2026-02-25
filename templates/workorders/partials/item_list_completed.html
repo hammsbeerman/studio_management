@@ -1,6 +1,9 @@
 {% load static %}
 {% for object in items %}
-    <tr>
+    <tr data-item-id="{{ object.id }}">
+        <td style="width:28px;">
+            <span class="btn btn-sm btn-light drag-handle" style="cursor:grab;" title="Drag to reorder">≡</span>
+        </td>
         <td>{% if object.setprice_category %}{{ object.setprice_category}}{% else %}{{ object.item_category }}{% endif %}</td>
         <td>{% if object.setprice_item %}{{ object.setprice_item}}{% else %}{{ object.item_subcategory.name }}{% endif %}</td>
         <td>{{ object.description }}</td>
