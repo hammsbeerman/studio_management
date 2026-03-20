@@ -97,6 +97,14 @@ class InventoryMaster(models.Model):
     retail_markup_flat = models.DecimalField("Retail Markup $", max_digits=15, decimal_places=4, blank=True, null=True, help_text="Flat dollars added over cost.")
     retail_category = models.ForeignKey("controls.RetailInventoryCategory", null=True, blank=True, on_delete=models.SET_NULL, related_name="inventory_items")
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["primary_vendor"]),
+            models.Index(fields=["non_inventory"]),
+            models.Index(fields=["active"]),
+            models.Index(fields=["primary_vendor", "active", "non_inventory"]),
+        ]
+
 
     @property
     def default_sell_uom(self):
@@ -157,6 +165,8 @@ class InventoryMaster(models.Model):
 
     # optional: require reason code on override
     require_price_override_reason = models.BooleanField(default=False)
+
+
 
     def __str__(self):
         return self.name
@@ -638,6 +648,8 @@ class InventoryLedger(models.Model):
 
     SOURCE_TYPE_CHOICES = [
         ("AP_RECEIPT", "AP Receipt / Invoice"),
+        ("AP_RECEIPT_ADJUST", "AP Receipt Adjust"),
+        ("AP_RECEIPT_DELETE", "AP Receipt Delete"),
         ("POS_SALE", "POS Sale"),
         ("POS_REFUND", "POS Refund"),
         ("WO_ORDEROUT", "Workorder Item (OrderOut)"),
@@ -654,6 +666,11 @@ class InventoryLedger(models.Model):
 
     class Meta:
         ordering = ["-when"]
+        indexes = [
+            models.Index(fields=["inventory_item"]),
+            models.Index(fields=["inventory_item", "when"]),
+            models.Index(fields=["source_type", "source_id"]),
+        ]
 
     def __str__(self):
         return f"{self.inventory_item} {self.qty_delta} @ {self.when} ({self.source_type})"

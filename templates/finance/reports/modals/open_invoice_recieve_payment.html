@@ -82,14 +82,14 @@
             <tr>
                 <td>{{ x.workorder }}</td>
                 <td>{% if x.lk_workorder %}LK: {{ x.lk_workorder }} {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}} {% elif x.kos_workorder %}KOS: {{ x.kos_workorder}}{% endif %}</td>
-                <td>{{ x.open_balance }}</td>
+                <td>{{ x.open_balance_calc|floatformat:2 }}</td>
                 <td>
                   <input
                     name="payment"
                     type="checkbox"
                     value="{{ x.id }}"
                     class="js-wo-check"
-                    data-balance="{{ x.open_balance|default_if_none:0 }}"
+                    data-balance="{{ x.open_balance_calc|default_if_none:0 }}"
                   />
                 </td>
                 <td>{{x.date_billed }}</td>
@@ -98,7 +98,7 @@
             <tr>
               <td>Total:</td>
               <td></td>
-              <td>{{ total_balance.open_balance__sum|floatformat:2 }}</td>
+              <td>{{ total_outstanding|floatformat:2 }}</td>
             </tr>
             <tr>
               <td><b>Selected:</b></td>
@@ -137,30 +137,65 @@
 
 <script>
   function parseMoney(val) {
-    // handles "1,234.56" etc
     if (val == null) return 0;
     const cleaned = String(val).replace(/,/g, "").trim();
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : 0;
   }
 
+  function getRowBalance(cb) {
+    // Prefer data-balance if present
+    const fromData = parseMoney(cb.dataset.balance);
+    if (fromData) return fromData;
+
+    // Fallback: read the Amount cell text (3rd <td> in the row)
+    const tr = cb.closest("tr");
+    if (!tr) return 0;
+    const tds = tr.querySelectorAll("td");
+    if (tds.length < 3) return 0;
+    return parseMoney(tds[2].textContent);
+  }
+
   function updateSelectedTotal(root) {
     let sum = 0;
     root.querySelectorAll(".js-wo-check:checked").forEach((cb) => {
-      sum += parseMoney(cb.dataset.balance);
+      sum += getRowBalance(cb);
     });
-    root.querySelector("#selected_total").textContent = sum.toFixed(2);
+    const out = root.querySelector("#selected_total");
+    if (out) out.textContent = sum.toFixed(2);
   }
 
-  (function initSelectedTotal(){
-    const root = document.currentScript.closest(".modal-content") || document;
-    // initial
+  (function initSelectedTotal() {
+    // IMPORTANT: your script tag is OUTSIDE the form, so "closest(.modal-content)" may fail.
+    // Anchor off the dialog container if present; otherwise fall back to document.
+    const root =
+      document.getElementById("dialog2") ||
+      document.getElementById("dialog") ||
+      document;
+
+    // initial compute
     updateSelectedTotal(root);
-    // on change
+
+    // checkbox changes
     root.addEventListener("change", (e) => {
-      if (e.target.classList && e.target.classList.contains("js-wo-check")) {
+      if (e.target && e.target.classList && e.target.classList.contains("js-wo-check")) {
         updateSelectedTotal(root);
       }
+    });
+
+    // after HTMX swaps anything inside dialog2 (Apply Gift Cert, payment detail, etc.)
+    document.body.addEventListener("htmx:afterSwap", (e) => {
+      const dialog2 = document.getElementById("dialog2");
+      if (!dialog2) return;
+      if (!dialog2.contains(e.target)) return;
+      updateSelectedTotal(dialog2);
+    });
+
+    document.body.addEventListener("htmx:afterSettle", (e) => {
+      const dialog2 = document.getElementById("dialog2");
+      if (!dialog2) return;
+      if (!dialog2.contains(e.target)) return;
+      updateSelectedTotal(dialog2);
     });
   })();
 </script>

@@ -5,6 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.db.models import Sum, Q  # 🔹 add Q
+from django.utils import timezone
 
 from workorders.models import WorkorderItem
 from inventory.models import RetailWorkorderItem
@@ -107,3 +108,34 @@ def compute_workorder_totals(workorder):
         pos_subtotal=pos_subtotal,
         pos_tax=pos_tax,
     )
+
+def recalc_workorder_balances(workorder):
+    """
+    Recompute totals + open balance + paid_in_full based on:
+      - compute_workorder_totals(workorder).total
+      - workorder.amount_paid
+    """
+    totals = compute_workorder_totals(workorder)
+
+    amount_paid = workorder.amount_paid or Decimal("0.00")
+    total_balance = totals.total.quantize(Decimal("0.01"))
+    open_balance = (total_balance - amount_paid).quantize(Decimal("0.01"))
+
+    # clamp tiny rounding noise
+    if abs(open_balance) < Decimal("0.01"):
+        open_balance = Decimal("0.00")
+
+    workorder.total_balance = total_balance
+    workorder.open_balance = open_balance
+    workorder.paid_in_full = (open_balance <= Decimal("0.00"))
+
+    # optional: if it’s fully paid, set date_paid
+    if workorder.paid_in_full and not workorder.date_paid:
+        workorder.date_paid = timezone.now().date()
+
+    # don’t auto-clear date_paid unless you want that behavior
+    # if not workorder.paid_in_full:
+    #     workorder.date_paid = None
+
+    workorder.save(update_fields=["total_balance", "open_balance", "paid_in_full", "date_paid"])
+    return totals

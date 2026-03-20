@@ -41,7 +41,7 @@
               {% if x.lk_workorder %}LK: {{ x.lk_workorder }}
               {% elif x.printleader_workorder %}PL: {{ x.printleader_workorder}}{% endif %}
             </td>
-            <td>{{ x.open_balance }}</td>
+            <td>{{ x.open_balance_calc|floatformat:2 }}</td>
             <td>{{ x.date_billed }}</td>
 
             {# ✅ Put the form ONLY around the inputs + button, keep your cells #}

@@ -106,6 +106,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     
     'accounts',
+    'archive_overlay',
     'controls',
     'customers',
     'dashboard',
@@ -280,6 +281,12 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 #STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles/') 
+
+ARCHIVE_API_BASE_URL = os.getenv(
+    "ARCHIVE_API_BASE_URL",
+    "http://192.168.0.65:8000/api/archive"
+)
+ARCHIVE_API_TIMEOUT = int(os.environ.get("ARCHIVE_API_TIMEOUT", "15"))
 
 
 # STATICFILES_DIRS = [

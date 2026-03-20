@@ -1,63 +1,237 @@
 {% load static %}
-<!--<form action='/finance/ap/edit_invoice_item/{{ pk }}/' method="POST">-->
-    <form action='/finance/ap/invoice_detail/{{ invoice }}/' method="POST">
-    
-    
-    {% csrf_token %}
-    
-    <!-- Name: <input type="text" value="{{ name }}" name="name"> -->
-    </br>
-    Name: <input type="text" value="{{ name }}" name="name">
-    </br>
-    Vendor Part Number: <input type="text" value="{{ vpn }}" name="vendor_part_number"> <input type="checkbox" id="vpn_update" name="vpn_update" value="1"><label for="vpn_update">Update Part Number</label>
-    </br>
-    Description: <input type="text" value="{{ description }}" name="description"> <input type="checkbox" id="description_update" name="description_update" value="1"><label for="description_update">Update Description</label>
-    </br>
-    <br/>
-    <!-- Variation: <select class="custom-select mb-4" id="variation" name="variation">
 
-        {% if variation %}
-            <option selected value="{{variation}}">{{ variation }} -- {{ variation_qty }}</option>
-        {% else %}
-            <option selected>Select Item</option>
-        {% endif %}
-            {% for x in variations %}
-              <option value="{{ x.id }}">{{ x.variation.name }} -- {{ x.variation_qty }}</option>
-            {% endfor %}
+<div class="card mt-3">
+  <div class="card-body">
+    <h5 class="card-title mb-3">Edit invoice line</h5>
+
+    <form action="/finance/ap/invoice_detail/{{ invoice }}/" method="POST" class="row g-3" id="ap-edit-line-form">
+      {% csrf_token %}
+
+      <div class="col-md-6">
+        <label class="form-label">Name</label>
+        <input class="form-control" type="text" value="{{ name }}" name="name" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Vendor Part #</label>
+        <div class="d-flex gap-2 align-items-center">
+          <input class="form-control" type="text" value="{{ vpn }}" name="vendor_part_number" />
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="vpn_update" name="vpn_update" value="1" />
+            <label class="form-check-label" for="vpn_update">Update</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Description</label>
+        <div class="d-flex gap-2 align-items-center">
+          <input class="form-control" type="text" value="{{ description }}" name="description" />
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="description_update" name="description_update" value="1" />
+            <label class="form-check-label" for="description_update">Update</label>
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-2" />
+
+      <div class="col-12">
+        <label class="form-label"><strong>Unit</strong></label>
+
+        <div class="btn-group" role="group" aria-label="Unit mode">
+          <input type="radio" class="btn-check" name="unit_mode" id="unit_mode_existing" autocomplete="off" checked>
+          <label class="btn btn-outline-primary" for="unit_mode_existing">Use existing</label>
+
+          <input type="radio" class="btn-check" name="unit_mode" id="unit_mode_create" autocomplete="off">
+          <label class="btn btn-outline-primary" for="unit_mode_create">Create / find</label>
+        </div>
+      </div>
+
+      <div class="col-md-6" id="existing_wrap">
+        <label class="form-label">Existing unit</label>
+        <select class="form-select" id="variation" name="variation">
+          <option value="">— Select —</option>
+          {% for x in variations %}
+            <option value="{{ x.id }}"
+                    data-measurement="{{ x.variation_id }}"
+                    data-factor="{{ x.variation_qty }}"
+                    {% if selected_variation_id and x.id == selected_variation_id %}selected{% endif %}>
+              {{ x.variation.name }} / {{ x.variation_qty }}
+            </option>
+          {% endfor %}
         </select>
-        <br/> -->
-        <div id="item_variation">
-            Variation: <select class="custom-select mb-4" id="variation" name="variation">
-        
-                
-                    {% for x in variations %}
-                      <option value="{{ x.id }}">{{ x.variation.name }} -- {{ x.variation_qty }}</option>
-                    {% endfor %}
-                </select>
-                
-            
-            <button  class="btn btn-primary-outline" hx-get="{% url 'controls:add_item_variation' %}" hx-target="#item_variation"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">Add Item variation</button>
-            </br>
-            
-                
-            </div>
-        </br>
-    Unit Cost: <input type="text" value="{{ unit_cost }}" name="invoice_unit_cost"> - <input type="checkbox" id="ppm" name="ppm" value="1"><label for="ppm">Priced / M</label><br>
-    </br>
-    Qty: <input type="text" value="{{ qty }}" name="invoice_qty">
+      </div>
 
+      <div class="col-md-4 d-none" id="create_unit_wrap">
+        <label class="form-label">Measurement</label>
+        <select class="form-select" id="unit" name="unit">
+          <option value="">— Select —</option>
+          {% for m in measurements %}
+            <option value="{{ m.id }}" {% if selected_measurement_id and m.id == selected_measurement_id %}selected{% endif %}>{{ m.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
+      <div class="col-md-2 d-none" id="create_qty_wrap">
+        <label class="form-label">Units per</label>
+        <input class="form-control" type="number" step="0.0001" min="0" id="variation_qty" name="variation_qty"
+               value="{% if selected_variation_qty %}{{ selected_variation_qty }}{% endif %}" />
+      </div>
 
+      <div class="col-12">
+        <div class="alert alert-secondary py-2 mb-0" id="uom_preview" style="display:none;">
+          <div class="small">
+            <strong>Preview:</strong>
+            <span id="uom_preview_text">—</span>
+          </div>
+        </div>
+      </div>
 
-    <input type="hidden" id="invoice" name="invoice" value="{{ invoice }}">
-    <input type="hidden" id="pk" name="pk" value="{{ pk }}">
-    <input type="hidden" id="internal_part_number" name="internal_part_number" value="{{ ipn }}">
-    <input type="hidden" id="vendor" name="vendor" value="{{ vendor }}">
-    <input type="hidden" id="name" name="name" value="{{ name }}">
-    <input type="hidden" id="edit" name="edit" value="1">
+      <div class="col-md-4">
+        <label class="form-label">Invoice unit price</label>
+        <input class="form-control" type="text" name="invoice_unit_cost" id="invoice_unit_cost" value="{% if unit_cost %}{{ unit_cost }}{% endif %}" />
+        <div class="form-check mt-1">
+          <input class="form-check-input" type="checkbox" id="ppm" name="ppm" value="1" {% if item_obj_ppm %}checked{% endif %} />
+          <label class="form-check-label" for="ppm">Priced / M</label>
+        </div>
+      </div>
 
-    
-    </br>
-    <button type="submit">Save</button>
-</form>
+      <div class="col-md-4">
+        <label class="form-label">Invoice qty</label>
+        <input class="form-control" type="number" step="0.0001" min="0" name="invoice_qty" id="invoice_qty" value="{% if qty %}{{ qty }}{% endif %}" />
+      </div>
 
+      <div class="col-md-4 d-flex align-items-end">
+        <div>
+          <button type="submit" class="btn btn-primary">Save changes</button>
+          <a href="{% url 'finance:ap_invoice_detail_id' id=invoice %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </div>
+
+      <input type="hidden" name="invoice" value="{{ invoice }}" />
+      <input type="hidden" name="pk" value="{{ pk }}" />
+      <input type="hidden" name="internal_part_number" value="{{ ipn }}" />
+      <input type="hidden" name="vendor" value="{{ vendor }}" />
+      <input type="hidden" name="edit" value="1" />
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  function byId(id){ return document.getElementById(id); }
+  function num(v){
+    if (v === null || v === undefined) return null;
+    const s = String(v).replace(/,/g,'').trim();
+    if (!s) return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+  function fmt(n){
+    if (n === null || n === undefined || !Number.isFinite(n)) return "—";
+    return n.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  }
+
+  const modeExisting = byId("unit_mode_existing");
+  const modeCreate = byId("unit_mode_create");
+
+  const existingWrap = byId("existing_wrap");
+  const createUnitWrap = byId("create_unit_wrap");
+  const createQtyWrap = byId("create_qty_wrap");
+
+  const variation = byId("variation");
+  const unit = byId("unit");
+  const variationQty = byId("variation_qty");
+
+  const invoiceQty = byId("invoice_qty");
+  const previewBox = byId("uom_preview");
+  const previewText = byId("uom_preview_text");
+
+  if (!modeExisting || !modeCreate || !variation || !unit || !variationQty) return;
+
+  function showCreate(show){
+    existingWrap.classList.toggle("d-none", show);
+    createUnitWrap.classList.toggle("d-none", !show);
+    createQtyWrap.classList.toggle("d-none", !show);
+
+    if (show) {
+      variation.value = "";
+    } else {
+      // keep unit fields for readability; do not clear on edit
+    }
+    updatePreview();
+  }
+
+  modeExisting.addEventListener("change", function(){ if (modeExisting.checked) showCreate(false); });
+  modeCreate.addEventListener("change", function(){ if (modeCreate.checked) showCreate(true); });
+
+  variation.addEventListener("change", function () {
+    const opt = variation.options[variation.selectedIndex];
+    if (!opt || !variation.value) { updatePreview(); return; }
+    const mId = opt.getAttribute("data-measurement");
+    const f = opt.getAttribute("data-factor");
+    if (mId) unit.value = mId;
+    if (f) variationQty.value = f;
+    modeExisting.checked = true;
+    showCreate(false);
+  });
+
+  function currentFactor(){
+    if (modeExisting.checked && variation.value) {
+      const opt = variation.options[variation.selectedIndex];
+      const f = opt ? num(opt.getAttribute("data-factor")) : null;
+      return f;
+    }
+    if (modeCreate.checked) return num(variationQty.value);
+    return null;
+  }
+
+  function currentUnitLabel(){
+    if (modeExisting.checked && variation.value) {
+      const opt = variation.options[variation.selectedIndex];
+      return opt ? opt.textContent.trim() : "unit";
+    }
+    if (modeCreate.checked && unit.value) {
+      const opt = unit.options[unit.selectedIndex];
+      return opt ? opt.textContent.trim() : "unit";
+    }
+    return "unit";
+  }
+
+  function updatePreview(){
+    const q = num(invoiceQty ? invoiceQty.value : null);
+    const f = currentFactor();
+    if (!previewBox || !previewText) return;
+
+    if (!q) { previewBox.style.display = "none"; return; }
+    if (!f) {
+      previewBox.style.display = "block";
+      previewText.textContent = "Select a unit to preview base qty.";
+      return;
+    }
+    previewBox.style.display = "block";
+    const baseName = "{{ base_unit_name }}";
+    previewText.textContent = `${fmt(q)} ${currentUnitLabel()} = ${fmt(q * f)} ${baseName}`;
+  }
+
+  if (invoiceQty) invoiceQty.addEventListener("input", updatePreview);
+  unit.addEventListener("change", updatePreview);
+  variationQty.addEventListener("input", updatePreview);
+
+  // Initial mode selection: if we have a selected variation -> existing; else if we have measurement+qty -> create
+  const hasSelectedVariation = !!(variation.value && variation.value.trim());
+  const hasCreate = !!(unit.value && unit.value.trim()) || !!(variationQty.value && String(variationQty.value).trim());
+  if (hasSelectedVariation) {
+    modeExisting.checked = true;
+    showCreate(false);
+  } else if (hasCreate) {
+    modeCreate.checked = true;
+    showCreate(true);
+  } else {
+    showCreate(false);
+  }
+
+  updatePreview();
+})();
+</script>

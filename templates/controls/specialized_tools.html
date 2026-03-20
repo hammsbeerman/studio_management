@@ -22,6 +22,17 @@
 <a href="{% url 'controls:add_internal_part_number' %}">Add Internal Part number to all invoice items table</a>
 <br>
 <a href="{% url 'controls:get_highest_item_price' %}">Get highest price for item</a>
+<br>
+  <form method="POST" action="{% url 'finance:run_backfill_invoiceitem_ledger_locked' %}" style="display:inline;">
+    {% csrf_token %}
+    <button
+      type="submit"
+      class="btn btn-outline-secondary btn-sm"
+      onclick="return confirm('Run backfill to set ledger_locked on any AP-received lines? This is intended to run once. Continue?');"
+    >
+      Backfill ledger locks
+    </button>
+  </form>
 
 
 

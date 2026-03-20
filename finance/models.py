@@ -34,6 +34,7 @@ class AccountsPayable(models.Model):
     date_paid = models.DateField(auto_now=False, auto_now_add=False, blank=True, null=True)
     amount_paid = models.DecimalField('Amount Paid', blank=True, null=True, max_digits=10, decimal_places=2)
     payment_method = models.CharField('Payment Method', choices=[('Cash', 'Cash'), ('Check', 'Check'), ('Credit Card', 'Credit Card'), ('ACH', 'ACH'), ('Trade', 'Trade'), ('Other', 'Other')], max_length=100, blank=True, null=True)
+    payment_note = models.TextField(blank=True, null=True)
     check_number = models.CharField('Check Number', max_length=30, blank=True, null=False)
     retail_invoice = models.BooleanField('Retail Invoice', null=True, default=True)
     supplies_invoice = models.BooleanField('Supplies Invoice', null=True, default=True)
@@ -179,7 +180,8 @@ class InvoiceItem(models.Model):
     ppm = models.BooleanField('Price Per M', default=False, blank=False, null=False)
     line_total = models.DecimalField('Line Total', max_digits=8, decimal_places=2, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
-    updated = models.DateTimeField(auto_now = True, blank=False, null=False)    
+    updated = models.DateTimeField(auto_now = True, blank=False, null=False)
+    ledger_locked = models.BooleanField(default=False, help_text="True once this line has written inventory movements to InventoryLedger. Prevents changing qty/unit/item/cost.")    
 
     def __str__(self):
         return self.name
@@ -531,7 +533,7 @@ def highprice_handler(sender, instance, created, *args, **kwargs):
         price = 0
     if current_high < price:
         #Update vendor high price
-        VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=datetime.now())
+        VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=internal_part_number).update(high_price=price, updated=timezone.now())
         x = InventoryMaster.objects.get(pk=internal_part_number.id)
         if x.units_per_base_unit:
             cost = price / x.units_per_base_unit
@@ -539,13 +541,13 @@ def highprice_handler(sender, instance, created, *args, **kwargs):
         else:
             cost=0
             m = 0
-        InventoryMaster.objects.filter(pk=internal_part_number.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=datetime.now())
+        InventoryMaster.objects.filter(pk=internal_part_number.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=timezone.now())
         try:
-            Inventory.objects.filter(internal_part_number=internal_part_number.id).update(unit_cost=cost, price_per_m=m, updated=datetime.now())
+            Inventory.objects.filter(internal_part_number=internal_part_number.id).update(unit_cost=cost, price_per_m=m, updated=timezone.now())
         except:
             pass
         try:
-            StoreItemDetails.objects.filter(item=internal_part_number.id).update(high_cost=price, updated=datetime.now())
+            StoreItemDetails.objects.filter(item=internal_part_number.id).update(high_cost=price, updated=timezone.now())
         except:
             pass
         groups = InventoryPricingGroup.objects.filter(inventory=internal_part_number.id)
@@ -554,9 +556,9 @@ def highprice_handler(sender, instance, created, *args, **kwargs):
             group_items = InventoryPricingGroup.objects.filter(group=x.group)
             for x in group_items:
                 print(x.inventory.id)
-                InventoryMaster.objects.filter(pk=x.inventory.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=datetime.now())
-                VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=x.inventory.id).update(high_price=price, updated=datetime.now())
-                Inventory.objects.filter(internal_part_number=x.inventory.id).update(unit_cost=cost, price_per_m=m, updated=datetime.now())
+                InventoryMaster.objects.filter(pk=x.inventory.id).update(high_price=price, unit_cost=cost, price_per_m=m, updated=timezone.now())
+                VendorItemDetail.objects.filter(vendor=vendor, internal_part_number=x.inventory.id).update(high_price=price, updated=timezone.now())
+                Inventory.objects.filter(internal_part_number=x.inventory.id).update(unit_cost=cost, price_per_m=m, updated=timezone.now())
             print(x.inventory)
     else:
         print('no change')

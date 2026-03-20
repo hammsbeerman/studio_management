@@ -31,9 +31,7 @@
     </div>
   </div>
 
-  <div class="col-md-3">
-    {# empty column #}
-  </div>
+  
 
   <div class="col-md-3">
     <div class="card">
@@ -48,19 +46,12 @@
 
 <hr>
 
-{# =========================
-   Bootstrap Modals (HTMX)
-   ========================= #}
-
-{# Modal 1 (normal) #}
 <div id="modal" class="modal fade" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
-    {# IMPORTANT: hx-target should inject into .modal-content (not .modal-dialog) #}
     <div id="dialog" class="modal-content"></div>
   </div>
 </div>
 
-{# Modal 2 (large) #}
 <div id="modal2" class="modal fade" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div id="dialog2" class="modal-content"></div>
@@ -71,6 +62,4 @@
 
 {% block scripts %}
 <script src="{% static 'js/order_out_form.js' %}"></script>
-
-
 {% endblock %}

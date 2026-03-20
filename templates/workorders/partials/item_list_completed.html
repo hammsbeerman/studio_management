@@ -59,8 +59,7 @@
 
         
         <td></td>
-        <td>{% if object.item_category.id == 2 or object.item_category.id == 6 or object.item_category.id == 9 or object.item_category.id == 10 %}<a href="{% url 'pdf:lineitem_pdf' id=object.pk %}" class="btn btn-primary" target="_blank">Line details</a>{% endif %}</td>
-        
+<td>{% if object.item_category %}{% if object.item_category.wideformat %}<a href="{% url 'pdf:lineitem_pdf' id=object.pk %}" class="btn btn-primary" target="_blank">Line details</a>{% elif object.item_category.id == 2 or object.item_category.id == 6 or object.item_category.id == 9 or object.item_category.id == 10 %}<a href="{% url 'pdf:lineitem_pdf' id=object.pk %}" class="btn btn-primary" target="_blank">Line details</a>{% endif %}{% endif %}</td>        
         
     </tr>
 {% endfor %}

@@ -4,7 +4,6 @@
 
 {% block content %}
 
-{# High-level header block (summary/edit header via HTMX) #}
 <div
   hx-trigger="load, itemChanged from:body"
   hx-get="{% url 'finance:ap_invoice_detail_highlevel' id=invoice.pk %}"
@@ -15,139 +14,287 @@
 
 <div class="container">
 
-  <h4 class="mt-3">
-    AP Invoice #{{ invoice.id }}
-    {% if invoice.posted %}
-      <span class="badge bg-warning text-dark">Posted</span>
-    {% else %}
-      <span class="badge bg-secondary">Not Posted</span>
-    {% endif %}
-  </h4>
+  <div class="d-flex align-items-center justify-content-between mt-3">
+    <div>
+      <h4 class="mb-1">
+        AP Invoice #{{ invoice.id }}
+        {% if invoice.posted %}
+          <span class="badge bg-warning text-dark">Posted</span>
+        {% else %}
+          <span class="badge bg-secondary">Not Posted</span>
+        {% endif %}
+      </h4>
 
-  {% if amount_mismatch %}
-    <div class="alert alert-warning mt-2">
-      Header amount: <strong>{{ header_amount }}</strong><br>
-      Item total: <strong>{{ item_total }}</strong><br>
-      Difference: <strong>{{ amount_diff }}</strong>
+      {% if amount_mismatch %}
+        <div class="small text-warning">
+          Header: <strong>{{ header_amount }}</strong> • Items: <strong>{{ item_total }}</strong> • Diff: <strong>{{ amount_diff }}</strong>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+      {% if not invoice.posted %}
+        <button
+          class="btn btn-primary btn-sm"
+          hx-get="{% url 'finance:ap_post_invoice_modal' id=invoice.id %}"
+          hx-target="#dialog"
+        >
+          Post
+        </button>
+      {% endif %}
+
+      {% if invoice.posted %}
+        <form id="unpost_form" method="POST" action="{% url 'finance:ap_unpost_invoice' id=invoice.id %}" style="display:inline;">
+          {% csrf_token %}
+          <input type="hidden" name="reason" id="unpost_reason" value="">
+          <button type="button" class="btn btn-warning btn-sm" onclick="unpostInvoicePrompt();">
+            Unpost
+          </button>
+        </form>
+
+        <script>
+          function unpostInvoicePrompt() {
+            const reason = prompt("Unpost reason (required):");
+            if (!reason || !reason.trim()) return;
+            document.getElementById("unpost_reason").value = reason.trim();
+            document.getElementById("unpost_form").submit();
+          }
+        </script>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if audit_entries %}
+    <div class="card mt-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Audit (latest)</span>
+      </div>
+      <div class="card-body" style="padding: 10px 16px;">
+        <table class="table table-sm mb-0">
+          <thead>
+            <tr>
+              <th style="width: 180px;">When</th>
+              <th style="width: 180px;">Who</th>
+              <th>What</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in audit_entries %}
+              <tr>
+                <td>{{ a.action_time }}</td>
+                <td>
+                  {% if a.user %}
+                    {{ a.user.get_username }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+                <td>{{ a.change_message }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
   {% endif %}
 
-  <p></p>
-
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">Name</th>
-        <th scope="col">Description</th>
-        <th scope="col">Vendor Part Number</th>
-        <th scope="col">Invoice Qty</th>
-        <th scope="col">Invoice Unit</th>
-        <th scope="col">Invoice Unit Price</th>
-        <th scope="col">Unit Cost</th>
-        <th scope="col">Qty</th>
-        <th scope="col">Line Total</th>
-        <th scope="col" class="text-end">Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for x in items %}
-        <tr>
-          <td>{{ x.name }}</td>
-          <td>{{ x.description }}</td>
-          <td>{{ x.vendor_part_number }}</td>
-          <td>{{ x.invoice_qty }}</td>
-          <td>
-            {% if x.invoice_unit %}
-              {{ x.invoice_unit.variation.name }} / {{ x.invoice_unit.variation_qty }}
-            {% endif %}
-          </td>
-          <td>
-            {% if x.invoice_unit_cost %}
-              ${{ x.invoice_unit_cost }}{% if x.ppm %} / M{% endif %}
-            {% endif %}
-          </td>
-          <td>{{ x.unit_cost }}</td>
-          <td>{{ x.qty }}</td>
-          <td>{{ x.line_total }}</td>
-          <td class="text-end">
-            <button
-              hx-trigger="click"
-              hx-get="{% url 'finance:ap_edit_invoice_item_invoice' invoice=invoice.id id=x.id %}"
-              hx-target="#invoices"
-              class="btn btn-secondary btn-sm"
-              {% if invoice.posted %}
-              onclick="return confirm('This invoice is marked as POSTED. Editing items may affect accounting history. Continue?');"
-              {% endif %}
-            >
-              Edit
-            </button>
-
-            <a
-              href="{% url 'finance:ap_delete_invoice_item' invoice=invoice.id id=x.id %}"
-              class="btn btn-danger btn-sm"
-              {% if invoice.posted %}
-              onclick="return confirm('This invoice is marked as POSTED. Deleting items may affect accounting history. Continue?');"
-              {% endif %}
-              role="button"
-            >
-              Delete
-            </a>
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <p></p>
-
-  <div id="invoices" class="mb-3">
-        <button
-          hx-trigger="click"
-          hx-get="{% url 'finance:ap_add_invoice_item_invoice_vendor' invoice=invoice.id vendor=invoice.vendor.id %}"
-          hx-target="#remainder"
-          class="btn btn-danger"
-          {% if invoice.posted %}
-          onclick="return confirm('This invoice is marked as POSTED. Adding new items may affect accounting history. Continue?');"
-          {% endif %}
-        >
-          Add Inventory Item
-        </button>
-
-
-    {% if vendor.online_store_vendor %}
-      <button
-        hx-trigger="click"
-        hx-get="{% url 'finance:ap_add_invoice_item_vendor_type' invoice=invoice.id vendor=invoice.vendor.id type=2 %}"
-        hx-target="#remainder"
-        class="btn btn-danger"
+  <div class="card mt-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Invoice lines</span>
+      <span class="text-muted small">
         {% if invoice.posted %}
-        onclick="return confirm('This invoice is marked as POSTED. Adding new items may affect accounting history. Continue?');"
+          Lines are locked while posted.
+        {% else %}
+          Add/edit lines below.
         {% endif %}
-      >
-        Add Online Store Item
-      </button>
-    {% endif %}
+      </span>
+    </div>
 
-    <button
-      hx-trigger="click"
-      hx-get="{% url 'finance:ap_add_invoice_item_invoice_vendor_type' invoice=invoice.id vendor=invoice.vendor.id type=1 %}"
-      hx-target="#remainder"
-      class="btn btn-danger"
-      {% if invoice.posted %}
-      onclick="return confirm('This invoice is marked as POSTED. Adding new items may affect accounting history. Continue?');"
-      {% endif %}
-    >
-      Add Non Inventory Item
-    </button>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-sm table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="min-width:220px;">Item</th>
+              <th style="min-width:200px;">Vendor / Desc</th>
+              <th style="width:120px;">Invoice Qty</th>
+              <th style="min-width:170px;">Invoice Unit</th>
+              <th style="width:140px;">Unit Price</th>
+              <th style="width:120px;">Cost/Base</th>
+              <th style="width:140px;">Base Qty</th>
+              <th style="width:140px;">Line Total</th>
+              <th style="width:260px;" class="text-end">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for x in items %}
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ x.name }}</div>
+                  <div class="text-muted small">{{ x.internal_part_number.name }}</div>
+                </td>
+
+                <td>
+                  <div class="small">
+                    <span class="text-muted">VPN:</span> {{ x.vendor_part_number|default:"—" }}
+                  </div>
+                  <div class="text-muted small text-truncate" style="max-width: 360px;">
+                    {{ x.description|default:"" }}
+                  </div>
+                </td>
+
+                <td>
+                  <div class="fw-semibold">{{ x.invoice_qty }}</div>
+                </td>
+
+                <td>
+                  {% if x.invoice_unit %}
+                    <div class="fw-semibold">{{ x.invoice_unit.variation.name }}</div>
+                    <div class="text-muted small">× {{ x.invoice_unit.variation_qty }}</div>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if x.invoice_unit_cost %}
+                    <div class="fw-semibold">${{ x.invoice_unit_cost }}{% if x.ppm %}<span class="text-muted small"> / M</span>{% endif %}</div>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if x.unit_cost %}
+                    ${{ x.unit_cost }}
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if x.qty %}
+                    <span class="fw-semibold">{{ x.qty }}</span>
+                    {% if x.ledger_locked %}
+                      <span class="badge bg-success-subtle text-success border">Received</span>
+                    {% endif %}
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+
+                <td>
+                  {% if x.line_total %}
+                    <span class="fw-semibold">${{ x.line_total }}</span>
+                  {% else %}
+                    <span class="text-muted">—</span>
+                  {% endif %}
+                </td>
+
+                <td class="text-end">
+                  <div class="btn-group" role="group">
+                    {% if x.ledger_locked and not invoice.posted %}
+                      <button
+                        class="btn btn-outline-primary btn-sm"
+                        hx-get="{% url 'finance:ap_adjust_invoice_item_modal' id=invoice.id item_id=x.id %}"
+                        hx-target="#dialog"
+                      >
+                        Adjust Received
+                      </button>
+                    {% endif %}
+
+                    <button
+                      hx-trigger="click"
+                      hx-get="{% url 'finance:ap_edit_invoice_item_invoice' invoice=invoice.id id=x.id %}"
+                      hx-target="#remainder"
+                      class="btn btn-outline-secondary btn-sm"
+                      {% if invoice.posted %}
+                      disabled
+                      {% endif %}
+                    >
+                      Edit
+                    </button>
+
+                    <a
+                      href="{% url 'finance:ap_delete_invoice_item' invoice=invoice.id id=x.id %}"
+                      class="btn btn-outline-danger btn-sm"
+                      {% if invoice.posted %}
+                      onclick="return confirm('This invoice is POSTED. Delete is blocked unless you unpost. Continue?');"
+                      {% endif %}
+                      role="button"
+                    >
+                      Delete
+                    </a>
+                  </div>
+
+                  {% if invoice.posted %}
+                    <div class="text-muted small mt-1">Unpost to edit lines</div>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="9" class="text-center text-muted py-4">
+                  No invoice lines yet.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
-  <div id="remainder"></div>
+  <div class="card mt-3">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Add lines</span>
+      <span class="text-muted small">Choose what you want to add</span>
+    </div>
+    <div class="card-body d-flex flex-wrap gap-2">
+      <button
+        hx-trigger="click"
+        hx-get="{% url 'finance:ap_add_invoice_item_invoice_vendor' invoice=invoice.id vendor=invoice.vendor.id %}"
+        hx-target="#remainder"
+        hx-swap="innerHTML"
+        class="btn btn-primary"
+        {% if invoice.posted %}disabled{% endif %}
+      >
+        Add Inventory Item
+      </button>
+
+      {% if vendor.online_store_vendor %}
+        <button
+          hx-trigger="click"
+          hx-get="{% url 'finance:ap_add_invoice_item_vendor_type' invoice=invoice.id vendor=invoice.vendor.id type=2 %}"
+          hx-target="#remainder"
+          hx-swap="innerHTML"
+          class="btn btn-primary"
+          {% if invoice.posted %}disabled{% endif %}
+        >
+          Add Online Store Item
+        </button>
+      {% endif %}
+
+      <button
+        hx-trigger="click"
+        hx-get="{% url 'finance:ap_add_invoice_item_invoice_vendor_type' invoice=invoice.id vendor=invoice.vendor.id type=1 %}"
+        hx-target="#remainder"
+        hx-swap="innerHTML"
+        class="btn btn-outline-primary"
+        {% if invoice.posted %}disabled{% endif %}
+      >
+        Add Non Inventory Item
+      </button>
+    </div>
+  </div>
+
+  <div id="remainder" class="mt-3"></div>
 
   <div id="modal" class="modal fade">
     <div id="dialog" class="modal-dialog" hx-target="this"></div>
   </div>
 
-  {# You mentioned modal2 in scripts; leaving hooks in case it’s used by partials #}
   <div id="modal2" class="modal fade">
     <div id="dialog2" class="modal-dialog" hx-target="this"></div>
   </div>
@@ -158,44 +305,117 @@
 
 {% block scripts %}
 <script>
-  const modal = new bootstrap.Modal(document.getElementById("modal"))
+(function () {
+  const modalEl = document.getElementById("modal");
+  const dialogEl = document.getElementById("dialog");
+  const modal = modalEl ? new bootstrap.Modal(modalEl) : null;
 
-  htmx.on("htmx:afterSwap", (e) => {
-    // Response targeting #dialog => show the modal
-    if (e.detail.target.id === "dialog") {
-      modal.show()
+  const modal2El = document.getElementById("modal2");
+  const dialog2El = document.getElementById("dialog2");
+  const modal2 = modal2El ? new bootstrap.Modal(modal2El) : null;
+
+  function destroySelect2(root) {
+    if (!window.jQuery) return;
+    const $root = $(root);
+
+    $root.find("select.select2-hidden-accessible").each(function () {
+      try { $(this).select2("destroy"); } catch (e) {}
+    });
+
+    $root.find("span.select2").remove();
+  }
+
+  function initPickers(root) {
+    if (!window.jQuery) return;
+    const $root = $(root);
+
+    // target either by id OR by attribute (your choice)
+    const $sels = $root.find("select[data-ap-picker], #id_name");
+    if (!$sels.length) return;
+
+    $sels.each(function () {
+      const $sel = $(this);
+
+      if ($sel.hasClass("select2-hidden-accessible")) {
+        try { $sel.select2("destroy"); } catch (e) {}
+      }
+
+      $sel.select2({
+        width: "100%",
+        placeholder: "Start typing to search…",
+        allowClear: true,
+        minimumResultsForSearch: 0,   // always show search box
+        dropdownAutoWidth: true
+      });
+
+      $sel.off("select2:select.ap").on("select2:select.ap", function () {
+        htmx.trigger(this, "change");
+      });
+
+      // when dropdown opens, focus the search input
+      $sel.off("select2:open.ap").on("select2:open.ap", function () {
+        const s = document.querySelector(".select2-container--open .select2-search__field");
+        if (s) s.focus();
+      });
+    });
+  }
+
+  // HTMX teardown before swap
+  document.body.addEventListener("htmx:beforeSwap", function (e) {
+    const target = e.detail && e.detail.target ? e.detail.target : null;
+    if (!target || !target.id) return;
+
+    if (target.id === "dialog" && e.detail.xhr && !e.detail.xhr.response) {
+      if (modal) modal.hide();
+      e.detail.shouldSwap = false;
+      return;
     }
-  })
 
-  htmx.on("htmx:beforeSwap", (e) => {
-    // Empty response targeting #dialog => hide the modal
-    if (e.detail.target.id === "dialog" && !e.detail.xhr.response) {
-      modal.hide()
-      e.detail.shouldSwap = false
+    if (target.id === "dialog2" && e.detail.xhr && !e.detail.xhr.response) {
+      if (modal2) modal2.hide();
+      e.detail.shouldSwap = false;
+      return;
     }
-  })
 
-  htmx.on("hidden.bs.modal", () => {
-    document.getElementById("dialog").innerHTML = ""
-  })
+    if (target.id === "remainder") destroySelect2(target);
+  });
 
-  const modal2 = new bootstrap.Modal(document.getElementById("modal2"))
+  // HTMX init after swap
+  document.body.addEventListener("htmx:afterSwap", function (e) {
+    const target = e.detail && e.detail.target ? e.detail.target : null;
+    if (!target || !target.id) return;
 
-  htmx.on("htmx:afterSwap", (e) => {
-    if (e.detail.target.id === "dialog2") {
-      modal2.show()
+    if (target.id === "dialog") {
+      if (modal) modal.show();
+      return;
     }
-  })
 
-  htmx.on("htmx:beforeSwap", (e) => {
-    if (e.detail.target.id === "dialog2" && !e.detail.xhr.response) {
-      modal2.hide()
-      e.detail.shouldSwap = false
+    if (target.id === "dialog2") {
+      if (modal2) modal2.show();
+      return;
     }
-  })
 
-  htmx.on("hidden.bs.modal", () => {
-    document.getElementById("dialog2").innerHTML = ""
-  })
+    if (target.id === "remainder") {
+      initPickers(target);
+      setTimeout(function () {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 50);
+    }
+  });
+
+  // Clear dialogs on close
+  if (modalEl) modalEl.addEventListener("hidden.bs.modal", function () {
+    if (dialogEl) dialogEl.innerHTML = "";
+  });
+  if (modal2El) modal2El.addEventListener("hidden.bs.modal", function () {
+    if (dialog2El) dialog2El.innerHTML = "";
+  });
+
+  // First load
+  document.addEventListener("DOMContentLoaded", function () {
+    const rem = document.getElementById("remainder");
+    if (rem) initPickers(rem);
+  });
+})();
 </script>
-{% endblock %}
+{% endblock scripts %}

@@ -35,8 +35,9 @@ from .views import (
     high_price_item,
     krueger_statements,
     krueger_ar_aging,
-    add_to_item_list
+    add_to_item_list,
     #setprice_list,
+    special_tools,
 )
 
 app_name='controls'
@@ -79,4 +80,5 @@ urlpatterns = [
     path('krueger_statements/', krueger_statements, name='krueger_statements'),
     path('krueger_ar_aging/', krueger_ar_aging, name='krueger_ar_aging'),
     path('add_to_item_list/', add_to_item_list, name='add_to_item_list'),
+    path("specialized-tools/", special_tools, name="special_tools"),
 ]

@@ -32,12 +32,14 @@ from .views import (
     search_existing_items,
     bulk_uom_admin,
     uom_normalize_admin,
+    uom_audit_normalize_bulk,
     
 )
 
 from inventory.views_uom_audit import (
     uom_audit_admin,
-    uom_audit_apply
+    uom_audit_apply,
+    uom_audit_bulk_apply
 )
 
 
@@ -75,4 +77,6 @@ urlpatterns = [
     path("uom/normalize/", uom_normalize_admin, name="uom_normalize_admin"),
     path("uom/audit/", uom_audit_admin, name="uom_audit_admin"),
     path("uom/audit/apply/", uom_audit_apply, name="uom_audit_apply"),
+    path("inventory/uom/audit/normalize-bulk/", uom_audit_normalize_bulk, name="uom_audit_normalize_bulk"),
+    path("uom/audit/bulk/", uom_audit_bulk_apply, name="uom_audit_bulk_apply"),
 ]

@@ -2,19 +2,22 @@ import json
 from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import OuterRef, Subquery, Q, Count
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.http import require_POST, require_http_methods
 from django.utils import timezone
+from typing import List, Set
 from .services.ledger import get_on_hand
 from .forms import AddVendorForm, RetailCategoryForm, RetailCategoryMarkupForm, InventoryItemPricingForm, InventoryAdjustmentForm, BulkUomUpdateForm, NormalizeMeasurementsForm, UomAuditFilterForm, UomFixActionForm
 from .models import Vendor, InventoryQtyVariations, InventoryMaster, OrderOut, Inventory, VendorItemDetail, InventoryLedger, InventoryMerge
 from .utils import merged_set_for
 from controls.forms import AddItemtoListForm
-from controls.models import RetailInventoryCategory
+from controls.models import RetailInventoryCategory, Measurement
 from finance.models import InvoiceItem, AccountsPayable#, AllInvoiceItem
 from inventory.services.ledger import (
     get_negative_stock_items,
@@ -29,10 +32,16 @@ from inventory.services.measurement_normalize import (
     normalize_measurements_for_items
 )
 from inventory.services.uom_audit import (
-    set_base_uom,
+    normalize_item_uoms,
+    LEDGER_MODE_BLOCK,
+    LEDGER_MODE_SAFE,
+    audit_uoms,
+    ensure_base_uom,
+    _get_model_or_none,
     set_default_receive_uom,
     set_default_sell_uom,
 )
+from inventory.views_uom_audit import has_ledger
 from inventory.services.pricing import compute_retail_price
 from onlinestore.models import StoreItemDetails
 from retail.models import RetailSaleLine
@@ -187,14 +196,160 @@ def item_variations(request):
     }
     return render(request, 'inventory/items/view_variations.html', context)
 
+def uom_used_in_history_ids(uom_ids: List[int]) -> Set[int]:
+    """
+    Same idea as your audit: mark rows used in downstream history.
+    Adjust model/field names if yours differ.
+    """
+    if not uom_ids:
+        return set()
+
+    InvoiceItem = _get_model_or_none("finance", "InvoiceItem")
+    RetailSaleLine = _get_model_or_none("retail", "RetailSaleLine")
+
+    used: set[int] = set()
+
+    if InvoiceItem:
+        used |= set(
+            InvoiceItem.objects.filter(invoice_unit_id__in=uom_ids)
+            .values_list("invoice_unit_id", flat=True)
+            .distinct()
+        )
+
+    if RetailSaleLine:
+        used |= set(
+            RetailSaleLine.objects.filter(sold_variation_id__in=uom_ids)
+            .values_list("sold_variation_id", flat=True)
+            .distinct()
+        )
+
+    return used
+
+
+@login_required
+@require_http_methods(["GET", "POST"])
 def item_variation_details(request, id=None):
-    print(id)
-    variations = InventoryQtyVariations.objects.filter(inventory=id)
-    print(variations)
-    context = {
-        'variations':variations
-    }
-    return render(request, 'inventory/items/view_variation_details.html', context)
+    item = get_object_or_404(InventoryMaster, pk=id)
+
+    variations = (
+        InventoryQtyVariations.objects
+        .filter(inventory=item)
+        .select_related("variation")
+        .order_by("active", "variation__name", "variation_qty", "id")
+    )
+
+    used_uom_ids = uom_used_in_history_ids(list(variations.values_list("id", flat=True)))
+    ledger_exists = has_ledger(item.id)
+
+    if request.method == "POST":
+        action = (request.POST.get("action") or "").strip()
+
+        # -------------------------
+        # ADD NEW UOM ROW
+        # -------------------------
+        if action == "add_uom":
+            mid = (request.POST.get("measurement_id") or "").strip()
+            qty_raw = (request.POST.get("variation_qty") or "").strip()
+
+            make_base = request.POST.get("make_base") in ("1", "true", "on", "yes")
+            make_sell = request.POST.get("make_sell") in ("1", "true", "on", "yes")
+            make_recv = request.POST.get("make_recv") in ("1", "true", "on", "yes")
+
+            if not mid:
+                messages.error(request, "Pick a measurement.")
+                return redirect("inventory:item_variation_details", id=item.id)
+
+            try:
+                qty = Decimal(qty_raw or "1.0000")
+            except Exception:
+                messages.error(request, "Invalid qty.")
+                return redirect("inventory:item_variation_details", id=item.id)
+
+            if qty <= 0:
+                messages.error(request, "Qty must be > 0.")
+                return redirect("inventory:item_variation_details", id=item.id)
+
+            m = get_object_or_404(Measurement, pk=mid)
+
+            # Create the row (allow multiple rows per measurement with different qty)
+            uom, created = InventoryQtyVariations.objects.get_or_create(
+                inventory=item,
+                variation=m,
+                variation_qty=qty,
+                defaults={"active": True},
+            )
+            if not created and not uom.active:
+                uom.active = True
+                uom.save(update_fields=["active"])
+
+            # Apply flags (base guarded by ledger)
+            try:
+                if make_base:
+                    if ledger_exists:
+                        raise ValidationError("Ledger history exists; base changes are blocked.")
+                    ensure_base_uom(item=item, measurement=m, activate=True)
+
+                if make_sell:
+                    set_default_sell_uom(item=item, uom=uom)
+
+                if make_recv:
+                    set_default_receive_uom(item=item, uom=uom)
+
+                messages.success(
+                    request,
+                    f"{item.name}: added {m.name} × {qty}."
+                    + (" (base)" if make_base else "")
+                    + (" (sell)" if make_sell else "")
+                    + (" (recv)" if make_recv else "")
+                )
+            except ValidationError as e:
+                messages.error(request, str(e))
+
+            return redirect("inventory:item_variation_details", id=item.id)
+
+        # -------------------------
+        # DEACTIVATE UOM ROW
+        # -------------------------
+        if action == "deactivate_uom":
+            uom_id = (request.POST.get("uom_id") or "").strip()
+            if not uom_id.isdigit():
+                messages.error(request, "Invalid UOM id.")
+                return redirect("inventory:item_variation_details", id=item.id)
+
+            u = get_object_or_404(InventoryQtyVariations, pk=int(uom_id), inventory=item)
+
+            if u.is_base_unit or u.is_default_sell_uom or u.is_default_receive_uom:
+                messages.error(request, "Cannot deactivate base/default rows.")
+                return redirect("inventory:item_variation_details", id=item.id)
+
+            if u.id in used_uom_ids:
+                messages.error(request, "Cannot deactivate: used in history.")
+                return redirect("inventory:item_variation_details", id=item.id)
+
+            if u.active:
+                u.active = False
+                u.save(update_fields=["active"])
+
+            messages.success(request, f"{item.name}: deactivated {u.variation.name} × {u.variation_qty}.")
+            return redirect("inventory:item_variation_details", id=item.id)
+
+        messages.error(request, "Unknown action.")
+        return redirect("inventory:item_variation_details", id=item.id)
+
+    # GET
+    measurements = Measurement.objects.all().order_by("name")
+
+    return render(
+        request,
+        "inventory/items/view_variation_details.html",
+        {
+            "item": item,
+            "variations": variations,
+            "measurements": measurements,
+            "used_uom_ids": used_uom_ids,
+            "ledger_exists": ledger_exists,
+        },
+    )
 
 # def item_detail(request):
 #     items = InventoryMaster.objects.all()
@@ -1265,6 +1420,92 @@ def uom_normalize_admin(request):
                 messages.success(request, "Normalization applied.")
 
     return render(request, "inventory/uom_normalize_admin.html", {"form": form, "result": result})
+
+@require_POST
+@login_required
+def uom_audit_normalize_bulk(request):
+    """
+    Normalizes all items returned by the current filter form (same behavior as admin page),
+    skipping ledger items automatically.
+    """
+    form = UomAuditFilterForm(request.POST or None)
+    if not form.is_valid():
+        messages.error(request, "Invalid filter form for bulk normalize.")
+        return redirect("inventory:uom_audit_admin")
+
+    only_active = form.cleaned_data.get("only_active", True)
+    vendor = form.cleaned_data.get("vendor")
+    name_contains = (form.cleaned_data.get("name_contains") or "").strip()
+    limit = int(form.cleaned_data.get("limit") or 200)
+
+    result = audit_uoms(
+        only_active=only_active,
+        vendor_id=vendor.id if vendor else None,
+        name_contains=name_contains,
+        retail_only=False,
+        supplies_only=False,
+        include_non_inventory=False,
+        limit=limit,
+    )
+
+    if not result or not result.rows:
+        messages.info(request, "No rows to normalize.")
+        return redirect("inventory:uom_audit_admin")
+
+    item_ids = [r.item.id for r in result.rows]
+    ledger_ids = set(
+        InventoryLedger.objects.filter(inventory_item_id__in=item_ids)
+        .values_list("inventory_item_id", flat=True)
+        .distinct()
+    )
+
+    normalized = 0
+    skipped_ledger = 0
+    failures = 0
+
+    for r in result.rows:
+        item = r.item
+        if item.id in ledger_ids:
+            skipped_ledger += 1
+            continue
+        try:
+            normalize_item_uoms(item=item, dry_run=False, ledger_mode=LEDGER_MODE_BLOCK)
+            normalized += 1
+        except Exception:
+            failures += 1
+
+    messages.success(
+        request,
+        f"Bulk normalize complete: normalized={normalized}, skipped_ledger={skipped_ledger}, failures={failures}"
+    )
+    return redirect("inventory:uom_audit_admin")
+
+# def get_or_create_uom_row(*, item, measurement, qty: Decimal):
+#     """
+#     Allows multiple rows per measurement as long as qty differs.
+#     Prevents exact duplicates (same measurement + same qty) by reusing the row.
+#     """
+#     qty = Decimal(qty)
+
+#     # normalize to 4dp if your DB expects that
+#     qty = qty.quantize(Decimal("0.0001"))
+
+#     if qty <= 0:
+#         raise ValidationError("UOM qty must be > 0")
+
+#     uom, created = InventoryQtyVariations.objects.get_or_create(
+#         inventory=item,
+#         variation=measurement,
+#         variation_qty=qty,
+#         defaults={"active": True},
+#     )
+
+#     # if it already exists but is inactive, reactivate it
+#     if not created and not uom.active:
+#         uom.active = True
+#         uom.save(update_fields=["active"])
+
+#     return uom
 
 
 # @login_required

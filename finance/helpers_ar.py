@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from workorders.models import Workorder
 from customers.models import Customer
+from finance.models import Payments
 
 AR_QUOTE_FILTER = Q(quote="0") | Q(quote=0) | Q(quote=False) | Q(quote__isnull=True)
 
@@ -31,6 +32,19 @@ def recompute_customer_open_balance(customer_id):
 
     Customer.objects.filter(pk=customer_id).update(open_balance=open_balance)
     return open_balance
+
+def recompute_customer_credit(customer_id):
+    credit = (
+        Payments.objects
+        .filter(customer_id=customer_id, void=False)
+        .aggregate(sum=Sum("available"))
+    )["sum"] or Decimal("0.00")
+
+    if credit < Decimal("0.00"):
+        credit = Decimal("0.00")
+
+    Customer.objects.filter(pk=customer_id).update(credit=credit)
+    return credit
 
 def apply_amount_to_workorder(wo, amt, applied_date=None):
     applied_date = applied_date or timezone.now().date()
@@ -67,6 +81,7 @@ def reverse_amount_from_workorder(wo, amt):
         paid_in_full=False,
         date_paid=None,
     )
+
 
 def hx_ar_changed_204():
     resp = HttpResponse(status=204)

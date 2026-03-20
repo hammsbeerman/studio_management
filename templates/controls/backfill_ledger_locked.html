@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block content %}
+{% if request.user.is_superuser %}
+  <form method="POST" action="{% url 'finance:run_backfill_invoiceitem_ledger_locked' %}" style="display:inline;">
+    {% csrf_token %}
+    <button
+      type="submit"
+      class="btn btn-outline-secondary btn-sm"
+      onclick="return confirm('Run backfill to set ledger_locked on any AP-received lines? This is intended to run once. Continue?');"
+    >
+      Backfill ledger locks
+    </button>
+  </form>
+{% endif %}
+
+  {% endblock content %}

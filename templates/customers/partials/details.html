@@ -26,6 +26,11 @@
       Payments
     </button>
   </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="tab-archive" data-bs-toggle="tab" data-bs-target="#pane-archive" type="button" role="tab">
+      Archive
+    </button>
+  </li>
 </ul>
 
 <div class="tab-content pt-3">
@@ -107,6 +112,14 @@
        hx-trigger="shown.bs.tab from:#tab-payments once"
        hx-target="this">
     <div class="text-muted p-3">Loading…</div>
+  </div>
+
+  <!-- ARCHIVE -->
+  <div class="tab-pane fade" id="pane-archive" role="tabpanel" aria-labelledby="tab-archive"
+       hx-get="{% url 'archive_overlay:customer_panel' customer.id %}"
+       hx-trigger="shown.bs.tab from:#tab-archive once"
+       hx-target="this">
+    <div class="text-muted p-3">Loading archive assets…</div>
   </div>
 
 </div>

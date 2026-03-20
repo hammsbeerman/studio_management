@@ -2,6 +2,40 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
+<style>
+  .uom-table-wrap { overflow-x: auto; }
+
+  /* ✅ Let the table size naturally */
+  .uom-table {
+    font-size: .85rem;
+    table-layout: auto;   /* was fixed */
+    width: 100%;
+  }
+
+  .uom-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bs-body-bg);
+  }
+
+  .uom-table td, .uom-table th {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    vertical-align: top;
+  }
+
+  .uom-uoms-box { max-height: 140px; overflow: auto; }
+  .uom-issues-box { max-height: 140px; overflow: auto; }
+
+  .uom-row-has-issues { background: rgba(255,193,7,.12); }
+
+  .uom-fix-cell { max-width: 340px; }
+  .uom-fix-box { max-height: 420px; overflow-y: auto; overflow-x: hidden; }
+
+  .badge.bg-info { background-color: rgba(13,202,240,.35) !important; }
+</style>
+
 <div class="container py-3">
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h3 class="mb-0">UOM Audit</h3>
@@ -12,6 +46,25 @@
   <form method="get" class="card mb-3">
     <div class="card-body">
       {{ form|crispy }}
+
+      <div class="row g-2 align-items-center mb-2">
+        <div class="col-auto">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="only_issues" name="only_issues" value="1"
+                   {% if only_issues %}checked{% endif %}>
+            <label class="form-check-label small" for="only_issues">Show only items with issues</label>
+          </div>
+        </div>
+
+        <div class="col-auto">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="compact" name="compact" value="1"
+                   {% if compact %}checked{% endif %}>
+            <label class="form-check-label small" for="compact">Compact mode</label>
+          </div>
+        </div>
+      </div>
+
       <div class="d-flex gap-2">
         <button class="btn btn-primary" type="submit">Run Audit</button>
         <a class="btn btn-outline-secondary" href="{% url 'inventory:uom_audit_admin' %}">Reset</a>
@@ -20,6 +73,75 @@
   </form>
 
   {% if result %}
+
+    <!-- BULK ACTIONS -->
+    <form method="post" action="{% url 'inventory:uom_audit_bulk_apply' %}" class="mb-3" id="bulk_form">
+      {% csrf_token %}
+      <!-- ✅ preserve current page (vendor filters, only_issues, compact, etc.) -->
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="fw-semibold">Bulk actions</div>
+            <div class="small text-muted">Applies to selected items, or the entire filtered set if none selected.</div>
+          </div>
+
+          {% for field in form %}
+            {% if field.value %}
+              <input type="hidden" name="{{ field.name }}" value="{{ field.value }}">
+            {% endif %}
+          {% endfor %}
+
+          <div class="row g-2 mt-2">
+            <div class="col-lg-4">
+              <label class="form-label small mb-1">Action</label>
+              <select class="form-select form-select-sm" name="bulk_action" required>
+                <option value="">(choose)</option>
+                <option value="normalize">Normalize</option>
+                <option value="deactivate_unused">Deactivate unused variations</option>
+                <option value="deactivate_by_measurement">Deactivate unused by measurement</option>
+                <option value="deactivate_duplicates">Deactivate duplicate measurement rows (keep one)</option>
+                <option value="mark_non_inventory">Mark as non-inventory (skips ledger)</option>
+                <option value="archive_unused">Archive unused items</option>
+              </select>
+            </div>
+
+            <div class="col-lg-4">
+              <label class="form-label small mb-1">Measurements (only used for “Deactivate by measurement”)</label>
+              <select class="form-select form-select-sm" name="bulk_measurements" multiple size="6">
+                {% for m in measurements %}
+                  <option value="{{ m.id }}">{{ m.name }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text small text-muted">
+                Safe: skips base/default and skips “Used in history”.
+              </div>
+            </div>
+
+            <div class="col-lg-2">
+              <label class="form-label small mb-1">Normalize mode</label>
+              <select class="form-select form-select-sm" name="normalize_mode">
+                <option value="safe">Safe (skips ledger)</option>
+                <option value="ledger_safe">Ledger-safe</option>
+              </select>
+
+              <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" name="bulk_preview" value="1" id="bulk_preview">
+                <label class="form-check-label small" for="bulk_preview">Preview (dry run)</label>
+              </div>
+            </div>
+
+            <div class="col-lg-2 d-grid align-content-end">
+              <button class="btn btn-sm btn-outline-primary mt-4" type="submit">Run bulk</button>
+              <button class="btn btn-sm btn-outline-secondary mt-2" type="button" id="clear_selected">Clear selection</button>
+              <div class="small text-muted mt-2" id="sel_count">0 selected</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+
     <!-- SUMMARY -->
     <div class="card mb-3">
       <div class="card-body">
@@ -29,7 +151,7 @@
           <div class="col-md-3"><strong>With issues:</strong> {{ result.summary.with_issues }}</div>
           <div class="col-md-3 text-muted">
             {% if result.summary.by_issue_code %}
-              <span class="small">Issue counts available below</span>
+              <span class="small">Issue counts below</span>
             {% endif %}
           </div>
         </div>
@@ -38,7 +160,15 @@
           <hr class="my-2">
           <div class="small">
             {% for code, ct in result.summary.by_issue_code.items %}
-              <span class="badge bg-warning text-dark me-1 mb-1">{{ code }}: {{ ct }}</span>
+              {% if code == "NO_BASE" or code == "DEFAULT_SELL_MISSING" or code == "DEFAULT_RECEIVE_MISSING" %}
+                <span class="badge bg-danger me-1 mb-1">{{ code }}: {{ ct }}</span>
+              {% elif "MULTI_" in code or code == "DUPLICATE_MEASUREMENT_ROWS" %}
+                <span class="badge bg-warning text-dark me-1 mb-1">{{ code }}: {{ ct }}</span>
+              {% elif code == "ORPHAN_VARIATIONS" %}
+                <span class="badge bg-info text-dark me-1 mb-1">{{ code }}: {{ ct }}</span>
+              {% else %}
+                <span class="badge bg-secondary me-1 mb-1">{{ code }}: {{ ct }}</span>
+              {% endif %}
             {% endfor %}
           </div>
         {% endif %}
@@ -48,27 +178,38 @@
     <!-- RESULTS TABLE -->
     <div class="card">
       <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-sm align-middle">
+        <div class="uom-table-wrap">
+          <table class="table table-sm table-striped table-bordered align-middle uom-table">
             <thead>
               <tr>
-                <th style="min-width: 320px;">Item</th>
-                <th style="min-width: 280px;">UOMs on item</th>
-                <th style="min-width: 260px;">Flags</th>
-                <th style="min-width: 260px;">Issues</th>
-                <th style="min-width: 360px;">Fix (Base / Sell / Receive)</th>
+                <th class="text-center" style="width:44px;">
+                  <input class="form-check-input" type="checkbox" id="select_all">
+                </th>
+                <!-- ✅ no fixed widths -->
+                <th>Item</th>
+                <th>UOMs on item</th>
+                <th>Flags</th>
+                <th>Issues</th>
+                <th>Fix + Cleanup</th>
               </tr>
             </thead>
             <tbody>
               {% for row in result.rows %}
                 {% with item=row.item %}
                   {% with vars=item.variations.all %}
-                    <tr>
+                    <tr class="{% if row.issues %}uom-row-has-issues{% endif %}">
+                      <!-- SELECT -->
+                      <td class="text-center">
+                        <input class="form-check-input row-select"
+                               type="checkbox"
+                               name="selected_item_ids"
+                               value="{{ item.id }}"
+                               form="bulk_form">
+                      </td>
+
                       <!-- ITEM -->
-                      <td>
-                        <div class="fw-semibold">
-                          #{{ item.id }} {{ item.name }}
-                        </div>
+                      <td style="white-space: normal;">
+                        <div class="fw-semibold">#{{ item.id }} {{ item.name }}</div>
                         <div class="text-muted small">
                           {% if item.primary_vendor %}
                             {{ item.primary_vendor }}
@@ -79,24 +220,53 @@
                             · PN {{ item.primary_vendor_part_number }}
                           {% endif %}
                         </div>
+
+                        {% if item.id in ledger_item_ids %}
+                          <div class="mt-1">
+                            <span class="badge bg-secondary">Ledger history</span>
+                          </div>
+                        {% endif %}
+
+                        {% if row.usage and row.usage.safe_to_archive %}
+                          <span class="badge bg-success">Archive candidate</span>
+                        {% endif %}
+
+                        {% if row.base or row.default_sell or row.default_receive %}
+                          <div class="mt-1 small">
+                            {% if row.base %}
+                              <span class="badge bg-light text-dark border">base: {{ row.base.variation.name }}</span>
+                            {% endif %}
+                            {% if row.default_sell %}
+                              <span class="badge bg-light text-dark border">sell: {{ row.default_sell.variation.name }}×{{ row.default_sell.variation_qty }}</span>
+                            {% endif %}
+                            {% if row.default_receive %}
+                              <span class="badge bg-light text-dark border">recv: {{ row.default_receive.variation.name }}×{{ row.default_receive.variation_qty }}</span>
+                            {% endif %}
+                          </div>
+                        {% endif %}
                       </td>
 
-                      <!-- UOMS -->
-                      <td>
+                      <!-- UOMS (ACTIVE ONLY) -->
+                      <td style="white-space: normal;">
                         {% if vars %}
-                          <div class="small">
-                            {% for v in vars %}
-                              <div class="mb-1">
-                                <span class="badge bg-light text-dark border">
-                                  {{ v.variation.name }} × {{ v.variation_qty }}
-                                  {% if v.active %} active{% else %} inactive{% endif %}
-                                  {% if v.is_base_unit %} base{% endif %}
-                                  {% if v.is_default_sell_uom %} sell{% endif %}
-                                  {% if v.is_default_receive_uom %} recv{% endif %}
-                                  (#{{ v.id }})
-                                </span>
-                              </div>
-                            {% endfor %}
+                          <div class="{% if compact %}uom-uoms-box{% endif %}">
+                            <div class="small">
+                              {% for v in vars %}
+                                {% if v.active %}
+                                  <div class="mb-1">
+                                    <span class="badge bg-light text-dark border">
+                                      {{ v.variation.name }} × {{ v.variation_qty }}
+                                      {% if v.is_base_unit %} · base{% endif %}
+                                      {% if v.is_default_sell_uom %} · sell{% endif %}
+                                      {% if v.is_default_receive_uom %} · recv{% endif %}
+                                    </span>
+                                    {% if v.id in used_uom_ids %}
+                                      <span class="badge bg-secondary ms-1">Used in history</span>
+                                    {% endif %}
+                                  </div>
+                                {% endif %}
+                              {% endfor %}
+                            </div>
                           </div>
                         {% else %}
                           <span class="text-muted small">No variations</span>
@@ -104,103 +274,214 @@
                       </td>
 
                       <!-- FLAGS -->
-                      <td class="small">
+                      <td class="small" style="white-space: normal;">
                         <div>Retail: <strong>{% if item.retail %}Yes{% else %}No{% endif %}</strong></div>
                         <div>Supplies: <strong>{% if item.supplies %}Yes{% else %}No{% endif %}</strong></div>
                         <div>Non-inv: <strong>{% if item.non_inventory %}Yes{% else %}No{% endif %}</strong></div>
                       </td>
 
                       <!-- ISSUES -->
-                      <td>
+                      <td style="white-space: normal;">
                         {% if row.issues %}
-                          <ul class="mb-0 small">
-                            {% for issue in row.issues %}
-                              <li><strong>{{ issue.code }}:</strong> {{ issue.message }}</li>
-                            {% endfor %}
-                          </ul>
+                          <div class="{% if compact %}uom-issues-box{% endif %}">
+                            <ul class="mb-0 small">
+                              {% for issue in row.issues %}
+                                <li>
+                                  {% if issue.code == "NO_BASE" or issue.code == "DEFAULT_SELL_MISSING" or issue.code == "DEFAULT_RECEIVE_MISSING" %}
+                                    <span class="badge bg-danger">{{ issue.code }}</span>
+                                  {% elif "MULTI_" in issue.code or issue.code == "DUPLICATE_MEASUREMENT_ROWS" %}
+                                    <span class="badge bg-warning text-dark">{{ issue.code }}</span>
+                                  {% elif issue.code == "ORPHAN_VARIATIONS" %}
+                                    <span class="badge bg-info text-dark">{{ issue.code }}</span>
+                                  {% else %}
+                                    <span class="badge bg-secondary">{{ issue.code }}</span>
+                                  {% endif %}
+                                  <span class="ms-1">{{ issue.message }}</span>
+                                </li>
+                              {% endfor %}
+                            </ul>
+                          </div>
                         {% else %}
                           <span class="text-success small">OK</span>
                         {% endif %}
                       </td>
 
-                      <!-- FIX FORM (triple) -->
-                      <td>
-                        <form method="post" action="{% url 'inventory:uom_audit_apply' %}" class="p-2 border rounded">
-                          {% csrf_token %}
-                          <input type="hidden" name="item_id" value="{{ item.id }}">
+                      <!-- FIX + CLEANUP -->
+                      <td class="uom-fix-cell">
+                        <div class="uom-fix-box">
+                          <form method="post" action="{% url 'inventory:uom_audit_apply' %}" class="p-2 border rounded">
+                            {% csrf_token %}
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <!-- ✅ preserve current page (vendor filters, only_issues, compact, etc.) -->
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
 
-                          <div class="mb-2">
-                            <label class="form-label small mb-1">Base UOM</label>
-                            <select class="form-select form-select-sm" name="base_measurement">
-                              <option value="">(leave unchanged)</option>
-                              {% for v in vars %}
-                                <option value="{{ v.variation_id }}"
-                                  {% if row.base and row.base.variation_id == v.variation_id %}selected{% endif %}>
-                                  {{ v.variation.name }}
-                                </option>
-                              {% endfor %}
-                            </select>
-                            <div class="form-text small text-muted">
-                              Sets the base to qty = 1.0000 for the selected measurement.
+                            <!-- ✅ ADD UOM ROW (with its own button) -->
+                            <div class="mb-2">
+                              <div class="small fw-semibold mb-1">Add UOM row</div>
+                              <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" name="add_measurement">
+                                  <option value="">(pick measurement)</option>
+                                  {% for m in measurements %}
+                                    <option value="{{ m.id }}">{{ m.name }}</option>
+                                  {% endfor %}
+                                </select>
+                                <input class="form-control form-control-sm"
+                                       type="number"
+                                       step="0.0001"
+                                       name="add_qty"
+                                       value="1.0000"
+                                       style="max-width: 110px;">
+                                <button class="btn btn-sm btn-outline-primary"
+                                        type="submit"
+                                        name="do_add_uom"
+                                        value="1">
+                                  Add
+                                </button>
+                              </div>
+                              <div class="form-text small text-muted">
+                                Creates (or reactivates) a row. Exact duplicates (same measurement+qty) are reused.
+                              </div>
                             </div>
-                          </div>
 
-                          <div class="mb-2">
-                            <label class="form-label small mb-1">Default Sell UOM</label>
-                            <div class="d-flex gap-2">
-                              <select class="form-select form-select-sm" name="sell_measurement">
+                            <hr class="my-2">
+
+                            <div class="mb-2">
+                              <label class="form-label small mb-1">Base UOM</label>
+                              <select class="form-select form-select-sm" name="base_measurement"
+                                      {% if item.id in ledger_item_ids %}disabled{% endif %}>
                                 <option value="">(leave unchanged)</option>
                                 {% for v in vars %}
                                   <option value="{{ v.variation_id }}"
-                                    {% if row.default_sell and row.default_sell.variation_id == v.variation_id %}selected{% endif %}>
+                                    {% if row.base and row.base.variation_id == v.variation_id %}selected{% endif %}>
                                     {{ v.variation.name }}
                                   </option>
                                 {% endfor %}
                               </select>
-                              <input
-                                class="form-control form-control-sm"
-                                type="number"
-                                step="0.0001"
-                                name="sell_qty"
-                                value="{% if row.default_sell %}{{ row.default_sell.variation_qty }}{% else %}1.0000{% endif %}"
-                                style="max-width: 120px;"
-                                title="variation_qty for the chosen sell UOM">
-                            </div>
-                          </div>
 
-                          <div class="mb-2">
-                            <label class="form-label small mb-1">Default Receive UOM</label>
-                            <div class="d-flex gap-2">
-                              <select class="form-select form-select-sm" name="receive_measurement">
-                                <option value="">(leave unchanged)</option>
-                                {% for v in vars %}
-                                  <option value="{{ v.variation_id }}"
-                                    {% if row.default_receive and row.default_receive.variation_id == v.variation_id %}selected{% endif %}>
-                                    {{ v.variation.name }}
-                                  </option>
-                                {% endfor %}
-                              </select>
-                              <input
-                                class="form-control form-control-sm"
-                                type="number"
-                                step="0.0001"
-                                name="receive_qty"
-                                value="{% if row.default_receive %}{{ row.default_receive.variation_qty }}{% else %}1.0000{% endif %}"
-                                style="max-width: 120px;"
-                                title="variation_qty for the chosen receive UOM">
+                              {% if item.id in ledger_item_ids %}
+                                <input type="hidden" name="base_measurement" value="">
+                                <div class="form-text small text-muted">
+                                  Base changes disabled (ledger history).
+                                </div>
+                              {% endif %}
                             </div>
-                          </div>
 
-                          <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-primary" type="submit">Apply</button>
-                            <a class="btn btn-sm btn-outline-secondary" href="{% url 'inventory:item_variation_details' item.id %}">
-                              Open item
-                            </a>
-                          </div>
-                        </form>
+                            <div class="mb-2">
+                              <label class="form-label small mb-1">Default Sell UOM</label>
+                              <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" name="sell_measurement">
+                                  <option value="">(leave unchanged)</option>
+                                  {% for v in vars %}
+                                    <option value="{{ v.variation_id }}"
+                                      {% if row.default_sell and row.default_sell.variation_id == v.variation_id %}selected{% endif %}>
+                                      {{ v.variation.name }}
+                                    </option>
+                                  {% endfor %}
+                                </select>
+                                <input class="form-control form-control-sm" type="number" step="0.0001"
+                                       name="sell_qty"
+                                       value="{% if row.default_sell %}{{ row.default_sell.variation_qty }}{% else %}1.0000{% endif %}"
+                                       style="max-width: 110px;">
+                              </div>
+                            </div>
+
+                            <div class="mb-2">
+                              <label class="form-label small mb-1">Default Receive UOM</label>
+                              <div class="d-flex gap-2">
+                                <select class="form-select form-select-sm" name="receive_measurement">
+                                  <option value="">(leave unchanged)</option>
+                                  {% for v in vars %}
+                                    <option value="{{ v.variation_id }}"
+                                      {% if row.default_receive and row.default_receive.variation_id == v.variation_id %}selected{% endif %}>
+                                      {{ v.variation.name }}
+                                    </option>
+                                  {% endfor %}
+                                </select>
+                                <input class="form-control form-control-sm" type="number" step="0.0001"
+                                       name="receive_qty"
+                                       value="{% if row.default_receive %}{{ row.default_receive.variation_qty }}{% else %}1.0000{% endif %}"
+                                       style="max-width: 110px;">
+                              </div>
+                            </div>
+
+                            <div class="form-check mb-2">
+                              <input class="form-check-input" type="checkbox" name="mark_non_inventory" value="1" id="ni_{{ item.id }}">
+                              <label class="form-check-label small" for="ni_{{ item.id }}">
+                                Remove from inventory (mark as non-inventory)
+                              </label>
+                              <div class="form-text small text-muted">
+                                Sets <code>non_inventory=True</code>.
+                                {% if item.id in ledger_item_ids %}<span class="text-muted">Blocked if ledger history exists.</span>{% endif %}
+                              </div>
+                            </div>
+
+                            <hr class="my-2">
+
+                            <div class="mb-2">
+                              <div class="small fw-semibold mb-1">Deactivate UOM rows (no delete)</div>
+
+                              {% if vars %}
+                                <div class="small">
+                                  {% for v in vars %}
+                                    {% if v.active and not v.is_base_unit and not v.is_default_sell_uom and not v.is_default_receive_uom %}
+                                      <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               name="deactivate_uom_ids"
+                                               value="{{ v.id }}"
+                                               id="deact_{{ v.id }}"
+                                               {% if v.id in used_uom_ids %}disabled{% endif %}>
+                                        <label class="form-check-label" for="deact_{{ v.id }}">
+                                          {{ v.variation.name }} × {{ v.variation_qty }}
+                                          {% if v.id in used_uom_ids %}
+                                            <span class="badge bg-secondary ms-1">Used in history</span>
+                                          {% endif %}
+                                        </label>
+                                      </div>
+                                    {% endif %}
+                                  {% endfor %}
+                                </div>
+                              {% endif %}
+
+                              <div class="form-text small text-muted">
+                                Only non-base / non-default rows are eligible. Rows used in history cannot be deactivated.
+                              </div>
+                            </div>
+
+                            <div class="mb-2">
+                              <div class="form-check mb-1">
+                                <input class="form-check-input" type="checkbox" name="normalize_preview" value="1" id="np_{{ item.id }}">
+                                <label class="form-check-label small" for="np_{{ item.id }}">Preview normalize (dry run)</label>
+                              </div>
+
+                              <div class="form-check mb-1">
+                                <input class="form-check-input" type="checkbox" name="normalize" value="1" id="n_{{ item.id }}">
+                                <label class="form-check-label small" for="n_{{ item.id }}">Normalize (safe)</label>
+                              </div>
+
+                              <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" name="normalize_ledger_safe" value="1" id="nls_{{ item.id }}">
+                                <label class="form-check-label small" for="nls_{{ item.id }}">Normalize (ledger-safe)</label>
+                                <div class="form-text small text-muted">
+                                  Ledger-safe only clears extra base/default flags. No qty changes, no creates, no de-dupe inactivation.
+                                </div>
+                              </div>
+                            </div>
+
+                            <div class="d-flex gap-2 flex-wrap">
+                              <button class="btn btn-sm btn-primary" type="submit">Apply</button>
+                              <button class="btn btn-sm btn-outline-danger" type="submit" name="deactivate_uoms" value="1">
+                                Deactivate selected
+                              </button>
+                              <a class="btn btn-sm btn-outline-secondary" href="{% url 'inventory:item_variation_details' item.id %}">
+                                Open item
+                              </a>
+                            </div>
+                          </form>
+                        </div>
 
                         <div class="text-muted small mt-1">
-                          Tip: If an item has ledger history, your view may block base changes (good).
+                          Tip: items with ledger history block base changes (and inventory removal).
                         </div>
                       </td>
                     </tr>
@@ -216,6 +497,42 @@
         </div>
       </div>
     </div>
+
+    <script>
+      (function() {
+        const selectAll = document.getElementById("select_all");
+        const clearBtn = document.getElementById("clear_selected");
+        const countEl = document.getElementById("sel_count");
+
+        const checks = () => Array.from(document.querySelectorAll(".row-select"));
+        const updateCount = () => {
+          const n = checks().filter(cb => cb.checked).length;
+          if (countEl) countEl.textContent = n + " selected";
+        };
+
+        if (selectAll) {
+          selectAll.addEventListener("change", function() {
+            checks().forEach(cb => cb.checked = selectAll.checked);
+            updateCount();
+          });
+        }
+
+        document.addEventListener("change", function(e) {
+          if (e.target && e.target.classList.contains("row-select")) updateCount();
+        });
+
+        if (clearBtn) {
+          clearBtn.addEventListener("click", function() {
+            checks().forEach(cb => cb.checked = false);
+            if (selectAll) selectAll.checked = false;
+            updateCount();
+          });
+        }
+
+        updateCount();
+      })();
+    </script>
+
   {% endif %}
 </div>
 {% endblock %}

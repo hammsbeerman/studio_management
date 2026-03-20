@@ -73,7 +73,7 @@ class ReceivePaymentTests(TestCase):
         self.assertEqual(resp.status_code, 302)
 
         # should redirect to open_invoices_recieve_payment(pk, msg=1)
-        expected = reverse("finance:open_invoices_recieve_payment", kwargs={"pk": self.customer.pk, "msg": 1})
+        expected = reverse("finance:open_invoices_recieve_payment_with_msg", kwargs={"pk": self.customer.pk, "msg": 1})
         self.assertTrue(resp["Location"].endswith(expected))
 
         self.assertEqual(Payments.objects.count(), 0)

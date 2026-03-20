@@ -1,45 +1,289 @@
 {% load static %}
-<form action='/finance/ap/invoice_detail/{{ invoice }}/' method="POST">
-    
-    {% csrf_token %}
-    
-    <!-- Name: <input type="text" value="{{ name }}" name="name"> -->
-    </br>
-    Vendor Part Number: <input type="text" value="{{ vpn }}" name="vendor_part_number"> <input type="checkbox" id="vpn_update" name="vpn_update" value="1"><label for="vpn_update">Update Part Number</label>
-    </br>
-    Description: <input type="text" value="{{ description }}" name="description"> <input type="checkbox" id="description_update" name="description_update" value="1"><label for="description_update">Update Description</label>
-    </br>
-    Primary Base Unit: {{ primary_base_unit }}
-    </br>
-</br>
-    <div id="item_variation">
-    Variation: <select class="custom-select mb-4" id="variation" name="variation">
 
-        
-            {% for x in variations %}
-              <option value="{{ x.id }}">{{ x.variation.name }} -- {{ x.variation_qty }}</option>
-            {% endfor %}
-        </select>
-        
-    
-    <button  class="btn btn-primary-outline" hx-get="{% url 'controls:add_item_variation' %}" hx-target="#item_variation"><img src="{% static 'img/site/green_plus_48.png' %}" style="width:20px;height:20px;">Add Item variation</button>
-    </br>
-    
-        
+<div class="card mt-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start mb-2">
+      <div>
+        <h5 class="card-title mb-1">Add invoice line</h5>
+        <div class="small text-muted">
+          Item: <strong>{{ name }}</strong>
+          &nbsp;|&nbsp; Base unit: <strong>{{ base_unit_name|default:primary_base_unit }}</strong>
+        </div>
+      </div>
     </div>
-    Unit Cost: <input type="text" name="invoice_unit_cost"> - <input type="checkbox" id="ppm" name="ppm" value="1"><label for="ppm">Priced / M</label><br>
-    </br>
-    Qty: <input type="text" name="invoice_qty">
 
+    <form action="/finance/ap/invoice_detail/{{ invoice }}/" method="POST" class="row g-3" id="ap-line-form">
+      {% csrf_token %}
 
+      <div class="col-md-6">
+        <label class="form-label">Vendor Part #</label>
+        <div class="d-flex gap-2 align-items-center">
+          <input class="form-control" type="text" value="{{ vpn }}" name="vendor_part_number" />
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="vpn_update" name="vpn_update" value="1" />
+            <label class="form-check-label" for="vpn_update">Update</label>
+          </div>
+        </div>
+      </div>
 
-    <input type="hidden" id="invoice" name="invoice" value="{{ invoice }}">
-    <input type="hidden" id="vendor" name="vendor" value="{{ vendor }}">
-    <input type="hidden" id="name" name="name" value="{{ name }}">
-    <input type="hidden" id="internal_part_number" name="internal_part_number" value="{{ ipn }}">
-    
-    </br>
-    <button type="submit">Save</button>
-</form>
-    
+      <div class="col-md-6">
+        <label class="form-label">Description</label>
+        <div class="d-flex gap-2 align-items-center">
+          <input class="form-control" type="text" value="{{ description }}" name="description" />
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="description_update" name="description_update" value="1" />
+            <label class="form-check-label" for="description_update">Update</label>
+          </div>
+        </div>
+      </div>
 
+      <hr class="my-2" />
+
+      <div class="col-md-4">
+        <label class="form-label"><strong>Qty (on invoice)</strong></label>
+        <input class="form-control" type="number" step="0.0001" min="0" name="invoice_qty" id="invoice_qty" required />
+        <div class="form-text">Enter the quantity exactly like the vendor invoice.</div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label"><strong>Unit (on invoice)</strong></label>
+
+        {# This keeps your existing POST name "variation" working #}
+        <select class="form-select" id="variation" name="variation" required>
+          <option value="">— Select —</option>
+
+          {% for x in variations %}
+            <option value="{{ x.id }}"
+                    data-measurement="{{ x.variation_id }}"
+                    data-factor="{{ x.variation_qty }}">
+              {{ x.variation.name }} / {{ x.variation_qty }}
+            </option>
+          {% endfor %}
+
+          <option value="__custom__">Custom…</option>
+        </select>
+
+        <div class="form-text">Pick the unit the vendor billed in (case, box, roll, etc.).</div>
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label"><strong>Price</strong></label>
+        <input class="form-control" type="number" step="0.0001" min="0" name="invoice_unit_cost" id="invoice_unit_cost" placeholder="0.00" required />
+        <div class="form-check mt-1">
+          <input class="form-check-input" type="checkbox" id="ppm" name="ppm" value="1" />
+          <label class="form-check-label" for="ppm">Price is per 1,000 (per M)</label>
+        </div>
+      </div>
+
+      {# Custom unit only (shown when Custom… selected) #}
+      <div class="col-12 d-none" id="custom_wrap">
+        <div class="border rounded p-3 bg-light">
+          <div class="fw-semibold mb-1">Custom unit details</div>
+          <div class="text-muted small mb-3">
+            Only use this if the unit you need isn’t listed above.
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Measurement</label>
+              <select class="form-select" id="unit" name="unit">
+                <option value="">— Select —</option>
+                {% for m in measurements %}
+                  <option value="{{ m.id }}">{{ m.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Units per base</label>
+              <input class="form-control" type="number" step="0.0001" min="0" id="variation_qty" name="variation_qty" placeholder="e.g. 500" />
+              <div class="form-text">How many base units are in 1 of this unit.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# Preview (optional, but friendly) #}
+      <div class="col-12">
+        <div class="alert alert-secondary py-2 mb-0" id="uom_preview" style="display:none;">
+          <div class="small">
+            <div>
+              <strong>Will receive ({{ base_unit_name|default:primary_base_unit }}):</strong>
+              <span id="uom_preview_text">—</span>
+            </div>
+            <div class="mt-1">
+              <strong>Line total (invoice):</strong>
+              <span id="line_total_text">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 d-flex justify-content-end gap-2">
+        <button type="submit" class="btn btn-primary">Save line</button>
+        <a href="{% url 'finance:ap_invoice_detail_id' id=invoice %}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+
+      {# required hidden fields used by invoice_detail() #}
+      <input type="hidden" name="invoice" value="{{ invoice }}" />
+      <input type="hidden" name="vendor" value="{{ vendor }}" />
+      <input type="hidden" name="name" value="{{ name }}" />
+      <input type="hidden" name="internal_part_number" value="{{ ipn }}" />
+    </form>
+
+    <div class="mt-3">
+      <button class="btn btn-sm btn-outline-success"
+              hx-get="{% url 'controls:add_item_variation' %}"
+              hx-target="#item_variation">
+        <img src="{% static 'img/site/green_plus_48.png' %}" style="width:16px;height:16px;"> Add item variation (legacy)
+      </button>
+      <div id="item_variation"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function () {
+  function byId(id){ return document.getElementById(id); }
+
+  function num(v){
+    if (v === null || v === undefined) return null;
+    const s = String(v).replace(/,/g,'').trim();
+    if (!s) return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function fmt(n){
+    if (n === null || n === undefined || !Number.isFinite(n)) return "—";
+    return n.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  }
+
+  function money(n){
+    if (n === null || n === undefined || !Number.isFinite(n)) return "—";
+    return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function parseMoney(v){
+    if (v === null || v === undefined) return null;
+    const s = String(v).replace(/[^0-9.\-]/g, "").trim();
+    if (!s) return null;
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  const variation = byId("variation");
+  const unit = byId("unit");
+  const variationQty = byId("variation_qty");
+  const invoiceQty = byId("invoice_qty");
+  const invoiceUnitCost = byId("invoice_unit_cost");
+  const ppm = byId("ppm");
+
+  const customWrap = byId("custom_wrap");
+  const previewBox = byId("uom_preview");
+  const previewText = byId("uom_preview_text");
+  const lineTotalText = byId("line_total_text");
+
+  if (!variation) return;
+
+  // show preview after user starts interacting
+  let touched = false;
+
+  function isCustom() {
+    return variation.value === "__custom__";
+  }
+
+  function currentFactor(){
+    if (!isCustom() && variation.value) {
+      const opt = variation.options[variation.selectedIndex];
+      return opt ? num(opt.getAttribute("data-factor")) : null;
+    }
+    if (isCustom()) return num(variationQty ? variationQty.value : null);
+    return null;
+  }
+
+  function updatePreview(){
+    const q = num(invoiceQty ? invoiceQty.value : null);
+    const rawCost = parseMoney(invoiceUnitCost ? invoiceUnitCost.value : null);
+    const isPPM = !!(ppm && ppm.checked);
+
+    if (previewBox) {
+      // Only show after the user interacts (keeps it from cluttering the form on load)
+      previewBox.style.display = touched ? "block" : "none";
+    }
+
+    // --- Base qty preview ---
+    if (previewText) {
+      const f = currentFactor();
+      if (q && f) {
+        const baseName = "{{ base_unit_name|default:primary_base_unit }}";
+        previewText.textContent = `${fmt(q * f)} ${baseName}`;
+      } else if (q) {
+        previewText.textContent = "—";
+      } else {
+        previewText.textContent = "—";
+      }
+    }
+
+    // --- Line total preview ---
+    if (lineTotalText) {
+      if (q && rawCost !== null) {
+        const effectiveCost = isPPM ? (rawCost / 1000.0) : rawCost;
+        const total = q * effectiveCost;
+        lineTotalText.textContent = `$${money(total)}`;
+      } else {
+        lineTotalText.textContent = "—";
+      }
+    }
+  }
+
+  function syncCustomUI(){
+    const show = isCustom();
+    if (customWrap) customWrap.classList.toggle("d-none", !show);
+
+    if (!show) {
+      if (unit) unit.value = "";
+      if (variationQty) variationQty.value = "";
+    }
+    updatePreview();
+  }
+
+  function markTouchedAndUpdate(){
+    touched = true;
+    updatePreview();
+  }
+
+  // Events
+  variation.addEventListener("change", function () {
+    touched = true;
+    syncCustomUI();
+  });
+
+  if (invoiceQty) {
+    invoiceQty.addEventListener("input", markTouchedAndUpdate);
+    invoiceQty.addEventListener("change", markTouchedAndUpdate);
+  }
+
+  if (invoiceUnitCost) {
+    invoiceUnitCost.addEventListener("input", markTouchedAndUpdate);
+    invoiceUnitCost.addEventListener("change", markTouchedAndUpdate);
+    invoiceUnitCost.addEventListener("blur", markTouchedAndUpdate);
+  }
+
+  if (ppm) ppm.addEventListener("change", markTouchedAndUpdate);
+  if (unit) unit.addEventListener("change", markTouchedAndUpdate);
+  if (variationQty) {
+    variationQty.addEventListener("input", markTouchedAndUpdate);
+    variationQty.addEventListener("change", markTouchedAndUpdate);
+  }
+
+  // If no saved variations, default to Custom
+  if (variation.options.length <= 2) {
+    variation.value = "__custom__";
+  }
+
+  // initialize UI (but keep preview hidden until touched)
+  syncCustomUI();
+})();
+</script>

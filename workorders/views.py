@@ -3,7 +3,7 @@ from django.db import transaction
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponse, Http404, HttpResponseBadRequest
 from django.views.decorators.http import require_POST
-from django.db.models import Avg, Count, Min, Sum, F
+from django.db.models import Avg, Count, Min, Sum, F, Max
 from django.contrib.auth.decorators import login_required
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -21,7 +21,7 @@ from inventory.models import OrderOut, SetPrice, Photography, Inventory, RetailW
 from pricesheet.forms import WideFormatForm
 from accounts.models import Profile
 from finance.models import WorkorderPayment
-from workorders.services.totals import compute_workorder_totals
+from workorders.services.totals import compute_workorder_totals, recalc_workorder_balances
 from retail.models import RetailSale, Delivery
 from retail.delivery_utils import (
     get_sticky_delivery_date,
@@ -364,7 +364,7 @@ def workorder_list(request):
     workorder = Workorder.objects.all().exclude(workorder=1111).exclude(orderout_waiting=1).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     orderout = Workorder.objects.all().exclude(workorder=1111).exclude(orderout_waiting=0).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
-    quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
+    quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).exclude(void=1).exclude(abandon_quote=1).order_by("-workorder")
     context = {
         'workorders': workorder,
         'completed': completed,
@@ -379,7 +379,7 @@ def workorder_k_list(request):
     workorder = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(orderout_waiting=1).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     orderout = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(orderout_waiting=0).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     completed = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
-    quote = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
+    quote = Workorder.objects.all().filter(internal_company="Krueger Printing").exclude(workorder=1111).exclude(quote=0).exclude(void=1).exclude(abandon_quote=1).order_by("-workorder")
     context = {
         'workorders': workorder,
         'completed': completed,
@@ -394,7 +394,7 @@ def workorder_lk_list(request):
     workorder = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(orderout_waiting=1).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     orderout = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(orderout_waiting=0).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     completed = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
-    quote = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
+    quote = Workorder.objects.all().filter(internal_company="LK Design").exclude(workorder=1111).exclude(quote=0).exclude(void=1).exclude(abandon_quote=1).order_by("-workorder")
     context = {
         'workorders': workorder,
         'completed': completed,
@@ -409,7 +409,7 @@ def workorder_kos_list(request):
     workorder = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(orderout_waiting=1).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     orderout = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(orderout_waiting=0).exclude(completed=1).exclude(quote=1).exclude(void=1).order_by("-workorder")
     completed = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(completed=0).exclude(quote=1).exclude(void=1).order_by("-date_completed")[:20]
-    quote = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(quote=0).exclude(void=1).order_by("-workorder")
+    quote = Workorder.objects.all().filter(internal_company="Office Supplies").exclude(workorder=1111).exclude(quote=0).exclude(void=1).exclude(abandon_quote=1).order_by("-workorder")
     context = {
         'workorders': workorder,
         'completed': completed,
@@ -421,7 +421,7 @@ def workorder_kos_list(request):
 
 @login_required
 def quote_list(request):
-    workorder = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).exclude(void=1)
+    workorder = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).exclude(void=1).exclude(abandon_quote=1)
     context = {
         'workorders': workorder,
     }
@@ -523,6 +523,12 @@ def add_item(request, parent_id):
             #obj.test_user_id = request.user.profile.id
             obj.job_status_id = 1
             #obj.item_subcategory = subcategory
+            max_sort = (
+                WorkorderItem.objects
+                .filter(workorder_id=parent_id)
+                .aggregate(m=Max("sort_order"))
+            )["m"]
+            obj.sort_order = (max_sort if max_sort is not None else -1) + 1
             obj.save()
             print('objpk')
             print(obj.pk)
@@ -661,11 +667,18 @@ def workorder_item_list(request, id=None):
     # 🔹 Unified totals (regular + POS)
     totals = compute_workorder_totals(workorder)
 
-    open_balance = (
-    workorder.open_balance
-    if workorder.open_balance is not None
-    else totals.total - (workorder.amount_paid or Decimal("0"))
-)
+    paid_agg = (
+        WorkorderPayment.objects
+        .filter(workorder=workorder, void=False)
+        .aggregate(total=Sum("payment_amount"))
+    )
+    amount_paid = paid_agg["total"] or Decimal("0.00")
+
+    # ✅ Always compute open balance from current totals
+    open_balance = (totals.total - amount_paid).quantize(Decimal("0.01"))
+    if abs(open_balance) < Decimal("0.01"):
+        open_balance = Decimal("0.00")
+
 
     context = {
         "test": "notes",          # preserving your existing context key
@@ -2043,16 +2056,16 @@ def complete_status(request):
     workorder_id = request.GET.get("workorder")
     if not workorder_id:
         return redirect("workorders:overview", id=0)
-    
+
     with transaction.atomic():
         # 1) Roll up parent WorkorderItems from children
         parents_qs = WorkorderItem.objects.filter(workorder_id=workorder_id, parent=1)
         parents_qs.update(absolute_price=0, tax_amount=0, total_with_tax=0)
 
         for p in parents_qs:
-            ap = Decimal("0")   # absolute price (pre-tax)
-            ta = Decimal("0")   # tax amount
-            twt = Decimal("0")  # total with tax
+            ap = Decimal("0.00")
+            ta = Decimal("0.00")
+            twt = Decimal("0.00")
 
             childs = WorkorderItem.objects.filter(parent_item=p.id, billable=True)
             for c in childs:
@@ -2068,54 +2081,55 @@ def complete_status(request):
             p.total_with_tax = twt
             p.save(update_fields=["absolute_price", "tax_amount", "total_with_tax"])
 
-        # 2) Load Workorder header
-        item = get_object_or_404(Workorder, id=workorder_id)
+        # 2) Load Workorder header (locked)
+        item = get_object_or_404(Workorder.objects.select_for_update(), id=workorder_id)
 
         # Unified totals (WorkorderItem + POS/RetailWorkorderItem)
         totals = compute_workorder_totals(item)
-        subtotal = totals.subtotal
-        tax = totals.tax
-        total = totals.total
 
-        # 3) Toggle completed / un-complete and set balances
-        if item.completed == 0:
-            # Completing the workorder
-            if not item.amount_paid:
-                item.amount_paid = Decimal("0")
+        # ✅ RECOMMENDED: derive paid amount from payments table (single source of truth)
+        # If you *know* item.amount_paid is always correct, you can delete this block.
+        paid_agg = (
+            WorkorderPayment.objects
+            .filter(workorder=item, void=False)
+            .aggregate(total=Sum("payment_amount"))
+        )
+        amount_paid = paid_agg["total"] or Decimal("0.00")
+        amount_paid = Decimal(amount_paid).quantize(Decimal("0.01"))
+        item.amount_paid = amount_paid
 
-            item.subtotal = subtotal
-            item.tax = tax
-            item.workorder_total = total
-            item.total_balance = total
-            item.open_balance = total - item.amount_paid
+        if not item.completed:
+            # 3A) Completing: save totals and recompute balances from totals+payments
+            item.subtotal = totals.subtotal
+            item.tax = totals.tax
+            item.workorder_total = totals.total
             item.updated = timezone.now()
             item.date_completed = timezone.now()
-            item.completed = 1
+            item.completed = True
 
-            # 🔹 NEW: LK Design + Office Supplies auto invoice + verify
+            # LK/Office supplies auto
             if item.internal_company in ["LK Design", "Office Supplies"]:
                 item.invoice_sent = True
                 item.checked_and_verified = True
                 item.billed = True
 
-            item.save(
-                update_fields=[
-                    "subtotal",
-                    "tax",
-                    "workorder_total",
-                    "total_balance",
-                    "open_balance",
-                    "amount_paid",
-                    "updated",
-                    "date_completed",
-                    "completed",
-                    "invoice_sent",
-                    "checked_and_verified",
-                    "billed"
-                ]
-            )
+            item.save(update_fields=[
+                "subtotal",
+                "tax",
+                "workorder_total",
+                "amount_paid",
+                "updated",
+                "date_completed",
+                "completed",
+                "invoice_sent",
+                "checked_and_verified",
+                "billed",
+            ])
 
-            # 🔹 Mark any linked POS sales as completed/locked (closed on account)
+            # ✅ single source of truth for balances/paid flag
+            recalc_workorder_balances(item)
+
+            # lock linked POS sales
             sale_ids = (
                 RetailWorkorderItem.objects
                 .filter(workorder=item)
@@ -2129,34 +2143,40 @@ def complete_status(request):
                 )
 
         else:
-            # Un-completing the workorder
-            if not item.amount_paid:
-                item.amount_paid = Decimal("0")
-
-            item.completed = 0
-            item.total_balance = Decimal("0")
-            item.open_balance = Decimal("0")
-            item.checked_and_verified = 0
+            # 3B) Un-completing: clear completion flags and paid status so it re-evaluates later
+            item.completed = False
+            item.checked_and_verified = False
             item.updated = timezone.now()
             item.date_completed = None
-            item.workorder_total = Decimal("0")
-            item.subtotal = Decimal("0")
-            item.tax = Decimal("0")
-            item.save(
-                update_fields=[
-                    "completed",
-                    "total_balance",
-                    "open_balance",
-                    "checked_and_verified",
-                    "updated",
-                    "date_completed",
-                    "workorder_total",
-                    "subtotal",
-                    "tax",
-                ]
-            )
 
-            # Optional: re-open linked POS sales
+            # IMPORTANT: clear paid flag so it can be re-evaluated after edits
+            item.paid_in_full = False
+            item.date_paid = None
+
+            # Keep amount_paid as-is (payments still exist)
+            # Wipe totals/balances on header if that's the behavior you want:
+            item.total_balance = Decimal("0.00")
+            item.open_balance = Decimal("0.00")
+            item.workorder_total = Decimal("0.00")
+            item.subtotal = Decimal("0.00")
+            item.tax = Decimal("0.00")
+
+            item.save(update_fields=[
+                "completed",
+                "checked_and_verified",
+                "updated",
+                "date_completed",
+                "paid_in_full",
+                "date_paid",
+                "total_balance",
+                "open_balance",
+                "workorder_total",
+                "subtotal",
+                "tax",
+                "amount_paid",
+            ])
+
+            # reopen linked POS sales
             sale_ids = (
                 RetailWorkorderItem.objects
                 .filter(workorder=item)
@@ -2180,14 +2200,11 @@ def complete_status(request):
                 .exclude(quote=1)
                 .aggregate(total=Sum("open_balance"))
             )
-            open_balance = open_balance_agg["total"] or Decimal("0")
-            open_balance = round(open_balance, 2)
+            open_balance = open_balance_agg["total"] or Decimal("0.00")
+            open_balance = Decimal(open_balance).quantize(Decimal("0.01"))
 
             customer = Customer.objects.get(id=cust_id)
-            if customer.high_balance:
-                high_balance = max(open_balance, customer.high_balance)
-            else:
-                high_balance = open_balance
+            high_balance = max(open_balance, customer.high_balance or Decimal("0.00"))
 
             Customer.objects.filter(pk=cust_id).update(
                 open_balance=open_balance,
@@ -2361,21 +2378,12 @@ def void_workorder(request, pk=None, void=None):
 
 @login_required
 def void_status(request):
-    pk = request.GET.get('workorder')
-    print('workorder')
-    print(pk)
-    workorder = Workorder.objects.get(pk=pk)
-    void = workorder.void
-    paid = workorder.paid_in_full
-    if paid == 0:
-        open = workorder.open_balance
-        total = workorder.total_balance
-    #Set open and total to be the same for view
-    else:
-        open = 0
-        total = 0
-    billed = workorder.billed
-    customer = workorder.customer.id
+    pk = request.GET.get("workorder")
+    workorder = get_object_or_404(Workorder, pk=pk)
+
+    void_flag = bool(workorder.void)
+    billed_flag = bool(workorder.billed)
+    customer_id = workorder.customer_id
 
     payments = (
         WorkorderPayment.objects
@@ -2383,24 +2391,44 @@ def void_status(request):
         .select_related("payment", "payment__payment_type")
         .order_by("date", "id")
     )
-    
-    print(customer)
-    print('void')
-    print(void)
+
+    # Live totals from items (WorkorderItem + POS lines)
+    totals = compute_workorder_totals(workorder)
+    total = (totals.total or Decimal("0.00")).quantize(Decimal("0.01"))
+
+    # Applied payments total from WorkorderPayment rows
+    paid_amount = (
+        payments.aggregate(total=Sum("payment_amount"))["total"]
+        or Decimal("0.00")
+    )
+    paid_amount = Decimal(paid_amount).quantize(Decimal("0.01"))
+
+    open_bal = (total - paid_amount).quantize(Decimal("0.01"))
+
+    # clamp rounding noise
+    if abs(open_bal) < Decimal("0.01"):
+        open_bal = Decimal("0.00")
+
+    has_any_balance = total > Decimal("0.00")
+    paid_flag = has_any_balance and (open_bal <= Decimal("0.00"))
+
     context = {
-        'payments':payments,
-        'void':void,
-        'paid':paid,
-        'billed':billed,
-        'customer':customer,
-        'open':open,
-        'total':total,
+        "payments": payments,     # always show
+        "void": void_flag,
+        "paid": paid_flag,        # live paid flag
+        "billed": billed_flag,
+        "customer": customer_id,
+        "open": open_bal,         # keep key name because your template expects it
+        "total": total,
     }
-    return render(request, 'workorders/partials/void_status.html', context)
+    return render(request, "workorders/partials/void_status.html", context)
 
 def close_pay_modal(request):
     print('test')
-    return HttpResponse(status=204, headers={'HX-Trigger': 'WorkorderVoid'})
+    return HttpResponse(
+        status=204,
+        headers={"HX-Trigger": json.dumps({"WorkorderVoid": True, "itemListChanged": True})},
+    )
 
 def complete_allitems(request):
     workorders = Workorder.objects.filter().exclude(completed=0)

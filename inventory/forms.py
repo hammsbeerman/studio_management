@@ -3,6 +3,7 @@ from django.forms import ModelForm
 from django.urls import reverse_lazy
 from django.db.models.functions import Lower
 from .models import OrderOut, SetPrice, Photography, Vendor, InventoryMaster, VendorItemDetail
+from inventory.models import InventoryMaster
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 from localflavor.us.forms import USStateSelect
@@ -212,9 +213,57 @@ class NormalizeMeasurementsForm(forms.Form):
 
 
 class UomAuditFilterForm(forms.Form):
-    only_active = forms.BooleanField(required=False, initial=True)
-    vendor = forms.ModelChoiceField(queryset=Vendor.objects.all().order_by("name"), required=False)
-    name_contains = forms.CharField(required=False)
+    vendor = forms.ModelChoiceField(
+        queryset=Vendor.objects.none(),
+        required=False,
+        label="Vendor",
+    )
+
+    only_active = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Only active items",
+    )
+
+    name_contains = forms.CharField(
+        required=False,
+        label="Name contains",
+    )
+
+    limit = forms.ChoiceField(
+        choices=[
+            ("50", "50"),
+            ("100", "100"),
+            ("200", "200"),
+            ("500", "500"),
+            ("1000", "1000"),
+        ],
+        required=False,
+        initial="200",
+        label="Limit",
+        help_text="Max rows to audit",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # ✅ only vendors that actually have inventory items (non_inventory=False)
+        vendor_ids = (
+            InventoryMaster.objects
+            .filter(primary_vendor_id__isnull=False, non_inventory=False)
+            .values_list("primary_vendor_id", flat=True)
+            .distinct()
+        )
+
+        self.fields["vendor"].queryset = (
+            Vendor.objects.filter(
+                id__in=vendor_ids,
+                active=True,
+                void=False,
+                inventory_vendor=True,
+            )
+            .order_by("name")
+        )
 
 class UomFixActionForm(forms.Form):
     item_id = forms.IntegerField()

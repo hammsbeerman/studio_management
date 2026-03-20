@@ -2,7 +2,7 @@
 #from io import BytesIO
 #from django.conf import settings
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 ###The following for weasyprint
@@ -69,7 +69,7 @@ def invoice_pdf(request, id):
         except Exception:
             unit_price = Decimal("0")
 
-        p.invoice_total = qty * unit_price  # used in the template
+        p.invoice_total = (qty * unit_price).quantize(Decimal("0.01"))
         pos_items.append(p)
 
     # 🔹 POS origin sale (for "Created from POS sale #X" if you want it)
@@ -78,10 +78,14 @@ def invoice_pdf(request, id):
     if first_pos is not None and getattr(first_pos, "sale_id", None):
         pos_origin_sale = first_pos.sale
 
+
     totals = compute_workorder_totals(workorder)
 
-    payment = workorder.amount_paid
-    open_bal = workorder.open_balance if workorder.open_balance is not None else totals.total - (workorder.amount_paid or Decimal("0"))
+    amount_paid = workorder.amount_paid if workorder.amount_paid is not None else Decimal("0.00")
+    open_balance = (totals.total - amount_paid)
+    if open_balance < Decimal("0.00"):
+        open_balance = Decimal("0.00")
+    open_balance = open_balance.quantize(Decimal("0.01"))
     total_bal = workorder.total_balance
     date = workorder.date_billed
     if not workorder.date_billed:
@@ -154,21 +158,22 @@ def invoice_pdf(request, id):
         string = "<tr><td></td><td></td><td></td><td></td></tr>"
         packingslip_rows += string
 
-    if payment:
-        total_bal = open_bal
+    # if amount_paid:
+    #     total_bal = open_bal
 
     context = {
         "items": items,
         "items2": "",
         "workorder": workorder,
         "customer": customer,
-        "payment": payment,
+        "payment": amount_paid,
         "contact": contact,
         "date": date,
-        "subtotal": subtotal,
-        "tax": tax,
-        "total": total,
-        "total_bal": total_bal,
+        "subtotal": totals.subtotal,
+        "tax": totals.tax,
+        "total": totals.total,
+        "total_bal": totals.total,
+        "open_balance": open_balance,
         "rows": "",
         "rows2": "",
         "packingslip_rows": "",
@@ -321,37 +326,46 @@ def workorder_invoice_pdf(request, id):
     return response
 
 
-@login_required
 def lineitem_pdf(request, id):
-    print(id)
-    
-    item = KruegerJobDetail.objects.get(workorder_item=id)
-    if not item:
-        item = WideFormat.objects.get(workorder_item=id)
+    """Printable (WeasyPrint) "Line details" for a workorder item.
 
-    if item.description == 'None':
-        item.description = ''
-        
-    if item.override_price:
+    Supports both:
+      - KruegerJobDetail (standard print items)
+      - WideFormat (wide format items)
+    """
+
+    workorder_item_id = str(id)
+
+    item = None
+    template_name = "pdf/weasyprint/lineitem_pricing.html"
+
+    # NOTE: .get() raises DoesNotExist; the previous "if not item" never ran.
+    try:
+        item = KruegerJobDetail.objects.get(workorder_item=workorder_item_id)
+        template_name = "pdf/weasyprint/lineitem_pricing.html"
+    except KruegerJobDetail.DoesNotExist:
+        try:
+            item = WideFormat.objects.get(workorder_item=workorder_item_id)
+            template_name = "pdf/weasyprint/lineitem_wideformat.html"
+        except WideFormat.DoesNotExist:
+            raise Http404("No job detail found for this workorder item")
+
+    # Normalize common fields
+    if not item.description or str(item.description).strip().lower() == "none":
+        item.description = ""
+
+    if getattr(item, "override_price", None):
         item.price_total = item.override_price
 
-    print('id')
-    print(item.workorder.id)
-
     workorder = Workorder.objects.get(pk=item.workorder.id)
-    print(workorder)
-    #workorder = 1
 
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f"inline; filename={workorder.workorder}-line-details-{workorder_item_id}.pdf"
+    )
+    response["Content-Transfer-Encoding"] = "binary"
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; attachment; filename=items.hr_workorder' + 'items.description.pdf'
-    #remove inline to allow direct download
-    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
-        
-    response['Content-Transfer-Encoding'] = 'binary'
-
-    print(item)
-    html_string=render_to_string('pdf/weasyprint/lineitem_pricing.html', {'item':item, 'workorder':workorder})
+    html_string = render_to_string(template_name, {"item": item, "workorder": workorder})
     html = HTML(string=html_string)
 
     result = html.write_pdf()
@@ -359,8 +373,7 @@ def lineitem_pdf(request, id):
     with tempfile.NamedTemporaryFile(delete=True) as output:
         output.write(result)
         output.flush()
-        #rb stands for read binary
-        output=open(output.name,'rb')
+        output = open(output.name, "rb")
         response.write(output.read())
 
     return response

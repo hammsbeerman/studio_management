@@ -81,6 +81,12 @@ from .views import (
     credits_report_customer_row,
     adjust_credit_modal,
     adjust_credit,
+    ap_unpost_invoice,
+    ap_post_invoice_modal,
+    ap_post_invoice,
+    ap_adjust_invoice_item_modal,
+    ap_adjust_invoice_item,
+    run_backfill_invoiceitem_ledger_locked,
 
 )
 
@@ -120,7 +126,7 @@ urlpatterns = [
     path("ap/add_invoice_item/", add_invoice_item, name="ap_add_invoice_item"),
     path("ap/add_invoice_item/<int:invoice>/", add_invoice_item, name="ap_add_invoice_item_invoice"),
     path("ap/add_invoice_item/<int:invoice>/<int:vendor>/", add_invoice_item, name="ap_add_invoice_item_invoice_vendor"),
-    path("ap/add_invoice_item/<int:invoice>/<int:vendor>/<int:type>", add_invoice_item, name="ap_add_invoice_item_invoice_vendor_type"),
+    path("ap/add_invoice_item/<int:invoice>/<int:vendor>/<int:type>/", add_invoice_item, name="ap_add_invoice_item_invoice_vendor_type"),
 
     path("ap/edit_invoice_item/<int:id>/", edit_invoice_item, name="ap_edit_invoice_item"),
     path("ap/edit_invoice_item/<int:invoice>/<int:id>", edit_invoice_item, name="ap_edit_invoice_item_invoice"),
@@ -227,5 +233,13 @@ urlpatterns = [
 
     path("ar/credits/adjust-modal/", adjust_credit_modal, name="adjust_credit_modal"),
     path("ar/credits/adjust/", adjust_credit, name="adjust_credit"),
+
+    path("ap/invoice/<int:id>/unpost/", ap_unpost_invoice, name="ap_unpost_invoice"),
+    path("ap/invoice/<int:id>/post/modal/", ap_post_invoice_modal, name="ap_post_invoice_modal"),
+    path("ap/invoice/<int:id>/post/", ap_post_invoice, name="ap_post_invoice"),
+    path("ap/invoice/<int:id>/item/<int:item_id>/adjust/modal/", ap_adjust_invoice_item_modal, name="ap_adjust_invoice_item_modal"),
+    path("ap/invoice/<int:id>/item/<int:item_id>/adjust/", ap_adjust_invoice_item, name="ap_adjust_invoice_item"),
+
+    path("admin/backfills/invoiceitem-ledger-locked/", run_backfill_invoiceitem_ledger_locked, name="run_backfill_invoiceitem_ledger_locked"),
 ]
 

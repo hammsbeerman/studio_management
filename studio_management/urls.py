@@ -44,6 +44,7 @@ urlpatterns = [
     path('retail/', include('retail.urls')),
     #path('vendors/', include('vendors.urls')),
     path('workorders/', include('workorders.urls')),
+    path('archive/', include('archive_overlay.urls')),
     
 
     

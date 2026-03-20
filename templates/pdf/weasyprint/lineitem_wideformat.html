@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{{ item.hr_customer }} | {{ item.hr_workorder }}</title>
+    <style>
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-sizing: border-box;
+      }
+      @page { margin: 0; }
+      body {
+        margin: 0;
+        color: #000;
+        font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+        font-size: 10pt;
+      }
+
+      .sheet {
+        margin: 0;
+        overflow: hidden;
+        position: relative;
+        page-break-after: always;
+      }
+
+      body.A4 .sheet {
+        width: 8.5in;
+        height: 11in;
+      }
+
+      .sheet.padding-10mm { padding: 10mm; }
+
+      @media screen {
+        body { background: #e0e0e0; }
+        .sheet {
+          background: white;
+          box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3);
+          margin: 5mm auto;
+        }
+      }
+
+      .topheader {
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .tophead_desc {
+        font-weight: 400;
+        margin-top: 2px;
+        font-size: 9pt;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      td {
+        border: 1px solid #000;
+        padding: 3px 5px;
+        vertical-align: top;
+      }
+      td.label {
+        width: 45%;
+        font-weight: 700;
+      }
+      td.value {
+        width: 55%;
+        text-align: center;
+      }
+      .muted { font-weight: 400; }
+    </style>
+  </head>
+
+  <body class="A4">
+    <section class="sheet padding-10mm">
+      <article>
+        <div class="topheader" spellcheck="false" contenteditable="false">
+          {{ item.hr_customer }} | {{ item.hr_workorder }}
+          {% if workorder.printleader_workorder %} - PL:{{ workorder.printleader_workorder }}{% endif %}
+          <div class="tophead_desc">
+            {% if item.description %}{{ item.description }}{% endif %}
+          </div>
+        </div>
+
+        <table>
+          <tbody>
+            <tr><td class="label">Quantity</td><td class="value">{% if item.quantity %}{{ item.quantity }}{% endif %}</td></tr>
+            <tr><td class="label">Media Width</td><td class="value">{% if item.media_width %}{{ item.media_width }}{% endif %}</td></tr>
+
+            <tr>
+              <td class="label">Print Size (W × H)</td>
+              <td class="value">
+                {% if item.print_width or item.print_height %}
+                  {{ item.print_width|default_if_none:"" }}{% if item.print_width and item.print_height %} × {% endif %}{{ item.print_height|default_if_none:"" }}
+                {% endif %}
+              </td>
+            </tr>
+
+            <tr><td class="label">Usable Width</td><td class="value">{% if item.usable_width %}{{ item.usable_width }}{% endif %}</td></tr>
+
+            <tr>
+              <td class="label">Margins (W / H)</td>
+              <td class="value">
+                {% if item.print_w_margin or item.print_h_margin %}
+                  {{ item.print_w_margin|default_if_none:"" }}{% if item.print_w_margin and item.print_h_margin %} / {% endif %}{{ item.print_h_margin|default_if_none:"" }}
+                {% endif %}
+              </td>
+            </tr>
+
+            <tr>
+              <td class="label">Layout (Prints/Row × Rows)</td>
+              <td class="value">
+                {% if item.prints_per_row or item.number_of_rows %}
+                  {{ item.prints_per_row|default_if_none:"" }}{% if item.prints_per_row and item.number_of_rows %} × {% endif %}{{ item.number_of_rows|default_if_none:"" }}
+                {% endif %}
+              </td>
+            </tr>
+
+            <tr><td class="label">Media Length</td><td class="value">{% if item.media_length %}{{ item.media_length }}{% endif %}</td></tr>
+            <tr><td class="label">Total Sq Ft</td><td class="value">{% if item.total_sq_ft %}{{ item.total_sq_ft }}{% endif %}</td></tr>
+
+            <tr><td class="label">Material</td><td class="value">{% if item.material %}{{ item.material }}{% endif %}</td></tr>
+            <tr><td class="label">Substrate</td><td class="value">{% if item.substrate %}{{ item.substrate }}{% endif %}</td></tr>
+            <tr><td class="label">Laminate</td><td class="value">{% if item.laminate %}{{ item.laminate }}{% endif %}</td></tr>
+            <tr><td class="label">Mask</td><td class="value">{% if item.mask %}{{ item.mask }}{% endif %}</td></tr>
+
+            <tr><td class="label">Workorder</td><td class="value">{% if item.step_workorder_price %}{{ item.step_workorder_price }}{% endif %}</td></tr>
+            <tr><td class="label">Reclaim Artwork</td><td class="value">{% if item.step_reclaim_artwork_price %}{{ item.step_reclaim_artwork_price }}{% endif %}</td></tr>
+            <tr><td class="label">Send to Press</td><td class="value">{% if item.step_send_to_press_price %}{{ item.step_send_to_press_price }}{% endif %}</td></tr>
+
+            <tr><td class="label">Material Cost</td><td class="value">{% if item.material_cost %}{{ item.material_cost }}{% endif %}</td></tr>
+            <tr>
+              <td class="label">Material Markup</td>
+              <td class="value">
+                {% if item.material_markup %}{{ item.material_markup }}{% endif %}
+                {% if item.material_markup_percentage %}<span class="muted"> ({{ item.material_markup_percentage }}%)</span>{% endif %}
+              </td>
+            </tr>
+            <tr><td class="label">Print Cost (Side 1)</td><td class="value">{% if item.print_cost %}{{ item.print_cost }}{% endif %}</td></tr>
+            <tr><td class="label">Price / SqFt</td><td class="value">{% if item.price_per_sqft %}{{ item.price_per_sqft }}{% endif %}</td></tr>
+
+            <tr>
+              <td class="label">Cut Times (Kiss / Flex)</td>
+              <td class="value">
+                {% if item.kiss_cut_time or item.flex_cut_time %}
+                  {{ item.kiss_cut_time|default_if_none:"" }}{% if item.kiss_cut_time and item.flex_cut_time %} / {% endif %}{{ item.flex_cut_time|default_if_none:"" }}
+                {% endif %}
+              </td>
+            </tr>
+
+            <tr>
+              <td class="label">Weeding / Masking Time</td>
+              <td class="value">
+                {% if item.weeding_time or item.masking_time %}
+                  {{ item.weeding_time|default_if_none:"" }}{% if item.weeding_time and item.masking_time %} / {% endif %}{{ item.masking_time|default_if_none:"" }}
+                {% endif %}
+              </td>
+            </tr>
+
+            <tr><td class="label">Machine Rate</td><td class="value">{% if item.machine_rate %}{{ item.machine_rate }}{% endif %}</td></tr>
+            <tr><td class="label">Labor Rate</td><td class="value">{% if item.labor_rate %}{{ item.labor_rate }}{% endif %}</td></tr>
+
+            {% if item.misc1_description or item.misc1_price %}
+            <tr><td class="label">Misc 1</td><td class="value">{{ item.misc1_description|default_if_none:"" }}{% if item.misc1_description and item.misc1_price %} - {% endif %}{{ item.misc1_price|default_if_none:"" }}</td></tr>
+            {% endif %}
+            {% if item.misc2_description or item.misc2_price %}
+            <tr><td class="label">Misc 2</td><td class="value">{{ item.misc2_description|default_if_none:"" }}{% if item.misc2_description and item.misc2_price %} - {% endif %}{{ item.misc2_price|default_if_none:"" }}</td></tr>
+            {% endif %}
+            {% if item.misc3_description or item.misc3_price %}
+            <tr><td class="label">Misc 3</td><td class="value">{{ item.misc3_description|default_if_none:"" }}{% if item.misc3_description and item.misc3_price %} - {% endif %}{{ item.misc3_price|default_if_none:"" }}</td></tr>
+            {% endif %}
+            {% if item.misc4_description or item.misc4_price %}
+            <tr><td class="label">Misc 4</td><td class="value">{{ item.misc4_description|default_if_none:"" }}{% if item.misc4_description and item.misc4_price %} - {% endif %}{{ item.misc4_price|default_if_none:"" }}</td></tr>
+            {% endif %}
+
+            <tr><td class="label">Count / Package</td><td class="value">{% if item.step_count_package_price %}{{ item.step_count_package_price }}{% endif %}</td></tr>
+            <tr><td class="label">Delivery</td><td class="value">{% if item.step_delivery_price %}{{ item.step_delivery_price }}{% endif %}</td></tr>
+            <tr><td class="label">Packing Slip</td><td class="value">{% if item.step_packing_slip_price %}{{ item.step_packing_slip_price }}{% endif %}</td></tr>
+
+            <tr>
+              <td class="label">Total</td>
+              <td class="value">
+                {% if item.price_total %}{{ item.price_total }}{% endif %}
+                {% if item.override_price %}<span class="muted"> (override)</span>{% endif %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </article>
+    </section>
+  </body>
+</html>

@@ -1,0 +1,224 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Adjust Received Qty</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+
+  <div class="modal-body">
+    {% if error %}
+      <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+
+    <div class="mb-3">
+      <div><strong>Line:</strong> #{{ item.id }} — {{ item.name }}</div>
+      <div class="text-muted" style="font-size: 0.95em;">
+        This writes an inventory ledger adjustment (stock in/out) for this line.
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-body" style="padding: 10px 14px;">
+        <div class="row">
+          <div class="col-md-6">
+            <div><strong>Invoice qty:</strong>
+              {{ item.invoice_qty|default:"—" }}
+              {% if item.invoice_unit %}
+                {{ item.invoice_unit.variation.name }}
+              {% endif %}
+            </div>
+            <div class="text-muted" style="font-size:0.95em;">
+              (What you entered on the invoice.)
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div><strong>Current received (base):</strong>
+              <span id="current_base_qty">{{ current_qty|default:item.qty|default:"0" }}</span>
+              <span class="text-muted">{{ base_unit_name|default:"" }}</span>
+            </div>
+            <div class="text-muted" style="font-size:0.95em;">
+              (What currently hit inventory for this line.)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% if not error %}
+      <form method="POST" action="{% url 'finance:ap_adjust_invoice_item' id=invoice.id item_id=item.id %}">
+        {% csrf_token %}
+
+        {# IMPORTANT: this is the ONLY field the server reads, and it must always submit #}
+        <input
+          type="hidden"
+          name="new_qty"
+          id="new_qty_hidden"
+          value="{{ current_qty|default:item.qty|default:'0' }}"
+        >
+
+        <div class="mb-2">
+          <label class="form-label"><strong>How do you want to adjust?</strong></label>
+
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="mode" id="mode_new" value="new" checked>
+            <label class="form-check-label" for="mode_new">
+              Set to a new received total (base units)
+            </label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="mode" id="mode_delta" value="delta">
+            <label class="form-check-label" for="mode_delta">
+              Apply a delta (add/remove base units)
+            </label>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-2">
+          <div class="col-md-6">
+            <label class="form-label">New received total (base)</label>
+            <div class="input-group">
+              {# Visible input has NO name; we sync to hidden #}
+              <input
+                type="text"
+                inputmode="decimal"
+                class="form-control"
+                id="new_qty"
+                value="{{ current_qty|default:item.qty|default:'0' }}"
+              >
+              <span class="input-group-text">{{ base_unit_name|default:"base" }}</span>
+            </div>
+            <div class="form-text">
+              Example: if it currently shows 1000 and you received 900, enter 900.
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Delta adjustment (base)</label>
+            <div class="input-group">
+              <input
+                type="text"
+                inputmode="decimal"
+                class="form-control"
+                id="delta_qty"
+                value=""
+                placeholder="e.g. -100 or 250"
+              >
+              <span class="input-group-text">{{ base_unit_name|default:"base" }}</span>
+            </div>
+            <div class="form-text">
+              Positive adds stock; negative removes stock.
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-info" id="preview_box" style="margin-top: 10px;">
+          <div><strong>Preview</strong></div>
+          <div id="preview_text">—</div>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label"><strong>Reason *</strong></label>
+          <textarea
+            name="reason"
+            class="form-control"
+            rows="2"
+            required
+            placeholder="Short note: short shipment, damaged, extra received, corrected entry, etc."
+          ></textarea>
+        </div>
+
+        <div class="mt-3 d-flex justify-content-end" style="gap:10px;">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Apply Adjustment</button>
+        </div>
+      </form>
+
+      <script>
+        (function () {
+          function num(v) {
+            if (v === null || v === undefined) return null;
+            const s = String(v).replace(/,/g, "").trim();
+            if (!s) return null;
+            const n = Number(s);
+            return Number.isFinite(n) ? n : null;
+          }
+
+          const currentEl = document.getElementById("current_base_qty");
+          const newEl = document.getElementById("new_qty");
+          const deltaEl = document.getElementById("delta_qty");
+          const newHidden = document.getElementById("new_qty_hidden");
+
+          const modeNew = document.getElementById("mode_new");
+          const modeDelta = document.getElementById("mode_delta");
+
+          const previewText = document.getElementById("preview_text");
+
+          if (!currentEl || !newEl || !deltaEl || !previewText || !newHidden) return;
+
+          const current = num(currentEl.textContent) ?? 0;
+
+          function syncEnabled() {
+            if (modeNew.checked) {
+              newEl.disabled = false;
+              deltaEl.disabled = true;
+              deltaEl.value = "";
+            } else {
+              newEl.disabled = true;
+              deltaEl.disabled = false;
+            }
+          }
+
+          function setHidden(val) {
+            newHidden.value = String(val);
+          }
+
+          function renderPreview() {
+            let newQty = null;
+            let delta = null;
+
+            if (modeNew.checked) {
+              newQty = num(newEl.value);
+              if (newQty === null) {
+                previewText.textContent = "Enter a new received total to preview the adjustment.";
+                return;
+              }
+              if (newQty < 0) {
+                previewText.textContent = "New received total cannot be negative.";
+                return;
+              }
+              setHidden(newQty);
+              delta = newQty - current;
+            } else {
+              delta = num(deltaEl.value);
+              if (delta === null) {
+                previewText.textContent = "Enter a delta (positive or negative) to preview the adjustment.";
+                return;
+              }
+              newQty = current + delta;
+              if (newQty < 0) {
+                previewText.textContent = "That would make received total negative. Use a smaller negative delta.";
+                return;
+              }
+              setHidden(newQty);
+            }
+
+            const direction = (delta > 0) ? "add to" : (delta < 0) ? "remove from" : "make no change to";
+            previewText.textContent =
+              "This will " + direction + " inventory: " +
+              Math.abs(delta).toLocaleString(undefined, { maximumFractionDigits: 4 }) +
+              " (new received total: " +
+              newQty.toLocaleString(undefined, { maximumFractionDigits: 4 }) + ").";
+          }
+
+          modeNew.addEventListener("change", function(){ syncEnabled(); renderPreview(); });
+          modeDelta.addEventListener("change", function(){ syncEnabled(); renderPreview(); });
+          newEl.addEventListener("input", renderPreview);
+          deltaEl.addEventListener("input", renderPreview);
+
+          syncEnabled();
+          renderPreview();
+        })();
+      </script>
+    {% endif %}
+  </div>
+</div>

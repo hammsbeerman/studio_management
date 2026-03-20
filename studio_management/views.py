@@ -9,35 +9,12 @@ from customers.models import Customer, Contact
 from inventory.models import Inventory, InventoryMaster
 from accounts.decorators import allowed_users
 from controls.models import JobStatus
+from archive_overlay.services.archive_api import ArchiveApiClient
 
 #from articles.models import Article
 
 @login_required
 def home_view(request, id=None):
-    # user = request.user.id
-    # items = WorkorderItem.objects.filter(assigned_user_id = user).exclude(completed=1).order_by("-workorder")
-    # #completed = Workorder.objects.all().exclude(workorder=1111).exclude(completed=0).exclude(quote=1).order_by("-workorder")
-    # #quote = Workorder.objects.all().exclude(workorder=1111).exclude(quote=0).order_by("-workorder")
-    # status = JobStatus.objects.all()
-    # print(user)
-
-    #article_obj = Article.objects.get(id=1)
-    #Get all articles
-    #article_list = Article.objects.all()
-    #Get articles with a slug field
-    #article_list = Article.objects.exclude(slug__isnull=True)
-
-    #context = {
-        # 'items':items,
-        # 'user':user,
-        # #'workorders': workorder,
-        # #'completed': completed,
-        # #'quote': quote,
-        # 'status':status,
-    #}
-    #HTML_STRING = render_to_string("home.html", context)
-    #return HttpResponse(HTML_STRING)
-    #return render(request, 'home.html', context)
     if request.user.is_authenticated:
         return redirect('dashboard:dashboard')
     else:
@@ -87,6 +64,13 @@ def search(request):
         | Q(internal_part_number__primary_vendor_part_number__icontains=q)
     ).select_related("internal_part_number", "internal_part_number__primary_vendor").distinct()
 
+    archive_results = None
+    archive_error = None
+    try:
+        archive_results = ArchiveApiClient().search(q)
+    except Exception as exc:
+        archive_error = str(exc)
+
     context = {
         'balance': balance,
         'workorders': workorders,
@@ -95,6 +79,8 @@ def search(request):
         'customer': customer,
         'contact': contact,
         'inventory_items': inventory_items,  # ⬅️ new
+        'archive_results': archive_results,
+        'archive_error': archive_error,
         'query': q,
     }
     return render(request, 'search.html', context)
