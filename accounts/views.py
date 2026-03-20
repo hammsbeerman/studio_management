@@ -12,27 +12,31 @@ from .forms import ChangePasswordForm
 
 @unauthenticated_user
 def login_view(request):
+    next_url = request.GET.get("next") or request.POST.get("next")
+
     if request.method == "POST":
-        # form = AuthenticationForm(request, data=request.POST)
-        # if form.is_valid():
-        #     user = form.get_user()
-        #     login(request, user)
-        #     return redirect('/')
-        # #print(user)
         username = request.POST["username"]
         password = request.POST["password"]
         user = authenticate(request, username=username, password=password)
+
         if user is not None:
             login(request, user)
-            messages.success(request, ("You have been logged in"))
-            return redirect('/')
-        else:
-            messages.success(request, ("There was an error"))
-            return redirect('accounts:login')
-    else:
-        form = AuthenticationForm(request)
+            messages.success(request, "You have been logged in")
+
+            if next_url:
+                return redirect(next_url)
+            return redirect("/")
+
+        messages.error(request, "There was an error")
+        login_url = reverse("accounts:login")
+        if next_url:
+            return redirect(f"{login_url}?next={next_url}")
+        return redirect("accounts:login")
+
+    form = AuthenticationForm(request)
     context = {
-        "form": form
+        "form": form,
+        "next": next_url,
     }
     return render(request, "accounts/login.html", context)
 
