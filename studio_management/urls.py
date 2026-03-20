@@ -45,6 +45,7 @@ urlpatterns = [
     #path('vendors/', include('vendors.urls')),
     path('workorders/', include('workorders.urls')),
     path('archive/', include('archive_overlay.urls')),
+    path('ai/', include('ai_proxy.urls')),
     
 
     

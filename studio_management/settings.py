@@ -106,6 +106,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     
     'accounts',
+    'ai_proxy',
     'archive_overlay',
     'controls',
     'customers',
@@ -287,6 +288,11 @@ ARCHIVE_API_BASE_URL = os.getenv(
     "http://192.168.0.65:8000/api/archive"
 )
 ARCHIVE_API_TIMEOUT = int(os.environ.get("ARCHIVE_API_TIMEOUT", "15"))
+
+AI_IMAGE_BASE_URL = os.environ.get("AI_IMAGE_BASE_URL", "http://192.168.0.65:8000").rstrip("/")
+AI_IMAGE_PUBLIC_BASE_URL = os.environ.get("AI_IMAGE_PUBLIC_BASE_URL", AI_IMAGE_BASE_URL).rstrip("/")
+AI_IMAGE_PROXY_TIMEOUT = int(os.environ.get("AI_IMAGE_PROXY_TIMEOUT", "60"))
+AI_IMAGE_PROXY_SHARED_SECRET = os.environ.get("AI_IMAGE_PROXY_SHARED_SECRET", "change-me")
 
 
 # STATICFILES_DIRS = [
