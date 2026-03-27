@@ -9,7 +9,9 @@
     {{ form.as_p }}
     <div><button type='submit'>Login</button></div>
     <!-- <br/>Need an account? <a href='/accounts/register/'> Please register</a> -->
+    {% if next %}
     <input type="hidden" name="next" value="{{ next }}">
+    {% endif %}
 </form>
 </div>
 {% else %}

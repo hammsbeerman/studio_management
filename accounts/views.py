@@ -9,18 +9,33 @@ from django.shortcuts import render, redirect, resolve_url
 from django.urls import reverse, NoReverseMatch
 from .decorators import unauthenticated_user, allowed_users
 from .forms import ChangePasswordForm
+from .models import Profile
+
+
+def _clean_next_url(value):
+    if value is None:
+        return None
+    value = str(value).strip()
+    if value.lower() in {"", "none", "null"}:
+        return None
+    return value
+
 
 @unauthenticated_user
 def login_view(request):
-    next_url = request.GET.get("next") or request.POST.get("next")
+    next_url = _clean_next_url(request.GET.get("next") or request.POST.get("next"))
 
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
             login(request, user)
+
+            Profile.objects.get_or_create(
+                user=user,
+                defaults={"primary_company": "LK Design"},
+            )
+
             messages.success(request, "You have been logged in")
 
             if next_url:
@@ -28,17 +43,15 @@ def login_view(request):
             return redirect("/")
 
         messages.error(request, "There was an error")
-        login_url = reverse("accounts:login")
-        if next_url:
-            return redirect(f"{login_url}?next={next_url}")
-        return redirect("accounts:login")
+    else:
+        form = AuthenticationForm(request)
 
-    form = AuthenticationForm(request)
     context = {
         "form": form,
         "next": next_url,
     }
     return render(request, "accounts/login.html", context)
+
 
 def logout_view(request):
     if request.method == "POST":
@@ -47,39 +60,24 @@ def logout_view(request):
         try:
             return redirect("accounts:login")
         except NoReverseMatch:
-            return redirect("/")  # fallback if the route isn't named ye
+            return redirect("/")
     return render(request, "accounts/logout.html", {})
+
 
 @login_required
 def register_view(request):
     form = UserCreationForm(request.POST or None)
     if form.is_valid():
         user_obj = form.save()
+        Profile.objects.get_or_create(
+            user=user_obj,
+            defaults={"primary_company": "LK Design"},
+        )
         return redirect("accounts:login")
     context = {"form": form}
     return render(request, "accounts/register.html", context)
 
-# def update_password(request):
-#     if request.user.is_authenticated:
-#         current_user = User.objects.get(id=request.user.id)
-#         if request.method == 'POST':
-#             form = ChangePasswordForm(current_user, request.POST)
-#             if form.is_valid():
-#                 form.save()
-#                 messages.success(request, "Your password has been changed")
-#                 #relogin user after password change
-#                 login(request, current_user)
-#                 return redirect('/')
-#             else:
-#                 for error in list(form.errors.values()):
-#                     messages.error(request, error)
-#                     return redirect('accounts:update_password')
-#         else:
-#             form = ChangePasswordForm(current_user)
-#             return render(request, 'accounts/update_password.html', {'form':form})
-#     else:
-#         messages.success(request, "You must be logged in")
-#         return redirect('home')
+
 @login_required
 def update_password(request):
     if request.method == "POST":
