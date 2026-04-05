@@ -61,10 +61,18 @@ def customer_ar_workorders_qs(customer):
     )
 
 
+def _iter_related(value):
+    if value is None:
+        return None
+    if hasattr(value, "all"):
+        return value.all()
+    return value
+
+
 def live_applied_totals(workorder):
-    payments = getattr(workorder, "workorderpayment_set", None)
-    credit_memos = getattr(workorder, "workordercreditmemo_set", None)
-    gift_redemptions = getattr(workorder, "giftcertificateredemption_set", None)
+    payments = _iter_related(getattr(workorder, "workorderpayment_set", None))
+    credit_memos = _iter_related(getattr(workorder, "workordercreditmemo_set", None))
+    gift_redemptions = _iter_related(getattr(workorder, "giftcertificateredemption_set", None))
 
     if payments is not None:
         paid_amt = sum((p.payment_amount for p in payments if not p.void), ZERO)
