@@ -1,0 +1,148 @@
+{% if customer %}
+  <div class="row g-2 mb-3">
+    <div class="col-md-2 col-sm-4">
+      <div class="card h-100">
+        <div class="card-body py-2">
+          <div class="small text-muted">Total Open</div>
+          <div class="fw-semibold">{{ summary.total_open }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+      <div class="card h-100">
+        <div class="card-body py-2">
+          <div class="small text-muted">Current</div>
+          <div class="fw-semibold">{{ summary.current }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+      <div class="card h-100">
+        <div class="card-body py-2">
+          <div class="small text-muted">30</div>
+          <div class="fw-semibold">{{ summary.thirty }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+      <div class="card h-100">
+        <div class="card-body py-2">
+          <div class="small text-muted">60</div>
+          <div class="fw-semibold">{{ summary.sixty }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+      <div class="card h-100">
+        <div class="card-body py-2">
+          <div class="small text-muted">90</div>
+          <div class="fw-semibold">{{ summary.ninety }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+      <div class="card h-100">
+        <div class="card-body py-2">
+          <div class="small text-muted">120+</div>
+          <div class="fw-semibold">{{ summary.onetwenty }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <button class="btn btn-sm {% if not aging_filter %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            hx-get="{% url 'finance:open_workorders' %}?customer={{ customer.id }}"
+            hx-target="#workorders-panel"
+            hx-swap="innerHTML">
+      All
+    </button>
+    <button class="btn btn-sm {% if aging_filter == 'current' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            hx-get="{% url 'finance:open_workorders' %}?customer={{ customer.id }}&aging=current"
+            hx-target="#workorders-panel"
+            hx-swap="innerHTML">
+      Current
+    </button>
+    <button class="btn btn-sm {% if aging_filter == '30' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            hx-get="{% url 'finance:open_workorders' %}?customer={{ customer.id }}&aging=30"
+            hx-target="#workorders-panel"
+            hx-swap="innerHTML">
+      30
+    </button>
+    <button class="btn btn-sm {% if aging_filter == '60' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            hx-get="{% url 'finance:open_workorders' %}?customer={{ customer.id }}&aging=60"
+            hx-target="#workorders-panel"
+            hx-swap="innerHTML">
+      60
+    </button>
+    <button class="btn btn-sm {% if aging_filter == '90' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            hx-get="{% url 'finance:open_workorders' %}?customer={{ customer.id }}&aging=90"
+            hx-target="#workorders-panel"
+            hx-swap="innerHTML">
+      90
+    </button>
+    <button class="btn btn-sm {% if aging_filter == '120+' %}btn-primary{% else %}btn-outline-primary{% endif %}"
+            hx-get="{% url 'finance:open_workorders' %}?customer={{ customer.id }}&aging=120+"
+            hx-target="#workorders-panel"
+            hx-swap="innerHTML">
+      120+
+    </button>
+  </div>
+{% endif %}
+
+{% if workorders %}
+<div class="table-responsive">
+  <table class="table table-sm table-hover align-middle">
+    <thead>
+      <tr>
+        <th>WO</th>
+        <th>Description</th>
+        <th>Date Billed</th>
+        <th class="text-center">Age</th>
+        <th class="text-center">Bucket</th>
+        <th class="text-end">Total Due</th>
+        <th class="text-end">Paid</th>
+        <th class="text-end">Open</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for x in workorders %}
+      <tr class="ar-row-link"
+          hx-get="{% url 'finance:ar_workorder_quickview' x.id %}"
+          hx-target="#dialog2"
+          hx-swap="innerHTML"
+          style="cursor:pointer;">
+        <td>{{ x.workorder }}</td>
+        <td>{{ x.description|default:x.hr_customer|default:"-" }}</td>
+        <td>
+          {% if x.date_billed_calc %}
+            {{ x.date_billed_calc|date:"m/d/Y" }}
+          {% else %}
+            <span class="text-muted">-</span>
+          {% endif %}
+        </td>
+        <td class="text-center">{{ x.aging_days_calc|default:"0" }}</td>
+        <td class="text-center">
+          {% if x.aging_bucket_calc == "current" %}
+            <span class="badge text-bg-secondary">Current</span>
+          {% elif x.aging_bucket_calc == "30" %}
+            <span class="badge text-bg-warning">30</span>
+          {% elif x.aging_bucket_calc == "60" %}
+            <span class="badge text-bg-warning">60</span>
+          {% elif x.aging_bucket_calc == "90" %}
+            <span class="badge text-bg-danger">90</span>
+          {% else %}
+            <span class="badge text-bg-dark">120+</span>
+          {% endif %}
+        </td>
+        <td class="text-end">{{ x.total_due_calc|default:"0.00" }}</td>
+        <td class="text-end">{{ x.amount_paid_calc|default:"0.00" }}</td>
+        <td class="text-end fw-semibold text-danger">{{ x.open_balance_calc|default:"0.00" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <div class="text-muted">No open workorders for this customer.</div>
+{% endif %}

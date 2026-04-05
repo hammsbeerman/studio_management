@@ -24,7 +24,7 @@
             <option value="">Select workorder</option>
             {% for wo in workorders %}
               <option value="{{ wo.id }}">
-                WO {{ wo.workorder }} — Open {{ wo.open_balance|floatformat:2 }} — {{ wo.description }}
+                WO {{ wo.workorder }} — Open {{ wo.open_balance_calc|default_if_none:0|floatformat:2 }} — {{ wo.description }}
               </option>
             {% endfor %}
           </select>

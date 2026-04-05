@@ -12,7 +12,7 @@ from weasyprint.text.fonts import FontConfiguration
 import tempfile
 import datetime
 from decimal import Decimal
-from django.db.models import Sum
+from django.db.models import Sum, Q
 ###To here
 from xhtml2pdf import pisa
 from django.views.generic import ListView
@@ -23,6 +23,13 @@ from krueger.models import KruegerJobDetail, WideFormat
 from finance.models import Krueger_Araging
 from workorders.services.totals import compute_workorder_totals
 from inventory.models import RetailWorkorderItem
+from finance.helpers_ar import live_open_balance
+from finance.helpers_statements import (
+    VALID_COMPANIES,
+    get_live_statement_queryset,
+    build_customer_statement_data,
+)
+
 
 @login_required
 def invoice_pdf(request, id):
@@ -692,57 +699,95 @@ def statement_pdf(request, id):
         - Variant 2: LK + (Krueger or Office Supplies)
         - Variant 3: LK only
     """
-    # --- PDF response boilerplate ---
+    import datetime
+    import tempfile
+    from decimal import Decimal
+
+    from django.db.models import Q
+    from django.http import HttpResponse
+    from django.template.loader import render_to_string
+    from django.utils import timezone
+    from weasyprint import HTML
+
+    from customers.models import Customer, Contact
+    from workorders.models import Workorder
+    from finance.helpers_ar import live_open_balance
+    from finance.helpers_statements import normalize_open_balance, get_header_variant
+
+    ZERO = Decimal("0.00")
+
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = (
         "inline; attachment; filename=" + str(datetime.datetime.now()) + ".pdf"
     )
     response["Content-Transfer-Encoding"] = "binary"
 
-    # --- Company selection from querystring ---
     requested_companies = request.GET.getlist("company")
     valid_companies = ["Krueger Printing", "LK Design", "Office Supplies"]
     requested_companies = [c for c in requested_companies if c in valid_companies]
 
-    # --- Base queryset: all open, non-void, non-quote workorders for this customer ---
     base_qs = (
         Workorder.objects.filter(customer=id)
-        .exclude(billed=0)
-        .exclude(paid_in_full=1)
-        .exclude(quote=1)
         .exclude(void=1)
-        .exclude(workorder_total=0)
-        .order_by("workorder")
+        .exclude(quote=1)
+        .filter(
+            Q(date_billed__isnull=False) |
+            Q(billed=1)
+        )
+        .select_related("customer")
+        .order_by("date_billed", "workorder")
     )
 
-    # Apply company filter if present; otherwise old behavior (exclude LK)
     if requested_companies:
-        workorders = base_qs.filter(internal_company__in=requested_companies)
+        qs = base_qs.filter(internal_company__in=requested_companies)
     else:
-        workorders = base_qs.exclude(internal_company="LK Design")
+        qs = base_qs.exclude(internal_company="LK Design")
 
-    # --- Group workorders by company for the template ---
+    workorders = []
+    today = timezone.now().date()
 
-    lk_workorders = workorders.filter(
-        internal_company="LK Design"
-    ).order_by("date_billed", "workorder")
+    for wo in qs:
+        try:
+            open_bal = normalize_open_balance(live_open_balance(wo))
+        except Exception:
+            continue
 
-    kr_workorders = workorders.filter(
-        internal_company="Krueger Printing"
-    ).order_by("date_billed", "workorder")
+        if open_bal <= ZERO:
+            continue
 
-    os_workorders = workorders.filter(
-        internal_company="Office Supplies"
-    ).order_by("date_billed", "workorder")
+        wo.open_balance = open_bal
+        wo.statement_open_balance = open_bal
 
-    lk_total = lk_workorders.aggregate(Sum("open_balance"))["open_balance__sum"] or Decimal("0.00")
-    kr_total = kr_workorders.aggregate(Sum("open_balance"))["open_balance__sum"] or Decimal("0.00")
-    os_total = os_workorders.aggregate(Sum("open_balance"))["open_balance__sum"] or Decimal("0.00")
+        billed_date = getattr(wo, "date_billed", None)
+        if billed_date:
+            try:
+                billed_date = billed_date.date()
+            except Exception:
+                pass
+            wo.statement_aging_days = max((today - billed_date).days, 0)
+        else:
+            wo.statement_aging_days = 0
 
-    # If somehow nothing is left, just render an empty statement for this customer
-    item_length = workorders.count()
+        workorders.append(wo)
 
-    # --- Customer / contact info ---
+    workorders = sorted(
+        workorders,
+        key=lambda x: (
+            getattr(x, "date_billed", None) or today,
+            x.workorder or 0,
+        )
+    )
+
+    lk_workorders = [w for w in workorders if w.internal_company == "LK Design"]
+    kr_workorders = [w for w in workorders if w.internal_company == "Krueger Printing"]
+    os_workorders = [w for w in workorders if w.internal_company == "Office Supplies"]
+
+    lk_total = sum((w.open_balance for w in lk_workorders), ZERO)
+    kr_total = sum((w.open_balance for w in kr_workorders), ZERO)
+    os_total = sum((w.open_balance for w in os_workorders), ZERO)
+
+    item_length = len(workorders)
+
     customer = Customer.objects.get(id=id)
     todays_date = timezone.now().date()
 
@@ -751,35 +796,14 @@ def statement_pdf(request, id):
     except Exception:
         contact = ""
 
-    # --- Company header variant logic (for artwork in template) ---
-    # Companies actually present on this statement (after filters)
-    companies_present = list(
-        workorders.values_list("internal_company", flat=True).distinct()
+    companies_present = sorted(
+        {w.internal_company for w in workorders if getattr(w, "internal_company", None)}
     )
-
-    selection = set(companies_present)
-
-    lk = "LK Design" in selection
-    kr = "Krueger Printing" in selection
-    office = "Office Supplies" in selection
-
-    # header_variant:
-    #   1 = Krueger and/or Office (no LK)
-    #   2 = LK + (Krueger or Office)
-    #   3 = LK only
-    if lk and not (kr or office):
-        header_variant = 3
-    elif lk and (kr or office):
-        header_variant = 2
-    else:
-        header_variant = 1
-
-    # --- Split items into first/second page & padding rows like the old logic ---
+    header_variant = get_header_variant(companies_present)
 
     if item_length > 15:
         items = workorders[:15]
         items2 = workorders[15:30]
-        # 2nd-page padding rows (simple fixed number, like before)
         rows2 = ""
         for _ in range(60):
             rows2 += "<tr><td></td><td></td><td></td><td></td><td></td></tr>"
@@ -788,16 +812,14 @@ def statement_pdf(request, id):
         items2 = ""
         rows2 = ""
 
-    # 1st-page padding rows to keep layout consistent
     n = max(0, 40 - item_length)
     rows = ""
     for _ in range(n):
         rows += "<tr><td></td><td></td><td></td><td></td><td></td></tr>"
 
-    # --- Total balance for this customer / selection ---
-    total_balance = workorders.aggregate(Sum("open_balance"))
+    total_balance_sum = sum((w.open_balance for w in workorders), ZERO)
+    total_balance = {"open_balance__sum": total_balance_sum}
 
-    # --- Context into WeasyPrint template ---
     context = {
         "items": items,
         "items2": items2,
@@ -815,138 +837,100 @@ def statement_pdf(request, id):
         "rows": rows,
         "rows2": rows2,
         "total_balance": total_balance,
-        # NEW: drives header artwork and allows template to inspect companies
         "companies_present": companies_present,
         "header_variant": header_variant,
     }
 
-    html_string = render_to_string(
-        "pdf/weasyprint/statement.html", context
-    )
+    html_string = render_to_string("pdf/weasyprint/statement.html", context)
     html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
     result = html.write_pdf()
 
     with tempfile.NamedTemporaryFile(delete=True) as output:
         output.write(result)
         output.flush()
-        output = open(output.name, "rb")
-        response.write(output.read())
+        with open(output.name, "rb") as pdf_file:
+            response.write(pdf_file.read())
 
     return response
 
 @login_required
 def statement_pdf_bulk(request):
-    # print(id)
-    
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; attachment; filename=' + \
-        str(datetime.datetime.now())+'.pdf'
-    #remove inline to allow direct download
-    #response['Content-Disposition'] = 'attachment; filename=Expenses' + \
-        
-    response['Content-Transfer-Encoding'] = 'binary'
+    """
+    Bulk customer statement PDF with optional company filters.
 
+    Fast path:
+    - use Krueger_Araging to decide which customers belong in the batch
+    - then pull live workorders only for those customers
+    """
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = (
+        "inline; attachment; filename=" + str(datetime.datetime.now()) + ".pdf"
+    )
+    response["Content-Transfer-Encoding"] = "binary"
 
-    #customers = Customer.objects.all()[:5]
-    customers = Customer.objects.filter(id__in=Krueger_Araging.objects.values('customer')).order_by('company_name')
-    
-    customer_data = []
-    for customer in customers:
-        workorders = Workorder.objects.filter(customer=customer.id).exclude(internal_company='LK Design').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(workorder_total=0).order_by('workorder')
-        print(workorders)
+    selected_companies = [
+        c for c in request.GET.getlist("company")
+        if c in VALID_COMPANIES
+    ]
 
-        total_open_balance = workorders.filter().aggregate(Sum('open_balance'))
-        #total_open_balance = sum(w.open_balance for w in workorders)
+    effective_companies = (
+        selected_companies
+        if selected_companies
+        else ["Krueger Printing", "Office Supplies"]
+    )
 
-        print(total_open_balance)
+    # Fast customer set from snapshot table
+    customer_ids = list(
+        Krueger_Araging.objects
+        .exclude(total__isnull=True)
+        .exclude(total__lte=0)
+        .values_list("customer_id", flat=True)
+    )
 
-        if workorders.exists():
-            customer_data.append({
-                'customer': customer,
-                'workorders': workorders,
-                'total_open_balance': total_open_balance,
-            })
-        
-    item_length = len(workorders)
-    print(item_length)
-    
-    ar = Krueger_Araging.objects.all()
-    
-    todays_date = timezone.now()
-    try:
-        contact = Contact.objects.get(id = customer.contact.id)
-    except:
-        contact = ''
-    print(contact)
-    #print(customer.company_name)
-    date = datetime.date.today()
-    l = item_length
-
-    if item_length > 15:
-        items = Workorder.objects.filter(customer=id)[:15]
-        items2 = Workorder.objects.filter(customer=id)[15:30]
-        rows2 = ''
-        n = 60
-        for x in range(n):
-            string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
-            #string = 'hello<br/>'
-            #print('test')
-            rows2 += string
+    # If LK only is selected, this snapshot-backed bulk path has nothing to do
+    if selected_companies == ["LK Design"]:
+        customer_data = []
     else:
-        # items = WorkorderItem.objects.filter(workorder=id)[:15]
-        items2=''
-        rows2 = ''
-    print(l)
-    n = 40 - l
-    print(n)
-    rows = ''
-    for x in range(n):
-        string = '<tr><td></td><td></td><td></td><td></td><td></td></tr>'
-        #string = 'hello<br/>'
-        #print('test')
-        rows += string
-    #print(rows)
+        qs = (
+            get_live_statement_queryset(
+                companies=selected_companies if selected_companies else None
+            )
+            .filter(customer_id__in=customer_ids)
+            .order_by("customer__company_name", "date_billed", "workorder")
+        )
 
-    # if payment:
-    #     total_bal = open_bal
-    # print('payment')
-    # print(payment)
+        customer_data = build_customer_statement_data(qs)
+
+        # extra safety: do not include zero-balance customers
+        customer_data = [
+            row for row in customer_data
+            if (row.get("total_open_balance", {}).get("open_balance__sum") or Decimal("0.00")) > Decimal("0.00")
+        ]
+
     context = {
-        # 'items':items,
-        # 'items2':items2,
-        # 'workorder':workorder,
-        'workorders':workorders,
-        # 'customer':customer,
-        # 'payment':payment,
-        'contact':contact,
-        'date':date,
-        'todays_date':todays_date,
-        # 'subtotal':subtotal,
-        # 'tax':tax, 
-        # 'total':total,
-        # 'total_bal':total_bal,
-        'rows': rows,
-        'rows2': rows2,
-        # 'total_balance':total_balance
-        #'total_balance':total_balance,
-        # 'customers':customers,
-        'customer_data':customer_data,
-
+        "customer_data": customer_data,
+        "todays_date": timezone.now(),
+        "date": timezone.now().date(),
+        "selected_companies": selected_companies,
+        "effective_companies": effective_companies,
     }
 
+    html_string = render_to_string(
+        "pdf/weasyprint/krueger_statement_bulk.html",
+        context,
+    )
 
-    html_string=render_to_string('pdf/weasyprint/krueger_statement_bulk.html', context)
-
-    html = HTML(string=html_string, base_url=request.build_absolute_uri("/"))
-
+    html = HTML(
+        string=html_string,
+        base_url=request.build_absolute_uri("/"),
+    )
     result = html.write_pdf()
 
     with tempfile.NamedTemporaryFile(delete=True) as output:
         output.write(result)
         output.flush()
-        #rb stands for read binary
-        output=open(output.name,'rb')
-        response.write(output.read())
+        with open(output.name, "rb") as pdf_file:
+            response.write(pdf_file.read())
 
     return response
 

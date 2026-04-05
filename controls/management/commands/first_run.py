@@ -1,10 +1,19 @@
-from typing import Dict, Iterable
+import os
 from decimal import Decimal
-from django.core.management.base import BaseCommand
-from django.db import transaction
-from django.db.models import F
+from typing import Iterable
 
-from controls.models import JobStatus, Numbering, Measurement
+from django.conf import settings
+from django.core.management.base import BaseCommand
+from django.template.loader import render_to_string
+from django.utils import timezone
+
+from weasyprint import HTML
+
+from finance.models import Krueger_Araging
+from finance.helpers_statements import (
+    get_live_statement_queryset,
+    build_customer_statement_data,
+)
 
 JOB_STATUSES: Iterable[str] = (
     "Open",
@@ -49,71 +58,80 @@ def _field_set(Model):
     }
 
 class Command(BaseCommand):
-    help = "First-run bootstrap: seeds JobStatus, Numbering, and Measurement (idempotent)."
+    help = "Generate bulk customer statements as PDF"
 
-    def add_arguments(self, parser):
-        parser.add_argument("--dry-run", action="store_true", help="Plan only, no writes.")
-        parser.add_argument("--quiet", action="store_true", help="Minimal output.")
+    def handle(self, *args, **kwargs):
+        ZERO = Decimal("0.00")
 
-    def _log(self, quiet: bool, msg: str):
-        if not quiet:
-            self.stdout.write(msg)
+        # Default behavior matches old bulk statement flow:
+        # include everything except LK Design
+        effective_companies = ["Krueger Printing", "Office Supplies"]
 
-    @transaction.atomic
-    def handle(self, *args, **opts):
-        dry = opts["dry_run"]
-        quiet = opts["quiet"]
+        # Only include customers that are actually on the snapshot-backed
+        # Krueger statements list and still have a positive total.
+        customer_ids = list(
+            Krueger_Araging.objects
+            .exclude(total__isnull=True)
+            .exclude(total__lte=0)
+            .values_list("customer_id", flat=True)
+        )
 
-        # 1) JobStatus
-        created_js = 0
-        for name in JOB_STATUSES:
-            obj, made = JobStatus.objects.get_or_create(name=name, defaults={"icon": ""})
-            created_js += int(made)
-        self._log(quiet, f"JobStatus: ensured {len(JOB_STATUSES)} rows (created {created_js}).")
+        if not customer_ids:
+            self.stdout.write("No customers with statement balances found.")
+            return
 
-        # 2) Numbering (schema-aware: supports value OR current; optional name/prefix/padding)
-        nf = _field_set(Numbering)
-        counter_field = "value" if "value" in nf else ("current" if "current" in nf else None)
+        qs = (
+            get_live_statement_queryset()
+            .filter(customer_id__in=customer_ids)
+            .order_by("customer__company_name", "date_billed", "workorder")
+        )
 
-        created_num = 0
-        for seed in NUMBERING_SEEDS:
-            kwargs = {}
-            if "id" in nf:      kwargs["id"] = seed["id"]
-            if "name" in nf:    kwargs["name"] = seed["name"]
+        customer_data = build_customer_statement_data(qs)
 
-            defaults: Dict = {}
-            if "name" in nf:    defaults.setdefault("name", seed["name"])
-            if "prefix" in nf:  defaults["prefix"] = seed["prefix"]
-            if "padding" in nf: defaults["padding"] = seed["padding"]
-            if counter_field:   defaults[counter_field] = seed["start"]
+        # Extra safety: keep only customers with positive live totals
+        customer_data = [
+            row for row in customer_data
+            if (row.get("total_open_balance", {}).get("open_balance__sum") or ZERO) > ZERO
+        ]
 
-            obj, made = Numbering.objects.get_or_create(defaults=defaults, **kwargs)
-            created_num += int(made)
+        if not customer_data:
+            self.stdout.write("No live statement data found for customers in Krueger_Araging.")
+            return
 
-            # If it existed but counter is missing, initialize it
-            if counter_field and getattr(obj, counter_field, None) in (None, ""):
-                Numbering.objects.filter(pk=obj.pk).update(**{counter_field: seed["start"]})
+        context = {
+            "customer_data": customer_data,
+            "date": timezone.now().date(),
+            "todays_date": timezone.now(),
+            "effective_companies": effective_companies,
+        }
 
-        self._log(quiet, f"Numbering: ensured {len(NUMBERING_SEEDS)} rows (created {created_num}).")
+        html_string = render_to_string(
+            "pdf/weasyprint/krueger_statement_bulk.html",
+            context,
+        )
 
-        # 3) Measurements (schema-aware for optional fields)
-        mf = _field_set(Measurement)
-        created_meas = 0
-        for m in MEASUREMENTS:
-            kwargs = {"name": m["name"]}
-            defaults = {}
-            if "abbr" in mf:      defaults["abbr"] = m["abbr"]
-            if "code" in mf:      defaults["code"] = m["abbr"]  # if you have a code field
-            if "unit_type" in mf: defaults["unit_type"] = m["type"]
-            if "type" in mf:      defaults["type"] = m["type"]  # some schemas use 'type'
+        base_url = getattr(settings, "SITE_URL", None) or settings.BASE_DIR
+        html = HTML(string=html_string, base_url=base_url)
+        pdf_bytes = html.write_pdf()
 
-            obj, made = Measurement.objects.get_or_create(defaults=defaults, **kwargs)
-            created_meas += int(made)
+        save_dir = os.path.join(settings.MEDIA_ROOT, "statements")
+        os.makedirs(save_dir, exist_ok=True)
 
-        self._log(quiet, f"Measurement: ensured {len(MEASUREMENTS)} rows (created {created_meas}).")
+        base_name = timezone.now().date().strftime("%Y_%B_%d")
+        filename = f"{base_name}.pdf"
+        filepath = os.path.join(save_dir, filename)
 
-        if dry:
-            self._log(quiet, "Dry-run: rolling back.")
-            transaction.set_rollback(True)
-        else:
-            self._log(quiet, self.style.SUCCESS("First-run bootstrap complete."))
+        counter = 1
+        while os.path.exists(filepath):
+            filename = f"{base_name}_{counter}.pdf"
+            filepath = os.path.join(save_dir, filename)
+            counter += 1
+
+        with open(filepath, "wb") as f:
+            f.write(pdf_bytes)
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"PDF saved to {filepath} ({len(customer_data)} customers)"
+            )
+        )

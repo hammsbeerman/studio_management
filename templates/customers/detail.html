@@ -6,11 +6,11 @@
 <script src="{% static 'js/order_out_form.js' %}"></script>
 <script src="{% static 'js/setprice_form.js' %}"></script>
 
-<div class="row">
-  <div class="col-md-3 mb-sm-0">
+<div class="row g-3">
+  <div class="col-md-3">
     <div
       id="customer-info-card"
-      class="card"
+      class="card h-100"
       hx-trigger="CustomerAdded from:body"
       hx-get="{% url 'customers:cust_info' %}?customer={{ customer.id }}"
       hx-target="this"
@@ -22,7 +22,7 @@
   <div class="col-md-3">
     <div
       id="contact-card"
-      class="card"
+      class="card h-100"
       hx-trigger="ContactChanged from:body"
       hx-get="{% url 'customers:contact_info' %}?contact={{ contact.id }}&workorder={{ changeworkorder }}&customer={{ changecustomer }}"
       hx-target="this"
@@ -31,20 +31,248 @@
     </div>
   </div>
 
-  
-
-  <div class="col-md-3">
-    <div class="card">
-      <div class="card-header">Customer Order History</div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        Customer Order History
+      </div>
       <div class="card-body">
         {% include 'workorders/partials/workorder_history.html' %}
       </div>
-      <div class="card-footer"></div>
     </div>
   </div>
 </div>
 
 <hr>
+
+<div class="card shadow-sm">
+  <div class="card-header bg-white">
+    <ul class="nav nav-tabs card-header-tabs" id="customerDetailTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active"
+          id="tab-overview"
+          data-bs-toggle="tab"
+          data-bs-target="#pane-overview"
+          type="button"
+          role="tab"
+          aria-controls="pane-overview"
+          aria-selected="true"
+        >
+          Overview
+        </button>
+      </li>
+
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="tab-ar-open"
+          data-bs-toggle="tab"
+          data-bs-target="#pane-ar-open"
+          type="button"
+          role="tab"
+          aria-controls="pane-ar-open"
+          aria-selected="false"
+        >
+          AR Open
+        </button>
+      </li>
+
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="tab-ar-closed"
+          data-bs-toggle="tab"
+          data-bs-target="#pane-ar-closed"
+          type="button"
+          role="tab"
+          aria-controls="pane-ar-closed"
+          aria-selected="false"
+        >
+          AR Closed
+        </button>
+      </li>
+
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="tab-payments"
+          data-bs-toggle="tab"
+          data-bs-target="#pane-payments"
+          type="button"
+          role="tab"
+          aria-controls="pane-payments"
+          aria-selected="false"
+        >
+          Payments & Credits
+        </button>
+      </li>
+
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="tab-quotes"
+          data-bs-toggle="tab"
+          data-bs-target="#pane-quotes"
+          type="button"
+          role="tab"
+          aria-controls="pane-quotes"
+          aria-selected="false"
+        >
+          Quotes
+        </button>
+      </li>
+
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="tab-archive"
+          data-bs-toggle="tab"
+          data-bs-target="#pane-archive"
+          type="button"
+          role="tab"
+          aria-controls="pane-archive"
+          aria-selected="false"
+        >
+          Archive
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card-body">
+    <div class="tab-content" id="customerDetailTabsContent">
+
+      <div
+        class="tab-pane fade show active"
+        id="pane-overview"
+        role="tabpanel"
+        aria-labelledby="tab-overview"
+      >
+        <div class="row g-3">
+          <div class="col-12">
+            {% if ar %}
+              {% include "finance/ar/partials/customer_ar_summary.html" %}
+            {% endif %}
+          </div>
+
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">Recent Activity</div>
+              <div class="card-body">
+                {% include 'workorders/partials/workorder_history.html' %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="pane-ar-open"
+        role="tabpanel"
+        aria-labelledby="tab-ar-open"
+      >
+        <div
+          id="ar-open-panel"
+          hx-get="{% url 'finance:open_workorders' %}?customer={{ customer.id }}"
+          hx-trigger="load, refreshArOpen from:body"
+          hx-target="this"
+          hx-swap="innerHTML"
+        >
+          <div class="text-muted">Loading open workorders...</div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="pane-ar-closed"
+        role="tabpanel"
+        aria-labelledby="tab-ar-closed"
+      >
+        <div
+          id="ar-closed-panel"
+          hx-get="{% url 'finance:closed_workorders' customer.id %}"
+          hx-trigger="load, refreshArClosed from:body"
+          hx-target="this"
+          hx-swap="innerHTML"
+        >
+          <div class="text-muted">Loading closed workorders...</div>
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="pane-payments"
+        role="tabpanel"
+        aria-labelledby="tab-payments"
+      >
+        <div class="row g-3">
+          <div class="col-12">
+            <div
+              id="payment-history-panel"
+              hx-get="{% url 'finance:payment_history' customer.id %}"
+              hx-trigger="load, refreshPayments from:body"
+              hx-target="this"
+              hx-swap="innerHTML"
+            >
+              <div class="text-muted">Loading payment history...</div>
+            </div>
+          </div>
+
+          {% if customer %}
+          <div class="col-12">
+            <div
+              id="credits-panel"
+              hx-get="{% url 'finance:open_invoices' customer.id %}"
+              hx-trigger="load, refreshCredits from:body"
+              hx-target="this"
+              hx-swap="innerHTML"
+            >
+              <div class="text-muted">Loading credits and open invoice data...</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="pane-quotes"
+        role="tabpanel"
+        aria-labelledby="tab-quotes"
+      >
+        {% if quotes %}
+          {% include 'workorders/partials/customer_quotes.html' %}
+        {% else %}
+          <div class="text-muted">No quotes found.</div>
+        {% endif %}
+      </div>
+
+      <div
+        class="tab-pane fade"
+        id="pane-archive"
+        role="tabpanel"
+        aria-labelledby="tab-archive"
+      >
+        {% if customer %}
+          <div
+            id="archive-panel"
+            hx-get="{% url 'customers:customer_archive' customer.id %}"
+            hx-trigger="load, refreshArchive from:body"
+            hx-target="this"
+            hx-swap="innerHTML"
+          >
+            <div class="text-muted">Loading archive...</div>
+          </div>
+        {% else %}
+          <div class="text-muted">No customer selected.</div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <div id="modal" class="modal fade" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
@@ -62,4 +290,21 @@
 
 {% block scripts %}
 <script src="{% static 'js/order_out_form.js' %}"></script>
+<script>
+  document.addEventListener("shown.bs.tab", function (event) {
+    const targetSelector = event.target.getAttribute("data-bs-target");
+    if (!targetSelector) return;
+
+    const pane = document.querySelector(targetSelector);
+    if (!pane) return;
+
+    const htmxLoader = pane.querySelector("[hx-get]");
+    if (!htmxLoader) return;
+
+    if (!htmxLoader.dataset.loadedOnce) {
+      htmx.trigger(htmxLoader, "load");
+      htmxLoader.dataset.loadedOnce = "true";
+    }
+  });
+</script>
 {% endblock %}

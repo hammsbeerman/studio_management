@@ -1,31 +1,38 @@
 {% if customer %}
 
+<input type="hidden" id="customer" name="customer" value="{{ customer.id }}">
+
 <ul class="nav nav-tabs" id="customerTabs" role="tablist">
   <li class="nav-item" role="presentation">
     <button class="nav-link active" id="tab-overview" data-bs-toggle="tab" data-bs-target="#pane-overview" type="button" role="tab">
       Overview
     </button>
   </li>
+
   <li class="nav-item" role="presentation">
     <button class="nav-link" id="tab-open" data-bs-toggle="tab" data-bs-target="#pane-open" type="button" role="tab">
       Open
     </button>
   </li>
+
   <li class="nav-item" role="presentation">
     <button class="nav-link" id="tab-completed" data-bs-toggle="tab" data-bs-target="#pane-completed" type="button" role="tab">
       Completed
     </button>
   </li>
+
   <li class="nav-item" role="presentation">
     <button class="nav-link" id="tab-quotes" data-bs-toggle="tab" data-bs-target="#pane-quotes" type="button" role="tab">
       Quotes
     </button>
   </li>
+
   <li class="nav-item" role="presentation">
     <button class="nav-link" id="tab-payments" data-bs-toggle="tab" data-bs-target="#pane-payments" type="button" role="tab">
       Payments
     </button>
   </li>
+
   <li class="nav-item" role="presentation">
     <button class="nav-link" id="tab-archive" data-bs-toggle="tab" data-bs-target="#pane-archive" type="button" role="tab">
       Archive
@@ -35,33 +42,38 @@
 
 <div class="tab-content pt-3">
 
-  <!-- OVERVIEW -->
   <div class="tab-pane fade show active" id="pane-overview" role="tabpanel" aria-labelledby="tab-overview">
-    <div class="row">
-      <div class="col-md-3 mb-sm-0">
-        <div id="customer-info-card" class="card"
-            hx-trigger="CustomerUpdated from:body"
-            hx-get="{% url 'customers:cust_info' %}"
-            hx-include="#customer"
-            hx-target="this"
-            hx-swap="innerHTML">
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div
+          id="customer-info-card"
+          class="card h-100"
+          hx-trigger="CustomerUpdated from:body"
+          hx-get="{% url 'customers:cust_info' %}"
+          hx-include="#customer"
+          hx-target="this"
+          hx-swap="innerHTML"
+        >
           {% include 'customers/partials/customer_info.html' %}
         </div>
       </div>
 
       <div class="col-md-3">
-        <div id="contact-card" class="card"
-            hx-trigger="ContactChanged from:body"
-            hx-get="{% url 'customers:details_contact_info' %}"
-            hx-include="#customer"
-            hx-target="this"
-            hx-swap="innerHTML">
+        <div
+          id="contact-card"
+          class="card h-100"
+          hx-trigger="ContactChanged from:body"
+          hx-get="{% url 'customers:details_contact_info' %}"
+          hx-include="#customer"
+          hx-target="this"
+          hx-swap="innerHTML"
+        >
           {% include 'customers/partials/details_contact_info.html' %}
         </div>
       </div>
 
       <div class="col-md-3">
-        <div class="card">
+        <div class="card h-100">
           <div class="card-header">Financial Details</div>
           <div class="card-body">
             {% include 'workorders/partials/finance.html' %}
@@ -70,7 +82,7 @@
       </div>
 
       <div class="col-md-3">
-        <div class="card">
+        <div class="card h-100">
           <div class="card-header">Customer Order History</div>
           <div class="card-body">
             {% include 'workorders/partials/workorder_history.html' %}
@@ -82,43 +94,43 @@
     {% include 'customers/partials/icon_legend.html' %}
   </div>
 
-  <!-- OPEN -->
   <div class="tab-pane fade" id="pane-open" role="tabpanel" aria-labelledby="tab-open"
        hx-get="{% url 'customers:customer_tab_open' customer.id %}"
        hx-trigger="shown.bs.tab from:#tab-open once"
-       hx-target="this">
+       hx-target="this"
+       hx-swap="innerHTML">
     <div class="text-muted p-3">Loading…</div>
   </div>
 
-  <!-- COMPLETED -->
   <div class="tab-pane fade" id="pane-completed" role="tabpanel" aria-labelledby="tab-completed"
        hx-get="{% url 'customers:customer_tab_completed' customer.id %}"
        hx-trigger="shown.bs.tab from:#tab-completed once"
-       hx-target="this">
+       hx-target="this"
+       hx-swap="innerHTML">
     <div class="text-muted p-3">Loading…</div>
   </div>
 
-  <!-- QUOTES -->
   <div class="tab-pane fade" id="pane-quotes" role="tabpanel" aria-labelledby="tab-quotes"
        hx-get="{% url 'customers:customer_tab_quotes' customer.id %}"
        hx-trigger="shown.bs.tab from:#tab-quotes once"
-       hx-target="this">
+       hx-target="this"
+       hx-swap="innerHTML">
     <div class="text-muted p-3">Loading…</div>
   </div>
 
-  <!-- PAYMENTS -->
   <div class="tab-pane fade" id="pane-payments" role="tabpanel" aria-labelledby="tab-payments"
        hx-get="{% url 'customers:customer_tab_payments' customer.id %}"
        hx-trigger="shown.bs.tab from:#tab-payments once"
-       hx-target="this">
+       hx-target="this"
+       hx-swap="innerHTML">
     <div class="text-muted p-3">Loading…</div>
   </div>
 
-  <!-- ARCHIVE -->
   <div class="tab-pane fade" id="pane-archive" role="tabpanel" aria-labelledby="tab-archive"
        hx-get="{% url 'archive_overlay:customer_panel' customer.id %}"
        hx-trigger="shown.bs.tab from:#tab-archive once"
-       hx-target="this">
+       hx-target="this"
+       hx-swap="innerHTML">
     <div class="text-muted p-3">Loading archive assets…</div>
   </div>
 

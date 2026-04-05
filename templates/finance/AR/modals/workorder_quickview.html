@@ -1,0 +1,77 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title">Workorder {{ wo.workorder }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+
+  <div class="modal-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="small text-muted">Customer</div>
+        <div>{{ wo.customer|default:wo.hr_customer|default:"-" }}</div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="small text-muted">Description</div>
+        <div>{{ wo.description|default:"-" }}</div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Date Billed</div>
+        <div>
+          {% if billed_date %}
+            {{ billed_date|date:"m/d/Y" }}
+          {% else %}
+            -
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Date Paid</div>
+        <div>
+          {% if paid_date %}
+            {{ paid_date|date:"m/d/Y" }}
+          {% else %}
+            -
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Aging / Days to Pay</div>
+        <div>
+          {% if live.open_bal > 0 %}
+            {{ aging_days }} days open
+          {% else %}
+            {% if days_to_pay is not None %}
+              {{ days_to_pay }} days to pay
+            {% else %}
+              -
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Total Due</div>
+        <div>{{ live.total_due }}</div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Applied</div>
+        <div>{{ live.total_applied }}</div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="small text-muted">Open Balance</div>
+        <div>{{ live.open_bal }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <a href="/workorders/{{ wo.id }}/" class="btn btn-outline-secondary">Open Full Workorder</a>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  </div>
+</div>

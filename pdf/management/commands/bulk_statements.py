@@ -1,74 +1,88 @@
-import os, datetime
+import datetime
+import os
+from decimal import Decimal
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 from django.template.loader import render_to_string
+from django.utils import timezone
+
 from weasyprint import HTML
-from customers.models import Customer, Contact
-from finance.models import Krueger_Araging
-from workorders.models import WorkorderItem, Workorder
-from finance.models import Krueger_Araging
-from django.db.models import Sum
+
+from finance.helpers_statements import (
+    get_live_statement_queryset,
+    build_customer_statement_data,
+)
+
 
 class Command(BaseCommand):
     help = "Generate bulk customer statements as PDF"
 
     def handle(self, *args, **kwargs):
-        customers = Customer.objects.filter(
-            id__in=Krueger_Araging.objects.values('customer')
-        ).order_by('company_name')
+        ZERO = Decimal("0.00")
 
-        customer_data = []
-        for customer in customers:
-            workorders = Workorder.objects.filter(customer=customer.id)\
-                .exclude(internal_company='LK Design')\
-                .exclude(billed=0)\
-                .exclude(paid_in_full=1)\
-                .exclude(quote=1)\
-                .exclude(void=1)\
-                .exclude(workorder_total=0)\
-                .order_by('workorder')
+        # Default behavior matches old bulk statement flow:
+        # include everything except LK Design
+        effective_companies = ["Krueger Printing", "Office Supplies"]
 
-            total_open_balance = workorders.aggregate(Sum('open_balance'))
+        qs = (
+            get_live_statement_queryset()
+            .order_by("customer__company_name", "date_billed", "workorder")
+        )
 
-            if workorders.exists():
-                customer_data.append({
-                    'customer': customer,
-                    'workorders': workorders,
-                    'total_open_balance': total_open_balance,
-                })
+        customer_data = build_customer_statement_data(qs)
+
+        # Extra safety: keep only customers with positive balances
+        customer_data = [
+            row for row in customer_data
+            if (row.get("total_open_balance", {}).get("open_balance__sum") or ZERO) > ZERO
+        ]
+
+        if not customer_data:
+            self.stdout.write("No customers with statement balances found.")
+            return
+
+        self.stdout.write(f"Generating statements for {len(customer_data)} customers...")
 
         context = {
-            'customer_data': customer_data,
-            'date': datetime.date.today(),
-            'todays_date': timezone.now(),
+            "customer_data": customer_data,
+            "date": datetime.date.today(),
+            "todays_date": timezone.now(),
+            "effective_companies": effective_companies,
         }
 
         html_string = render_to_string(
-            'pdf/weasyprint/krueger_statement_bulk.html',
-            context
+            "pdf/weasyprint/krueger_statement_bulk.html",
+            context,
         )
-        html = HTML(string=html_string)
+
+        base_url = getattr(settings, "SITE_URL", None)
+        if not base_url:
+            base_url = settings.BASE_DIR
+
+        html = HTML(string=html_string, base_url=base_url)
+
+        self.stdout.write("Rendering PDF...")
         pdf_bytes = html.write_pdf()
-        print("PDF length:", len(pdf_bytes))
 
-        SAVE_DIR = os.path.join(settings.MEDIA_ROOT, "statements")
+        save_dir = os.path.join(settings.MEDIA_ROOT, "statements")
+        os.makedirs(save_dir, exist_ok=True)
 
-        os.makedirs(SAVE_DIR, exist_ok=True)
-
-        # Base name like "August_2025"
         base_name = datetime.date.today().strftime("%Y_%B_%d")
         filename = f"{base_name}.pdf"
-        filepath = os.path.join(SAVE_DIR, filename)
+        filepath = os.path.join(save_dir, filename)
 
-        # If file exists, add a counter suffix
         counter = 1
         while os.path.exists(filepath):
             filename = f"{base_name}_{counter}.pdf"
-            filepath = os.path.join(SAVE_DIR, filename)
+            filepath = os.path.join(save_dir, filename)
             counter += 1
 
         with open(filepath, "wb") as f:
             f.write(pdf_bytes)
 
-        self.stdout.write(self.style.SUCCESS(f"PDF saved to {filepath}"))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"PDF saved to {filepath} ({len(customer_data)} customers)"
+            )
+        )

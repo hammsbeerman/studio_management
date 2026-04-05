@@ -87,6 +87,10 @@ from .views import (
     ap_adjust_invoice_item_modal,
     ap_adjust_invoice_item,
     run_backfill_invoiceitem_ledger_locked,
+    ar_reconcile_legacy_report,
+    ar_reconcile_legacy_selected,
+    ar_workorder_quickview,
+    ar_slow_payers_report,
 
 )
 
@@ -191,6 +195,8 @@ urlpatterns = [
     path("ar/payments/<int:payment_id>/void/", ar_void_payment, name="ar_void_payment"),
     path("ar/credit-memos/<int:cm_id>/void/", ar_void_credit_memo, name="creditmemo_void"),
     path("ar/giftcerts/<int:gc_id>/void/", ar_void_giftcert, name="giftcert_void"),
+    path("ar/reconcile-legacy/", ar_reconcile_legacy_report, name="ar_reconcile_legacy_report"),
+    path("ar/reconcile-legacy/run/", ar_reconcile_legacy_selected, name="ar_reconcile_legacy_selected"),
 
     # Pick ONE canonical payment_history; make the other an alias name
     path("ar/payment_history/", payment_history, name="payment_history"),
@@ -241,5 +247,8 @@ urlpatterns = [
     path("ap/invoice/<int:id>/item/<int:item_id>/adjust/", ap_adjust_invoice_item, name="ap_adjust_invoice_item"),
 
     path("admin/backfills/invoiceitem-ledger-locked/", run_backfill_invoiceitem_ledger_locked, name="run_backfill_invoiceitem_ledger_locked"),
+
+    path("ar/workorder-quickview/<int:workorder_id>/", ar_workorder_quickview, name="ar_workorder_quickview"),
+    path("ar/reports/slow-payers/", ar_slow_payers_report, name="ar_slow_payers_report"),
 ]
 

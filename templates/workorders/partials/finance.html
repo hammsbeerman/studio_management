@@ -1,22 +1,55 @@
-<h5 class="card-title"></h5>
-<p class="card-text">
-<b>Open Balance: </b>{{ customer.open_balance }}<br/>
-{% if workorder.retail_items.exists %}
-    <span class="badge bg-info text-dark">
-      Includes POS
-    </span><br/>
-  {% endif %}
-<b>Credits: </b>{{ customer.credit }}<br/>
-<b>Average Days to Pay: </b>{{ customer.avg_days_to_pay }}<br/>
-<b>Aging: </b><br/>
-Current: {{ current.open_balance__sum|floatformat:2 }}<br/>
-30-60: {{ thirty.open_balance__sum|floatformat:2 }}<br/>
-60-90: {{ sixty.open_balance__sum|floatformat:2 }}<br/>
-90-120: {{ ninety.open_balance__sum|floatformat:2 }}<br/>
-120+: {{ onetwenty.open_balance__sum|floatformat:2 }}<br/>
-<b>High Balance: </b>{{ customer.high_balance }}<br/>
+{% if ar %}
+  <div class="small">
+    <div class="mb-2">
+      <strong>Total AR:</strong> {{ ar.total_due|floatformat:2 }}
+    </div>
 
+    <div class="mb-2">
+      <strong>Total Applied:</strong> {{ ar.total_paid|floatformat:2 }}
+    </div>
 
+    <div class="mb-2">
+      <strong>Open Balance:</strong> {{ ar.total_open|floatformat:2 }}
+    </div>
 
+    {% if has_pos_items %}
+      <div class="mb-2">
+        <span class="badge bg-info text-dark">Includes POS</span>
+      </div>
+    {% endif %}
 
-    
+    <div class="mb-2">
+      <strong>Credits:</strong> {{ customer.credit|floatformat:2 }}
+    </div>
+
+    <div class="mb-2">
+      <strong>Average Days to Pay:</strong>
+      {% if ar.avg_days_to_pay %}
+        {{ ar.avg_days_to_pay|floatformat:0 }}
+      {% else %}
+        -
+      {% endif %}
+    </div>
+
+    {% if ar.days_to_pay_count %}
+      <div class="text-muted small mb-2">
+        Based on {{ ar.days_to_pay_count }} closed workorder{{ ar.days_to_pay_count|pluralize }}
+      </div>
+    {% endif %}
+
+    <div class="mb-2">
+      <strong>Aging:</strong><br>
+      Current: {{ aging.current|floatformat:2 }}<br>
+      30–59: {{ aging.thirty|floatformat:2 }}<br>
+      60–89: {{ aging.sixty|floatformat:2 }}<br>
+      90–119: {{ aging.ninety|floatformat:2 }}<br>
+      120+: {{ aging.onetwenty|floatformat:2 }}
+    </div>
+
+    <div class="mb-2">
+      <strong>High Balance:</strong> {{ customer.high_balance|floatformat:2 }}
+    </div>
+  </div>
+{% else %}
+  <div class="text-muted">No financial data available.</div>
+{% endif %}

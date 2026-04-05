@@ -19,6 +19,7 @@ from controls.models import Numbering
 from finance.models import Payments
 from workorders.forms import WorkorderForm
 from workorders.models import Workorder
+from finance.helpers_ar import get_customer_ar_summary, get_customer_ar_aging
 
 def _customers_qs():
     return Customer.objects.only("id", "company_name").order_by("company_name")
@@ -680,39 +681,65 @@ def customer_notes(request, pk=None):
 @login_required
 def detail(request, id=None):
     customer = Customer.objects.get(id=id)
-    history = Workorder.objects.filter(customer_id=customer).exclude(workorder=id).order_by("-workorder")[:5]
+
+    history = (
+        Workorder.objects
+        .filter(customer_id=customer)
+        .exclude(workorder=id)
+        .order_by("-workorder")[:5]
+    )
+
+    ar_summary = get_customer_ar_summary(customer)
+
     context = {
-            'customer': customer,
-            'history': history,
-        }
+        'customer': customer,
+        'history': history,
+        'ar': ar_summary,   # ✅ THIS is what your template needs
+    }
+
     return render(request, "customers/detail.html", context)
 
 @login_required
 def dashboard(request):
-    customers = Customer.objects.all()
+    customers = Customer.objects.all().order_by("company_name")
+
+    customer_id = request.GET.get("customer")
+    customer = None
+    ar_summary = None
+
+    if customer_id and customer_id.isdigit():
+        customer = Customer.objects.filter(id=customer_id).first()
+        if customer:
+            ar_summary = get_customer_ar_summary(customer)
+
     context = {
-        'customers':customers,
+        "customers": customers,
+        "customer": customer,
+        "ar": ar_summary,
     }
+
     return render(request, "customers/dashboard.html", context)
 
 @login_required
 def expanded_detail(request, id=None):
     customer_id = (
         id
-        or request.GET.get("customer")     # ✅ new standard
-        or request.GET.get("customers")    # ✅ backward-compat
+        or request.GET.get("customer")
+        or request.GET.get("customers")
     )
+
     customers = _customers_qs()
 
     if not customer_id:
-        return render(request, "customers/partials/details.html", {"customers": customers})
+        return render(
+            request,
+            "customers/partials/details.html",
+            {"customers": customers},
+        )
 
     customer = get_object_or_404(Customer, id=customer_id)
-
     base = _wo_base(customer.id)
 
-    # --- Overview tab needs these ---
-    # contact: best-effort "first active contact"
     contact = (
         Contact.objects
         .filter(customer_id=customer.id)
@@ -720,30 +747,28 @@ def expanded_detail(request, id=None):
         .first()
     )
 
-    # history card: last 10 non-quote (fast)
     history = (
         base.exclude(quote=1)
-            .order_by("-workorder")
-            .only("id", "workorder", "created", "description", "workorder_status__icon")[:10]
+        .order_by("-workorder")
+        .only(
+            "id",
+            "workorder",
+            "created",
+            "description",
+            "workorder_status__icon",
+        )[:10]
     )
 
-    # finance card: totals + aging buckets as aggregates only (fast)
-    balance = base.exclude(quote=1).aggregate(balance=Sum("total_balance"))["balance"] or 0
+    ar = get_customer_ar_summary(customer)
+    aging = get_customer_ar_aging(customer)
 
-    today = timezone.localdate()
-    d30 = today - timedelta(days=30)
-    d60 = today - timedelta(days=60)
-    d90 = today - timedelta(days=90)
-    d120 = today - timedelta(days=120)
-
-    ar_base = base.filter(billed=1, paid_in_full=0).exclude(quote=1)
-
-    buckets = ar_base.aggregate(
-        current=Sum("open_balance", filter=Q(date_billed__gte=d30)),
-        thirty=Sum("open_balance", filter=Q(date_billed__lt=d30, date_billed__gte=d60)),
-        sixty=Sum("open_balance", filter=Q(date_billed__lt=d60, date_billed__gte=d90)),
-        ninety=Sum("open_balance", filter=Q(date_billed__lt=d90, date_billed__gte=d120)),
-        onetwenty=Sum("open_balance", filter=Q(date_billed__lt=d120)),
+    has_pos_items = (
+        Workorder.objects
+        .filter(customer_id=customer.id)
+        .exclude(void=1)
+        .filter(retail_items__isnull=False)
+        .distinct()
+        .exists()
     )
 
     ctx = {
@@ -751,19 +776,14 @@ def expanded_detail(request, id=None):
         "customer": customer,
         "contact": contact,
         "history": history,
-        "balance": {"total_balance__sum": balance},
-        "current": {"open_balance__sum": buckets["current"] or 0},
-        "thirty": {"open_balance__sum": buckets["thirty"] or 0},
-        "sixty": {"open_balance__sum": buckets["sixty"] or 0},
-        "ninety": {"open_balance__sum": buckets["ninety"] or 0},
-        "onetwenty": {"open_balance__sum": buckets["onetwenty"] or 0},
+        "ar": ar,
+        "aging": aging,
+        "has_pos_items": has_pos_items,
     }
 
-    # HTMX dropdown swap → partial only
     if request.htmx:
         return render(request, "customers/partials/details.html", ctx)
 
-    # Direct/search entry → full page wrapper so base loads
     return render(request, "customers/search_detail.html", ctx)
         
 @login_required

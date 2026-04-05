@@ -563,3 +563,118 @@ def highprice_handler(sender, instance, created, *args, **kwargs):
     else:
         print('no change')
     print(price)
+
+
+class ArSlowPayerSnapshotRun(models.Model):
+    STATUS_RUNNING = "running"
+    STATUS_COMPLETE = "complete"
+    STATUS_FAILED = "failed"
+
+    STATUS_CHOICES = [
+        (STATUS_RUNNING, "Running"),
+        (STATUS_COMPLETE, "Complete"),
+        (STATUS_FAILED, "Failed"),
+    ]
+
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+    as_of_date = models.DateField(db_index=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=STATUS_RUNNING,
+        db_index=True,
+    )
+    notes = models.TextField(blank=True, default="")
+
+    customer_count = models.PositiveIntegerField(default=0)
+    closed_workorder_count = models.PositiveIntegerField(default=0)
+
+    avg_days_to_pay_overall = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+    slow_payer_count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["-as_of_date", "-created_at"]
+        verbose_name = "AR Slow Payer Snapshot Run"
+        verbose_name_plural = "AR Slow Payer Snapshot Runs"
+
+    def __str__(self):
+        return f"AR Slow Payer Snapshot {self.as_of_date} ({self.status})"
+
+
+class ArSlowPayerSnapshot(models.Model):
+    BAND_FAST = "fast"
+    BAND_MODERATE = "moderate"
+    BAND_SLOW = "slow"
+    BAND_UNKNOWN = "unknown"
+
+    BAND_CHOICES = [
+        (BAND_FAST, "Fast"),
+        (BAND_MODERATE, "Moderate"),
+        (BAND_SLOW, "Slow"),
+        (BAND_UNKNOWN, "Unknown"),
+    ]
+
+    run = models.ForeignKey(
+        "finance.ArSlowPayerSnapshotRun",
+        on_delete=models.CASCADE,
+        related_name="rows",
+    )
+
+    customer = models.ForeignKey(
+        "customers.Customer",
+        on_delete=models.CASCADE,
+        related_name="ar_slowpayer_snapshots",
+    )
+
+    company_name = models.CharField(max_length=255, blank=True, default="")
+
+    closed_workorder_count = models.PositiveIntegerField(default=0)
+
+    avg_days_to_pay = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+    min_days_to_pay = models.IntegerField(null=True, blank=True)
+    max_days_to_pay = models.IntegerField(null=True, blank=True)
+
+    total_closed_revenue = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    score = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+    )
+
+    payer_band = models.CharField(
+        max_length=20,
+        choices=BAND_CHOICES,
+        default=BAND_UNKNOWN,
+        db_index=True,
+    )
+
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        ordering = ["-avg_days_to_pay", "-score", "company_name"]
+        verbose_name = "AR Slow Payer Snapshot"
+        verbose_name_plural = "AR Slow Payer Snapshots"
+        indexes = [
+            models.Index(fields=["run", "payer_band"]),
+            models.Index(fields=["run", "avg_days_to_pay"]),
+            models.Index(fields=["run", "score"]),
+            models.Index(fields=["customer", "created_at"]),
+        ]
+        unique_together = [("run", "customer")]
+
+    def __str__(self):
+        return f"{self.company_name or self.customer} ({self.avg_days_to_pay} days)"

@@ -3,8 +3,7 @@ import csv
 import json
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, Http404
-from django.urls import reverse
+from django.http import HttpResponse, HttpResponseBadRequest
 from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -14,7 +13,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.views.decorators.http import require_POST
 from django.core.paginator import Paginator
 from django.db import models, transaction
-from django.db.models import Avg, Max, Count, Min, Sum, Subquery, Case, When, Value, DecimalField, OuterRef, Q, Prefetch
+from django.db.models import Avg, Max, Count, Sum, Subquery, Value, DecimalField, OuterRef, Q, Prefetch
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from datetime import timedelta, datetime, date
@@ -22,11 +21,10 @@ from datetime import date as date_cls
 from decimal import Decimal, InvalidOperation
 from typing import Tuple
 import logging
-from .models import AccountsPayable, DailySales, Araging, Payments, WorkorderPayment, Krueger_Araging, CreditMemo, WorkorderCreditMemo, GiftCertificate, GiftCertificateRedemption, CreditAdjustment
-from .forms import AccountsPayableForm, DailySalesForm, AppliedElsewhereForm, PaymentForm, DateRangeForm
-from retail.forms import RetailInventoryMasterForm
+from .models import AccountsPayable, DailySales, Payments, WorkorderPayment, CreditMemo, WorkorderCreditMemo, GiftCertificate, GiftCertificateRedemption, CreditAdjustment
+from .forms import DailySalesForm, AppliedElsewhereForm, PaymentForm, DateRangeForm
 from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm, BulkEditInvoiceForm, SalesComparisonForm
-from finance.models import InvoiceItem, Araging#, AllInvoiceItem
+from finance.models import InvoiceItem
 from inventory.services.ledger import record_inventory_movement
 from customers.models import Customer
 from workorders.models import Workorder
@@ -37,11 +35,18 @@ from onlinestore.models import StoreItemDetails
 from retail.models import RetailCashSale
 from finance.services.ap_invoice_items import save_ap_invoice_item_from_post
 from finance.helpers_ar import (
+    q_non_quote as _q_non_quote,
+    live_applied_totals as _live_applied_totals,
+    live_total_due as _live_total_due,
+    live_open_balance as _live_open_balance,
+    workorders_base_ar_qs as _workorders_base_ar_qs,
+    workorder_billed_date as _workorder_billed_date,
+    workorder_aging_days as _workorder_aging_days,
+    build_live_ar_rows as _build_live_ar_rows,
+    build_live_aging_rows as _build_live_aging_rows,
     ar_open_workorders_qs,
     recompute_customer_open_balance,
     recompute_customer_credit,
-    apply_amount_to_workorder,
-    reverse_amount_from_workorder,
     hx_ar_changed_204,
 )
 from workorders.services.totals import (
@@ -51,71 +56,7 @@ from workorders.services.totals import (
 
 logger = logging.getLogger(__file__)
 
-def _q_non_quote():
-    return Q(quote=False) | Q(quote=0) | Q(quote="0") | Q(quote__isnull=True)
 
-
-def _live_applied_totals(workorder):
-    paid_amt = (
-        WorkorderPayment.objects
-        .filter(workorder=workorder, void=False)
-        .aggregate(total=Sum("payment_amount"))["total"]
-        or Decimal("0.00")
-    )
-    paid_amt = Decimal(paid_amt).quantize(Decimal("0.01"))
-
-    cm_amt = (
-        WorkorderCreditMemo.objects
-        .filter(workorder=workorder, void=False)
-        .aggregate(total=Sum("amount"))["total"]
-        or Decimal("0.00")
-    )
-    cm_amt = Decimal(cm_amt).quantize(Decimal("0.01"))
-
-    gc_amt = (
-        GiftCertificateRedemption.objects
-        .filter(workorder=workorder, void=False)
-        .aggregate(total=Sum("amount"))["total"]
-        or Decimal("0.00")
-    )
-    gc_amt = Decimal(gc_amt).quantize(Decimal("0.01"))
-
-    return paid_amt, cm_amt, gc_amt
-
-
-def _live_total_due(workorder):
-    totals = compute_workorder_totals(workorder)
-    total_due = Decimal(getattr(totals, "total", None) or Decimal("0.00")).quantize(Decimal("0.01"))
-
-    if total_due == Decimal("0.00"):
-        try:
-            total_due = Decimal(workorder.open_balance or Decimal("0.00")).quantize(Decimal("0.01"))
-        except Exception:
-            total_due = Decimal("0.00")
-
-    return total_due
-
-
-def _live_open_balance(workorder):
-    total_due = _live_total_due(workorder)
-    paid_amt, cm_amt, gc_amt = _live_applied_totals(workorder)
-
-    total_applied = (paid_amt + cm_amt + gc_amt).quantize(Decimal("0.01"))
-    open_bal = (total_due - total_applied).quantize(Decimal("0.01"))
-
-    if abs(open_bal) < Decimal("0.01"):
-        open_bal = Decimal("0.00")
-    if open_bal < Decimal("0.00"):
-        open_bal = Decimal("0.00")
-
-    return {
-        "total_due": total_due,
-        "paid_amt": paid_amt,
-        "cm_amt": cm_amt,
-        "gc_amt": gc_amt,
-        "total_applied": total_applied,
-        "open_bal": open_bal,
-    }
 
 
 def _money(val) -> Decimal:
@@ -229,7 +170,12 @@ def finance_main(request):
 
 @login_required
 def bill_list(request):
-    pass
+    bills = (
+        AccountsPayable.objects
+        .filter(void=False)
+        .order_by("-invoice_date", "-id")
+    )
+    return render(request, "finance/AP/view_bills.html", {"bill_list": bills})
 
 @login_required
 def ar_dashboard(request):
@@ -246,6 +192,7 @@ def ar_dashboard(request):
         "selected_customer_id": int(customer_id) if customer_id.isdigit() else None,
     }
     return render(request, "finance/AR/ar_dashboard.html", context)
+
 
 def _base_unit_name_for_item(item: "InventoryMaster") -> str:
     """
@@ -278,107 +225,162 @@ def _to_decimal_or_none(v):
 
 @login_required
 def open_workorders(request):
-    customer_id = request.GET.get("customers") or request.GET.get("customer")
+    customer_id = request.GET.get("customer") or request.GET.get("customers")
+    aging_filter = (request.GET.get("aging") or "").strip()
 
-    if not (customer_id and str(customer_id).isdigit()):
+    customers = Customer.objects.all().order_by("company_name")
+
+    if not customer_id:
         return render(
             request,
-            "finance/AR/partials/open_workorders_panel.html",
-            {"customer": None, "workorders": [], "rows": []},
+            "finance/AR/partials/open_workorder_list.html",
+            {
+                "workorders": [],
+                "customer": None,
+                "customers": customers,
+                "aging_filter": aging_filter,
+                "summary": {
+                    "total_open": Decimal("0.00"),
+                    "current": Decimal("0.00"),
+                    "thirty": Decimal("0.00"),
+                    "sixty": Decimal("0.00"),
+                    "ninety": Decimal("0.00"),
+                    "onetwenty": Decimal("0.00"),
+                },
+            },
         )
 
-    customer = get_object_or_404(Customer, pk=int(customer_id))
-
-    workorders = (
-        Workorder.objects
-        .filter(customer=customer)
-        .exclude(billed=False)
-        .filter(_q_non_quote())
-        .exclude(void=True)
-        .prefetch_related(
-            Prefetch(
-                "workorderpayment_set",
-                queryset=WorkorderPayment.objects.filter(void=False).select_related("payment"),
-            ),
-            Prefetch(
-                "workordercreditmemo_set",
-                queryset=WorkorderCreditMemo.objects.filter(void=False).select_related("credit_memo"),
-            ),
-            Prefetch(
-                "giftcertificateredemption_set",
-                queryset=GiftCertificateRedemption.objects.filter(void=False).select_related("gift_certificate"),
-            ),
-        )
-        .order_by("workorder")
-    )
-
-    rows = []
-    visible_workorders = []
-
-    for wo in workorders:
-        live = _live_open_balance(wo)
-        open_bal = live["open_bal"]
-
-        if open_bal > Decimal("0.00"):
-            subtotal_raw = (wo.subtotal or "").strip() if hasattr(wo, "subtotal") and wo.subtotal else ""
-            total_raw = (wo.workorder_total or "").strip() if hasattr(wo, "workorder_total") and wo.workorder_total else ""
-
-            subtotal_dec = _to_decimal_or_none(subtotal_raw)
-            total_dec = _to_decimal_or_none(total_raw)
-
-            show_both = (
-                subtotal_dec is not None
-                and total_dec is not None
-                and subtotal_dec != total_dec
-            )
-
-            wo.open_balance_calc = live["open_bal"]
-            wo.amount_paid_calc = live["total_applied"]
-            wo.total_due_calc = live["total_due"]
-
-            visible_workorders.append(wo)
-            rows.append({
-                "wo": wo,
-                "show_both": show_both,
-                "subtotal_dec": subtotal_dec,
-                "total_dec": total_dec,
-                "subtotal_raw": subtotal_raw,
-                "total_raw": total_raw,
-            })
-
-    return render(
-        request,
-        "finance/AR/partials/open_workorders_panel.html",
-        {"customer": customer, "workorders": visible_workorders, "rows": rows},
-    )
-
-@login_required
-def closed_workorders(request, cust):
-    customers = Customer.objects.all()
-    selected_customer = get_object_or_404(Customer, id=cust)
+    selected_customer = get_object_or_404(Customer, id=customer_id)
 
     base_qs = (
         Workorder.objects
-        .filter(customer_id=cust)
+        .filter(customer_id=customer_id)
+        .filter(billed=True)
         .exclude(void=True)
         .filter(_q_non_quote())
         .order_by("-workorder")
     )
 
     workorders = []
+    today_date = timezone.localdate()
+
+    summary = {
+        "total_open": Decimal("0.00"),
+        "current": Decimal("0.00"),
+        "thirty": Decimal("0.00"),
+        "sixty": Decimal("0.00"),
+        "ninety": Decimal("0.00"),
+        "onetwenty": Decimal("0.00"),
+    }
+
+    def bucket_for_days(days):
+        if days < 30:
+            return "current"
+        elif days < 60:
+            return "30"
+        elif days < 90:
+            return "60"
+        elif days < 120:
+            return "90"
+        return "120+"
+
     for wo in base_qs:
         live = _live_open_balance(wo)
 
-        if live["open_bal"] == Decimal("0.00") and live["total_due"] > Decimal("0.00"):
-            wo.open_balance_calc = live["open_bal"]
-            wo.amount_paid_calc = live["total_applied"]
-            wo.total_due_calc = live["total_due"]
-            workorders.append(wo)
+        if live["open_bal"] <= Decimal("0.00"):
+            continue
+
+        billed_date = _workorder_billed_date(wo)
+        aging_days = _workorder_aging_days(wo, today_date=today_date)
+        aging_bucket = bucket_for_days(aging_days)
+
+        # summary totals always reflect all open items for customer
+        summary["total_open"] += live["open_bal"]
+        if aging_bucket == "current":
+            summary["current"] += live["open_bal"]
+        elif aging_bucket == "30":
+            summary["thirty"] += live["open_bal"]
+        elif aging_bucket == "60":
+            summary["sixty"] += live["open_bal"]
+        elif aging_bucket == "90":
+            summary["ninety"] += live["open_bal"]
+        else:
+            summary["onetwenty"] += live["open_bal"]
+
+        # apply requested filter to table rows
+        if aging_filter and aging_filter != aging_bucket:
+            continue
+
+        wo.total_due_calc = live["total_due"]
+        wo.amount_paid_calc = live["total_applied"]
+        wo.open_balance_calc = live["open_bal"]
+        wo.date_billed_calc = billed_date
+        wo.date_paid_calc = getattr(wo, "date_paid", None)
+        wo.aging_days_calc = aging_days
+        wo.aging_bucket_calc = aging_bucket
+
+        workorders.append(wo)
 
     context = {
         "customer": selected_customer,
         "customers": customers,
         "workorders": workorders,
+        "aging_filter": aging_filter,
+        "summary": summary,
+    }
+    return render(request, "finance/AR/partials/open_workorder_list.html", context)
+
+@login_required
+def closed_workorders(request, cust):
+    selected_customer = get_object_or_404(Customer, id=cust)
+
+    base_qs = (
+        Workorder.objects
+        .filter(customer_id=cust)
+        .filter(billed=True)
+        .exclude(void=True)
+        .filter(_q_non_quote())
+        .order_by("-workorder")
+    )
+
+    workorders = []
+    total_days_to_pay = 0
+    days_to_pay_count = 0
+
+    for wo in base_qs:
+        live = _live_open_balance(wo)
+
+        if live["open_bal"] == Decimal("0.00") and live["total_due"] > Decimal("0.00"):
+            billed_date = _workorder_billed_date(wo)
+            paid_date = getattr(wo, "date_paid", None)
+
+            if billed_date and paid_date:
+                if hasattr(paid_date, "date"):
+                    paid_date = paid_date.date()
+                days_to_pay = max((paid_date - billed_date).days, 0)
+                total_days_to_pay += days_to_pay
+                days_to_pay_count += 1
+            else:
+                days_to_pay = None
+
+            wo.total_due_calc = live["total_due"]
+            wo.amount_paid_calc = live["total_applied"]
+            wo.open_balance_calc = live["open_bal"]
+            wo.date_billed_calc = billed_date
+            wo.date_paid_calc = paid_date
+            wo.days_to_pay_calc = days_to_pay
+
+            workorders.append(wo)
+
+    avg_days_to_pay = None
+    if days_to_pay_count:
+        avg_days_to_pay = round(total_days_to_pay / days_to_pay_count, 1)
+
+    context = {
+        "customer": selected_customer,
+        "workorders": workorders,
+        "avg_days_to_pay": avg_days_to_pay,
+        "days_to_pay_count": days_to_pay_count,
     }
     return render(request, "finance/AR/partials/closed_workorder_list.html", context)
 
@@ -519,19 +521,14 @@ def closed_workorders(request, cust):
 #     return render(request, 'finance/AR/modals/recieve_payment.html', context)
 
 @login_required
+@transaction.atomic
 def recieve_payment(request):
     paymenttype = PaymentType.objects.all()
     customers = Customer.objects.all().order_by("company_name")
 
     selected_customer_id = request.GET.get("customer") or request.GET.get("customers")
-    if selected_customer_id and str(selected_customer_id).isdigit():
-        selected_customer_id = int(selected_customer_id)
-    else:
-        selected_customer_id = None
+    selected_customer_id = int(selected_customer_id) if str(selected_customer_id).isdigit() else None
 
-    # -------------------------
-    # GET: render modal
-    # -------------------------
     if request.method != "POST":
         return render(
             request,
@@ -544,271 +541,175 @@ def recieve_payment(request):
             },
         )
 
-    modal = request.POST.get("modal")
     customer_id = request.POST.get("customer")
-    id_list = request.POST.getlist("payment")  # workorder PKs (checkboxes)
+    id_list = request.POST.getlist("payment")
 
-    def _open_invoice_modal_with_error(msg: str):
-        """
-        Re-render the open-invoice receive-payment modal with error text.
-        This preserves your UI behavior and recomputes outstanding live.
-        """
-        if not customer_id:
-            return render(
-                request,
-                "finance/AR/modals/recieve_payment.html",
-                {
-                    "paymenttype": paymenttype,
-                    "customers": customers,
-                    "form": PaymentForm(request.POST),
-                    "message": msg,
-                    "selected_customer_id": selected_customer_id,
-                },
-            )
+    if not (customer_id and str(customer_id).isdigit()):
+        return HttpResponseBadRequest("Invalid customer")
 
-        workorders_qs = (
-            Workorder.objects.filter(customer=customer_id)
-            .exclude(billed=0)
-            .exclude(quote=1)
-            .exclude(void=1)
-            .order_by("workorder")
-        )
+    customer = get_object_or_404(Customer, pk=int(customer_id))
 
-        total_outstanding = Decimal("0.00")
-        workorders_list = []
+    def _modal_error(msg):
+        return HttpResponse(msg, status=400)
 
-        for wo in list(workorders_qs):
-            totals = compute_workorder_totals(wo)
-            paid_amt = (
-                WorkorderPayment.objects
-                .filter(workorder=wo, void=False)
-                .aggregate(total=Sum("payment_amount"))["total"]
-                or Decimal("0.00")
-            )
-
-            total_due = Decimal(getattr(totals, "total", None) or Decimal("0.00")).quantize(Decimal("0.01"))
-
-            # ✅ Fallback for legacy/test fixtures where totals are not computable
-            if total_due == Decimal("0.00"):
-                try:
-                    total_due = Decimal(wo.open_balance or Decimal("0.00")).quantize(Decimal("0.01"))
-                except Exception:
-                    total_due = Decimal("0.00")
-
-            paid_amt = Decimal(paid_amt).quantize(Decimal("0.01"))
-            open_bal = (total_due - paid_amt).quantize(Decimal("0.01"))
-
-            if abs(open_bal) < Decimal("0.01"):
-                open_bal = Decimal("0.00")
-            if open_bal < Decimal("0.00"):
-                open_bal = Decimal("0.00")
-
-            wo.open_balance_calc = open_bal
-
-            # ✅ ONLY show actually-open invoices
-            if open_bal > Decimal("0.00"):
-                total_outstanding += open_bal
-                workorders_list.append(wo)
-
-        return render(
-            request,
-            "finance/reports/modals/open_invoice_recieve_payment.html",
-            {
-                "total_outstanding": total_outstanding,
-                "workorders": workorders_list,
-                "paymenttype": paymenttype,
-                "customer": get_object_or_404(Customer, id=customer_id),
-                "form": PaymentForm(request.POST),
-                "message": msg,
-            },
-        )
-
-    # --- Parse amount ---
-    raw_amount = (request.POST.get("amount") or "0").strip()
+    # --- amount ---
     try:
-        pay_amount = Decimal(raw_amount).quantize(Decimal("0.01"))
-    except (InvalidOperation, TypeError):
-        return _open_invoice_modal_with_error("Enter a valid payment amount.")
+        pay_amount = Decimal(request.POST.get("amount", "0")).quantize(Decimal("0.01"))
+    except:
+        return _modal_error("Invalid amount")
 
-    if pay_amount <= Decimal("0.00"):
-        return _open_invoice_modal_with_error("Payment amount must be greater than 0.00.")
+    if pay_amount <= 0:
+        return _modal_error("Amount must be > 0")
 
-    # --- Parse date ---
-    raw_date = (request.POST.get("date") or "").strip()
+    # --- date ---
+    raw_date = request.POST.get("date")
     try:
-        payment_date_dt = datetime.strptime(raw_date, "%m/%d/%Y")
-    except Exception:
-        payment_date_dt = timezone.localtime(timezone.now()).replace(hour=0, minute=0, second=0, microsecond=0)
-    payment_date = payment_date_dt.date()
+        payment_date = datetime.strptime(raw_date, "%m/%d/%Y").date()
+    except:
+        try:
+            payment_date = date_cls.fromisoformat(raw_date)
+        except:
+            payment_date = timezone.localdate()
 
-    # --- Selected workorders (can be empty now: unapplied payments allowed) ---
+    # --- selected workorders ---
     wo_ids = [int(x) for x in id_list if str(x).isdigit()]
-    workorders = list(Workorder.objects.filter(pk__in=wo_ids)) if wo_ids else []
 
-    # --- Compute LIVE open balances for selected workorders (if any) ---
-    # ✅ Important: if computed totals are 0, fall back to wo.open_balance (tests + legacy)
+    workorders = list(
+        Workorder.objects.select_for_update()
+        .filter(pk__in=wo_ids, customer=customer)
+        .exclude(billed=0)
+        .filter(_q_non_quote())
+        .exclude(void=1)
+    ) if wo_ids else []
+
+    # --- compute live balances ---
     live_open = {}
-    payment_total = Decimal("0.00")
+    selected_total = Decimal("0.00")
 
-    if workorders:
-        for wo in workorders:
-            paid_amt = (
-                WorkorderPayment.objects
-                .filter(workorder=wo, void=False)
-                .aggregate(total=Sum("payment_amount"))["total"]
-                or Decimal("0.00")
-            )
-            paid_amt = Decimal(paid_amt).quantize(Decimal("0.01"))
+    for wo in workorders:
+        live = _live_open_balance(wo)
+        live_open[wo.pk] = live["open_bal"]
+        selected_total += live["open_bal"]
 
-            totals = compute_workorder_totals(wo)
-            computed_total = Decimal(getattr(totals, "total", None) or Decimal("0.00")).quantize(Decimal("0.01"))
+    # must cover selected invoices
+    if workorders and selected_total > pay_amount:
+        return _modal_error("Payment less than selected invoices")
 
-            try:
-                stored_open = Decimal(wo.open_balance or Decimal("0.00")).quantize(Decimal("0.01"))
-            except Exception:
-                stored_open = Decimal("0.00")
-
-            if computed_total > Decimal("0.00"):
-                open_bal = (computed_total - paid_amt).quantize(Decimal("0.01"))
-            else:
-                open_bal = stored_open
-
-            if abs(open_bal) < Decimal("0.01"):
-                open_bal = Decimal("0.00")
-            if open_bal < Decimal("0.00"):
-                open_bal = Decimal("0.00")
-
-            live_open[wo.pk] = open_bal
-            payment_total += open_bal
-
-        # Keep your existing rule ONLY when invoices are selected:
-        # payment must cover all selected balances
-        if payment_total > pay_amount:
-            if modal != "1":
-                # tests expect 302 here
-                return redirect("finance:open_invoices_recieve_payment_with_msg", pk=int(customer_id), msg=1)
-            return _open_invoice_modal_with_error("The payment amount is less than the workorders selected")
-
-    # --- Create the Payments row ---
+    # --- create payment ---
     form = PaymentForm(request.POST)
     if not form.is_valid():
-        return _open_invoice_modal_with_error("Please fix the highlighted fields and try again.")
+        return _modal_error("Invalid form")
 
-    with transaction.atomic():
-        cust = get_object_or_404(Customer, id=customer_id) if customer_id else None
+    obj = form.save(commit=False)
+    obj.customer = customer
+    obj.amount = pay_amount
+    obj.available = pay_amount
+    obj.date = payment_date
+    obj.save()
 
-        obj = form.save(commit=False)
-        obj.amount = pay_amount
-        obj.available = pay_amount  # start fully available; we'll set to remainder later
-        obj.check_number = request.POST.get("check_number")
-        obj.giftcard_number = request.POST.get("giftcard_number")
-        obj.refunded_invoice_number = request.POST.get("refunded_invoice_number")
-        obj.save()
+    remainder = pay_amount
 
-        payment_id = obj.pk
-        remainder = pay_amount
+    # --- apply payments ---
+    for wo in workorders:
+        balance = live_open.get(wo.pk, Decimal("0.00"))
+        apply_amt = min(balance, remainder).quantize(Decimal("0.01"))
 
-        # ✅ Apply to selected workorders (if any)
-        for wo in workorders:
-            wo_balance = live_open.get(wo.pk, Decimal("0.00"))
-            apply_amt = min(remainder, wo_balance)
+        if apply_amt <= 0:
+            continue
 
-            if apply_amt <= Decimal("0.00"):
-                continue
+        WorkorderPayment.objects.create(
+            workorder=wo,
+            payment=obj,
+            payment_amount=apply_amt,
+            date=payment_date,
+            void=False,
+        )
 
-            billed_dt = wo.date_billed
-            billed_date = billed_dt.date() if billed_dt else payment_date
-            days_to_pay = abs((payment_date - billed_date).days)
+        recalc_workorder_balances(wo)
+        wo.refresh_from_db(fields=["paid_in_full"])
 
-            WorkorderPayment.objects.create(
-                workorder_id=wo.pk,
-                payment_id=payment_id,
-                payment_amount=apply_amt,
-                date=payment_date,
-            )
+        if wo.paid_in_full:
+            Workorder.objects.filter(pk=wo.pk).update(date_paid=payment_date)
 
-            # keep legacy fields that other parts of app still use
-            Workorder.objects.filter(pk=wo.pk).update(
-                days_to_pay=days_to_pay,
-                payment_id=payment_id,
-            )
+        remainder -= apply_amt
 
-            # recompute from payment rows so all screens stay in sync
-            wo_refresh = Workorder.objects.select_for_update().get(pk=wo.pk)
-            recalc_workorder_balances(wo_refresh)
+    # --- remaining unapplied ---
+    obj.available = remainder
+    obj.save(update_fields=["available"])
 
-            # preserve your days_to_pay behavior only when fully paid
-            wo_refresh.refresh_from_db(fields=["paid_in_full"])
-            if wo_refresh.paid_in_full:
-                Workorder.objects.filter(pk=wo.pk).update(date_paid=payment_date, days_to_pay=days_to_pay)
-            else:
-                Workorder.objects.filter(pk=wo.pk).update(days_to_pay=days_to_pay)
+    # --- recompute customer ---
+    recompute_customer_open_balance(customer.id)
+    recompute_customer_credit(customer.id)
 
-            remainder -= apply_amt
-
-        # ✅ Save remaining unapplied amount on the payment
-        Payments.objects.filter(pk=payment_id).update(available=remainder)
-
-        # ✅ Update customer balances/credit
-        if cust:
-            credit = (cust.credit or Decimal("0.00")) + pay_amount
-            credit = (credit - (pay_amount - remainder)).quantize(Decimal("0.01"))
-
-            open_balance = (
-                Workorder.objects.filter(customer_id=cust.id)
-                .exclude(completed=0)
-                .exclude(paid_in_full=1)
-                .exclude(quote=1)
-                .exclude(void=1)
-                .aggregate(sum=Sum("open_balance"))
-            )["sum"] or Decimal("0.00")
-            open_balance = Decimal(open_balance).quantize(Decimal("0.01"))
-
-            high_balance = cust.high_balance or Decimal("0.00")
-            if open_balance > high_balance:
-                high_balance = open_balance
-
-            Customer.objects.filter(pk=cust.id).update(
-                credit=credit,
-                open_balance=open_balance,
-                high_balance=high_balance,
-            )
-
-    # --- Return paths / triggers ---
-    trigger = json.dumps({
-        "WorkorderVoid": True,
-        "itemListChanged": True,
-        "WorkorderInfoChanged": True,
-        "arChanged": True
-    })
-
+    # --- trigger UI refresh ---
     resp = HttpResponse(status=204)
-    resp["HX-Trigger"] = trigger
+    resp["HX-Trigger"] = json.dumps({
+        "arChanged": True,
+        "itemListChanged": True,
+    })
     return resp
 
 @login_required
+@transaction.atomic
 def unrecieve_payment(request):
     paymenttype = PaymentType.objects.all()
-    customers = Customer.objects.all().order_by('company_name')
+    customers = Customer.objects.all().order_by("company_name")
+
     if request.method == "POST":
-            customer = request.POST.get('customer')
-            print(customer)
-            check = request.POST.get('check_number')
-            giftcard = request.POST.get('giftcard_number')
-            refund = request.POST.get('refunded_invoice_number')
-            amount = request.POST.get('amount')
-            amount = int(amount)
-            cust = Customer.objects.get(id=customer)
-            credit = cust.credit - amount
-            Customer.objects.filter(pk=customer).update(credit=credit)
-            return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+        payment_id = request.POST.get("payment_id") or request.POST.get("payment")
+        if not (payment_id and str(payment_id).isdigit()):
+            return HttpResponse("Missing payment", status=400)
+
+        payment = get_object_or_404(
+            Payments.objects.select_for_update(),
+            pk=int(payment_id),
+            void=False,
+        )
+
+        customer_id = payment.customer_id
+
+        # void any applied rows first
+        applied_rows = (
+            WorkorderPayment.objects
+            .select_related("workorder")
+            .filter(payment=payment, void=False)
+        )
+
+        touched_workorders = set()
+
+        for row in applied_rows:
+            WorkorderPayment.objects.filter(pk=row.pk).update(void=True)
+            if row.workorder_id:
+                touched_workorders.add(row.workorder_id)
+
+        for wo_id in touched_workorders:
+            wo = Workorder.objects.select_for_update().get(pk=wo_id)
+            recalc_workorder_balances(wo)
+            wo.refresh_from_db(fields=["paid_in_full"])
+            if not wo.paid_in_full:
+                Workorder.objects.filter(pk=wo.pk).update(date_paid=None)
+
+        Payments.objects.filter(pk=payment.pk).update(
+            void=True,
+            available=Decimal("0.00"),
+            void_reason="Unreceived payment",
+            voided_at=timezone.now(),
+            voided_by=request.user,
+        )
+
+        if customer_id:
+            recompute_customer_open_balance(customer_id)
+            recompute_customer_credit(customer_id)
+
+        return HttpResponse(status=204, headers={"HX-Trigger": "arChanged"})
+
     form = PaymentForm
     context = {
-        'paymenttype':paymenttype,
-        'form': form,
-        'customers':customers,
+        "paymenttype": paymenttype,
+        "form": form,
+        "customers": customers,
     }
-    return render(request, 'finance/AR/modals/remove_payment.html', context)
+    return render(request, "finance/AR/modals/remove_payment.html", context)
 
 @login_required
 def payment_detail(request):
@@ -835,228 +736,78 @@ def payment_detail(request):
         context,
     )
 
-from decimal import Decimal, InvalidOperation
-from django.db import transaction
-from django.db.models import Avg, Sum
 
 @login_required
 @transaction.atomic
 def apply_payment(request):
     if request.method != "POST":
-        return HttpResponse(status=204, headers={"HX-Trigger": "itemListChanged"})
+        return HttpResponse(status=405)
 
-    cust = request.POST.get("customer")
-    pk = request.POST.get("pk")              # workorder id
-    payment_id = request.POST.get("payment") # Payments id
+    payment_id = request.POST.get("payment")
+    workorder_id = request.POST.get("workorder")
+    raw_amount = (request.POST.get("amount") or "0").strip()
+    raw_date = (request.POST.get("date") or "").strip()
 
-    # --- Lock rows we mutate ---
+    if not (payment_id and payment_id.isdigit() and workorder_id and workorder_id.isdigit()):
+        return HttpResponse("Missing fields", status=400)
+
     try:
-        payment_detail = Payments.objects.select_for_update().get(pk=payment_id)
+        amt = Decimal(raw_amount).quantize(Decimal("0.01"))
     except Exception:
-        return redirect("finance:open_invoices_with_msg", pk=cust, msg=1)
+        amt = Decimal("0.00")
 
-    customer = Customer.objects.select_for_update().get(id=cust)
-    workorder = Workorder.objects.select_for_update().get(id=pk)
+    if amt <= Decimal("0.00"):
+        return HttpResponse("Amount must be greater than 0", status=400)
 
-    partial_raw = (request.POST.get("partial_payment") or "").strip()
+    try:
+        apply_date = date_cls.fromisoformat(raw_date) if raw_date else timezone.now().date()
+    except Exception:
+        apply_date = timezone.now().date()
 
-    now_dt = timezone.now()
-    paid_date = now_dt.date()
-
-    # ✅ stable date-based days_to_pay
-    date_billed = workorder.date_billed or now_dt
-    billed_date = date_billed.date() if hasattr(date_billed, "date") else date_billed
-    days_to_pay = max((paid_date - billed_date).days, 0)
-
-    # --- Money inputs ---
-    credit = (customer.credit or Decimal("0.00")).quantize(Decimal("0.01"))
-    payment_available = (payment_detail.available or Decimal("0.00")).quantize(Decimal("0.01"))
-
-    # ---------------------------------------------------------------------
-    # ✅ LIVE totals/open balance (source of truth)
-    # ---------------------------------------------------------------------
-    totals = compute_workorder_totals(workorder)
-    total_due = (Decimal(totals.total or Decimal("0.00"))).quantize(Decimal("0.01"))
-
-    paid_so_far = (
-        WorkorderPayment.objects
-        .filter(workorder_id=workorder.id, void=False)
-        .aggregate(total=Sum("payment_amount"))["total"]
-        or Decimal("0.00")
+    payment = get_object_or_404(
+        Payments.objects.select_for_update().select_related("customer"),
+        pk=int(payment_id),
+        void=False,
     )
-    paid_so_far = Decimal(paid_so_far).quantize(Decimal("0.01"))
+    customer = payment.customer
 
-    open_bal = (total_due - paid_so_far).quantize(Decimal("0.01"))
-    if abs(open_bal) < Decimal("0.01"):
-        open_bal = Decimal("0.00")
-    if open_bal < Decimal("0.00"):
-        open_bal = Decimal("0.00")
-
-    # If it's already paid, treat as error / nothing to do
-    if open_bal <= Decimal("0.00"):
-        return redirect("finance:open_invoices_with_msg", pk=cust, msg=1)
-
-    # ---------------------------------------------------------------------
-    # Determine apply amount (partial or full)
-    # ---------------------------------------------------------------------
-    if partial_raw:
-        try:
-            apply_amt = Decimal(partial_raw).quantize(Decimal("0.01"))
-        except (InvalidOperation, TypeError):
-            return redirect("finance:open_invoices_with_msg", pk=cust, msg=1)
-
-        if apply_amt <= Decimal("0.00"):
-            return redirect("finance:open_invoices_with_msg", pk=cust, msg=1)
-
-        # clamp to open balance
-        if apply_amt > open_bal:
-            apply_amt = open_bal
-    else:
-        # Full apply means "apply whatever is still open"
-        apply_amt = open_bal
-
-    # Must have enough available on the payment
-    if payment_available < apply_amt:
-        return redirect("finance:open_invoices_with_msg", pk=cust, msg=1)
-
-    # ---------------------------------------------------------------------
-    # Apply
-    # ---------------------------------------------------------------------
-    # Create an application row (DON'T overwrite prior applications)
-    WorkorderPayment.objects.create(
-        workorder_id=workorder.id,
-        payment_id=payment_detail.id,
-        payment_amount=apply_amt,
-        date=paid_date,
+    workorder = get_object_or_404(
+        Workorder.objects.select_for_update(),
+        pk=int(workorder_id),
+        customer=customer,
         void=False,
     )
 
-    # Reduce payment available
-    Payments.objects.filter(pk=payment_detail.id).update(
-        available=(payment_available - apply_amt).quantize(Decimal("0.01"))
+    available = Decimal(payment.available or Decimal("0.00")).quantize(Decimal("0.01"))
+    if amt > available:
+        return HttpResponse("Amount exceeds available payment balance", status=400)
+
+    live = _live_open_balance(workorder)
+    if amt > live["open_bal"]:
+        return HttpResponse("Amount exceeds workorder open balance", status=400)
+
+    WorkorderPayment.objects.create(
+        workorder=workorder,
+        payment=payment,
+        payment_amount=amt,
+        date=apply_date,
+        void=False,
     )
 
-    # Recalc header balances/paid flag based on items + payments
-    # (also sets date_paid if you do that inside recalc)
-    workorder_refresh = Workorder.objects.select_for_update().get(pk=workorder.id)
-    recalc_workorder_balances(workorder_refresh)
-
-    # If fully paid now, set days_to_pay
-    # (keep your original behavior: only set when paid)
-    if workorder_refresh.paid_in_full:
-        Workorder.objects.filter(pk=workorder.id).update(days_to_pay=days_to_pay)
-
-    # Customer credit/open_balance/high_balance/avg_days_to_pay
-    # Your existing logic expects "credit" to drop by what got applied.
-    new_credit = (credit - apply_amt).quantize(Decimal("0.01"))
-
-    open_balance_sum = (
-        Workorder.objects
-        .filter(customer_id=cust)
-        .exclude(completed=0)
-        .exclude(paid_in_full=1)
-        .exclude(quote=1)
-        .exclude(void=1)
-        .aggregate(total=Sum("open_balance"))
-    )["total"] or Decimal("0.00")
-    open_balance_sum = Decimal(open_balance_sum).quantize(Decimal("0.01"))
-
-    if workorder_refresh.paid_in_full:
-        avg_days = _recalc_avg_days_to_pay(cust)
-        Customer.objects.filter(pk=cust).update(
-            credit=new_credit,
-            open_balance=open_balance_sum,
-            avg_days_to_pay=avg_days,
-        )
-    else:
-        Customer.objects.filter(pk=cust).update(
-            credit=new_credit,
-            open_balance=open_balance_sum,
-        )
-
-    # ---------------------------------------------------------------------
-    # Re-render Open Invoices modal using LIVE open balances
-    # and ONLY include invoices with open > 0
-    # ---------------------------------------------------------------------
-    modal_workorders_qs = (
-        Workorder.objects
-        .filter(customer=cust)
-        .exclude(billed=0)
-        .exclude(quote=1)
-        .exclude(void=1)
-        .order_by("workorder")
-    )
-    modal_workorders = list(modal_workorders_qs)
-
-    # Sum payments per workorder in one query
-    paid_map = {
-        row["workorder_id"]: (row["total"] or Decimal("0.00"))
-        for row in (
-            WorkorderPayment.objects
-            .filter(workorder_id__in=[w.id for w in modal_workorders], void=False)
-            .values("workorder_id")
-            .annotate(total=Sum("payment_amount"))
-        )
-    }
-
-    filtered = []
-    total_open_all = Decimal("0.00")
-    for wo in modal_workorders:
-        t = compute_workorder_totals(wo)
-        tot = Decimal(t.total or Decimal("0.00")).quantize(Decimal("0.01"))
-        paid = Decimal(paid_map.get(wo.id, Decimal("0.00"))).quantize(Decimal("0.01"))
-        ob = (tot - paid).quantize(Decimal("0.01"))
-
-        if abs(ob) < Decimal("0.01"):
-            ob = Decimal("0.00")
-        if ob < Decimal("0.00"):
-            ob = Decimal("0.00")
-
-        wo.open_balance_calc = ob
-
-        # ✅ only show open invoices
-        if ob > Decimal("0.00"):
-            filtered.append(wo)
-            total_open_all += ob
-
-    payments = (
-        Payments.objects
-        .filter(customer=cust)
-        .exclude(available=None)
-        .exclude(void=1)
+    Payments.objects.filter(pk=payment.pk).update(
+        available=max(Decimal("0.00"), available - amt)
     )
 
-    credits_now = Customer.objects.get(pk=cust).credit
+    workorder.refresh_from_db()
+    recalc_workorder_balances(workorder)
+    workorder.refresh_from_db(fields=["paid_in_full"])
+    if workorder.paid_in_full:
+        Workorder.objects.filter(pk=workorder.pk).update(date_paid=apply_date)
 
-    context = {
-        "payments": payments,
-        "customer": cust,
-        "total_balance": {"open_balance__sum": total_open_all},  # keep template shape
-        "credit": credits_now,
-        "workorders": filtered,
-    }
+    recompute_customer_open_balance(customer.pk)
+    recompute_customer_credit(customer.pk)
 
-    # If there are still open invoices OR credit, keep showing the modal.
-    # Otherwise close + refresh workorder panels.
-    if filtered or (credits_now and Decimal(credits_now) > Decimal("0.00")):
-        resp = render(request, "finance/reports/modals/open_invoices.html", context)
-        # also refresh workorder page widgets in case this modal is opened from WO page
-        resp["HX-Trigger"] = json.dumps({
-            "WorkorderVoid": True,
-            "itemListChanged": True,
-            "WorkorderInfoChanged": True,
-            "arChanged": True
-        })
-        return resp
-
-    resp = HttpResponse(status=204)
-    resp["HX-Trigger"] = json.dumps({
-        "WorkorderVoid": True,
-        "itemListChanged": True,
-        "WorkorderInfoChanged": True,
-        "arChanged": True
-    })
-    return resp
+    return hx_ar_changed_204()
 
 
 
@@ -1117,65 +868,68 @@ def unapply_payment(request):
                 
 
 @login_required
+@transaction.atomic
 def apply_other(request, cust=None):
+    customer = cust
+
     if request.method == "GET":
-        customer = cust
-        print(customer)
-    if request.method == "POST":
-            customer = request.POST.get('customer')
-            amount = request.POST.get('amount')
-            if not amount:
-                print('no amount')
-                form = AppliedElsewhereForm
-                message= 'Please enter an amount'
-                context = {
-                    'form': form,
-                    'customer':customer,
-                    'message':message,
-                }
-                return render(request, 'finance/AR/modals/apply_elsewhere.html', context)
-            else:
-                print(amount)
-            print(1)
-            customer = request.POST.get('customer')
-            print(customer)
-            form = AppliedElsewhereForm(request.POST)
-            if form.is_valid():
-                obj = form.save(commit=False)
-                obj.customer_id = customer
-                print(customer)
-                cust = Customer.objects.get(id=customer)
-                try:
-                    credit = cust.credit - obj.amount
-                    if credit < 0:
-                        message = 'Customer only has credit of:'
-                        credit = cust.credit
-                        context = {
-                            'form': form,
-                            'customer':customer,
-                            'message':message,
-                            'credit':credit,
-                        }
-                        return render(request, 'finance/AR/modals/apply_elsewhere.html', context)
-                    print('credit')
-                    print(credit)
-                except: 
-                    credit = obj.amount
-                    print(2)
-                obj.save()
-                Customer.objects.filter(pk=customer).update(credit=credit)
-                print(3)
-                #return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
-                #return render(request, 'finance/reports/modals/open_invoices.html', pk=customer)
-                return redirect('finance:open_invoices', pk=customer)
-            else:
-                print(form.errors)
-    form = AppliedElsewhereForm
-    context = {
-        'form': form,
-        'customer':customer,
-    }
-    return render(request, 'finance/AR/modals/apply_elsewhere.html', context)
+        form = AppliedElsewhereForm
+        context = {
+            "form": form,
+            "customer": customer,
+        }
+        return render(request, "finance/AR/modals/apply_elsewhere.html", context)
+
+    customer = request.POST.get("customer")
+    amount_raw = (request.POST.get("amount") or "").strip()
+
+    if not (customer and str(customer).isdigit()):
+        return HttpResponse("Missing customer", status=400)
+
+    try:
+        amount = Decimal(amount_raw).quantize(Decimal("0.01"))
+    except Exception:
+        amount = Decimal("0.00")
+
+    form = AppliedElsewhereForm(request.POST)
+
+    if amount <= Decimal("0.00"):
+        context = {
+            "form": form,
+            "customer": customer,
+            "message": "Please enter an amount greater than 0",
+        }
+        return render(request, "finance/AR/modals/apply_elsewhere.html", context, status=400)
+
+    if not form.is_valid():
+        context = {
+            "form": form,
+            "customer": customer,
+            "message": "Please correct the form errors",
+        }
+        return render(request, "finance/AR/modals/apply_elsewhere.html", context, status=400)
+
+    cust_obj = Customer.objects.select_for_update().get(id=customer)
+    available_credit = Decimal(cust_obj.credit or Decimal("0.00")).quantize(Decimal("0.01"))
+
+    if amount > available_credit:
+        context = {
+            "form": form,
+            "customer": customer,
+            "message": "Customer only has credit of:",
+            "credit": available_credit,
+        }
+        return render(request, "finance/AR/modals/apply_elsewhere.html", context, status=400)
+
+    obj = form.save(commit=False)
+    obj.customer_id = customer
+    obj.amount = amount
+    obj.save()
+
+    recompute_customer_credit(cust_obj.id)
+    recompute_customer_open_balance(cust_obj.id)
+
+    return redirect("finance:open_invoices", pk=customer)
 
 # @login_required
 # def add_bill_payable(request):
@@ -1234,12 +988,23 @@ def view_bills_payable(request):
 
 @login_required
 def complete_not_billed(request):
-    listing = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(void=1).order_by('hr_customer')
-    print(listing)
+    listing = (
+        Workorder.objects
+        .filter(completed=True, billed=False, void=False)
+        .filter(_q_non_quote())
+        .select_related("customer")
+        .order_by("hr_customer", "workorder")
+    )
+
+    rows = []
+    for wo in listing:
+        wo.open_balance = _live_total_due(wo)
+        rows.append(wo)
+
     context = {
-        'listing':listing,
+        "listing": rows,
     }
-    return render(request, 'finance/reports/complete_not_billed.html', context)
+    return render(request, "finance/reports/complete_not_billed.html", context)
 
 
 # aging = Workorder.objects.all().exclude(billed=0).exclude(paid_in_full=1)
@@ -1254,205 +1019,81 @@ def complete_not_billed(request):
 
 @login_required
 def ar_aging(request):
-    # Manual update flag from "Update" link
-    update_ar = request.GET.get("up")
-    print("update:", update_ar)
-
-    if update_ar == "1":
-        from finance.cron import ar_aging as run_ar_aging
-        run_ar_aging()
-
-    today = timezone.now()
-    today_date = today.date()
-
-    # 🔹 Only ACTIVE customers
-    # adjust 'active' to 'is_active' or whatever your field actually is
     active_ids = Customer.objects.filter(active=True).values_list("id", flat=True)
 
-    # Live open workorders for active customers only
     workorders = (
-        Workorder.objects
+        _workorders_base_ar_qs()
         .filter(customer_id__in=active_ids)
-        .exclude(billed=0)
-        .exclude(paid_in_full=1)
-        .exclude(quote=1)
-        .exclude(void=1)
+        .order_by("hr_customer", "workorder")
     )
 
-    # Overall outstanding balance (active customers only)
-    total_balance = workorders.aggregate(Sum("open_balance"))
-
-    # Snapshot rows for active customers only
-    ar = (
-        Araging.objects
-        .filter(customer_id__in=active_ids)
-        .order_by("hr_customer")
-    )
-
-    # --- "Billed Today" per active customer ---
-    today_workorders = workorders.filter(
-        Q(date_billed__date=today_date) | Q(date_billed__isnull=True)
-    )
-
-    today_totals_qs = (
-        today_workorders
-        .values("customer_id")
-        .annotate(billed_today=Sum("open_balance"))
-    )
-
-    today_totals_map = {
-        row["customer_id"]: row["billed_today"] or Decimal("0.00")
-        for row in today_totals_qs
-    }
-
-    for row in ar:
-        row.billed_today = today_totals_map.get(row.customer_id, Decimal("0.00"))
-
-    total_billed_today = sum(today_totals_map.values(), Decimal("0.00"))
-
-    # Column totals from snapshot (active customers only)
-    total_current = ar.aggregate(Sum("current"))
-    total_thirty = ar.aggregate(Sum("thirty"))
-    total_sixty = ar.aggregate(Sum("sixty"))
-    total_ninety = ar.aggregate(Sum("ninety"))
-    total_onetwenty = ar.aggregate(Sum("onetwenty"))
+    ar, totals = _build_live_aging_rows(workorders, include_billed_today=True)
 
     context = {
-        "total_current": total_current,
-        "total_thirty": total_thirty,
-        "total_sixty": total_sixty,
-        "total_ninety": total_ninety,
-        "total_onetwenty": total_onetwenty,
-        "total_balance": total_balance,
-        "total_billed_today": total_billed_today,
+        "total_current": totals["total_current"],
+        "total_thirty": totals["total_thirty"],
+        "total_sixty": totals["total_sixty"],
+        "total_ninety": totals["total_ninety"],
+        "total_onetwenty": totals["total_onetwenty"],
+        "total_balance": totals["total_balance"],
+        "total_billed_today": totals["total_billed_today"],
         "ar": ar,
     }
     return render(request, "finance/reports/ar_aging.html", context)
 
 @login_required
 def krueger_ar_aging(request):
-    #Most of this function was moved to a cronjob
-    update_ar = request.GET.get('up')
-    print('update')
-    print(update_ar)
-    #customers = Workorder.objects.all().exclude(quote=1).exclude(paid_in_full=1).exclude(billed=0)
-    today = timezone.now()
-    customers = Customer.objects.all()
-    ar = Krueger_Araging.objects.all()
-    workorders = Workorder.objects.filter().exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).exclude(internal_company='LK Design')
-    # for x in workorders:
-    #     #print(x.id)
-    #     if not x.date_billed:
-    #         x.date_billed = today
-    #     age = x.date_billed - today
-    #     age = abs((age).days)
-    #     print(age)
-    #     Workorder.objects.filter(pk=x.pk).update(aging = age)
-    total_balance = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).filter(internal_company='Krueger Printing').aggregate(Sum('open_balance'))
-    print(total_balance['open_balance__sum'] or 0)
-    invoices = workorders.filter().exclude(billed=0).exclude(paid_in_full=1).filter(internal_company='Krueger Printing')
-    for x in invoices:
-        print(x.id)
-    # for x in customers:
-    #     try:
-    #         #Get the Araging customer and check to see if aging has been updated today
-    #         modified = Araging.objects.get(customer=x.id)
-    #         print(x.company_name)
-    #         day = today.strftime('%Y-%m-%d')
-    #         day = str(day)
-    #         date = str(modified.date)
-    #         print(day)
-    #         print(date)
-    #         if day == date:
-    #             #Don't update, as its been done today
-    #             print('today')
-    #             update = 0
-    #             if update_ar == '1':
-    #                 print('update')
-    #                 update = 1
-    #         else:
-    #             update = 1
-    #     except:
-    #         update = 1
-    #     #Update the Araging that needs to be done
-    #     if update == 1:
-    #         if Workorder.objects.filter(customer_id = x.id).exists():
-    #             current = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__gt = 29).aggregate(Sum('open_balance'))
-    #             try:
-    #                 current = list(current.values())[0]
-    #             except:
-    #                 current = 0
-    #             thirty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 30).exclude(aging__gt = 59).aggregate(Sum('open_balance'))
-    #             try: 
-    #                 thirty = list(thirty.values())[0]
-    #             except:
-    #                 thirty = 0
-    #             sixty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 60).exclude(aging__gt = 89).aggregate(Sum('open_balance'))
-    #             try:
-    #                 sixty = list(sixty.values())[0]
-    #             except:
-    #                 sixty = 0
-    #             ninety = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 90).exclude(aging__gt = 119).aggregate(Sum('open_balance'))
-    #             try:
-    #                 ninety = list(ninety.values())[0]
-    #             except:
-    #                 ninety = 0
-    #             onetwenty = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).exclude(aging__lt = 120).aggregate(Sum('open_balance'))
-    #             try:
-    #                 onetwenty = list(onetwenty.values())[0]
-    #             except:
-    #                 onetwenty = 0
-    #             total = workorders.filter(customer_id = x.id).exclude(billed=0).exclude(paid_in_full=1).aggregate(Sum('open_balance'))
-    #             try:
-    #                 total = list(total.values())[0]
-    #             except:
-    #                 total = 0
-    #             try: 
-    #                 obj = Araging.objects.get(customer_id=x.id)
-    #                 Araging.objects.filter(customer_id=x.id).update(hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-    #             except:
-    #                 obj = Araging(customer_id=x.id,hr_customer=x.company_name, date=today, current=current, thirty=thirty, sixty=sixty, ninety=ninety, onetwenty=onetwenty, total=total)
-    #                 obj.save()
-    ar = Krueger_Araging.objects.all().order_by('hr_customer')
-    #total_current = Araging.objects.filter().aggregate(Sum('current'))
-    total_current = ar.filter().aggregate(Sum('current'))
-    total_thirty = ar.filter().aggregate(Sum('thirty'))
-    total_sixty = ar.filter().aggregate(Sum('sixty'))
-    total_ninety = ar.filter().aggregate(Sum('ninety'))
-    total_onetwenty = ar.filter().aggregate(Sum('onetwenty'))
-    print(total_current)
-    
-    #print(ar)
+    workorders = (
+        _workorders_base_ar_qs()
+        .filter(internal_company="Krueger Printing")
+        .order_by("hr_customer", "printleader_workorder", "workorder")
+    )
+
+    ar, totals = _build_live_aging_rows(workorders, include_billed_today=False)
+
     context = {
-        'total_current':total_current,
-        'total_thirty':total_thirty,
-        'total_sixty':total_sixty,
-        'total_ninety':total_ninety,
-        'total_onetwenty':total_onetwenty,
-        'total_balance':total_balance,
-        'ar': ar,
+        "total_current": totals["total_current"],
+        "total_thirty": totals["total_thirty"],
+        "total_sixty": totals["total_sixty"],
+        "total_ninety": totals["total_ninety"],
+        "total_onetwenty": totals["total_onetwenty"],
+        "total_balance": totals["total_balance"],
+        "ar": ar,
     }
-    return render(request, 'finance/reports/krueger_ar_aging.html', context)
+    return render(request, "finance/reports/krueger_ar_aging.html", context)
 
 @login_required
 def krueger_ar(request):
-    workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('printleader_workorder')
-    total_balance = workorders.filter().aggregate(Sum('open_balance'))
+    workorders_qs = (
+        _workorders_base_ar_qs()
+        .filter(internal_company="Krueger Printing")
+        .order_by("printleader_workorder", "workorder")
+    )
+
+    workorders, total_balance = _build_live_ar_rows(workorders_qs)
+
     context = {
-        'total_balance':total_balance,
-        'workorders':workorders,
+        "total_balance": total_balance,
+        "workorders": workorders,
     }
-    return render(request, 'finance/reports/krueger_ar.html', context)
+    return render(request, "finance/reports/krueger_ar.html", context)
 
 @login_required
 def lk_ar(request):
-    workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(internal_company = 'Office Supplies').exclude(billed=0).exclude(paid_in_full=1).exclude(quote=1).exclude(void=1).order_by('lk_workorder')
-    total_balance = workorders.filter().aggregate(Sum('open_balance'))
+    workorders_qs = (
+        _workorders_base_ar_qs()
+        .exclude(internal_company="Krueger Printing")
+        .exclude(internal_company="Office Supplies")
+        .order_by("lk_workorder", "workorder")
+    )
+
+    workorders, total_balance = _build_live_ar_rows(workorders_qs)
+
     context = {
-        'total_balance':total_balance,
-        'workorders':workorders,
+        "total_balance": total_balance,
+        "workorders": workorders,
     }
-    return render(request, 'finance/reports/lk_ar.html', context)
+    return render(request, "finance/reports/lk_ar.html", context)
 
 @login_required
 def all_printleader(request):
@@ -1466,14 +1107,20 @@ def all_printleader(request):
 
 @login_required
 def all_open_printleader(request):
-    workorders = Workorder.objects.filter().exclude(internal_company = 'LK Design').exclude(internal_company = 'Office Supplies').exclude(quote=1).exclude(void=1).exclude(paid_in_full=1).order_by('printleader_workorder')
-    total_balance = workorders.filter().aggregate(Sum('open_balance'))
-    context = {
-        'total_balance':total_balance,
-        'workorders':workorders,
-    }
-    return render(request, 'finance/reports/all_open_printleader.html', context)
+    workorders_qs = (
+        _workorders_base_ar_qs()
+        .exclude(internal_company="LK Design")
+        .exclude(internal_company="Office Supplies")
+        .order_by("printleader_workorder", "workorder")
+    )
 
+    workorders, total_balance = _build_live_ar_rows(workorders_qs)
+
+    context = {
+        "total_balance": total_balance,
+        "workorders": workorders,
+    }
+    return render(request, "finance/reports/all_open_printleader.html", context)
 @login_required
 def all_lk(request):
     workorders = Workorder.objects.filter().exclude(internal_company = 'Krueger Printing').exclude(internal_company = 'Office Supplies').exclude(quote=1).exclude(void=1).order_by('-lk_workorder')
@@ -1494,7 +1141,7 @@ def open_invoices(request, pk, msg=None):
         Workorder.objects
         .filter(customer=pk)
         .exclude(billed=0)
-        .exclude(quote=1)
+        .filter(_q_non_quote())
         .exclude(void=1)
         .exclude(workorder_total=0)
         .order_by("workorder")
@@ -1502,35 +1149,14 @@ def open_invoices(request, pk, msg=None):
 
     workorders = list(workorders_qs)
 
-    # Sum payments per workorder in one query
-    paid_map = {
-        row["workorder_id"]: (row["total"] or Decimal("0.00"))
-        for row in (
-            WorkorderPayment.objects
-            .filter(workorder_id__in=[w.id for w in workorders], void=False)
-            .values("workorder_id")
-            .annotate(total=Sum("payment_amount"))
-        )
-    }
-
-    # Attach computed balances for the template to use
     total_open_all = Decimal("0.00")
     filtered = []
 
     for wo in workorders:
-        totals = compute_workorder_totals(wo)
-        paid = paid_map.get(wo.id, Decimal("0.00"))
+        live = _live_open_balance(wo)
+        wo.total_balance_calc = live["total_due"]
+        wo.open_balance_calc = live["open_bal"]
 
-        wo.total_balance_calc = Decimal(totals.total or Decimal("0.00")).quantize(Decimal("0.01"))
-        wo.open_balance_calc = (wo.total_balance_calc - Decimal(paid)).quantize(Decimal("0.01"))
-
-        # clamp rounding noise / negatives
-        if abs(wo.open_balance_calc) < Decimal("0.01"):
-            wo.open_balance_calc = Decimal("0.00")
-        if wo.open_balance_calc < Decimal("0.00"):
-            wo.open_balance_calc = Decimal("0.00")
-
-        # ✅ only include truly open workorders
         if wo.open_balance_calc > Decimal("0.00"):
             filtered.append(wo)
             total_open_all += wo.open_balance_calc
@@ -1550,9 +1176,9 @@ def open_invoices(request, pk, msg=None):
         "message": message,
         "payments": payments,
         "customer": pk,
-        "total_balance": {"open_balance__sum": total_open_all},  # keep your template shape
+        "total_balance": {"open_balance__sum": total_open_all},
         "credit": credits,
-        "workorders": filtered,  # ✅ filtered list
+        "workorders": filtered,
     }
     return render(request, "finance/reports/modals/open_invoices.html", context)
 
@@ -1567,65 +1193,29 @@ def open_invoices_recieve_payment(request, pk, msg=None):
     paymenttype = PaymentType.objects.all()
     form = PaymentForm
 
-    # Start from "candidate" workorders
     base_qs = (
         Workorder.objects
         .filter(customer=pk)
         .exclude(billed=0)
-        .exclude(quote=1)
+        .filter(_q_non_quote())
         .exclude(void=1)
         .order_by("workorder")
     )
     candidates = list(base_qs)
 
-    if not candidates:
-        return render(
-            request,
-            "finance/reports/modals/open_invoice_recieve_payment.html",
-            {
-                "total_balance": {"open_balance__sum": Decimal("0.00")},
-                "workorders": [],
-                "paymenttype": paymenttype,
-                "customer": customer,
-                "form": form,
-                "message": message,
-            },
-        )
-
-    paid_map = {
-        row["workorder_id"]: (row["total"] or Decimal("0.00"))
-        for row in (
-            WorkorderPayment.objects
-            .filter(workorder_id__in=[w.id for w in candidates], void=False)
-            .values("workorder_id")
-            .annotate(total=Sum("payment_amount"))
-        )
-    }
-
     workorders = []
     total_open_all = Decimal("0.00")
 
     for wo in candidates:
-        totals = compute_workorder_totals(wo)
-        paid = paid_map.get(wo.id, Decimal("0.00"))
+        live = _live_open_balance(wo)
+        open_bal = live["open_bal"]
 
-        total_due = (totals.total or Decimal("0.00")).quantize(Decimal("0.01"))
-        paid = Decimal(paid).quantize(Decimal("0.01"))
-
-        open_bal = (total_due - paid).quantize(Decimal("0.01"))
-        if abs(open_bal) < Decimal("0.01"):
-            open_bal = Decimal("0.00")
-        if open_bal < Decimal("0.00"):
-            open_bal = Decimal("0.00")
-
-        # ✅ only show workorders that actually have an open balance
         if open_bal <= Decimal("0.00"):
             continue
 
-        # expose both calc + legacy fields for templates/JS
-        wo.total_balance_calc = total_due
+        wo.total_balance_calc = live["total_due"]
         wo.open_balance_calc = open_bal
-        wo.total_balance = total_due
+        wo.total_balance = live["total_due"]
         wo.open_balance = open_bal
 
         total_open_all += open_bal
@@ -1653,27 +1243,50 @@ def open_invoices_recieve_payment(request, pk, msg=None):
 #     return render(request, 'finance/AR/partials/payment_history.html', context)
 
 @login_required
+@transaction.atomic
 def remove_payment(request, pk=None):
-    customers = Customer.objects.filter().exclude(credit__lte=0).exclude(credit=None).order_by('company_name')
+    customers = (
+        Customer.objects
+        .filter()
+        .exclude(credit__lte=0)
+        .exclude(credit=None)
+        .order_by("company_name")
+    )
+
     if request.method == "POST":
-        Payments.objects.filter(pk=pk).update(void = 1)
-        details = Payments.objects.get(pk=pk)
-        amount = details.available
-        customer = details.customer.id
-        cust = Customer.objects.get(id=customer)
-        print(amount)
-        print(cust)
-        print(customer)
-        credit = cust.credit - amount
-        print(cust.credit)
-        Customer.objects.filter(pk=details.customer.id).update(credit=credit)
-        cust = Customer.objects.get(id=customer)
-        print(cust.credit)
-        #return HttpResponse(status=204, headers={'HX-Trigger': 'itemListChanged'})
+        if not pk:
+            return HttpResponse(status=400)
+
+        payment = get_object_or_404(
+            Payments.objects.select_for_update(),
+            pk=pk,
+            void=False,
+        )
+
+        has_applied = WorkorderPayment.objects.filter(payment=payment, void=False).exists()
+        if has_applied:
+            return HttpResponse("Cannot remove payment with applied amounts.", status=409)
+
+        customer_id = payment.customer_id
+
+        Payments.objects.filter(pk=payment.pk).update(
+            void=True,
+            available=Decimal("0.00"),
+            void_reason="Removed from AR remove_payment flow",
+            voided_at=timezone.now(),
+            voided_by=request.user,
+        )
+
+        if customer_id:
+            recompute_customer_open_balance(customer_id)
+            recompute_customer_credit(customer_id)
+
+        return HttpResponse(status=204, headers={"HX-Trigger": "arChanged"})
+
     context = {
-        'customers':customers,
+        "customers": customers,
     }
-    return render(request, 'finance/AR/modals/remove_payment.html', context)
+    return render(request, "finance/AR/modals/remove_payment.html", context)
 
 
 
@@ -1828,18 +1441,7 @@ def edit_invoice_modal(request, invoice=None):
 
 
 
-from decimal import Decimal, InvalidOperation
-from datetime import datetime
 
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Max
-from django.shortcuts import get_object_or_404, redirect, render
-
-from controls.models import Measurement
-from finance.models import AccountsPayable, InvoiceItem  # adjust if your imports differ
-from inventory.models import InventoryMaster, InventoryQtyVariations, Inventory  # Inventory used later in your delete view
-from inventory.services.ledger import record_inventory_movement  # adjust if your import differs
 
 # make sure these exist where you already had them:
 # - AddInvoiceItemForm
@@ -2502,6 +2104,7 @@ def payment_history(request):
     # Base queryset: all workorder payments, newest first
     qs = (
         WorkorderPayment.objects
+        .filter(void=False)
         .select_related("workorder", "workorder__customer")
         .order_by("-date")
     )
@@ -3242,7 +2845,7 @@ def payment_history_customer(request):
             "kind": "creditmemo_applied",
             "label": f"Credit Memo {cm.memo_number or cm.id}",
             "ref": None,
-            "amount": wcm.amount_applied,
+            "amount": wcm.amount,
             "available": None,
             "workorder": wcm.workorder,
             "wocm_id": wcm.id,
@@ -3255,7 +2858,7 @@ def payment_history_customer(request):
             "kind": "giftcert_applied",
             "label": f"Gift Cert {gc.certificate_number or gc.id}",
             "ref": None,
-            "amount": r.amount_applied,
+            "amount": r.amount,
             "available": None,
             "workorder": r.workorder,
             "gcr_id": r.id,
@@ -3448,6 +3051,8 @@ def convert_payment_to_creditmemo(request, payment_id):
     p.available = 0
     p.save(update_fields=["available"])
 
+    recompute_customer_credit(p.customer_id)
+
     return HttpResponse(status=204)
 
 
@@ -3516,17 +3121,8 @@ def apply_creditmemo(request):
     if cm.customer_id and cm.customer_id != customer.id:
         return HttpResponse("Credit memo belongs to a different customer", status=400)
 
-    avail = Decimal(cm.amount or Decimal("0.00")).quantize(Decimal("0.01"))
-    already_applied = (
-        WorkorderCreditMemo.objects
-        .filter(credit_memo=cm, void=False)
-        .aggregate(total=Sum("amount"))["total"]
-        or Decimal("0.00")
-    )
-    already_applied = Decimal(already_applied).quantize(Decimal("0.01"))
-    remaining = max(Decimal("0.00"), avail - already_applied)
-
-    if amt > remaining:
+    cm_open = Decimal(cm.open_balance or Decimal("0.00")).quantize(Decimal("0.01"))
+    if amt > cm_open:
         return HttpResponse("Amount exceeds credit memo balance", status=400)
 
     live = _live_open_balance(workorder)
@@ -3541,6 +3137,10 @@ def apply_creditmemo(request):
         void=False,
     )
 
+    CreditMemo.objects.filter(pk=cm.pk).update(
+        open_balance=max(Decimal("0.00"), cm_open - amt)
+    )
+
     workorder.refresh_from_db()
     recalc_workorder_balances(workorder)
     workorder.refresh_from_db(fields=["paid_in_full"])
@@ -3551,7 +3151,6 @@ def apply_creditmemo(request):
     recompute_customer_credit(customer.pk)
 
     return hx_ar_changed_204()
-
 
 
 @login_required
@@ -3567,9 +3166,15 @@ def unapply_creditmemo(request, wocm_id):
     )
 
     workorder = wocm.workorder
+    cm = wocm.credit_memo
     customer_id = getattr(workorder, "customer_id", None)
+    amt = Decimal(wocm.amount or Decimal("0.00")).quantize(Decimal("0.01"))
 
     WorkorderCreditMemo.objects.filter(pk=wocm.pk).update(void=True)
+
+    if cm:
+        cm_open = Decimal(cm.open_balance or Decimal("0.00")).quantize(Decimal("0.01"))
+        CreditMemo.objects.filter(pk=cm.pk).update(open_balance=cm_open + amt)
 
     workorder.refresh_from_db()
     recalc_workorder_balances(workorder)
@@ -3847,7 +3452,7 @@ def apply_giftcert_by_number(request):
     GiftCertificateRedemption.objects.create(
         gift_certificate=giftcert,
         workorder=workorder,
-        amount_applied=amt,
+        amount=amt,
         date=apply_date,
         void=False,
     )
@@ -3873,59 +3478,34 @@ def unapply_giftcert(request, gcr_id):
     if request.method != "POST":
         return HttpResponse(status=405)
 
-    gcr = get_object_or_404(
-        GiftCertificateRedemption.objects.select_related("workorder", "gift_certificate"),
-        pk=gcr_id
+    redemption = get_object_or_404(
+        GiftCertificateRedemption.objects.select_for_update().select_related("workorder", "gift_certificate"),
+        pk=gcr_id,
+        void=False,
     )
 
-    # already unapplied
-    if gcr.void:
-        return HttpResponse(status=204)
+    workorder = redemption.workorder
+    giftcert = redemption.gift_certificate
+    customer_id = getattr(workorder, "customer_id", None)
+    amt = Decimal(redemption.amount or Decimal("0.00")).quantize(Decimal("0.01"))
 
-    wo = gcr.workorder
-    gc = gcr.gift_certificate
-    amt = gcr.amount or Decimal("0.00")
+    GiftCertificateRedemption.objects.filter(pk=redemption.pk).update(void=True)
 
-    if not wo or not gc or gc.void:
-        return HttpResponse(status=409)
+    if giftcert:
+        gc_bal = Decimal(giftcert.balance or Decimal("0.00")).quantize(Decimal("0.01"))
+        GiftCertificate.objects.filter(pk=giftcert.pk).update(balance=gc_bal + amt)
 
-    # 1) mark redemption void (history preserved)
-    GiftCertificateRedemption.objects.filter(pk=gcr.pk).update(void=True)
+    workorder.refresh_from_db()
+    recalc_workorder_balances(workorder)
+    workorder.refresh_from_db(fields=["paid_in_full"])
+    if not workorder.paid_in_full:
+        Workorder.objects.filter(pk=workorder.pk).update(date_paid=None)
 
-    # 2) restore gift cert balance
-    bal = gc.balance or Decimal("0.00")
-    GiftCertificate.objects.filter(pk=gc.pk).update(balance=bal + amt)
+    if customer_id:
+        recompute_customer_open_balance(customer_id)
+        recompute_customer_credit(customer_id)
 
-    # 3) restore workorder balances like payment reverse
-    wo_open = _money(wo.open_balance)
-    proposed_open = wo_open + amt
-
-    new_open, new_paid, paid = _clamp_balances(wo, proposed_open)
-
-    Workorder.objects.filter(pk=wo.pk).update(
-        open_balance=new_open,
-        amount_paid=new_paid,
-        paid_in_full=paid,
-        date_paid=None,
-    )
-
-    # 4) recompute customer open_balance (AR-correct filters)
-    cust_id = wo.customer_id
-    open_balance = (
-        Workorder.objects
-        .filter(customer_id=cust_id)
-        .exclude(void=True)
-        .filter(quote="0")
-        .filter(billed=True)
-        .filter(paid_in_full=False)
-        .aggregate(sum=Sum("open_balance"))
-    )["sum"] or Decimal("0.00")
-
-    Customer.objects.filter(pk=cust_id).update(open_balance=open_balance)
-
-    resp = HttpResponse(status=204)
-    resp["HX-Trigger"] = "arChanged"
-    return resp
+    return hx_ar_changed_204()
 
 @login_required
 def ar_action_buttons(request):
@@ -3946,19 +3526,14 @@ def apply_unapplied_payment_modal(request, payment_id):
         pk=payment_id,
         void=False,
     )
-
     customer = payment.customer
-    if not customer:
-        return HttpResponse(status=409)
 
-    # Only real workorders (exclude quotes) + only open/billed/not void
     workorders = (
         Workorder.objects
-        .filter(customer_id=customer.id)
+        .filter(customer=customer)
         .exclude(billed=False)
-        .exclude(paid_in_full=True)
+        .filter(_q_non_quote())
         .exclude(void=True)
-        .filter(models.Q(quote=False) | models.Q(quote=0) | models.Q(quote="0") | models.Q(quote__isnull=True))
         .order_by("workorder")
     )
 
@@ -3979,6 +3554,7 @@ def apply_unapplied_payment_modal(request, payment_id):
 
     selected_ids = request.POST.getlist("workorders")
     selected_ids = [int(x) for x in selected_ids if str(x).isdigit()]
+
     if not selected_ids:
         return render(
             request,
@@ -3993,8 +3569,8 @@ def apply_unapplied_payment_modal(request, payment_id):
             status=400,
         )
 
-    available = payment.available or Decimal("0.00")
-    if available <= 0:
+    available = Decimal(payment.available or Decimal("0.00")).quantize(Decimal("0.01"))
+    if available <= Decimal("0.00"):
         return render(
             request,
             "finance/AR/modals/apply_unapplied_payment_modal.html",
@@ -4008,7 +3584,6 @@ def apply_unapplied_payment_modal(request, payment_id):
             status=400,
         )
 
-    # Date from <input type="date">
     date_str = (request.POST.get("date") or "").strip()
     applied_date = payment.date or timezone.now().date()
     if date_str:
@@ -4017,23 +3592,20 @@ def apply_unapplied_payment_modal(request, payment_id):
         except Exception:
             pass
 
-    # Amount user wants to apply (optional). If missing/0, we auto-apply as much as possible.
     raw_amount = (request.POST.get("amount") or "").strip()
     desired = Decimal("0.00")
     if raw_amount:
         try:
-            desired = Decimal(raw_amount)
-        except (InvalidOperation, TypeError):
+            desired = Decimal(raw_amount).quantize(Decimal("0.01"))
+        except Exception:
             desired = Decimal("0.00")
 
-    # Lock selected workorders
     selected_wos = list(
         Workorder.objects.select_for_update()
         .filter(pk__in=selected_ids, customer_id=customer.id)
         .exclude(billed=False)
-        .exclude(paid_in_full=True)
+        .filter(_q_non_quote())
         .exclude(void=True)
-        .filter(models.Q(quote=False) | models.Q(quote=0) | models.Q(quote="0") | models.Q(quote__isnull=True))
         .order_by("workorder")
     )
 
@@ -4051,15 +3623,18 @@ def apply_unapplied_payment_modal(request, payment_id):
             status=400,
         )
 
-    total_open = sum((wo.open_balance or Decimal("0.00")) for wo in selected_wos)
+    total_open = Decimal("0.00")
+    live_map = {}
+    for wo in selected_wos:
+        live = _live_open_balance(wo)
+        live_map[wo.pk] = live
+        total_open += live["open_bal"]
 
-    # Default to applying min(available, total_open) if user left blank
-    if desired <= 0:
+    if desired <= Decimal("0.00"):
         desired = min(available, total_open)
 
-    # Clamp to available
     desired = max(Decimal("0.00"), min(desired, available))
-    if desired <= 0:
+    if desired <= Decimal("0.00"):
         return render(
             request,
             "finance/AR/modals/apply_unapplied_payment_modal.html",
@@ -4075,17 +3650,16 @@ def apply_unapplied_payment_modal(request, payment_id):
 
     remainder = desired
 
-    # Apply sequentially until amount exhausted (allows underpayment)
     for wo in selected_wos:
-        if remainder <= 0:
+        if remainder <= Decimal("0.00"):
             break
 
-        wo_open = wo.open_balance or Decimal("0.00")
-        if wo_open <= 0:
+        wo_open = live_map[wo.pk]["open_bal"]
+        if wo_open <= Decimal("0.00"):
             continue
 
         apply_amt = min(remainder, wo_open)
-        if apply_amt <= 0:
+        if apply_amt <= Decimal("0.00"):
             continue
 
         WorkorderPayment.objects.create(
@@ -4098,22 +3672,20 @@ def apply_unapplied_payment_modal(request, payment_id):
 
         wo_refresh = Workorder.objects.select_for_update().get(pk=wo.pk)
         recalc_workorder_balances(wo_refresh)
-
         wo_refresh.refresh_from_db(fields=["paid_in_full"])
         if wo_refresh.paid_in_full:
             Workorder.objects.filter(pk=wo.pk).update(date_paid=applied_date)
 
         remainder -= apply_amt
 
-    # Recompute payment.available from applied totals (safest)
     applied_total = (
         WorkorderPayment.objects
         .filter(payment_id=payment.pk, void=False)
-        .aggregate(total=models.Sum("payment_amount"))["total"]
+        .aggregate(total=Sum("payment_amount"))["total"]
         or Decimal("0.00")
     )
-    pay_total = payment.amount or Decimal("0.00")
-    new_available = max(Decimal("0.00"), pay_total - applied_total)
+    pay_total = Decimal(payment.amount or Decimal("0.00")).quantize(Decimal("0.01"))
+    new_available = max(Decimal("0.00"), pay_total - Decimal(applied_total).quantize(Decimal("0.01")))
 
     Payments.objects.filter(pk=payment.pk).update(available=new_available)
     recompute_customer_open_balance(customer.id)
@@ -4243,6 +3815,7 @@ def orphan_payment_void(request, payment_id: int):
     # Keep customer AR totals sane
     try:
         recompute_customer_open_balance(p.customer_id)
+        recompute_customer_credit(p.customer_id)
     except Exception:
         pass
 
@@ -4386,18 +3959,29 @@ def ar_void_payment(request, payment_id):
     if request.method != "POST":
         return HttpResponse(status=405)
 
-    p = get_object_or_404(Payments.objects.select_for_update(), pk=payment_id, void=False)
+    p = get_object_or_404(
+        Payments.objects.select_for_update(),
+        pk=payment_id,
+        void=False,
+    )
 
-    # Safety: only allow void if nothing is applied (non-void)
     has_applied = WorkorderPayment.objects.filter(payment=p, void=False).exists()
     if has_applied:
-        # Don’t silently break AR—force user to unapply/void the applied rows first
         return HttpResponse("Cannot void: payment has applied amounts.", status=409)
 
-    Payments.objects.filter(pk=p.pk).update(void=True)
+    Payments.objects.filter(pk=p.pk).update(
+        void=True,
+        void_reason="Voided from AR",
+        voided_at=timezone.now(),
+        voided_by=request.user,
+    )
+
+    if p.customer_id:
+        recompute_customer_open_balance(p.customer_id)
+        recompute_customer_credit(p.customer_id)
 
     resp = HttpResponse("", status=200)
-    resp["HX-Trigger"] = "arPaymentsChanged"
+    resp["HX-Trigger"] = "arChanged"
     return resp
 
 @login_required
@@ -4406,15 +3990,32 @@ def ar_void_credit_memo(request, cm_id):
     if request.method != "POST":
         return HttpResponse(status=405)
 
-    cm = get_object_or_404(CreditMemo.objects.select_for_update(), pk=cm_id, void=False)
+    cm = get_object_or_404(
+        CreditMemo.objects.select_for_update(),
+        pk=cm_id,
+        void=False,
+    )
 
     if WorkorderCreditMemo.objects.filter(credit_memo=cm, void=False).exists():
         return HttpResponse("Cannot void: credit memo has applied amounts.", status=409)
 
-    CreditMemo.objects.filter(pk=cm.pk).update(void=True)
-    
-    resp = HttpResponse("", status=200)
-    resp["HX-Trigger"] = "arPaymentsChanged"
+    reason = _void_reason(request)
+    if not reason:
+        return HttpResponse("Reason is required.", status=400)
+
+    CreditMemo.objects.filter(pk=cm.pk).update(
+        void=True,
+        void_reason=reason,
+        voided_at=timezone.now(),
+        voided_by=request.user,
+    )
+
+    if cm.customer_id:
+        recompute_customer_open_balance(cm.customer_id)
+        recompute_customer_credit(cm.customer_id)
+
+    resp = HttpResponse(status=204)
+    resp["HX-Trigger"] = "arVoidChanged"
     return resp
 
 
@@ -4424,15 +4025,32 @@ def ar_void_giftcert(request, gc_id):
     if request.method != "POST":
         return HttpResponse(status=405)
 
-    gc = get_object_or_404(GiftCertificate.objects.select_for_update(), pk=gc_id, void=False)
+    gc = get_object_or_404(
+        GiftCertificate.objects.select_for_update(),
+        pk=gc_id,
+        void=False,
+    )
 
     if GiftCertificateRedemption.objects.filter(gift_certificate=gc, void=False).exists():
         return HttpResponse("Cannot void: gift certificate has redemptions.", status=409)
 
-    GiftCertificate.objects.filter(pk=gc.pk).update(void=True)
-    
-    resp = HttpResponse("", status=200)
-    resp["HX-Trigger"] = "arPaymentsChanged"
+    reason = _void_reason(request)
+    if not reason:
+        return HttpResponse("Reason is required.", status=400)
+
+    GiftCertificate.objects.filter(pk=gc.pk).update(
+        void=True,
+        void_reason=reason,
+        voided_at=timezone.now(),
+        voided_by=request.user,
+    )
+
+    if gc.customer_id:
+        recompute_customer_open_balance(gc.customer_id)
+        recompute_customer_credit(gc.customer_id)
+
+    resp = HttpResponse(status=204)
+    resp["HX-Trigger"] = "arVoidChanged"
     return resp
 
 def _void_reason(request) -> str:
@@ -4560,6 +4178,10 @@ def ar_void_payment_modal(request, payment_id):
                 voided_by=request.user,
             )
 
+        if p.customer_id:
+            recompute_customer_open_balance(p.customer_id)
+            recompute_customer_credit(p.customer_id)
+
         resp = HttpResponse(status=204)
         resp["HX-Trigger"] = "arChanged"
         return resp
@@ -4580,6 +4202,10 @@ def ar_void_payment_modal(request, payment_id):
         voided_at=timezone.now(),
         voided_by=request.user,
     )
+
+    if p.customer_id:
+        recompute_customer_open_balance(p.customer_id)
+        recompute_customer_credit(p.customer_id)
 
     resp = HttpResponse(status=204)
     resp["HX-Trigger"] = "arChanged"
@@ -4626,10 +4252,13 @@ def ar_void_creditmemo_modal(request, cm_id):
         voided_by=request.user,
     )
 
+    if cm.customer_id:
+        recompute_customer_open_balance(cm.customer_id)
+        recompute_customer_credit(cm.customer_id)
+
     resp = HttpResponse(status=204)
     resp["HX-Trigger"] = "arVoidChanged"
     return resp
-
 
 @login_required
 @transaction.atomic
@@ -4671,10 +4300,13 @@ def ar_void_giftcert_modal(request, gc_id):
         voided_by=request.user,
     )
 
+    if gc.customer_id:
+        recompute_customer_open_balance(gc.customer_id)
+        recompute_customer_credit(gc.customer_id)
+
     resp = HttpResponse(status=204)
     resp["HX-Trigger"] = "arVoidChanged"
     return resp
-
 @login_required
 def unused_giftcerts_apply_modal(request):
     """
@@ -5095,7 +4727,7 @@ def ap_unpost_invoice(request, id=None):
     messages.success(request, "Invoice unposted.")
     return redirect("finance:ap_invoice_detail_id", id=invoice.id)
 
-from decimal import Decimal, InvalidOperation
+
 
 @login_required
 def ap_post_invoice_modal(request, id=None):
@@ -5522,6 +5154,224 @@ def run_backfill_invoiceitem_ledger_locked(request):
     # total = round(total, 2)
     # tax = list(total_invoice.values())[1]
 
+@login_required
+def ar_reconcile_legacy_report(request):
+    from finance.helpers_ar import q_non_quote, live_open_balance
+    from decimal import Decimal
+
+    suspects = []
+
+    qs = (
+        Workorder.objects
+        .select_related("customer")
+        .filter(void=False, paid_in_full=True)
+        .filter(q_non_quote())
+        .order_by("workorder")
+    )
+
+    for wo in qs:
+        live = _live_open_balance(wo)
+        if live["open_bal"] > Decimal("0.00"):
+            suspects.append({
+                "id": wo.id,
+                "workorder": wo,
+                "customer": wo.customer,
+                "customer_name": getattr(wo.customer, "company_name", "") if wo.customer else "",
+                "legacy_open_balance": wo.open_balance,
+                "legacy_amount_paid": wo.amount_paid,
+                "live_total_due": live["total_due"],
+                "live_total_applied": live["total_applied"],
+                "live_open_bal": live["open_bal"],
+            })
+
+    context = {
+        "suspects": suspects,
+        "suspect_count": len(suspects),
+    }
+    return render(request, "finance/AR/reports/reconcile_legacy_report.html", context)
+
+
+@login_required
+@transaction.atomic
+def ar_reconcile_legacy_selected(request):
+    from decimal import Decimal
+    from django.utils import timezone
+    from workorders.services.totals import recalc_workorder_balances
+
+    if request.method != "POST":
+        return HttpResponse(status=405)
+
+    ids = request.POST.getlist("workorders")
+    ids = [int(x) for x in ids if str(x).isdigit()]
+
+    if not ids:
+        messages.error(request, "No workorders selected.")
+        return redirect("finance:ar_reconcile_legacy_report")
+
+    # Find a usable fallback payment type for reconciliation rows
+    payment_type = (
+        PaymentType.objects.filter(name__iexact="Check").first()
+        or PaymentType.objects.filter(name__iexact="Cash").first()
+        or PaymentType.objects.order_by("id").first()
+    )
+
+    if not payment_type:
+        messages.error(request, "No Payment Type exists. Create one first, then retry.")
+        return redirect("finance:ar_reconcile_legacy_report")
+
+    workorders = (
+        Workorder.objects
+        .select_for_update()
+        .select_related("customer")
+        .filter(pk__in=ids)
+        .order_by("workorder")
+    )
+
+    updated = 0
+    skipped = 0
+
+    for wo in workorders:
+        live = _live_open_balance(wo)
+        missing = (live["total_due"] - live["total_applied"]).quantize(Decimal("0.01"))
+
+        if missing <= Decimal("0.00"):
+            skipped += 1
+            continue
+
+        payment = Payments.objects.create(
+            customer=wo.customer,
+            payment_type=payment_type,
+            amount=missing,
+            available=Decimal("0.00"),
+            date=timezone.localdate(),
+            check_number=f"LEGACY-RECON-{wo.workorder}",
+            refunded_invoice_number="Legacy AR reconciliation",
+        )
+
+        WorkorderPayment.objects.create(
+            workorder=wo,
+            payment=payment,
+            payment_amount=missing,
+            date=timezone.localdate(),
+            void=False,
+        )
+
+        recalc_workorder_balances(wo)
+        wo.refresh_from_db(fields=["paid_in_full", "date_paid"])
+
+        if wo.paid_in_full and not wo.date_paid:
+            Workorder.objects.filter(pk=wo.pk).update(date_paid=timezone.localdate())
+
+        if wo.customer_id:
+            recompute_customer_open_balance(wo.customer_id)
+            recompute_customer_credit(wo.customer_id)
+
+        updated += 1
+
+    messages.success(
+        request,
+        f"Reconciled {updated} workorders using payment type '{payment_type}'. Skipped {skipped}."
+    )
+    return redirect("finance:ar_reconcile_legacy_report")
+
+@login_required
+def ar_workorder_quickview(request, workorder_id):
+    wo = get_object_or_404(
+        Workorder.objects.select_related("customer"),
+        pk=workorder_id,
+    )
+
+    live = _live_open_balance(wo)
+    billed_date = _workorder_billed_date(wo)
+    paid_date = getattr(wo, "date_paid", None)
+
+    if billed_date:
+        aging_days = _workorder_aging_days(wo, today_date=timezone.localdate())
+    else:
+        aging_days = 0
+
+    days_to_pay = None
+    if billed_date and paid_date:
+        pd = paid_date.date() if hasattr(paid_date, "date") else paid_date
+        days_to_pay = max((pd - billed_date).days, 0)
+
+    context = {
+        "wo": wo,
+        "live": live,
+        "billed_date": billed_date,
+        "paid_date": paid_date,
+        "aging_days": aging_days,
+        "days_to_pay": days_to_pay,
+    }
+    return render(request, "finance/AR/modals/workorder_quickview.html", context)
+
+@login_required
+def ar_slow_payers_report(request):
+    today_date = timezone.localdate()
+
+    closed_qs = (
+        Workorder.objects
+        .select_related("customer")
+        .filter(billed=True)
+        .exclude(void=True)
+        .filter(_q_non_quote())
+        .order_by("customer_id", "-workorder")
+    )
+
+    customer_stats = {}
+
+    for wo in closed_qs:
+        live = _live_open_balance(wo)
+        if live["total_due"] <= Decimal("0.00"):
+            continue
+        if live["open_bal"] != Decimal("0.00"):
+            continue
+
+        billed_date = _workorder_billed_date(wo)
+        paid_date = getattr(wo, "date_paid", None)
+        if not billed_date or not paid_date:
+            continue
+
+        if hasattr(paid_date, "date"):
+            paid_date = paid_date.date()
+
+        days_to_pay = max((paid_date - billed_date).days, 0)
+
+        customer_id = wo.customer_id
+        customer_name = (
+            getattr(wo.customer, "company_name", None)
+            or wo.hr_customer
+            or f"Customer {customer_id}"
+        )
+
+        row = customer_stats.setdefault(customer_id, {
+            "customer_id": customer_id,
+            "customer_name": customer_name,
+            "closed_count": 0,
+            "total_billed": Decimal("0.00"),
+            "total_days": 0,
+            "avg_days_to_pay": None,
+            "max_days_to_pay": 0,
+        })
+
+        row["closed_count"] += 1
+        row["total_billed"] += live["total_due"]
+        row["total_days"] += days_to_pay
+        row["max_days_to_pay"] = max(row["max_days_to_pay"], days_to_pay)
+
+    rows = []
+    for row in customer_stats.values():
+        if row["closed_count"]:
+            row["avg_days_to_pay"] = round(row["total_days"] / row["closed_count"], 1)
+            rows.append(row)
+
+    rows.sort(key=lambda x: (-x["avg_days_to_pay"], x["customer_name"].lower()))
+
+    context = {
+        "rows": rows,
+        "generated_on": today_date,
+    }
+    return render(request, "finance/AR/reports/slow_payers_report.html", context)
 
 
 

@@ -1,0 +1,45 @@
+<div class="row g-3 mb-3">
+
+  <div class="col-md-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Total AR</div>
+        <div class="h5 mb-0">{{ ar.total_due|floatformat:2 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Paid</div>
+        <div class="h5 mb-0 text-success">{{ ar.total_paid|floatformat:2 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Open Balance</div>
+        <div class="h5 mb-0 text-danger">{{ ar.total_open|floatformat:2 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Avg Days to Pay</div>
+        <div class="h5 mb-0">
+          {% if ar.avg_days_to_pay %}
+            {{ ar.avg_days_to_pay|floatformat:0 }}
+          {% else %}
+            -
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

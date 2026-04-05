@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h3 class="mb-1">Slow Payers</h3>
+      {% if latest_run %}
+        <div class="text-muted small">
+          Snapshot date: {{ latest_run.as_of_date }} |
+          Built: {{ latest_run.created_at|date:"Y-m-d g:i A" }} |
+          Customers: {{ latest_run.customer_count }} |
+          Closed workorders: {{ latest_run.closed_workorder_count }}
+        </div>
+      {% else %}
+        <div class="text-muted small">
+          No completed snapshot found yet.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if latest_run %}
+
+    <div class="row g-3 mb-3">
+      <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <div class="text-muted small">Overall Avg Days</div>
+            <div class="h4 mb-0">{{ latest_run.avg_days_to_pay_overall|floatformat:2 }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <div class="text-muted small">Slow Payers</div>
+            <div class="h4 mb-0">{{ latest_run.slow_payer_count }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <div class="text-muted small">Filtered Avg Days</div>
+            <div class="h4 mb-0">
+              {% if summary.avg_days %}
+                {{ summary.avg_days|floatformat:2 }}
+              {% else %}
+                -
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <div class="text-muted small">Filtered Revenue</div>
+            <div class="h4 mb-0">
+              {% if summary.total_revenue %}
+                ${{ summary.total_revenue|floatformat:2|intcomma }}
+              {% else %}
+                $0.00
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">Band</label>
+            <select name="band" class="form-select">
+              <option value="" {% if not payer_band %}selected{% endif %}>All</option>
+              <option value="fast" {% if payer_band == "fast" %}selected{% endif %}>Fast</option>
+              <option value="moderate" {% if payer_band == "moderate" %}selected{% endif %}>Moderate</option>
+              <option value="slow" {% if payer_band == "slow" %}selected{% endif %}>Slow</option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Sort</label>
+            <select name="sort" class="form-select">
+              <option value="avg_days" {% if sort == "avg_days" %}selected{% endif %}>Avg Days to Pay</option>
+              <option value="score" {% if sort == "score" %}selected{% endif %}>Score</option>
+              <option value="count" {% if sort == "count" %}selected{% endif %}>Closed Workorder Count</option>
+              <option value="revenue" {% if sort == "revenue" %}selected{% endif %}>Closed Revenue</option>
+              <option value="name" {% if sort == "name" %}selected{% endif %}>Customer Name</option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <button type="submit" class="btn btn-primary">Apply</button>
+            <a href="{% url 'finance:ar_slow_payers_report' %}" class="btn btn-outline-secondary">
+              Reset
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-white">
+            Top 10 Slowest Payers
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-sm mb-0">
+                <thead>
+                  <tr>
+                    <th>Customer</th>
+                    <th class="text-end">Avg Days</th>
+                    <th class="text-end">Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in rows|slice:":10" %}
+                    <tr>
+                      <td>
+                        <a href="{% url 'customers:detail' row.customer_id %}">
+                          {{ row.company_name|default:row.customer }}
+                        </a>
+                      </td>
+                      <td class="text-end">{{ row.avg_days_to_pay|floatformat:2 }}</td>
+                      <td class="text-end">{{ row.closed_workorder_count }}</td>
+                    </tr>
+                  {% empty %}
+                    <tr>
+                      <td colspan="3" class="text-center text-muted py-3">No rows found.</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+          <div class="card-header bg-white">
+            Band Summary
+          </div>
+          <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+              <span class="badge bg-success">Fast</span>
+              <span class="badge bg-warning text-dark">Moderate</span>
+              <span class="badge bg-danger">Slow</span>
+            </div>
+            <div class="text-muted small mt-3">
+              Use this page to spot repeat late payers and jump straight into the customer record or AR workflow.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-header bg-white">
+        Snapshot Rows
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm table-striped align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Band</th>
+              <th class="text-end">Avg Days</th>
+              <th class="text-end">Min</th>
+              <th class="text-end">Max</th>
+              <th class="text-end">Closed WO</th>
+              <th class="text-end">Closed Revenue</th>
+              <th class="text-end">Score</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                <td>
+                  <a href="{% url 'customers:detail' row.customer_id %}">
+                    {{ row.company_name|default:row.customer }}
+                  </a>
+                </td>
+                <td>
+                  {% if row.payer_band == "slow" %}
+                    <span class="badge bg-danger">Slow</span>
+                  {% elif row.payer_band == "moderate" %}
+                    <span class="badge bg-warning text-dark">Moderate</span>
+                  {% elif row.payer_band == "fast" %}
+                    <span class="badge bg-success">Fast</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Unknown</span>
+                  {% endif %}
+                </td>
+                <td class="text-end">{{ row.avg_days_to_pay|floatformat:2 }}</td>
+                <td class="text-end">{{ row.min_days_to_pay|default:"-" }}</td>
+                <td class="text-end">{{ row.max_days_to_pay|default:"-" }}</td>
+                <td class="text-end">{{ row.closed_workorder_count }}</td>
+                <td class="text-end">${{ row.total_closed_revenue|floatformat:2|intcomma }}</td>
+                <td class="text-end">{{ row.score|floatformat:2 }}</td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <a href="{% url 'customers:detail' row.customer_id %}" class="btn btn-outline-secondary">
+                      Customer
+                    </a>
+                    <a href="{% url 'finance:open_invoices' row.customer_id %}" class="btn btn-outline-primary">
+                      AR
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="9" class="text-center text-muted py-4">
+                  No rows found for this filter.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  {% else %}
+    <div class="alert alert-secondary mb-0">
+      No completed slow-payer snapshot exists yet.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

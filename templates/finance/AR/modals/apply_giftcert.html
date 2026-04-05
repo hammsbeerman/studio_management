@@ -31,9 +31,7 @@
         <div class="col-md-4">
           <label class="form-label">Amount to apply</label>
           <input class="form-control" type="number" step="0.01" min="0"
-                 name="amount" id="apply-amount"
-                 value="">
-          <div class="form-text">Auto-fills from selected invoice; you can lower it for underpayment.</div>
+                 name="amount" id="apply-amount" value="">
         </div>
 
         <div class="col-md-4">
@@ -60,16 +58,16 @@
                          type="radio"
                          name="workorder"
                          value="{{ wo.id }}"
-                         data-open="{{ wo.open_balance|default_if_none:0 }}">
+                         data-open="{{ wo.open_balance_calc|default_if_none:0 }}">
                 </td>
                 <td style="white-space:nowrap;">WO {{ wo.workorder }}</td>
                 <td>
-                  {{ gc.description|default:"—" }}
-                  {% if gc.sold_to %}
-                    <div class="text-muted small">Sold to: {{ gc.sold_to }}</div>
+                  {{ giftcert.description|default:"—" }}
+                  {% if giftcert.sold_to %}
+                    <div class="text-muted small">Sold to: {{ giftcert.sold_to }}</div>
                   {% endif %}
                 </td>
-                <td class="text-end">{{ wo.open_balance|floatformat:2 }}</td>
+                <td class="text-end">{{ wo.open_balance_calc|floatformat:2 }}</td>
               </tr>
             {% empty %}
               <tr><td colspan="4" class="text-muted">No open workorders.</td></tr>
@@ -89,7 +87,6 @@
 <script>
 (function () {
   const available = parseFloat((document.getElementById("gc-available")?.textContent || "0").replace(/,/g, "")) || 0;
-
   const amountInput = document.getElementById("apply-amount");
   const selectedTotalInput = document.getElementById("selected-total");
   const radios = Array.from(document.querySelectorAll(".wo-radio"));
@@ -105,8 +102,7 @@
     selectedTotalInput.value = sel.toFixed(2);
 
     if (!amountInput.dataset.userEdited || amountInput.dataset.userEdited !== "1") {
-      const auto = Math.min(available, sel);
-      amountInput.value = auto.toFixed(2);
+      amountInput.value = Math.min(available, sel).toFixed(2);
     } else {
       const cur = parseFloat(amountInput.value || "0") || 0;
       const clamped = Math.max(0, Math.min(available, cur));
@@ -120,7 +116,6 @@
   });
 
   for (const r of radios) r.addEventListener("change", updateAutoAmount);
-
   updateAutoAmount();
 })();
 </script>
