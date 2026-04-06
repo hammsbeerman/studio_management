@@ -3528,14 +3528,27 @@ def apply_unapplied_payment_modal(request, payment_id):
     )
     customer = payment.customer
 
-    workorders = (
+    base_workorders_qs = (
         Workorder.objects
         .filter(customer=customer)
-        .exclude(billed=False)
+        .filter(completed=True)
+        .filter(Q(date_billed__isnull=False) | Q(billed=True))
         .filter(_q_non_quote())
         .exclude(void=True)
         .order_by("workorder")
     )
+
+    # Build modal workorders from live open balances only
+    workorders = []
+    live_map_all = {}
+
+    for wo in base_workorders_qs:
+        live = _live_open_balance(wo)
+        live_map_all[wo.pk] = live
+        wo.open_balance_calc = live["open_bal"]
+
+        if wo.open_balance_calc > Decimal("0.00"):
+            workorders.append(wo)
 
     if request.method == "GET":
         return render(
@@ -3603,7 +3616,8 @@ def apply_unapplied_payment_modal(request, payment_id):
     selected_wos = list(
         Workorder.objects.select_for_update()
         .filter(pk__in=selected_ids, customer_id=customer.id)
-        .exclude(billed=False)
+        .filter(completed=True)
+        .filter(Q(date_billed__isnull=False) | Q(billed=True))
         .filter(_q_non_quote())
         .exclude(void=True)
         .order_by("workorder")
@@ -3625,10 +3639,29 @@ def apply_unapplied_payment_modal(request, payment_id):
 
     total_open = Decimal("0.00")
     live_map = {}
+    open_selected_wos = []
+
     for wo in selected_wos:
         live = _live_open_balance(wo)
         live_map[wo.pk] = live
-        total_open += live["open_bal"]
+
+        if live["open_bal"] > Decimal("0.00"):
+            open_selected_wos.append(wo)
+            total_open += live["open_bal"]
+
+    if not open_selected_wos:
+        return render(
+            request,
+            "finance/AR/modals/apply_unapplied_payment_modal.html",
+            {
+                "payment": payment,
+                "customer": customer,
+                "workorders": workorders,
+                "default_date": applied_date,
+                "error": "Selected workorders are already fully paid.",
+            },
+            status=400,
+        )
 
     if desired <= Decimal("0.00"):
         desired = min(available, total_open)
@@ -3650,7 +3683,7 @@ def apply_unapplied_payment_modal(request, payment_id):
 
     remainder = desired
 
-    for wo in selected_wos:
+    for wo in open_selected_wos:
         if remainder <= Decimal("0.00"):
             break
 
@@ -3685,7 +3718,10 @@ def apply_unapplied_payment_modal(request, payment_id):
         or Decimal("0.00")
     )
     pay_total = Decimal(payment.amount or Decimal("0.00")).quantize(Decimal("0.01"))
-    new_available = max(Decimal("0.00"), pay_total - Decimal(applied_total).quantize(Decimal("0.01")))
+    new_available = max(
+        Decimal("0.00"),
+        pay_total - Decimal(applied_total).quantize(Decimal("0.01")),
+    )
 
     Payments.objects.filter(pk=payment.pk).update(available=new_available)
     recompute_customer_open_balance(customer.id)
@@ -3694,6 +3730,7 @@ def apply_unapplied_payment_modal(request, payment_id):
     resp = HttpResponse(status=204)
     resp["HX-Trigger"] = "arChanged"
     return resp
+
 
 def _decimal0(x):
     return x if x is not None else Decimal("0.00")

@@ -9,14 +9,16 @@
 
     <div class="text-muted mb-2">
       Amount: <strong>{{ payment.amount|floatformat:2 }}</strong>
-      • Available: <strong id="pay-available">{{ payment.available|default_if_none:0|floatformat:2 }}</strong>
+      • Available: <strong class="js-pay-available">{{ payment.available|default_if_none:0|floatformat:2 }}</strong>
       {% if payment.check_number %} • Check: <strong>#{{ payment.check_number }}</strong>{% endif %}
     </div>
 
-    <form hx-post="{% url 'finance:apply_unapplied_payment_modal' payment_id=payment.id %}"
-          hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
-          hx-swap="none">
-
+    <form
+      class="js-apply-payment-form"
+      hx-post="{% url 'finance:apply_unapplied_payment_modal' payment_id=payment.id %}"
+      hx-headers='{"X-CSRFToken":"{{ csrf_token }}"}'
+      hx-swap="none"
+    >
       <div class="row g-2 mb-3">
         <div class="col-md-4">
           <label class="form-label">Date</label>
@@ -25,14 +27,20 @@
 
         <div class="col-md-4">
           <label class="form-label">Amount to apply</label>
-          <input class="form-control" type="number" step="0.01" min="0"
-                 name="amount" id="apply-amount" value="">
+          <input
+            class="form-control js-apply-amount"
+            type="number"
+            step="0.01"
+            min="0"
+            name="amount"
+            value=""
+          >
           <div class="form-text">Auto-fills from selected invoices; you can lower it.</div>
         </div>
 
         <div class="col-md-4">
           <label class="form-label">Selected total</label>
-          <input class="form-control" type="text" id="selected-total" value="0.00" readonly>
+          <input class="form-control js-selected-total" type="text" value="0.00" readonly>
         </div>
       </div>
 
@@ -41,7 +49,7 @@
           <thead>
             <tr>
               <th style="width:1%; white-space:nowrap;">
-                <input class="form-check-input" type="checkbox" id="check-all">
+                <input class="form-check-input js-check-all" type="checkbox">
               </th>
               <th>Workorder</th>
               <th>Description</th>
@@ -52,15 +60,17 @@
             {% for wo in workorders %}
               <tr>
                 <td>
-                  <input class="form-check-input wo-check"
-                         type="checkbox"
-                         name="workorders"
-                         value="{{ wo.id }}"
-                         data-open="{{ wo.open_balance_calc|default_if_none:0 }}">
+                  <input
+                    class="form-check-input js-wo-check"
+                    type="checkbox"
+                    name="workorders"
+                    value="{{ wo.id }}"
+                    data-open="{{ wo.open_balance_calc|default_if_none:0 }}"
+                  >
                 </td>
                 <td style="white-space:nowrap;">WO {{ wo.workorder }}</td>
                 <td>{{ wo.description|default:"—" }}</td>
-                <td class="text-end">{{ wo.open_balance_calc|floatformat:2 }}</td>
+                <td class="text-end">{{ wo.open_balance_calc|default_if_none:0|floatformat:2 }}</td>
               </tr>
             {% empty %}
               <tr><td colspan="4" class="text-muted">No open workorders.</td></tr>
@@ -79,48 +89,74 @@
 
 <script>
 (function () {
-  const available = parseFloat((document.getElementById("pay-available")?.textContent || "0").replace(/,/g, "")) || 0;
-  const amountInput = document.getElementById("apply-amount");
-  const selectedTotalInput = document.getElementById("selected-total");
-  const checks = Array.from(document.querySelectorAll(".wo-check"));
-  const checkAll = document.getElementById("check-all");
+  const form = document.currentScript.previousElementSibling.querySelector(".js-apply-payment-form")
+    || document.currentScript.parentElement.querySelector(".js-apply-payment-form")
+    || document.querySelector(".js-apply-payment-form");
 
-  function sumSelected() {
-    let total = 0;
-    for (const c of checks) {
-      if (!c.checked) continue;
-      total += parseFloat((c.dataset.open || "0").toString().replace(/,/g, "")) || 0;
-    }
-    return total;
+  if (!form) return;
+
+  const availableEl = form.closest(".modal-content").querySelector(".js-pay-available");
+  const amountInput = form.querySelector(".js-apply-amount");
+  const selectedTotalInput = form.querySelector(".js-selected-total");
+  const checks = Array.from(form.querySelectorAll(".js-wo-check"));
+  const checkAll = form.querySelector(".js-check-all");
+
+  const available = parseFloat((availableEl?.textContent || "0").replace(/,/g, "")) || 0;
+
+  function parseMoney(value) {
+    return parseFloat(String(value || "0").replace(/,/g, "")) || 0;
   }
 
-  function updateAutoAmount() {
+  function sumSelected() {
+    return checks.reduce((total, checkbox) => {
+      if (!checkbox.checked) return total;
+      return total + parseMoney(checkbox.dataset.open);
+    }, 0);
+  }
+
+  function syncCheckAll() {
+    if (!checkAll || !checks.length) return;
+    checkAll.checked = checks.every(c => c.checked);
+    checkAll.indeterminate = !checkAll.checked && checks.some(c => c.checked);
+  }
+
+  function updateAmounts() {
     const selectedTotal = sumSelected();
     selectedTotalInput.value = selectedTotal.toFixed(2);
 
-    if (!amountInput.dataset.userEdited || amountInput.dataset.userEdited !== "1") {
-      amountInput.value = Math.min(available, selectedTotal).toFixed(2);
+    const maxAllowed = Math.min(available, selectedTotal);
+
+    if (amountInput.dataset.userEdited !== "1") {
+      amountInput.value = maxAllowed.toFixed(2);
     } else {
-      const cur = parseFloat(amountInput.value || "0") || 0;
-      const clamped = Math.max(0, Math.min(available, cur));
-      if (clamped !== cur) amountInput.value = clamped.toFixed(2);
+      const current = parseMoney(amountInput.value);
+      const clamped = Math.max(0, Math.min(current, maxAllowed));
+      if (clamped !== current) {
+        amountInput.value = clamped.toFixed(2);
+      }
     }
+
+    syncCheckAll();
   }
 
-  amountInput?.addEventListener("input", () => {
+  amountInput.addEventListener("input", function () {
     amountInput.dataset.userEdited = "1";
-    updateAutoAmount();
+    updateAmounts();
   });
 
-  for (const c of checks) c.addEventListener("change", updateAutoAmount);
+  checks.forEach(function (checkbox) {
+    checkbox.addEventListener("change", updateAmounts);
+  });
 
   if (checkAll) {
-    checkAll.addEventListener("change", () => {
-      for (const c of checks) c.checked = checkAll.checked;
-      updateAutoAmount();
+    checkAll.addEventListener("change", function () {
+      checks.forEach(function (checkbox) {
+        checkbox.checked = checkAll.checked;
+      });
+      updateAmounts();
     });
   }
 
-  updateAutoAmount();
+  updateAmounts();
 })();
 </script>

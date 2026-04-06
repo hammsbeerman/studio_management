@@ -74,14 +74,19 @@ def get_live_statement_queryset(companies=None, customer=None):
     Shared base queryset for live AR-backed statements.
 
     Rules:
-    - exclude void / quote
-    - treat billed work as AR if date_billed exists OR legacy billed flag is set
+    - exclude void workorders
+    - exclude quotes using the actual char-based quote field
+    - require completed workorders
+    - require billed work: billed=True or date_billed present
     - default statement behavior excludes LK Design unless companies are passed
     """
     qs = (
         Workorder.objects
-        .exclude(void=True)
-        .exclude(quote=True)
+        .filter(void=False)
+        .filter(completed=True)
+        .filter(
+            Q(quote="0") | Q(quote=0) | Q(quote=False) | Q(quote__isnull=True)
+        )
         .filter(
             Q(date_billed__isnull=False) | Q(billed=True)
         )
@@ -97,7 +102,6 @@ def get_live_statement_queryset(companies=None, customer=None):
         qs = qs.exclude(internal_company="LK Design")
 
     return qs
-
 
 def workorder_aging_days(workorder, today=None):
     today = normalize_to_date(today) or date.today()
