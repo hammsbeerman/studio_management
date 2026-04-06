@@ -18,8 +18,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         ZERO = Decimal("0.00")
-
-        # Krueger bulk default
         effective_companies = ["Krueger Printing"]
 
         qs = (

@@ -55,6 +55,39 @@
   </a>
 </form>
 
+<div class="mb-3">
+  <form
+    hx-post="{% url 'finance:krueger_bulk_statements_start' %}"
+    hx-target="#krueger-bulk-run-status"
+    hx-swap="innerHTML"
+    class="d-inline"
+  >
+    {% csrf_token %}
+    {% for c in effective_companies %}
+      <input type="hidden" name="companies" value="{{ c }}">
+    {% endfor %}
+    <button type="submit" class="btn btn-sm btn-success">
+      Generate Bulk PDF
+    </button>
+  </form>
+
+  {% if selected_companies %}
+    <a
+      href="{% url 'pdf:statement_pdf_bulk' %}?{% for c in selected_companies %}company={{ c|urlencode }}{% if not forloop.last %}&{% endif %}{% endfor %}"
+      target="_blank"
+      class="btn btn-sm btn-outline-secondary ms-1"
+    >
+      Legacy Direct PDF
+    </a>
+  {% else %}
+    <a href="{% url 'pdf:statement_pdf_bulk' %}" target="_blank" class="btn btn-sm btn-outline-secondary ms-1">
+      Legacy Direct PDF
+    </a>
+  {% endif %}
+</div>
+
+<div id="krueger-bulk-run-status"></div>
+
 <p>
   Total outstanding: {{ total_balance.open_balance__sum|default_if_none:0|floatformat:2 }}
 </p>

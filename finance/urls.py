@@ -91,6 +91,9 @@ from .views import (
     ar_reconcile_legacy_selected,
     ar_workorder_quickview,
     ar_slow_payers_report,
+    krueger_bulk_statements_start,
+    krueger_bulk_statements_status,
+    krueger_bulk_statements_download,
 
 )
 
@@ -250,5 +253,9 @@ urlpatterns = [
 
     path("ar/workorder-quickview/<int:workorder_id>/", ar_workorder_quickview, name="ar_workorder_quickview"),
     path("ar/reports/slow-payers/", ar_slow_payers_report, name="ar_slow_payers_report"),
+
+    path("krueger-statements/bulk/start/", krueger_bulk_statements_start, name="krueger_bulk_statements_start"),
+    path("krueger-statements/bulk/status/<int:run_id>/", krueger_bulk_statements_status, name="krueger_bulk_statements_status"),
+    path("krueger-statements/bulk/download/<int:run_id>/", krueger_bulk_statements_download, name="krueger_bulk_statements_download"),
 ]
 

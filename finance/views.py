@@ -3,14 +3,14 @@ import csv
 import json
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, FileResponse, Http404
 from collections import defaultdict
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.admin.models import LogEntry, CHANGE
 from django.contrib.contenttypes.models import ContentType
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.db.models import Avg, Max, Count, Sum, Subquery, Value, DecimalField, OuterRef, Q, Prefetch
@@ -21,7 +21,7 @@ from datetime import date as date_cls
 from decimal import Decimal, InvalidOperation
 from typing import Tuple
 import logging
-from .models import AccountsPayable, DailySales, Payments, WorkorderPayment, CreditMemo, WorkorderCreditMemo, GiftCertificate, GiftCertificateRedemption, CreditAdjustment
+from .models import AccountsPayable, DailySales, Payments, WorkorderPayment, CreditMemo, WorkorderCreditMemo, GiftCertificate, GiftCertificateRedemption, CreditAdjustment, StatementRun
 from .forms import DailySalesForm, AppliedElsewhereForm, PaymentForm, DateRangeForm
 from finance.forms import AddInvoiceForm, AddInvoiceItemForm, EditInvoiceForm, BulkEditInvoiceForm, SalesComparisonForm
 from finance.models import InvoiceItem
@@ -33,6 +33,7 @@ from inventory.models import Vendor, InventoryMaster, VendorItemDetail, Inventor
 from inventory.forms import InventoryMasterForm, VendorItemDetailForm
 from onlinestore.models import StoreItemDetails
 from retail.models import RetailCashSale
+from .tasks import build_krueger_bulk_statements
 from finance.services.ap_invoice_items import save_ap_invoice_item_from_post
 from finance.helpers_ar import (
     q_non_quote as _q_non_quote,
@@ -5409,6 +5410,61 @@ def ar_slow_payers_report(request):
         "generated_on": today_date,
     }
     return render(request, "finance/AR/reports/slow_payers_report.html", context)
+
+@login_required
+@require_POST
+def krueger_bulk_statements_start(request):
+    """
+    Starts async build for one merged Krueger bulk statement PDF.
+    """
+    companies = request.POST.getlist("companies")
+    customer_id = request.POST.get("customer") or None
+
+    # default behavior from your existing logic:
+    # exclude LK Design unless explicitly chosen
+    filters_json = {
+        "companies": companies,
+        "customer_id": customer_id,
+    }
+
+    run = StatementRun.objects.create(
+        report_type="krueger_bulk",
+        status="pending",
+        requested_by=request.user,
+        filters_json=filters_json,
+    )
+
+    build_krueger_bulk_statements.delay(run.pk)
+
+    return render(
+        request,
+        "finance/partials/krueger_bulk_statement_run_status.html",
+        {"run": run},
+    )
+
+
+@login_required
+@require_GET
+def krueger_bulk_statements_status(request, run_id):
+    run = get_object_or_404(StatementRun, pk=run_id)
+    return render(
+        request,
+        "finance/partials/krueger_bulk_statement_run_status.html",
+        {"run": run},
+    )
+
+
+@login_required
+@require_GET
+def krueger_bulk_statements_download(request, run_id):
+    run = get_object_or_404(StatementRun, pk=run_id)
+
+    if run.status != "complete" or not run.file:
+        raise Http404("Report is not ready.")
+
+    response = FileResponse(run.file.open("rb"), content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{run.file.name.rsplit("/", 1)[-1]}"'
+    return response
 
 
 

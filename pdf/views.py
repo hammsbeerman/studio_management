@@ -856,9 +856,9 @@ def statement_pdf(request, id):
 @login_required
 def statement_pdf_bulk(request):
     """
-    Bulk customer statement PDF with optional company filters.
+    Bulk customer statement PDF.
 
-    Uses the unified live AR path:
+    Unified live path:
     - finance.helpers_ar.workorders_base_ar_qs()
     - finance.helpers_statements.build_customer_statement_data()
 
@@ -875,7 +875,6 @@ def statement_pdf_bulk(request):
         if c in VALID_COMPANIES
     ]
 
-    # Krueger bulk default
     effective_companies = (
         selected_companies if selected_companies else ["Krueger Printing"]
     )

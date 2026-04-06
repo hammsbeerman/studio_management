@@ -13,17 +13,6 @@ VALID_COMPANIES = ["Krueger Printing", "LK Design", "Office Supplies"]
 
 
 def normalize_open_balance(value):
-    """
-    Normalize live_open_balance output to a Decimal.
-
-    Supported inputs:
-    - Decimal
-    - int / float
-    - dict with:
-        - open_bal
-        - open_balance
-        - open_balance__sum
-    """
     if value is None:
         return ZERO
 
@@ -49,9 +38,6 @@ def normalize_open_balance(value):
 
 
 def normalize_to_date(value):
-    """
-    Normalize date/datetime values to a plain date.
-    """
     if value is None:
         return None
 
@@ -69,15 +55,12 @@ def normalize_to_date(value):
 
 def get_live_statement_queryset(companies=None, customer=None):
     """
-    Shared base queryset for live AR-backed statements.
-
-    This intentionally reuses the canonical live AR queryset from helpers_ar
-    so statements and AR aging stay aligned.
+    Reuse the canonical live AR queryset from helpers_ar so statements,
+    aging, PDFs, and bulk generation all stay aligned.
     """
     qs = workorders_base_ar_qs(companies=companies, customer=customer)
 
-    # old default statement behavior:
-    # if no company filter passed, exclude LK Design
+    # legacy default statement behavior
     if not companies:
         qs = qs.exclude(internal_company="LK Design")
 
@@ -130,11 +113,7 @@ def build_live_statement_rows(companies=None, customer=None):
         if not workorder.customer_id:
             continue
 
-        try:
-            open_balance = normalize_open_balance(live_open_balance(workorder))
-        except Exception:
-            continue
-
+        open_balance = normalize_open_balance(live_open_balance(workorder))
         if open_balance <= ZERO:
             continue
 
@@ -196,10 +175,7 @@ def build_statement_summary_rows(companies=None):
         summary[customer_id][bucket] += open_balance
         summary[customer_id]["total"] += open_balance
 
-    return sorted(
-        summary.values(),
-        key=lambda r: (r["hr_customer"] or "").lower()
-    )
+    return sorted(summary.values(), key=lambda r: (r["hr_customer"] or "").lower())
 
 
 def build_customer_statement_data(qs):
@@ -210,10 +186,8 @@ def build_customer_statement_data(qs):
         if not workorder.customer_id:
             continue
 
-        try:
-            open_balance = normalize_open_balance(live_open_balance(workorder))
-        except Exception:
-            continue
+        live = live_open_balance(workorder)
+        open_balance = normalize_open_balance(live)
 
         if open_balance <= ZERO:
             continue
@@ -223,6 +197,7 @@ def build_customer_statement_data(qs):
         workorder.open_balance = open_balance
         workorder.statement_open_balance = open_balance
         workorder.statement_aging_days = days
+        workorder.total_balance = live["total_due"]
 
         customer_id = workorder.customer_id
 

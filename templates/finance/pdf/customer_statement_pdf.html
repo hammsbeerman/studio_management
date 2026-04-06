@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Statement</title>
+  <style>
+    body { font-family: sans-serif; font-size: 12px; color: #222; }
+    h1, h2, h3, h4 { margin: 0 0 10px 0; }
+    .mb-20 { margin-bottom: 20px; }
+    .text-right { text-align: right; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 6px; }
+    th { background: #f5f5f5; }
+  </style>
+</head>
+<body>
+  <div class="mb-20">
+    <h2>{{ customer.company_name|default:customer }}</h2>
+    <div>Statement Date: {{ as_of }}</div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Workorder</th>
+        <th>Date Billed</th>
+        <th>Description</th>
+        <th class="text-right">Total</th>
+        <th class="text-right">Paid</th>
+        <th class="text-right">Open</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in workorders %}
+        <tr>
+          <td>{{ row.workorder.workorder }}</td>
+          <td>{{ row.workorder.date_billed }}</td>
+          <td>{{ row.workorder.description }}</td>
+          <td class="text-right">{{ row.total_due }}</td>
+          <td class="text-right">{{ row.paid_amt }}</td>
+          <td class="text-right">{{ row.open_bal }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="3" class="text-right">Totals</th>
+        <th class="text-right">{{ statement.total_due }}</th>
+        <th class="text-right">{{ statement.total_paid }}</th>
+        <th class="text-right">{{ statement.total_open }}</th>
+      </tr>
+    </tfoot>
+  </table>
+</body>
+</html>

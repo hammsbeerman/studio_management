@@ -1,382 +1,305 @@
 {% for entry in customer_data %}
-  <!DOCTYPE html>
-  <html lang="en">
-    <head>
-      <meta charset="utf-8" />
-      <title>invoice 01</title>
-      <!-- paper.css -->
-      <style>
-        /** {
-          -webkit-print-color-adjust: exact !important;
-          color-adjust: exact !important;
-          print-color-adjust: exact !important;
-      box-sizing: border-box;
-        }
-        
-        body {
-          margin: 0;
-      color: #000;
-    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-          font-size: 9pt;
-        }*/
-        * {
-          -webkit-print-color-adjust: exact !important;
-          color-adjust: exact !important;
-          print-color-adjust: exact !important;
-          box-sizing: border-box;
-        }
-        @page {
-          margin: 0;
-        }
-        body {
-          margin: 0;
-          color: #333;
-          font-family: 'mission_gothiclight';
-          font-size: 13px;
-        }
-  img {
-    -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
-    user-drag: none;
-    max-width:100%;
-  }	  
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Statement</title>
+    <style>
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-sizing: border-box;
+      }
 
       @page {
         margin: 0;
+        size: 8.5in 11in;
       }
-      
-        .sheet {
-          margin: 0;
-          overflow: hidden;
-          position: relative;
-          box-sizing: border-box;
-          page-break-after: always;
-        }
 
-        /** Paper sizes **/
-        body.A4 .sheet {
-          width: 8.5in;
-          height: 11in;
-        }
+      body {
+        margin: 0;
+        color: #333;
+        font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+        font-size: 13px;
+      }
 
-        /** Padding area **/
-        .sheet.padding-10mm {
-          padding: 10mm;
-        }
+      img {
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        user-drag: none;
+        max-width: 100%;
+      }
 
-        /** For screen preview **/
-        @media screen {
-          body {background: #e0e0e0;}
-          .sheet {background: white;box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3);}
-        }
+      .sheet {
+        margin: 0;
+        overflow: hidden;
+        position: relative;
+        box-sizing: border-box;
+        page-break-after: always;
+        width: 8.5in;
+        height: 11in;
+        padding: 10mm;
+      }
 
-        /** Fix for Chrome issue #273306 **/
-        @media print {
-          body {
-            * {-webkit-print-color-adjust: exact !important;color-adjust: exact !important;print-color-adjust: exact !important;}
-          }
+      @media screen {
+        body { background: #e0e0e0; }
+        .sheet { background: white; box-shadow: 0 0.5mm 2mm rgba(0, 0, 0, 0.3); }
+      }
 
-          body.A4 {width: 210mm;}
-        }
+      .fix {
+        overflow: hidden;
+        margin-top: -25mm;
+      }
 
-        /*Main Style here*/
-        @page {size: 8.5in 11in;}
+      table {
+        border-collapse: collapse;
+        margin-top: 0;
+      }
 
-  .fix{overflow:hidden;
-    margin-top:-25mm;}
-  table{border-collapse: collapse;}
-  /*header*/
-  .tr{text-align:right;}
-  .tl{text-align:left;}
-  .tc{text-align:center;}
-  .italic {font-style: italic;}
+      .header {
+        overflow: hidden;
+        display: flex;
+        width: 100%;
+      }
 
-  .header{overflow: hidden; display: flex;width:100%;}
-  .single_header { width: 33%;}
+      .single_header {
+        width: 33%;
+      }
 
-  .header_right table {border: 1px solid #999;overflow: hidden;}
+      .header_mid {
+        text-align: center;
+        font-size: 14pt;
+        font-weight: bold;
+      }
 
-  .header_right table td:last-child {
-      text-align: right;
-      width: 100px;
-  }
+      .header_title {
+        font-size: 10pt;
+        padding-bottom: 5px;
+        padding-left: 3px;
+      }
 
-  .header_right table td {
-      padding: 2px 6px;
-  }
+      .header_bottom2 {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 100px;
+        border: 1px solid #000;
+        color: #000;
+        padding: 7px;
+      }
 
-  .header_mid {
-      text-align: center;
-      font-size: 14pt;
-      font-weight: bold;
-  }
-  .header_bottom{margin-top:25px;}
-  .header_bottom .header_right table td:last-child {
-      text-align: left;
-    width:auto;
-  }
-  .header_bottom .header_right table td:first-child {
-      width: 71px;
-      font-weight: bold;
-  }
+      .header_bottom2 .header_right table {
+        border: 0;
+      }
 
-  table{margin-top:0;}
+      .header_bottom2 .header_right table td:last-child {
+        width: auto;
+      }
 
-  /*Order-Info*/
-  .order-info {display: flex;justify-content: space-between;align-items: flex-start;margin-top:20px;margin-bottom:20px;overflow: hidden;}
-  .order-left {width: 287px; height: 137px;border: 2px solid #ddd;padding: 8px;} 
-  .order-left p {margin: 0;padding: 0;}
+      .single_header.invoice_header_r table {
+        float: right;
+        width: 90%;
+        border: 1px solid #999;
+        overflow: hidden;
+      }
 
-  .order-right {width: 404px;text-align: center;}
-  .order-right table {width: 100%;border-collapse: collapse;}
-  table.ordert-first {margin-bottom: 11px;}
+      .single_header.invoice_header_r td {
+        padding: 2px 6px;
+      }
 
-  .order-right table tr td, .order-right table tr th {border: 1px solid #dddd; border-collapse: collapse;padding:6px 5px;}
+      .single_header.invoice_header_r table td:last-child {
+        text-align: right;
+        width: 100px;
+      }
 
-        
+      .items-area {
+        overflow: hidden;
+        margin-top: 10px;
+      }
 
-  /*items area*/
-  .items-area {overflow: hidden;margin-top: 10px;}
-  .items-area table {width: 100%;border-collapse: collapse;margin-bottom:10px;}
-  .items-area tr td {padding: 5px;line-height: normal;}
-  .items-area table tr th, .items-area table tr td {}
-  .items-area table tr td {border-top: 0 !important; border-bottom: 0 !important;}
-  .items-area table tr th{
-      text-align: left;
-      padding: 4px;
-      font-weight: normal;
-      background: #333;
-      color: #fff;
-  }
-  /*.items-area tr:last-child td{border-bottom: 1px solid #ddd !important;}*/
-  .items-area tr td:nth-child(2) {text-align: left;}
+      .items-area table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+      }
 
+      .items-area tr td {
+        padding: 5px;
+        line-height: normal;
+        border-top: 0 !important;
+        border-bottom: 0 !important;
+      }
 
+      .items-area table tr th {
+        text-align: left;
+        padding: 4px;
+        font-weight: normal;
+        background: #333;
+        color: #fff;
+      }
 
+      .items_area_second tr td:last-child,
+      .items_area_second tr td:nth-last-child(2) {
+        text-align: right;
+      }
 
+      .fixed_table {
+        position: absolute;
+        width: 91%;
+        left: 0;
+        right: 0;
+        margin: auto;
+        bottom: 18px;
+      }
 
+      .last-table-area {
+        border-top: 1px solid #000;
+      }
 
-  /*Last Table*/
-  .fixed_table{
-      position: absolute;
-      width: 91%;
-      left: 0;
-      right: 0;
-      margin: auto;
-      bottom: 18px;
-  }
-  .last-table-area {border-top: 1px solid #000;}
-  .last-table{width:100%;text-align:center;}
+      .last-table {
+        width: 100%;
+        text-align: center;
+      }
 
-  .last-table tr td, .last-table tr th {border: 1px solid #000;padding:5px;}
-  .last-table tr th {background:#000;color:#fff;border-right: 1px solid #fff;}
-  .last-table tr th:last-child {border-right: 1px solid #000;}
-  .last-table tr th:first-child {border-left: 1px solid #000;}
+      .last-table tr td,
+      .last-table tr th {
+        border: 1px solid #000;
+        padding: 5px;
+      }
 
+      .last-table tr th {
+        background: #000;
+        color: #fff;
+        border-right: 1px solid #fff;
+      }
 
+      .last-table tr th:last-child {
+        border-right: 1px solid #000;
+      }
 
+      .last-table tr th:first-child {
+        border-left: 1px solid #000;
+      }
 
+      .thank {
+        font-weight: bold;
+        font-size: 12pt;
+        margin-top: 2px;
+      }
+    </style>
+  </head>
+  <body class="A4">
+    <section class="sheet">
+      <article>
+        <div class="header fix" spellcheck="false" contenteditable="false">
+          <div class="single_header header_left">
+            <img src="https://i.postimg.cc/PrDk3jzd/Krueger-Printing-Black-210x50.png" alt="" />
+          </div>
+          <div class="single_header header_mid">STATEMENT</div>
+          <div class="single_header invoice_header_r">
+            <table>
+              <tr><td>Statement Date:</td><td>{{ todays_date|date:"M d, Y" }}</td></tr>
+              <tr><td>Customer#:</td><td>{{ entry.customer.id }}</td></tr>
+              <tr><td>Terms:</td><td>Net 30 Days</td></tr>
+              <tr><td>Range:</td><td>All Invoices</td></tr>
+            </table>
+          </div>
+        </div>
 
-  /*page 2*/
-  .header_bottom2{
-  display: flex;
-      justify-content: space-between;
-  margin-top: 100px; /*This changed, was 25% */
-      border: 1px solid #000;
-      color: #000;
-      padding: 7px;}
-  .header_bottom2 .header_right tr td{text-align:left;}
-  .header_bottom2 .header_right table td:last-child{width:auto;}
-  .header_bottom2 .header_right table{border:0;}
+        <div class="header header_bottom2 fix" spellcheck="false" contenteditable="false">
+          <div class="single_header header_left">
+            <div class="header_title">BILL TO:</div>
+            <table style="width:100%;">
+              <tr><td>{{ entry.customer.company_name }}</td></tr>
+              {% if entry.customer.address1 %}<tr><td>{{ entry.customer.address1 }}</td></tr>{% endif %}
+              {% if entry.customer.address2 %}<tr><td>{{ entry.customer.address2 }}</td></tr>{% endif %}
+              <tr>
+                <td>
+                  {{ entry.customer.city }}{% if entry.customer.city and entry.customer.state %}, {% endif %}{{ entry.customer.state }} {{ entry.customer.zipcode }}
+                </td>
+              </tr>
+            </table>
+          </div>
 
-  .header_title {
-      font-size: 10pt;
-      padding-bottom: 5px;
-      padding-left: 3px;
-  }
+          <div class="single_header header_right">
+            <div class="header_title"></div>
+            <table style="width:100%;">
+              <tr><td></td><td></td></tr>
+              <tr><td></td><td></td></tr>
+              <tr><td></td><td></td></tr>
+              <tr><td></td><td></td></tr>
+            </table>
+          </div>
+        </div>
 
-
-
-
-
-
-
-
-
-  .items_area_second tr td:last-child{text-align:right;}
-  .items_area_second tr th{border-left:1px solid #fff;}
-
-  .border {
-      border: 1px solid #000;
-  }
-
-  .single_header.invoice_header_r table {
-      border: 1px solid #000;
-      float: right;
-      border: 1px solid #999;
-      overflow: hidden;
-      margin-top: 0;
-  }
-
-  .single_header.invoice_header_r th {
-      background: #000;
-      color: #fff;
-      text-align: center;
-  }
-
-
-  .single_header.invoice_header_r td {
-      padding: 2px 6px;
-  }
-
-  .single_header.invoice_header_r table td:last-child {
-      text-align: right;
-      width: 100px;
-  }
-
-
-  .table_three {
-      margin-top: 15px;
-  }
-
-  .thank {
-      font-weight: bold;
-      font-size: 12pt;
-      margin-top: 2px;
-  }
-
-
-      </style>
-    </head>
-    <body class="A4">
-      <section class="sheet padding-10mm">
-    <article>
-    <!-- Header -->
-    <div class="header fix" spellcheck="false" contenteditable="false">
-      <div class="single_header header_left"><img src="https://i.postimg.cc/PrDk3jzd/Krueger-Printing-Black-210x50.png" alt="" /></div>
-      <div class="single_header header_mid">STATEMENT</div>
-      <div class="single_header  invoice_header_r">
-        <table width="90%" style="float: right;">
-          <tr><td>Statement Date:</td><td>{{todays_date|date:"M d, Y"}}</td></tr>
-          <tr><td>Customer#:</td><td>{{entry.customer.id}}</td></tr>
-          <tr><td>Terms:</td><td>Net 30 Days</td></tr>
-          <tr><td>Range:</td><td>All Invoices</td></tr>
-        </table>
-      </div>
-    </div>
-    
-    <div class="header header_bottom2 fix" spellcheck="false" contenteditable="false">
-      <div class="single_header header_left">
-      <div class="header_title">BILL TO:</div>
-      <table style="width:100%;">
-          <tr><td>{{entry.customer.company_name}}</td></tr>
-          <tr><td>{{entry.customer.address1}}</td></tr>
-          {% if entry.customer.address2 is not None %}<tr><td>{{entry.customer.address2}}</td></tr>{% endif %}
-          <tr><td>{{entry.customer.city}}, {{entry.customer.state}} {{entry.customer.zipcode}}</td></tr>
-        </table>
-      </div>
-
-
-      <div class="single_header header_right">
-        
-        <div class="header_title"></div>
-        <table style="width:100%;">
-        
-          <tr><td></td><td></td></tr>
-          <tr><td></td><td></td></tr>
-          <tr><td></td><td></td></tr>
-          <tr><td></td><td></td></tr>
-        </table>
-      </div>
-    </div>
-    
-    
-
-
-
-  <!-- Total table -->
-
-
-  <!-- main table -->
         <div class="items-area items_area_second fix">
           <table>
             <thead>
-        <tr>
-          <th>Invoice Date</th>
+              <tr>
+                <th>Invoice Date</th>
                 <th>Invoice#</th>
                 <th>Description</th>
                 <th>Orig. Inv. Bal.</th>
-                <th>Open. Inv. Bal.</th>
+                <th>Open Inv. Bal.</th>
               </tr>
             </thead>
             <tbody>
-              <!-- {% for item in workorders %}
-                <tr>
-                  <td>{{ item.date_billed|date:"m/d/Y" }}</td>
-                  <td>{{ item.printleader_workorder }}</td>
-                  <td>{% if item.description%}{{ item.description }}{% else%} {% endif %}</td>
-                  <td>{{ item.total_balance }}</td>
-                  <td>{{ item.open_balance }}</td>          
-                </tr>
-              {% endfor %} -->
               {% for item in entry.workorders %}
                 <tr>
                   <td>{{ item.date_billed|date:"m/d/Y" }}</td>
-                  <td>{{ item.printleader_workorder }}</td>
-                  <td>{% if item.description%}{{ item.description }}{% else%} {% endif %}</td>
-                  <td>{{ item.total_balance }}</td>
-                  <td>{{ item.open_balance }}</td>          
+                  <td>
+                    {% if item.printleader_workorder %}
+                      {{ item.printleader_workorder }}
+                    {% else %}
+                      {{ item.workorder }}
+                    {% endif %}
+                  </td>
+                  <td>{{ item.description|default:"" }}</td>
+                  <td>
+                    {{ item.total_balance|default:item.statement_open_balance|floatformat:2 }}
+                  </td>
+                  <td>{{ item.statement_open_balance|floatformat:2 }}</td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5">No open invoices.</td>
                 </tr>
               {% endfor %}
-
-
-
-        
             </tbody>
           </table>
         </div>
 
-  <!-- Total table -->
-  <div class=" fixed_table fix">
-  <div class="last-table-area">
-    <table class="last-table">
-      <tbody>
-        <tr>
-          <!-- <th>Ship Via</th> -->
-          <!-- <th>
-          <span>Sub-Total</span>
-          <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
-          <span>Tax</span>
-            </th> -->
-          <th style="width:40%"></th>
-          <th style="width:40%"></th>
-          <th style="width:20%">Balance</th>
-        </tr>	
-        <tr>
-          <td>Note:</br>We are using a new billing system. If something looks off, please contact Sabrina at 608-524-4772. 
-          <td>Please remit payment to:</br>
-          Krueger Printing and Office</br>
-          P.O. Box 37</br>
-          Reedsburg, WI 53959</td>
-          <!--<td>
-          <span>{{workorder.subtotal}}</span>
-          <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
-          <span>{{workorder.tax}}</span> 
-          </td>-->
-          <td>{{entry.total_open_balance.open_balance__sum|floatformat:2}}</td>
-          
-        </tr>
-      </tbody>
-    </table>
-  </div>	
-  <div class="thank">Thank You</div>
-  </div>
-
-
-    </article> 
-      </section>
-    </body>
-  </html>
+        <div class="fixed_table fix">
+          <div class="last-table-area">
+            <table class="last-table">
+              <tbody>
+                <tr>
+                  <th style="width:40%"></th>
+                  <th style="width:40%"></th>
+                  <th style="width:20%">Balance</th>
+                </tr>
+                <tr>
+                  <td>
+                    Note:<br>
+                    We are using a new billing system. If something looks off, please contact Sabrina at 608-524-4772.
+                  </td>
+                  <td>
+                    Please remit payment to:<br>
+                    Krueger Printing and Office<br>
+                    P.O. Box 37<br>
+                    Reedsburg, WI 53959
+                  </td>
+                  <td>{{ entry.total_open_balance.open_balance__sum|floatformat:2 }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="thank">Thank You</div>
+        </div>
+      </article>
+    </section>
+  </body>
+</html>
 {% endfor %}

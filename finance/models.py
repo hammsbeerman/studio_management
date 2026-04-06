@@ -678,3 +678,49 @@ class ArSlowPayerSnapshot(models.Model):
 
     def __str__(self):
         return f"{self.company_name or self.customer} ({self.avg_days_to_pay} days)"
+
+
+
+class StatementRun(models.Model):
+    REPORT_TYPE_CHOICES = [
+        ("krueger_bulk", "Krueger Bulk Statements"),
+    ]
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("running", "Running"),
+        ("complete", "Complete"),
+        ("failed", "Failed"),
+    ]
+
+    report_type = models.CharField(
+        max_length=50,
+        choices=REPORT_TYPE_CHOICES,
+        default="krueger_bulk",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+        db_index=True,
+    )
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="statement_runs",
+    )
+    filters_json = models.JSONField(default=dict, blank=True)
+    file = models.FileField(upload_to="statement_runs/%Y/%m/", null=True, blank=True)
+    error = models.TextField(blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.get_report_type_display()} #{self.pk} ({self.status})"
