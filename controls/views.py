@@ -13,7 +13,7 @@ from inventory.models import Inventory, InventoryMaster, Vendor, VendorItemDetai
 from controls.models import Measurement, GroupCategory
 from finance.models import InvoiceItem, Araging, Krueger_Araging
 from django.contrib.auth.decorators import login_required
-from finance.helpers_ar import live_open_balance
+from finance.helpers_ar import live_open_balance, workorders_base_ar_qs, build_live_aging_rows
 from finance.helpers_statements import (
     VALID_COMPANIES,
     get_live_statement_queryset,
@@ -730,63 +730,51 @@ def high_price_item(request):
 @login_required
 def krueger_statements(request):
     """
-    Live statements dashboard with optional company filters.
+    Live Krueger statements dashboard.
 
-    ?company=Krueger+Printing&company=LK+Design&company=Office+Supplies
-
-    Uses live AR math only.
-    Does not read Krueger_Araging snapshot rows.
+    Uses the same live AR source as:
+    - finance.views.krueger_ar_aging
+    - bulk statement PDF
+    - bulk statement management command
     """
-    ZERO = Decimal("0.00")
-
     selected_companies = [
         c for c in request.GET.getlist("company")
         if c in VALID_COMPANIES
     ]
 
-    # Old default page behavior:
-    # if nothing is selected, show everything except LK Design
+    # Krueger statements default
     effective_companies = (
-        selected_companies
-        if selected_companies
-        else ["Krueger Printing", "Office Supplies"]
+        selected_companies if selected_companies else ["Krueger Printing"]
+    )
+    companies = selected_companies if selected_companies else ["Krueger Printing"]
+
+    workorders = (
+        workorders_base_ar_qs(companies=companies)
+        .order_by("customer__company_name", "date_billed", "workorder")
     )
 
-    qs = get_live_statement_queryset(
-        companies=selected_companies if selected_companies else None
-    ).order_by("customer__company_name", "date_billed", "workorder")
-
-    summary_rows = build_statement_summary_rows(
-        companies=selected_companies if selected_companies else None
+    statement_rows, totals = build_live_aging_rows(
+        workorders,
+        include_billed_today=False,
     )
 
-    # Hide zero-balance customers
+    # keep only customers with a positive live balance
     statement_rows = [
-        row for row in summary_rows
-        if (row.get("total") or ZERO) > ZERO
+        row for row in statement_rows
+        if (row.get("total") or 0) > 0
     ]
-
-    total_current = sum_statement_summary_field(statement_rows, "current")
-    total_thirty = sum_statement_summary_field(statement_rows, "thirty")
-    total_sixty = sum_statement_summary_field(statement_rows, "sixty")
-    total_ninety = sum_statement_summary_field(statement_rows, "ninety")
-    total_onetwenty = sum_statement_summary_field(statement_rows, "onetwenty")
-    total_balance_sum = sum_statement_summary_field(statement_rows, "total")
-
-    # Keep old template compatibility
-    total_balance = {"open_balance__sum": total_balance_sum}
 
     context = {
         "company_choices": VALID_COMPANIES,
         "selected_companies": selected_companies,
         "effective_companies": effective_companies,
-        "total_balance": total_balance,
+        "total_balance": totals["total_balance"],
         "statement_rows": statement_rows,
-        "total_current": total_current,
-        "total_thirty": total_thirty,
-        "total_sixty": total_sixty,
-        "total_ninety": total_ninety,
-        "total_onetwenty": total_onetwenty,
+        "total_current": totals["total_current"]["current__sum"],
+        "total_thirty": totals["total_thirty"]["thirty__sum"],
+        "total_sixty": totals["total_sixty"]["sixty__sum"],
+        "total_ninety": totals["total_ninety"]["ninety__sum"],
+        "total_onetwenty": totals["total_onetwenty"]["onetwenty__sum"],
     }
     return render(request, "finance/reports/statements.html", context)
 
@@ -794,6 +782,7 @@ def krueger_statements(request):
 @login_required
 def krueger_ar_aging(request):
     return krueger_statements(request)
+
 
 
 def add_to_item_list(request):

@@ -9,10 +9,8 @@ from django.utils import timezone
 
 from weasyprint import HTML
 
-from finance.helpers_statements import (
-    get_live_statement_queryset,
-    build_customer_statement_data,
-)
+from finance.helpers_ar import workorders_base_ar_qs
+from finance.helpers_statements import build_customer_statement_data
 
 
 class Command(BaseCommand):
@@ -21,18 +19,15 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         ZERO = Decimal("0.00")
 
-        # Default behavior matches old bulk statement flow:
-        # include everything except LK Design
-        effective_companies = ["Krueger Printing", "Office Supplies"]
+        # Krueger bulk default
+        effective_companies = ["Krueger Printing"]
 
         qs = (
-            get_live_statement_queryset()
+            workorders_base_ar_qs(companies=["Krueger Printing"])
             .order_by("customer__company_name", "date_billed", "workorder")
         )
 
         customer_data = build_customer_statement_data(qs)
-
-        # Extra safety: keep only customers with positive balances
         customer_data = [
             row for row in customer_data
             if (row.get("total_open_balance", {}).get("open_balance__sum") or ZERO) > ZERO
@@ -56,10 +51,7 @@ class Command(BaseCommand):
             context,
         )
 
-        base_url = getattr(settings, "SITE_URL", None)
-        if not base_url:
-            base_url = settings.BASE_DIR
-
+        base_url = getattr(settings, "SITE_URL", None) or settings.BASE_DIR
         html = HTML(string=html_string, base_url=base_url)
 
         self.stdout.write("Rendering PDF...")

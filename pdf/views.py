@@ -23,7 +23,7 @@ from krueger.models import KruegerJobDetail, WideFormat
 from finance.models import Krueger_Araging
 from workorders.services.totals import compute_workorder_totals
 from inventory.models import RetailWorkorderItem
-from finance.helpers_ar import live_open_balance
+from finance.helpers_ar import live_open_balance, workorders_base_ar_qs
 from finance.helpers_statements import (
     VALID_COMPANIES,
     get_live_statement_queryset,
@@ -858,9 +858,11 @@ def statement_pdf_bulk(request):
     """
     Bulk customer statement PDF with optional company filters.
 
-    Fast path:
-    - use Krueger_Araging to decide which customers belong in the batch
-    - then pull live workorders only for those customers
+    Uses the unified live AR path:
+    - finance.helpers_ar.workorders_base_ar_qs()
+    - finance.helpers_statements.build_customer_statement_data()
+
+    No snapshot tables.
     """
     response = HttpResponse(content_type="application/pdf")
     response["Content-Disposition"] = (
@@ -873,39 +875,22 @@ def statement_pdf_bulk(request):
         if c in VALID_COMPANIES
     ]
 
+    # Krueger bulk default
     effective_companies = (
-        selected_companies
-        if selected_companies
-        else ["Krueger Printing", "Office Supplies"]
+        selected_companies if selected_companies else ["Krueger Printing"]
+    )
+    companies = selected_companies if selected_companies else ["Krueger Printing"]
+
+    workorders = (
+        workorders_base_ar_qs(companies=companies)
+        .order_by("customer__company_name", "date_billed", "workorder")
     )
 
-    # Fast customer set from snapshot table
-    customer_ids = list(
-        Krueger_Araging.objects
-        .exclude(total__isnull=True)
-        .exclude(total__lte=0)
-        .values_list("customer_id", flat=True)
-    )
-
-    # If LK only is selected, this snapshot-backed bulk path has nothing to do
-    if selected_companies == ["LK Design"]:
-        customer_data = []
-    else:
-        qs = (
-            get_live_statement_queryset(
-                companies=selected_companies if selected_companies else None
-            )
-            .filter(customer_id__in=customer_ids)
-            .order_by("customer__company_name", "date_billed", "workorder")
-        )
-
-        customer_data = build_customer_statement_data(qs)
-
-        # extra safety: do not include zero-balance customers
-        customer_data = [
-            row for row in customer_data
-            if (row.get("total_open_balance", {}).get("open_balance__sum") or Decimal("0.00")) > Decimal("0.00")
-        ]
+    customer_data = build_customer_statement_data(workorders)
+    customer_data = [
+        row for row in customer_data
+        if (row.get("total_open_balance", {}).get("open_balance__sum") or Decimal("0.00")) > Decimal("0.00")
+    ]
 
     context = {
         "customer_data": customer_data,

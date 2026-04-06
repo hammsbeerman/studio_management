@@ -2,12 +2,10 @@ from collections import defaultdict
 from datetime import date, datetime
 from decimal import Decimal
 
-from django.db.models import Q
 from django.utils import timezone
 
 from customers.models import Contact
-from finance.helpers_ar import live_open_balance
-from workorders.models import Workorder
+from finance.helpers_ar import workorders_base_ar_qs, live_open_balance
 
 
 ZERO = Decimal("0.00")
@@ -73,35 +71,18 @@ def get_live_statement_queryset(companies=None, customer=None):
     """
     Shared base queryset for live AR-backed statements.
 
-    Rules:
-    - exclude void workorders
-    - exclude quotes using the actual char-based quote field
-    - require completed workorders
-    - require billed work: billed=True or date_billed present
-    - default statement behavior excludes LK Design unless companies are passed
+    This intentionally reuses the canonical live AR queryset from helpers_ar
+    so statements and AR aging stay aligned.
     """
-    qs = (
-        Workorder.objects
-        .filter(void=False)
-        .filter(completed=True)
-        .filter(
-            Q(quote="0") | Q(quote=0) | Q(quote=False) | Q(quote__isnull=True)
-        )
-        .filter(
-            Q(date_billed__isnull=False) | Q(billed=True)
-        )
-        .select_related("customer")
-    )
+    qs = workorders_base_ar_qs(companies=companies, customer=customer)
 
-    if customer is not None:
-        qs = qs.filter(customer=customer)
-
-    if companies:
-        qs = qs.filter(internal_company__in=companies)
-    else:
+    # old default statement behavior:
+    # if no company filter passed, exclude LK Design
+    if not companies:
         qs = qs.exclude(internal_company="LK Design")
 
     return qs
+
 
 def workorder_aging_days(workorder, today=None):
     today = normalize_to_date(today) or date.today()

@@ -34,8 +34,8 @@ def q_non_quote():
     return AR_QUOTE_FILTER
 
 
-def workorders_base_ar_qs():
-    return (
+def workorders_base_ar_qs(companies=None, customer=None):
+    qs = (
         Workorder.objects
         .filter(void=False)
         .filter(AR_QUOTE_FILTER)
@@ -51,14 +51,17 @@ def workorders_base_ar_qs():
         )
     )
 
+    if customer is not None:
+        qs = qs.filter(customer=customer)
+
+    if companies:
+        qs = qs.filter(internal_company__in=companies)
+
+    return qs
+
 
 def customer_ar_workorders_qs(customer):
-    return (
-        Workorder.objects
-        .filter(customer=customer, billed=True, void=False)
-        .filter(AR_QUOTE_FILTER)
-        .order_by("workorder")
-    )
+    return workorders_base_ar_qs(customer=customer).order_by("workorder")
 
 
 def _iter_related(value):
@@ -216,6 +219,7 @@ def build_live_aging_rows(workorders_qs, include_billed_today=False):
             customer_id,
             {
                 "customer_id": customer_id,
+                "customer": workorder.customer,
                 "hr_customer": customer_name,
                 "current": ZERO,
                 "thirty": ZERO,
@@ -270,15 +274,9 @@ def build_live_aging_rows(workorders_qs, include_billed_today=False):
 
 
 def ar_open_workorders_qs(customer_id):
-    workorders = (
-        Workorder.objects
-        .filter(customer_id=customer_id, billed=True, void=False)
-        .filter(AR_QUOTE_FILTER)
-        .order_by("workorder")
-    )
+    workorders = workorders_base_ar_qs(customer=customer_id).order_by("workorder")
 
     open_ids = []
-
     for workorder in workorders:
         if live_open_balance(workorder)["open_bal"] > ZERO:
             open_ids.append(workorder.pk)
@@ -286,16 +284,11 @@ def ar_open_workorders_qs(customer_id):
     return Workorder.objects.filter(pk__in=open_ids).order_by("workorder")
 
 
+
 def recompute_customer_open_balance(customer_id):
-    workorders = (
-        Workorder.objects
-        .filter(customer_id=customer_id, billed=True, void=False)
-        .filter(AR_QUOTE_FILTER)
-        .order_by("workorder")
-    )
+    workorders = workorders_base_ar_qs(customer=customer_id).order_by("workorder")
 
     total_open = ZERO
-
     for workorder in workorders:
         total_open += live_open_balance(workorder)["open_bal"]
 
@@ -326,33 +319,19 @@ def get_customer_ar_summary(customer):
     total_due = ZERO
     total_paid = ZERO
     total_open = ZERO
-    days_to_pay_list = []
 
     for workorder in workorders:
         data = live_open_balance(workorder)
-
         total_due += data["total_due"]
         total_paid += data["paid_amt"] + data["cm_amt"] + data["gc_amt"]
         total_open += data["open_bal"]
-
-        date_paid_calc = getattr(workorder, "date_paid_calc", None)
-        if data["open_bal"] == ZERO and workorder.date_billed and date_paid_calc:
-            days = (date_paid_calc - workorder.date_billed).days
-            if days >= 0:
-                days_to_pay_list.append(days)
-
-    avg_days = (
-        sum(days_to_pay_list) / len(days_to_pay_list)
-        if days_to_pay_list
-        else None
-    )
 
     return {
         "total_due": money(total_due),
         "total_paid": money(total_paid),
         "total_open": money(total_open),
-        "avg_days_to_pay": avg_days,
-        "days_to_pay_count": len(days_to_pay_list),
+        "avg_days_to_pay": None,
+        "days_to_pay_count": 0,
     }
 
 
