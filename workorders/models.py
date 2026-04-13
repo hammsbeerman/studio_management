@@ -1,9 +1,27 @@
 from django.db import models
+from decimal import Decimal, InvalidOperation
+import re
 from django.contrib.auth.models import User, Group
 from django.urls import reverse
 from customers.models import Customer, Contact, ShipTo
 from controls.models import Category, SubCategory, DesignType, SetPriceCategory, SetPriceItemPrice, PostageType, JobStatus, UserGroup
 from accounts.models import Profile
+
+def normalize_money_to_decimal(value):
+    if value in (None, ""):
+        return None
+
+    cleaned = str(value).strip().replace("$", "").replace(",", "")
+    if not cleaned:
+        return None
+
+    if not re.fullmatch(r"-?\d+(\.\d{1,4})?", cleaned):
+        return None
+
+    try:
+        return Decimal(cleaned).quantize(Decimal("0.01"))
+    except (InvalidOperation, ValueError):
+        return None
 
 
 class Workorder(models.Model):
@@ -42,6 +60,11 @@ class Workorder(models.Model):
     tax = models.CharField('Tax', max_length=100, blank=True, null=True)
     subtotal = models.CharField('Subtotal', max_length=100, blank=True, null=True)
     workorder_total = models.CharField('Workorder Total', max_length=100, blank=True, null=True)
+
+    normalized_subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, db_index=True)
+    normalized_tax = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, db_index=True)
+    normalized_workorder_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, db_index=True)
+
     created = models.DateTimeField(auto_now_add=True, blank=False, null=False)
     updated = models.DateTimeField(auto_now = True, blank=False, null=False)
     completed = models.BooleanField(blank=False, null=False, default=False)
@@ -85,6 +108,8 @@ class Workorder(models.Model):
 
             # “open work” list
             models.Index(fields=["customer", "completed", "quote", "void"], name="wo_open_idx"),
+
+            models.Index(fields=["normalized_workorder_total"], name="wo_norm_total_idx"),
         ]
 
 
@@ -123,6 +148,15 @@ class Workorder(models.Model):
     #         self.checked_and_verified = True
 
     #     super().save(*args, **kwargs)
+
+    def sync_normalized_amounts(self):
+        self.normalized_subtotal = normalize_money_to_decimal(self.subtotal)
+        self.normalized_tax = normalize_money_to_decimal(self.tax)
+        self.normalized_workorder_total = normalize_money_to_decimal(self.workorder_total)
+
+    def save(self, *args, **kwargs):
+        self.sync_normalized_amounts()
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return self.workorder

@@ -168,19 +168,21 @@ def invoice_pdf(request, id):
     # if amount_paid:
     #     total_bal = open_bal
 
+    live = live_open_balance(workorder)
+
     context = {
         "items": items,
         "items2": "",
         "workorder": workorder,
         "customer": customer,
-        "payment": amount_paid,
+        "payment": live["total_applied"],
         "contact": contact,
         "date": date,
         "subtotal": totals.subtotal,
         "tax": totals.tax,
-        "total": totals.total,
-        "total_bal": totals.total,
-        "open_balance": open_balance,
+        "total": live["total_due"],
+        "total_bal": live["open_bal"],
+        "open_balance": live["open_bal"],
         "rows": "",
         "rows2": "",
         "packingslip_rows": "",

@@ -403,12 +403,12 @@ margin-top: 25px;
 			  <span style="margin-left:10px;margin-right:10px;">Tax Rate%</span>
 			  <span>{{workorder.tax}}</span> 
 				</td>-->
-				<td>{{workorder.subtotal|floatformat:2}}</td>
-				<td>{{workorder.tax|floatformat:2}}</td>
+				<td>{{ subtotal|floatformat:2 }}</td>
+        <td>{{ tax|floatformat:2 }}</td>
         <td></td>
-				<td>{{workorder.total_balance|floatformat:2}}</td>
-				<td>{{workorder.amount_paid|floatformat:2}}</td>
-        <td>{{workorder.open_balance|floatformat:2}}</td>
+        <td>{{ total|floatformat:2 }}</td>
+        <td>{{ payment|floatformat:2 }}</td>
+        <td>{{ open_balance|floatformat:2 }}</td>
 			</tr>
 		</tbody>
 	</table>
