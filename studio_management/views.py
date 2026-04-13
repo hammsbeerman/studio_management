@@ -7,12 +7,10 @@ from django.shortcuts import render, redirect
 from django.db.models import Q, Prefetch
 from django.template.loader import render_to_string
 from workorders.models import (
-    GiftCertificateRedemption,
     Workorder,
-    WorkorderCreditMemo,
     WorkorderItem,
-    WorkorderPayment,
 )
+from finance.models import GiftCertificateRedemption, WorkorderCreditMemo, WorkorderPayment
 from customers.models import Customer, Contact
 from inventory.models import Inventory, InventoryMaster
 from accounts.decorators import allowed_users
@@ -20,9 +18,9 @@ from controls.models import JobStatus
 from archive_overlay.services.archive_api import ArchiveApiClient
 from finance.helpers_ar import (
     live_open_balance,
-    normalize_open_balance,
     workorders_base_ar_qs,
 )
+from finance.helpers_statements import normalize_open_balance
 
 
 #from articles.models import Article
