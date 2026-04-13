@@ -1,11 +1,13 @@
 #import random
 import re
-from django.http import HttpResponse
 from decimal import Decimal, InvalidOperation
+
+from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.db.models import Q, Prefetch
 from django.template.loader import render_to_string
+
 from workorders.models import (
     Workorder,
     WorkorderItem,
@@ -28,9 +30,10 @@ from finance.helpers_statements import normalize_open_balance
 @login_required
 def home_view(request, id=None):
     if request.user.is_authenticated:
-        return redirect('dashboard:dashboard')
+        return redirect("dashboard:dashboard")
     else:
-        return redirect('accounts/login')
+        return redirect("accounts/login")
+
 
 def parse_search_amount(value):
     if value is None:
@@ -51,15 +54,78 @@ def parse_search_amount(value):
         return None
 
 
-def text_amount_to_decimal(value):
-    if value in (None, ""):
-        return None
+def amount_prefetches():
+    return [
+        Prefetch(
+            "workorderpayment_set",
+            queryset=WorkorderPayment.objects.filter(void=False),
+        ),
+        Prefetch(
+            "workordercreditmemo_set",
+            queryset=WorkorderCreditMemo.objects.filter(void=False),
+        ),
+        Prefetch(
+            "giftcertificateredemption_set",
+            queryset=GiftCertificateRedemption.objects.filter(void=False),
+        ),
+    ]
 
-    cleaned = str(value).strip().replace("$", "").replace(",", "")
-    try:
-        return Decimal(cleaned).quantize(Decimal("0.01"))
-    except (InvalidOperation, ValueError):
-        return None
+
+def amount_match_workorder(workorder, search_amount):
+    if search_amount is None:
+        return False
+
+    if search_amount in {
+        workorder.normalized_workorder_total,
+        workorder.normalized_subtotal,
+        workorder.normalized_tax,
+    }:
+        return True
+
+    if workorder.billed and not workorder.void and str(workorder.quote) == "0":
+        live = live_open_balance(workorder)
+        live_total_due = live["total_due"]
+        live_open = normalize_open_balance(live)
+
+        if search_amount in {live_total_due, live_open}:
+            workorder._live_total_due = live_total_due
+            workorder._live_open_balance = live_open
+            return True
+
+    return False
+
+
+def find_workorders_matching_amount(search_amount, queryset=None):
+    if search_amount is None:
+        return []
+
+    base_qs = queryset if queryset is not None else Workorder.objects.all()
+
+    candidates = (
+        base_qs.filter(void=False)
+        .filter(
+            Q(normalized_workorder_total=search_amount)
+            | Q(normalized_subtotal=search_amount)
+            | Q(normalized_tax=search_amount)
+            | Q(billed=True, quote="0")
+        )
+        .select_related("customer")
+        .prefetch_related(*amount_prefetches())
+        .distinct()
+    )
+
+    results = []
+    seen = set()
+
+    for workorder in candidates:
+        if workorder.pk in seen:
+            continue
+
+        if amount_match_workorder(workorder, search_amount):
+            seen.add(workorder.pk)
+            results.append(workorder)
+
+    return results
 
 
 @login_required
@@ -83,89 +149,25 @@ def search(request):
         .distinct()
     )
 
+    # Do NOT add custom Prefetch objects here if workorders_base_ar_qs()
+    # already prefetches these relations.
     live_open_candidates = (
         workorders_base_ar_qs()
         .filter(pk__in=workorders.values("pk"))
         .select_related("customer")
-        .prefetch_related(
-            Prefetch(
-                "workorderpayment_set",
-                queryset=WorkorderPayment.objects.filter(void=False),
-            ),
-            Prefetch(
-                "workordercreditmemo_set",
-                queryset=WorkorderCreditMemo.objects.filter(void=False),
-            ),
-            Prefetch(
-                "giftcertificateredemption_set",
-                queryset=GiftCertificateRedemption.objects.filter(void=False),
-            ),
-        )
         .distinct()
     )
 
     open_workorders = []
-    for wo in live_open_candidates:
-        live = live_open_balance(wo)
+    for candidate in live_open_candidates:
+        live = live_open_balance(candidate)
         open_balance = normalize_open_balance(live)
         if open_balance > 0:
-            wo._live_open_balance = open_balance
-            wo._live_total_due = live["total_due"]
-            open_workorders.append(wo)
+            candidate._live_open_balance = open_balance
+            candidate._live_total_due = live["total_due"]
+            open_workorders.append(candidate)
 
-        balance = []
-        if search_amount is not None:
-            amount_candidates = (
-                Workorder.objects.filter(
-                    void=False
-                ).filter(
-                    Q(normalized_workorder_total=search_amount)
-                    | Q(normalized_subtotal=search_amount)
-                    | Q(normalized_tax=search_amount)
-                    | Q(billed=True, quote="0")
-                )
-                .select_related("customer")
-                .prefetch_related(
-                    Prefetch(
-                        "workorderpayment_set",
-                        queryset=WorkorderPayment.objects.filter(void=False),
-                    ),
-                    Prefetch(
-                        "workordercreditmemo_set",
-                        queryset=WorkorderCreditMemo.objects.filter(void=False),
-                    ),
-                    Prefetch(
-                        "giftcertificateredemption_set",
-                        queryset=GiftCertificateRedemption.objects.filter(void=False),
-                    ),
-                )
-                .distinct()
-            )
-
-            seen = set()
-            for wo in amount_candidates:
-                matched = False
-
-                if search_amount in {
-                    wo.normalized_workorder_total,
-                    wo.normalized_subtotal,
-                    wo.normalized_tax,
-                }:
-                    matched = True
-
-                if not matched and wo.billed and not wo.void and wo.quote == "0":
-                    live = live_open_balance(wo)
-                    live_total_due = live["total_due"]
-                    live_open = normalize_open_balance(live)
-
-                    if search_amount in {live_total_due, live_open}:
-                        wo._live_total_due = live_total_due
-                        wo._live_open_balance = live_open
-                        matched = True
-
-                if matched and wo.pk not in seen:
-                    seen.add(wo.pk)
-                    balance.append(wo)
+    balance = find_workorders_matching_amount(search_amount)
 
     workorder_item = WorkorderItem.objects.filter(
         description__icontains=q
@@ -212,12 +214,13 @@ def search(request):
     }
     return render(request, "search.html", context)
 
+
 def username(request):
     # user = request.user.logged_in
     # logged = Profile.objects.get(user=user)
     test = 'test123'
     context = {
-        'test':test
+        'test': test
     }
     return render(request, 'navbar.html', context)
 
