@@ -2102,11 +2102,13 @@ def payment_history(request):
     year = request.GET.get("year")
     month = request.GET.get("month")
 
-    # Base queryset: all workorder payments, newest first
+    # Base queryset: real applied payments only, newest first
     qs = (
         WorkorderPayment.objects
         .filter(void=False)
-        .select_related("workorder", "workorder__customer")
+        .exclude(payment__check_number__startswith="LEGACY-RECON-")
+        .exclude(payment__refunded_invoice_number="Legacy AR reconciliation")
+        .select_related("workorder", "workorder__customer", "payment")
         .order_by("-date")
     )
 
@@ -2114,12 +2116,10 @@ def payment_history(request):
 
     # Decide which range to show
     if year and month:
-        # Specific month
         year = int(year)
         month = int(month)
         start_date = date(year, month, 1)
 
-        # First day of next month
         if month == 12:
             end_date = date(year + 1, 1, 1)
         else:
@@ -2129,14 +2129,12 @@ def payment_history(request):
         current_range_label = start_date.strftime("%B %Y")
         is_default_range = False
     else:
-        # Default: last 30 days
         start_date = today - timedelta(days=30)
         end_date = today
         payments = qs.filter(date__gte=start_date, date__lte=end_date)
         current_range_label = "Last 30 Days"
         is_default_range = True
 
-    # Split into Krueger/Office vs LK Design
     kr_payments = payments.filter(
         workorder__internal_company__in=["Krueger Printing", "Office Supplies"]
     )
@@ -2147,8 +2145,6 @@ def payment_history(request):
     kr_total = kr_payments.aggregate(Sum("payment_amount"))["payment_amount__sum"] or Decimal("0.00")
     lk_total = lk_payments.aggregate(Sum("payment_amount"))["payment_amount__sum"] or Decimal("0.00")
 
-
-    # Archive list of months that actually have payments
     months = qs.dates("date", "month", order="DESC")
 
     context = {
