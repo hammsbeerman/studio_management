@@ -2160,19 +2160,35 @@ def payment_history(request):
 
 
 @login_required
-def sales_tax_payable(request):
+def sales_tax_payable(request, company="krueger"):
     """
-    Accrual-based sales tax report for Krueger Printing.
+    Accrual-based sales tax report by company.
 
     Uses:
       - Workorder.date_billed in the selected range
-      - internal_company = 'Krueger Printing'
       - completed = '1'
+      - internal_company based on route
     """
+    company_map = {
+        "krueger": {
+            "internal_company": "Krueger Printing",
+            "label": "Krueger Printing",
+        },
+        "lk": {
+            "internal_company": "LK Design",
+            "label": "LK Design",
+        },
+    }
+
+    company_config = company_map.get(company, company_map["krueger"])
+
     form = DateRangeForm(request.POST or None)
 
-    # default context (GET / initial load)
-    context = {"form": form}
+    context = {
+        "form": form,
+        "report_company": company_config["label"],
+        "report_company_key": company,
+    }
 
     if request.method == "POST" and form.is_valid():
         start_date = form.cleaned_data["start_date"]
@@ -2182,13 +2198,12 @@ def sales_tax_payable(request):
             Workorder.objects
             .filter(
                 date_billed__range=(start_date, end_date),
-                internal_company="Krueger Printing",
+                internal_company=company_config["internal_company"],
                 completed="1",
             )
             .order_by("date_billed")
         )
 
-        # All of these come back as Decimals from the DB; fall back to Decimal(0)
         invoice_subtotal = (
             workorders.aggregate(sum_sub=Sum("subtotal"))["sum_sub"]
             or Decimal("0.00")
@@ -2202,7 +2217,6 @@ def sales_tax_payable(request):
             or Decimal("0.00")
         )
 
-        # Taxable vs exempt: same logic you had, just all Decimal-safe
         taxable_workorders = workorders.exclude(tax__isnull=True).exclude(tax=0)
         taxable_total = (
             taxable_workorders.aggregate(sum_total=Sum("workorder_total"))["sum_total"]
@@ -2215,12 +2229,14 @@ def sales_tax_payable(request):
         context.update(
             {
                 "form": form,
+                "report_company": company_config["label"],
+                "report_company_key": company,
                 "start_date": start_date,
                 "end_date": end_date,
                 "workorders": workorders,
                 "total_tax": total_tax,
                 "invoice_total": invoice_total,
-                "invoice_subtotoal": invoice_subtotal,  # keep your existing key name
+                "invoice_subtotoal": invoice_subtotal,
                 "exemptions": exemptions,
                 "taxable": taxable,
             }

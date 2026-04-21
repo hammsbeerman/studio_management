@@ -169,6 +169,7 @@ urlpatterns = [
 
     # Tax / reports
     path("sales_tax_payable/", sales_tax_payable, name="sales_tax_payable"),
+    path("sales_tax_payable/lk/", sales_tax_payable, {"company": "lk"}, name="sales_tax_payable_lk"),
     path("sales_tax_payable/<int:submit>/", sales_tax_payable, name="sales_tax_payable_submit"),
 
     path("office_supplies_pos_tax/", office_supplies_pos_tax, name="office_supplies_pos_tax"),

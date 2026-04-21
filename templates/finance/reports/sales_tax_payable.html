@@ -5,6 +5,10 @@
 
 
 {% block content %}
+<h2>{{ report_company }} Sales Tax Payable</h2>
+{% if start_date and end_date %}
+  <p>{{ start_date }} through {{ end_date }}</p>
+{% endif %}
 <style>
   table {
     width: 100%;
